@@ -102,8 +102,9 @@ export function QuestionPrompt({
             <Image
               src={block.src}
               alt={block.alt}
+              width={block.width}
+              height={block.height}
               loading={compact ? 'lazy' : 'eager'}
-              {...(typeof block.src === 'string' ? { width: 1200, height: 800 } : {})}
               sizes={compact ? '(max-width: 720px) 100vw, 560px' : '(max-width: 900px) 100vw, 820px'}
             />
           </figure>

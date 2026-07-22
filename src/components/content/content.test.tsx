@@ -10,6 +10,12 @@ describe('question content renderer', () => {
     const question = questions.find((candidate) => candidate.id === 'construction-114-01');
     expect(question).toBeDefined();
     expect(question!.content.map((block) => block.kind)).toEqual(['text', 'image']);
+    expect(question!.content[1]).toMatchObject({
+      kind: 'image',
+      src: '/question-bank/構造/114/01/question-02.jpg',
+      width: 480,
+      height: 444,
+    });
 
     const { container } = render(<QuestionPrompt question={question!} />);
     const text = screen.getByText(/衝擊韌性試片結果圖/);
@@ -18,6 +24,8 @@ describe('question content renderer', () => {
       text.compareDocumentPosition(image) & Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
     expect(container.querySelectorAll('img')).toHaveLength(1);
+    expect(image).toHaveAttribute('width', '480');
+    expect(image).toHaveAttribute('height', '444');
   });
 
   it('links official questions back to their source paper', () => {

@@ -1,0 +1,22 @@
+{
+  "primaryCategory": "材料",
+  "topic": "金屬材料",
+  "tags": [
+    "金屬材料"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "B"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 1
+  },
+  "images": {
+    "question-02.jpg": {
+      "alt": "標示為（1）、（2）、（3）的三個衝擊韌性試片斷口照片"
+    }
+  }
+}

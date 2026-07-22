@@ -16,7 +16,7 @@ interface QuestionParams extends ParsedUrlQuery {
 }
 
 export const getStaticPaths: GetStaticPaths<QuestionParams> = async () => ({
-  paths: getQuestionStaticPaths(),
+  paths: await getQuestionStaticPaths(),
   fallback: false,
 });
 
@@ -27,11 +27,11 @@ export const getStaticProps: GetStaticProps<
   const subject = String(params?.subject ?? '');
   const year = String(params?.year ?? '');
   const number = String(params?.number ?? '');
-  const entry = findQuestionEntry(subject, year, number);
+  const entry = await findQuestionEntry(subject, year, number);
   if (!entry) return { notFound: true };
 
   const question = await loadQuestion(entry);
-  const paperQuestions = getQuestionSummaries()
+  const paperQuestions = (await getQuestionSummaries())
     .filter((candidate) => candidate.subject === entry.subject && candidate.year === entry.year)
     .map((candidate) => ({
       id: candidate.id,

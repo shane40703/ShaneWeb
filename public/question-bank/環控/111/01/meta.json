@@ -1,0 +1,16 @@
+{
+  "primaryCategory": "空氣",
+  "topic": "通風",
+  "tags": [
+    "通風"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "B"
+    ]
+  },
+  "provenance": {
+    "kind": "sample"
+  }
+}

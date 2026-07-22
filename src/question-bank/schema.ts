@@ -1,5 +1,3 @@
-import type { StaticImageData } from 'next/image';
-
 export const answerLabels = ['A', 'B', 'C', 'D'] as const;
 
 export type AnswerLabel = (typeof answerLabels)[number];
@@ -49,15 +47,6 @@ export type Topic<S extends SubjectId> = CategoryMap<S>[keyof CategoryMap<S>] ex
   ? T & string
   : never;
 
-type TopicForCategory<
-  S extends SubjectId,
-  C extends PrimaryCategory<S>,
-> = C extends keyof CategoryMap<S>
-  ? CategoryMap<S>[C] extends readonly (infer T)[]
-    ? T & string
-    : never
-  : never;
-
 export type SourceAnswerKey =
   | {
       kind: 'accepted';
@@ -71,27 +60,6 @@ export type QuestionProvenance =
   | { kind: 'sample' }
   | { kind: 'official'; page: number };
 
-export interface QuestionMeta<
-  S extends SubjectId = SubjectId,
-  C extends PrimaryCategory<S> = PrimaryCategory<S>,
-> {
-  subject: S;
-  primaryCategory: C;
-  topic: TopicForCategory<S, C>;
-  tags: readonly Topic<S>[];
-  relatedLaws?: readonly string[];
-  answerKey: SourceAnswerKey;
-  provenance: QuestionProvenance;
-  images?: Readonly<Record<string, { src: StaticImageData; alt: string }>>;
-}
-
-export function defineQuestionMeta<
-  const S extends SubjectId,
-  const C extends PrimaryCategory<S>,
->(meta: QuestionMeta<S, C>) {
-  return meta;
-}
-
 export interface PaperMeta {
   status: 'official-partial' | 'official-complete';
   paperCode: string;
@@ -100,8 +68,4 @@ export interface PaperMeta {
   questionUrl: string;
   answerUrl: string;
   correctionUrl?: string;
-}
-
-export function definePaper(meta: PaperMeta) {
-  return meta;
 }

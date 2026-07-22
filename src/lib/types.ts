@@ -1,4 +1,3 @@
-import type { StaticImageData } from 'next/image';
 import type { SubjectId } from '@/question-bank/schema';
 
 export type { SubjectId };
@@ -7,6 +6,7 @@ export type QuestionId = string;
 
 export interface Subject {
   id: SubjectId;
+  directory: string;
   name: string;
   shortName: string;
   description: string;
@@ -14,7 +14,13 @@ export interface Subject {
 
 export type QuestionContentBlock =
   | { kind: 'text'; text: string }
-  | { kind: 'image'; src: StaticImageData | string; alt: string };
+  | {
+      kind: 'image';
+      src: string;
+      alt: string;
+      width: number;
+      height: number;
+    };
 
 export type AnswerKey =
   | { kind: 'accepted'; options: readonly number[] }

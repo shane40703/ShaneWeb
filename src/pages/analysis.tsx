@@ -5,7 +5,7 @@ import { getQuestionSummaries } from '@/server/question-bank.server';
 import type { QuestionSummary } from '@/lib/types';
 
 export const getStaticProps: GetStaticProps<{ questions: QuestionSummary[] }> = async () => ({
-  props: { questions: getQuestionSummaries() },
+  props: { questions: await getQuestionSummaries() },
 });
 
 export default function AnalysisRoute({ questions }: InferGetStaticPropsType<typeof getStaticProps>) {
