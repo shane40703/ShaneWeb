@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { IconArrowRight } from '@tabler/icons-react';
-import { SubjectIcon } from '@/components/subject-icon';
+import { SubjectIconBadge } from '@/components/subject-icon';
 import { subjects } from '@/question-bank/catalog';
 import styles from './home-page.module.css';
 
@@ -20,9 +20,11 @@ export function HomePage() {
             data-subject={subject.id}
           >
             <span className={styles.cardNumber}>0{index + 1}</span>
-            <span className={styles.subjectIcon} aria-hidden="true">
-              <SubjectIcon subject={subject.id} size={38} stroke={1.7} />
-            </span>
+            <SubjectIconBadge
+              subject={subject.id}
+              size="large"
+              className={styles.subjectIcon}
+            />
             <h2>{subject.name}</h2>
             <span className={styles.cardAction}>
               選擇年份 <IconArrowRight size={17} stroke={2} aria-hidden="true" />

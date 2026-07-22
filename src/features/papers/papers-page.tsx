@@ -1,87 +1,90 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { IconArrowRight } from '@tabler/icons-react';
-import { PageHeader } from '@/components/content/content';
-import { SubjectIcon } from '@/components/subject-icon';
-import { Button } from '@/components/ui/ui';
+import {
+  QuestionSelector,
+  type SelectorYear,
+} from '@/components/question-selector';
 import { subjects, years } from '@/question-bank/catalog';
-import { isSubjectId } from '@/lib/study';
+import { isSubjectId, parseYear } from '@/lib/study';
 import type { QuestionSummary, SubjectId } from '@/lib/types';
 import styles from './papers-page.module.css';
 
+function valueOf(value: string | string[] | undefined) {
+  return Array.isArray(value) ? value[0] : value;
+}
+
 export function PapersPage({ questions }: { questions: QuestionSummary[] }) {
   const router = useRouter();
-  const value = Array.isArray(router.query.subject)
-    ? router.query.subject[0]
-    : router.query.subject;
-  const subjectId: SubjectId = router.isReady && isSubjectId(value) ? value : 'law';
+  const querySubject = valueOf(router.query.subject);
+  const subjectId: SubjectId = isSubjectId(querySubject) ? querySubject : 'law';
+  const availableYears = years.filter((year) =>
+    questions.some((question) => question.subject === subjectId && question.year === year),
+  );
+  const queryYear = parseYear(router.query.year);
+  const year = queryYear && availableYears.includes(queryYear)
+    ? queryYear
+    : availableYears[0] ?? years[0];
+  const subject = subjects.find((item) => item.id === subjectId) ?? subjects[0];
+  const paperQuestions = questions
+    .filter((question) => question.subject === subjectId && question.year === year)
+    .sort((left, right) => left.questionNumber - right.questionNumber);
 
-  function changeSubject(value: SubjectId) {
+  function updateSelection(nextSubject: SubjectId, nextYear: number) {
     void router.replace(
-      { pathname: '/papers', query: { subject: value } },
+      { pathname: '/papers', query: { subject: nextSubject, year: nextYear } },
       undefined,
       { shallow: true, scroll: false },
     );
   }
 
+  function changeSubject(nextSubject: SubjectId) {
+    const nextAvailableYears = years.filter((candidateYear) =>
+      questions.some(
+        (question) =>
+          question.subject === nextSubject && question.year === candidateYear,
+      ),
+    );
+    const nextYear = nextAvailableYears.includes(year)
+      ? year
+      : nextAvailableYears[0] ?? years[0];
+    updateSelection(nextSubject, nextYear);
+  }
+
+  function changeYear(nextYear: SelectorYear) {
+    if (typeof nextYear === 'number') updateSelection(subjectId, nextYear);
+  }
+
   return (
-    <>
-      <PageHeader
-        eyebrow="PAPERS / 102—114"
-        title="歷屆試題"
-        description="選擇科目與年度，直接開始作答。"
-      />
-      <section className={styles.paperPanel}>
-        <fieldset className={styles.subjectPicker}>
-          <legend>科目</legend>
-          <div className={styles.subjectGrid}>
-            {subjects.map((item, index) => (
-              <button
-                key={item.id}
-                type="button"
-                className={styles.subjectButton}
-                data-subject={item.id}
-                aria-pressed={item.id === subjectId}
-                onClick={() => changeSubject(item.id)}
-              >
-                <span className={styles.subjectNumber}>0{index + 1}</span>
-                <span className={styles.subjectButtonIcon} aria-hidden="true">
-                  <SubjectIcon subject={item.id} size={27} stroke={1.8} />
-                </span>
-                <strong>{item.name}</strong>
-              </button>
-            ))}
-          </div>
-        </fieldset>
-        <div className={styles.yearList}>
-          {years.map((year) => {
-            const paperQuestions = questions.filter(
-              (question) => question.subject === subjectId && question.year === year,
-            );
-            const count = paperQuestions.length;
-            return (
-              <article className={styles.yearRow} key={year}>
-                <div>
-                  <strong>{year} 年</strong>
-                  <span>{count ? `目前收錄 ${count} 題` : '題庫資料待補'}</span>
-                </div>
-                {paperQuestions[0] ? (
-                  <Button
-                    variant="primary"
-                    render={<Link href={paperQuestions[0].path} />}
-                  >
-                    開始作答 <IconArrowRight size={17} stroke={2} aria-hidden="true" />
-                  </Button>
-                ) : (
-                  <Button variant="primary" disabled>
-                    尚未收錄
-                  </Button>
-                )}
-              </article>
-            );
-          })}
-        </div>
-      </section>
-    </>
+    <QuestionSelector
+      heading="選擇科目與年度"
+      description="選好後即可開始作答。"
+      subjectId={subjectId}
+      year={year}
+      yearOptions={years.map((candidateYear) => ({
+        value: candidateYear,
+        disabled: !availableYears.includes(candidateYear),
+      }))}
+      onSubjectChange={changeSubject}
+      onYearChange={changeYear}
+      ariaLabel="試卷選擇"
+      summary={
+        <>
+          已選 <strong>{subject.name} · {year} 年</strong>
+        </>
+      }
+      action={
+        paperQuestions[0] ? (
+          <Link className={styles.startButton} href={paperQuestions[0].path}>
+            開始作答
+            <IconArrowRight size={16} stroke={2} aria-hidden="true" />
+          </Link>
+        ) : (
+          <span className={styles.disabledAction} aria-disabled="true">
+            尚未收錄
+          </span>
+        )
+      }
+    />
   );
 }

@@ -1,26 +1,12 @@
-.filters {
-  margin-bottom: 20px;
-  padding: 20px;
-  display: grid;
-  grid-template-columns: minmax(220px, 320px) minmax(190px, 260px) 1fr;
-  align-items: end;
-  gap: 14px;
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  background: var(--surface);
+.scopeCount {
+  color: #6b7480;
+  font-size: 13px;
 }
 
-.total {
-  min-height: 64px;
-  padding-left: 18px;
-  display: grid;
-  align-content: center;
-  gap: 3px;
-  border-left: 1px solid var(--line);
+.scopeCount strong {
+  color: #1f2733;
+  font-size: 15px;
 }
-
-.total span,
-.total small { color: var(--muted); font-size: 11px; }
 
 .chartGrid {
   display: grid;
@@ -120,8 +106,6 @@
 }
 
 @media (max-width: 760px) {
-  .filters { grid-template-columns: 1fr; }
-  .total { padding: 14px 0 0; border-left: 0; border-top: 1px solid var(--line); }
   .pieLayout { grid-template-columns: 1fr; justify-items: center; }
   .legend { width: 100%; }
 }

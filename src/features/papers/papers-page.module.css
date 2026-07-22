@@ -1,201 +1,35 @@
-.paperPanel {
-  border: 1px solid var(--line);
-  border-radius: 20px;
-  overflow: hidden;
-  background: var(--surface);
-  box-shadow: var(--shadow-sm);
-}
-
-.subjectPicker {
-  min-width: 0;
-  margin: 0;
-  padding: 22px;
-  border: 0;
-  border-bottom: 1px solid var(--line);
-  background: var(--surface-2);
-}
-
-.subjectPicker legend {
-  width: 100%;
-  margin-bottom: 14px;
-  padding: 0;
-  color: var(--muted);
-  font-size: 13px;
-  font-weight: 800;
-}
-
-.subjectGrid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
-}
-
-.subjectButton {
-  min-width: 0;
-  min-height: 132px;
-  padding: 16px;
-  position: relative;
-  display: grid;
-  grid-template-columns: 48px minmax(0, 1fr);
-  grid-template-rows: auto 1fr;
+.startButton,
+.disabledAction {
+  min-height: 42px;
+  padding: 0 20px;
+  display: inline-flex;
   align-items: center;
-  gap: 14px 12px;
-  border: 1px solid var(--line);
-  border-radius: 17px;
-  background: var(--surface);
-  color: var(--text);
-  text-align: left;
-  cursor: pointer;
-  box-shadow: var(--shadow-sm);
-  transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
 }
 
-.subjectButton:hover {
-  transform: translateY(-3px);
-  border-color: color-mix(in srgb, var(--primary) 45%, var(--line));
-  box-shadow: var(--shadow-md);
+.startButton {
+  border: 0;
+  background: #2563eb;
+  color: #fff;
+  text-decoration: none;
+  transition: background 150ms ease;
 }
 
-.subjectButton:focus-visible {
-  outline: 3px solid var(--focus);
+.startButton:hover {
+  background: #1d4ed8;
+}
+
+.startButton:focus-visible {
+  outline: 3px solid rgb(37 99 235 / 28%);
   outline-offset: 2px;
 }
 
-.subjectButton[aria-pressed='true'] {
-  border-color: var(--primary);
-  box-shadow: inset 0 0 0 1px var(--primary), var(--shadow-sm);
-}
-
-.subjectButton[aria-pressed='true']::after {
-  content: '';
-  width: 8px;
-  height: 8px;
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  border-radius: 50%;
-  background: var(--primary);
-}
-
-.subjectNumber {
-  grid-column: 1 / -1;
-  color: var(--line-strong);
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 11px;
-  font-weight: 800;
-}
-
-.subjectButtonIcon {
-  width: 48px;
-  height: 48px;
-  display: grid;
-  place-items: center;
-  border-radius: 14px;
-  background: linear-gradient(145deg, var(--primary), var(--primary-bright));
-  color: white;
-  box-shadow: 0 9px 20px color-mix(in srgb, var(--primary) 22%, transparent);
-}
-
-.subjectButton[data-subject='env'] .subjectButtonIcon {
-  background: linear-gradient(145deg, #008c7b, #48b9a7);
-}
-
-.subjectButton[data-subject='construction'] .subjectButtonIcon {
-  background: linear-gradient(145deg, #a65f09, #e5a13d);
-}
-
-.subjectButton[data-subject='structure'] .subjectButtonIcon {
-  background: linear-gradient(145deg, #7548b8, #a982e1);
-}
-
-.subjectButton strong {
-  min-width: 0;
-  font-size: 15px;
-  line-height: 1.45;
-}
-
-.yearList {
-  display: grid;
-}
-
-.yearRow {
-  min-height: 76px;
-  padding: 14px 20px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 18px;
-  border-bottom: 1px solid var(--line);
-}
-
-.yearRow:last-child {
-  border-bottom: 0;
-}
-
-.yearRow:hover {
-  background: var(--surface-2);
-}
-
-.yearRow > div {
-  display: grid;
-  gap: 5px;
-}
-
-.yearRow strong {
-  font-size: 16px;
-}
-
-.yearRow span {
-  color: var(--muted);
-  font-size: 11px;
-}
-
-@media (max-width: 1050px) {
-  .subjectGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 560px) {
-  .subjectPicker {
-    padding: 18px;
-  }
-
-  .subjectGrid {
-    grid-template-columns: 1fr;
-  }
-
-  .subjectButton {
-    min-height: 92px;
-    grid-template-columns: 44px minmax(0, 1fr);
-    grid-template-rows: auto;
-  }
-
-  .subjectNumber {
-    position: absolute;
-    top: 12px;
-    right: 14px;
-  }
-
-  .subjectButtonIcon {
-    width: 44px;
-    height: 44px;
-    border-radius: 13px;
-  }
-
-  .subjectButton[aria-pressed='true']::after {
-    top: auto;
-    right: 17px;
-    bottom: 14px;
-  }
-
-  .yearRow {
-    align-items: flex-start;
-  }
-
-  .yearRow button,
-  .yearRow a {
-    min-height: 40px;
-    padding-inline: 12px;
-  }
+.disabledAction {
+  border: 1px solid #e6e9ee;
+  background: #fff;
+  color: #b8bec8;
 }

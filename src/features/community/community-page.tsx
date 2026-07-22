@@ -11,13 +11,17 @@ import {
 import {
   DifficultButton,
   EmptyState,
-  PageHeader,
   QuestionPrompt,
   QuestionSourceLine,
   Tag,
 } from '@/components/content/content';
+import {
+  QuestionNumberPicker,
+  QuestionSelector,
+  type SelectorYear,
+} from '@/components/question-selector';
 import { Button, SimpleSelect, useToast } from '@/components/ui/ui';
-import { getSubject, subjects } from '@/question-bank/catalog';
+import { getSubject, years } from '@/question-bank/catalog';
 import type { DiscussionPostType, Question, SubjectId } from '@/lib/types';
 import { questionPath } from '@/lib/question-path';
 import { getAcceptedAnswerIndexes } from '@/lib/study';
@@ -90,13 +94,19 @@ export function CommunityPage({ questions }: { questions: Question[] }) {
   }
 
   function selectSubject(subjectId: SubjectId) {
-    const first = questions.find((question) => question.subject === subjectId);
+    const first = questions
+      .filter((question) => question.subject === subjectId)
+      .sort(
+        (left, right) =>
+          right.year - left.year || left.questionNumber - right.questionNumber,
+      )[0];
     if (first) navigateTo(first.id);
   }
 
-  function selectYear(year: string) {
+  function selectYear(year: SelectorYear) {
+    if (typeof year !== 'number') return;
     const first = questions.find(
-      (question) => question.subject === currentQuestion.subject && question.year === Number(year),
+      (question) => question.subject === currentQuestion.subject && question.year === year,
     );
     if (first) navigateTo(first.id);
   }
@@ -141,31 +151,32 @@ export function CommunityPage({ questions }: { questions: Question[] }) {
 
   return (
     <>
-      <PageHeader
-        eyebrow="QUESTION REVIEW"
-        title="詳解與匿名討論"
-        description="先選科目、年份與題號，再查看完整題目與本裝置上的匿名內容。"
+      <QuestionSelector
+        heading="選擇科目、年度與題號"
+        description="選好題號後，詳解與本裝置上的匿名內容會顯示於下方。"
+        subjectId={currentQuestion.subject}
+        year={currentQuestion.year}
+        yearOptions={years.map((year) => ({
+          value: year,
+          disabled: !availableYears.includes(year),
+        }))}
+        onSubjectChange={selectSubject}
+        onYearChange={selectYear}
+        ariaLabel="題目選擇"
+        questionPicker={
+          <QuestionNumberPicker
+            questions={paperQuestions}
+            value={currentQuestion.id}
+            onValueChange={navigateTo}
+          />
+        }
+        summary={
+          <>
+            已選 <strong>{subject?.name} · {currentQuestion.year} 年 · 第 {currentQuestion.questionNumber} 題</strong>
+          </>
+        }
+        action={<span className={styles.selectorHint}>詳解顯示於下方</span>}
       />
-      <section className={styles.selectorCard} aria-label="題目選擇">
-        <SimpleSelect
-          label="科目"
-          value={currentQuestion.subject}
-          options={subjects.map((item) => ({ value: item.id, label: item.name }))}
-          onValueChange={selectSubject}
-        />
-        <SimpleSelect
-          label="年份"
-          value={String(currentQuestion.year)}
-          options={availableYears.map((year) => ({ value: String(year), label: `${year} 年` }))}
-          onValueChange={selectYear}
-        />
-        <SimpleSelect
-          label="題號"
-          value={currentQuestion.id}
-          options={paperQuestions.map((question) => ({ value: question.id, label: `第 ${question.questionNumber} 題` }))}
-          onValueChange={navigateTo}
-        />
-      </section>
 
       <section className={styles.questionCard}>
         <header>

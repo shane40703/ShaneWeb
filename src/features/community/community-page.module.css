@@ -1,12 +1,6 @@
-.selectorCard {
-  margin-bottom: 20px;
-  padding: 20px;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  background: var(--surface);
+.selectorHint {
+  color: #98a1ad;
+  font-size: 12px;
 }
 
 .questionCard,
@@ -76,7 +70,6 @@
 }
 
 @media (max-width: 680px) {
-  .selectorCard { grid-template-columns: 1fr; }
   .questionCard > header { align-items: flex-start; flex-direction: column; }
   .options { grid-template-columns: 1fr; }
   .questionNavigation { flex-wrap: wrap; }

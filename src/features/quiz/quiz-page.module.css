@@ -67,49 +67,6 @@
 
 .questionNumbers {
   padding: 16px;
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 8px;
-}
-
-.questionNumbers a {
-  aspect-ratio: 1;
-  padding: 0;
-  display: grid;
-  place-items: center;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  background: var(--surface-2);
-  color: var(--text-soft);
-  font: inherit;
-  font-size: 12px;
-  font-weight: 800;
-  text-decoration: none;
-  cursor: pointer;
-  transition: border-color 150ms ease, background 150ms ease, color 150ms ease;
-}
-
-.questionNumbers a:hover {
-  border-color: var(--primary);
-  color: var(--primary-strong);
-}
-
-.questionNumbers a[data-answered='true'] {
-  border-color: color-mix(in srgb, var(--success) 35%, var(--line));
-  background: var(--success-soft);
-  color: var(--success);
-}
-
-.questionNumbers a[aria-current='step'] {
-  border-color: var(--primary);
-  background: var(--primary);
-  color: white;
-  box-shadow: 0 7px 15px color-mix(in srgb, var(--primary) 22%, transparent);
-}
-
-.questionNumbers a:focus-visible {
-  outline: 3px solid color-mix(in srgb, var(--primary) 28%, transparent);
-  outline-offset: 2px;
 }
 
 .navigatorLegend {
@@ -367,10 +324,6 @@
   .questionNavigator {
     position: static;
     grid-row: 1;
-  }
-
-  .questionNumbers {
-    grid-template-columns: repeat(auto-fill, 42px);
   }
 
   .card {

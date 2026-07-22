@@ -3,13 +3,17 @@ import { useState } from 'react';
 import { IconLoader2, IconNotebook } from '@tabler/icons-react';
 import {
   EmptyState,
-  PageHeader,
   QuestionPrompt,
   QuestionSourceLine,
   Tag,
 } from '@/components/content/content';
-import { Button, SimpleSelect, useToast } from '@/components/ui/ui';
-import { getSubject, subjects } from '@/question-bank/catalog';
+import {
+  QuestionNumberPicker,
+  QuestionSelector,
+  type SelectorYear,
+} from '@/components/question-selector';
+import { Button, useToast } from '@/components/ui/ui';
+import { getSubject, years } from '@/question-bank/catalog';
 import type { Question, SubjectId } from '@/lib/types';
 import { useAppState } from '@/state/app-state';
 import styles from './notes-page.module.css';
@@ -29,29 +33,20 @@ export function NotesPage({ questions }: { questions: Question[] }) {
     return <EmptyState icon={IconNotebook} title="題庫尚無資料" description="加入題目後即可建立筆記。" />;
   }
 
-  const subjectQuestions = questions.filter((question) => question.subject === currentQuestion.subject);
-  const availableYears = [...new Set(subjectQuestions.map((question) => question.year))].sort((a, b) => b - a);
-  const paperQuestions = questions.filter(
-    (question) => question.subject === currentQuestion.subject && question.year === currentQuestion.year,
+  const subjectQuestions = questions.filter(
+    (question) => question.subject === currentQuestion.subject,
   );
+  const availableYears = [...new Set(subjectQuestions.map((question) => question.year))].sort((a, b) => b - a);
+  const paperQuestions = questions
+    .filter(
+      (question) =>
+        question.subject === currentQuestion.subject &&
+        question.year === currentQuestion.year,
+    )
+    .sort((left, right) => left.questionNumber - right.questionNumber);
   const noteEntries = Object.entries(state.notes)
     .map(([id, content]) => ({ question: questions.find((question) => question.id === id), content }))
     .filter((entry): entry is { question: Question; content: string } => Boolean(entry.question));
-
-  if (!hydrated) {
-    return (
-      <>
-        <PageHeader
-          eyebrow="PERSONAL NOTES"
-          title="使用者筆記"
-          description="筆記會自動跟題目對應，並只保存在目前瀏覽器。"
-        />
-        <section className={styles.loadingPanel}>
-          <EmptyState icon={IconLoader2} title="正在讀取筆記" description="請稍候。" />
-        </section>
-      </>
-    );
-  }
 
   function navigateTo(questionId: string) {
     void router.replace({ pathname: '/notes', query: { question: questionId } }, undefined, {
@@ -61,44 +56,67 @@ export function NotesPage({ questions }: { questions: Question[] }) {
   }
 
   function selectSubject(subjectId: SubjectId) {
-    const first = questions.find((question) => question.subject === subjectId);
+    const first = questions
+      .filter((question) => question.subject === subjectId)
+      .sort(
+        (left, right) =>
+          right.year - left.year || left.questionNumber - right.questionNumber,
+      )[0];
     if (first) navigateTo(first.id);
   }
 
-  function selectYear(value: string) {
+  function selectYear(value: SelectorYear) {
+    if (typeof value !== 'number') return;
     const first = questions.find(
-      (question) => question.subject === currentQuestion.subject && question.year === Number(value),
+      (question) =>
+        question.subject === currentQuestion.subject && question.year === value,
     );
     if (first) navigateTo(first.id);
   }
 
-  return (
-    <>
-      <PageHeader
-        eyebrow="PERSONAL NOTES"
-        title="使用者筆記"
-        description="筆記會自動跟題目對應，並只保存在目前瀏覽器。"
-      />
-      <section className={styles.selectors}>
-        <SimpleSelect
-          label="科目"
-          value={currentQuestion.subject}
-          options={subjects.map((subject) => ({ value: subject.id, label: subject.name }))}
-          onValueChange={selectSubject}
-        />
-        <SimpleSelect
-          label="年份"
-          value={String(currentQuestion.year)}
-          options={availableYears.map((year) => ({ value: String(year), label: `${year} 年` }))}
-          onValueChange={selectYear}
-        />
-        <SimpleSelect
-          label="題號"
+  const questionSelector = (
+    <QuestionSelector
+      heading="選擇筆記題目"
+      description="筆記會自動跟題目對應，並只保存在目前瀏覽器。"
+      subjectId={currentQuestion.subject}
+      year={currentQuestion.year}
+      yearOptions={years.map((year) => ({
+        value: year,
+        disabled: !availableYears.includes(year),
+      }))}
+      onSubjectChange={selectSubject}
+      onYearChange={selectYear}
+      ariaLabel="筆記題目選擇"
+      questionPicker={
+        <QuestionNumberPicker
+          questions={paperQuestions}
           value={currentQuestion.id}
-          options={paperQuestions.map((question) => ({ value: question.id, label: `第 ${question.questionNumber} 題` }))}
           onValueChange={navigateTo}
         />
-      </section>
+      }
+      summary={
+        <>
+          已選 <strong>{getSubject(currentQuestion.subject)?.name} · {currentQuestion.year} 年 · 第 {currentQuestion.questionNumber} 題</strong>
+        </>
+      }
+      action={<span className={styles.selectorHint}>筆記對應目前題目</span>}
+    />
+  );
+
+  if (!hydrated) {
+    return (
+      <>
+        {questionSelector}
+        <section className={styles.loadingPanel}>
+          <EmptyState icon={IconLoader2} title="正在讀取筆記" description="請稍候。" />
+        </section>
+      </>
+    );
+  }
+
+  return (
+    <>
+      {questionSelector}
       <div className={styles.layout}>
         <NoteEditor key={currentQuestion.id} question={currentQuestion} initialValue={state.notes[currentQuestion.id] ?? ''} />
         <aside className={styles.savedNotes}>

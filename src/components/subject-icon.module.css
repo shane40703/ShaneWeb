@@ -1,0 +1,40 @@
+.badge {
+  --subject-color: #2563eb;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--subject-color) 12%, #fff);
+  color: var(--subject-color);
+}
+
+.badge[data-subject='env'] {
+  --subject-color: #008c7b;
+}
+
+.badge[data-subject='construction'] {
+  --subject-color: #a65f09;
+}
+
+.badge[data-subject='structure'] {
+  --subject-color: #7548b8;
+}
+
+.badge[data-size='compact'] {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+}
+
+.badge[data-size='large'] {
+  width: 76px;
+  height: 76px;
+  border-radius: 22px;
+}
+
+@media (max-width: 560px) {
+  .badge[data-size='large'] {
+    width: 58px;
+    height: 58px;
+    border-radius: 17px;
+  }
+}

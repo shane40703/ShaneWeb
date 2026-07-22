@@ -6,6 +6,13 @@ test('paper flow, timer, difficult marker, and in-progress answers persist', asy
   await page.goto('/');
   await expect(page.getByRole('heading', { name: '選擇練習科目' })).toBeVisible();
   await expect(page.locator('main h2')).toHaveCount(4);
+  const homeSubjectIcons = page.locator('[data-size="large"]');
+  await expect(homeSubjectIcons).toHaveCount(4);
+  expect(
+    await homeSubjectIcons.evaluateAll((elements) =>
+      elements.map((element) => getComputedStyle(element).backgroundImage),
+    ),
+  ).toEqual(['none', 'none', 'none', 'none']);
   await page.getByRole('link', { name: /建築法規與實務/ }).click();
   await expect(page).toHaveURL(/\/papers\?subject=law/);
   const subjectPicker = page.getByRole('group', { name: '科目' });
@@ -19,11 +26,17 @@ test('paper flow, timer, difficult marker, and in-progress answers persist', asy
   );
   await subjectPicker.getByRole('button', { name: /建築法規與實務/ }).click();
   await expect(page).toHaveURL(/\/papers\?subject=law/);
-  await expect(page.locator('article')).toHaveCount(13);
+  const yearPicker = page.getByRole('group', { name: '年度' });
+  await expect(yearPicker.getByRole('button')).toHaveCount(13);
+  await expect(yearPicker.getByRole('button', { name: '114 年' })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+  await expect(yearPicker.getByRole('button', { name: '114', exact: true })).toHaveCount(0);
   await expect(page.locator('main')).not.toContainText('民國');
   await expect(page.locator('main')).not.toContainText('住宅居室採光有效面積');
 
-  await page.getByRole('button', { name: /開始作答/ }).first().click();
+  await page.getByRole('link', { name: /開始作答/ }).click();
   await expect(page).toHaveURL(/\/questions\/law\/114\/01/);
   await expect(page.getByText('作答時間')).toBeVisible();
   await expect(page.getByText(/00:00:0\d/)).toBeVisible();
@@ -54,6 +67,13 @@ test('static question paths preserve state and submit a paper result to history'
   const navigator = page.getByRole('complementary', { name: '題號導覽' });
   await expect(navigator).toBeVisible();
   await expect(navigator.getByRole('link')).toHaveCount(2);
+  await expect
+    .poll(() =>
+      navigator
+        .getByRole('link', { name: '前往第 1 題' })
+        .evaluate((element) => getComputedStyle(element).width),
+    )
+    .toBe('38px');
   await expect(navigator.getByRole('link', { name: '前往第 1 題' })).toHaveAttribute('aria-current', 'step');
 
   await page.getByText('(3)＞(2)＞(1)', { exact: true }).click();
@@ -141,15 +161,17 @@ test('analysis only shows exam-content distribution', async ({ page }, testInfo)
   test.skip(testInfo.project.name !== 'desktop');
 
   await page.goto('/analysis?subject=law&year=all');
-  await expect(page.getByRole('heading', { name: '考題分析' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '選擇分析範圍' })).toBeVisible();
   await expect(page.getByText('總題數 84 題')).toBeVisible();
   await expect(page.getByRole('table')).toBeVisible();
   await expect(page.getByText('主要分類占比')).toBeVisible();
   await expect(page.locator('main')).not.toContainText('個人答對率');
   await expect(page.locator('main')).not.toContainText('弱點分析');
 
-  await page.getByRole('combobox', { name: '科目' }).click();
-  await page.getByRole('option', { name: '建築環境控制' }).click();
+  await page
+    .getByRole('group', { name: '科目' })
+    .getByRole('button', { name: /建築環境控制/ })
+    .click();
   await expect(page).toHaveURL(/subject=env/);
 });
 
@@ -157,9 +179,9 @@ test('community selectors and local anonymous interactions work', async ({ page 
   test.skip(testInfo.project.name !== 'desktop');
 
   await page.goto('/community?question=law-114-01');
-  await expect(page.getByRole('combobox', { name: '科目' })).toBeVisible();
-  await expect(page.getByRole('combobox', { name: '年份' })).toBeVisible();
-  await expect(page.getByRole('combobox', { name: '題號' })).toBeVisible();
+  await expect(page.getByRole('group', { name: '科目' })).toBeVisible();
+  await expect(page.getByRole('group', { name: '年度' })).toBeVisible();
+  await expect(page.getByRole('group', { name: '題號' })).toBeVisible();
   await expect(page.getByText('正確答案')).toBeVisible();
 
   await page.getByRole('button', { name: '下一題' }).click();
@@ -187,6 +209,47 @@ test('notes save and reload from local storage', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop');
 
   await page.goto('/notes?question=law-114-01');
+  await expect(page.getByRole('group', { name: '科目' })).toBeVisible();
+  await expect(
+    page.getByRole('group', { name: '年度' }).getByRole('button', { name: '114 年' }),
+  ).toHaveAttribute('aria-pressed', 'true');
+  await expect(
+    page.getByRole('group', { name: '題號' }).getByRole('button', { name: '第 1 題' }),
+  ).toHaveAttribute('aria-pressed', 'true');
+  await expect
+    .poll(() =>
+      page
+        .getByRole('group', { name: '題號' })
+        .getByRole('button', { name: '第 1 題' })
+        .evaluate((element) => getComputedStyle(element).width),
+    )
+    .toBe('38px');
+  const [subjectBounds, yearBounds, questionBounds] = await Promise.all([
+    page
+      .getByRole('group', { name: '科目' })
+      .getByRole('button')
+      .evaluateAll((elements) => ({
+        top: Math.min(...elements.map((element) => element.getBoundingClientRect().top)),
+        bottom: Math.max(...elements.map((element) => element.getBoundingClientRect().bottom)),
+      })),
+    page
+      .getByRole('group', { name: '年度' })
+      .getByRole('button')
+      .evaluateAll((elements) => ({
+        top: Math.min(...elements.map((element) => element.getBoundingClientRect().top)),
+        bottom: Math.max(...elements.map((element) => element.getBoundingClientRect().bottom)),
+      })),
+    page
+      .getByRole('group', { name: '題號' })
+      .getByRole('button')
+      .evaluateAll((elements) => ({
+        top: Math.min(...elements.map((element) => element.getBoundingClientRect().top)),
+        bottom: Math.max(...elements.map((element) => element.getBoundingClientRect().bottom)),
+      })),
+  ]);
+  const subjectToYear = yearBounds.top - subjectBounds.bottom;
+  const yearToQuestion = questionBounds.top - yearBounds.bottom;
+  expect(Math.abs(subjectToYear - yearToQuestion)).toBeLessThanOrEqual(1);
   await page.getByLabel('我的筆記').fill('法定空地分割辦法由中央主管建築機關定之。');
   await page.getByRole('button', { name: '儲存筆記' }).click();
   await page.reload();
@@ -234,7 +297,7 @@ test('mobile drawer no longer contains random quiz and navigates to papers', asy
   await expect(page.getByRole('link', { name: '隨機出題' })).toHaveCount(0);
   await page.getByRole('link', { name: '歷屆試題' }).click();
   await expect(page).toHaveURL(/\/papers$/);
-  await expect(page.getByRole('heading', { name: '歷屆試題' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '選擇科目與年度' })).toBeVisible();
   const hasHorizontalOverflow = await page.evaluate(
     () => document.documentElement.scrollWidth > window.innerWidth,
   );

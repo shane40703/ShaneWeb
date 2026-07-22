@@ -15,6 +15,10 @@ import {
   QuestionSourceLine,
   Tag,
 } from '@/components/content/content';
+import {
+  QuestionNumberButton,
+  QuestionNumberGrid,
+} from '@/components/question-number-button';
 import { Button, OptionGroup, ProgressBar } from '@/components/ui/ui';
 import { getSubject } from '@/question-bank/catalog';
 import {
@@ -317,19 +321,19 @@ export function QuizPage({
             <strong>{position + 1}/{paperQuestions.length}</strong>
           </header>
           <div className={styles.questionNumbers}>
-            {paperQuestions.map((item, index) => (
-              <Link
-                key={item.id}
-                href={item.path}
-                aria-current={index === position ? 'step' : undefined}
-                aria-label={`前往第 ${item.questionNumber} 題`}
-                data-answered={Boolean(
-                  progressByQuestion[item.id]?.submitted,
-                )}
-              >
-                {item.questionNumber}
-              </Link>
-            ))}
+            <QuestionNumberGrid>
+              {paperQuestions.map((item, index) => (
+                <QuestionNumberButton
+                  key={item.id}
+                  href={item.path}
+                  ariaLabel={`前往第 ${item.questionNumber} 題`}
+                  active={index === position}
+                  answered={Boolean(progressByQuestion[item.id]?.submitted)}
+                >
+                  {item.questionNumber}
+                </QuestionNumberButton>
+              ))}
+            </QuestionNumberGrid>
           </div>
           <footer className={styles.navigatorLegend}>
             <span><i data-tone="current" />目前題目</span>

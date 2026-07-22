@@ -1,19 +1,17 @@
 import type { CSSProperties } from 'react';
 import { useRouter } from 'next/router';
 import { IconChartPie } from '@tabler/icons-react';
-import { EmptyState, PageHeader } from '@/components/content/content';
-import { SimpleSelect } from '@/components/ui/ui';
+import { EmptyState } from '@/components/content/content';
+import {
+  QuestionSelector,
+  type SelectorYear,
+} from '@/components/question-selector';
 import { subjects, years } from '@/question-bank/catalog';
 import { getAnalysis, isSubjectId, parseYear } from '@/lib/study';
 import type { QuestionSummary, SubjectId } from '@/lib/types';
 import styles from './analysis-page.module.css';
 
 const colors = ['#2563eb', '#0d9488', '#d97706', '#7c3aed', '#dc4c64', '#64748b'];
-const subjectOptions = subjects.map((subject) => ({ value: subject.id, label: subject.name }));
-const yearOptions = [
-  { value: 'all', label: '跨年度比較' },
-  ...years.map((year) => ({ value: String(year), label: `${year} 年` })),
-];
 
 function valueOf(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;
@@ -27,6 +25,11 @@ export function AnalysisPage({ questions }: { questions: QuestionSummary[] }) {
   const parsedYear = parseYear(queryYear);
   const year: number | 'all' = queryYear === 'all' ? 'all' : parsedYear ?? 114;
   const subject = subjects.find((candidate) => candidate.id === subjectId) ?? subjects[0];
+  const availableYears = years.filter((candidateYear) =>
+    questions.some(
+      (question) => question.subject === subjectId && question.year === candidateYear,
+    ),
+  );
   const source = questions.filter(
     (question) =>
       question.subject === subjectId && (year === 'all' || question.year === year),
@@ -47,6 +50,27 @@ export function AnalysisPage({ questions }: { questions: QuestionSummary[] }) {
     );
   }
 
+  function changeSubject(nextSubject: SubjectId) {
+    if (year === 'all') {
+      updateQuery({ subject: nextSubject });
+      return;
+    }
+    const nextAvailableYears = years.filter((candidateYear) =>
+      questions.some(
+        (question) =>
+          question.subject === nextSubject && question.year === candidateYear,
+      ),
+    );
+    updateQuery({
+      subject: nextSubject,
+      year: nextAvailableYears.includes(year) ? year : nextAvailableYears[0] ?? years[0],
+    });
+  }
+
+  function changeYear(nextYear: SelectorYear) {
+    updateQuery({ year: nextYear });
+  }
+
   const cursor = analysis.reduce(
     (result, item, index) => {
       const start = result.total;
@@ -60,30 +84,28 @@ export function AnalysisPage({ questions }: { questions: QuestionSummary[] }) {
 
   return (
     <>
-      <PageHeader
-        eyebrow="EXAM CONTENT ANALYSIS"
-        title="考題分析"
+      <QuestionSelector
+        heading="選擇分析範圍"
         description="依題庫的主要分類統計命題分布；每題只計入一個主要分類。"
+        subjectId={subjectId}
+        year={year}
+        yearOptions={[
+          { value: 'all', label: '跨年度' },
+          ...years.map((candidateYear) => ({
+            value: candidateYear,
+            disabled: !availableYears.includes(candidateYear),
+          })),
+        ]}
+        onSubjectChange={changeSubject}
+        onYearChange={changeYear}
+        ariaLabel="分析條件"
+        summary={
+          <>
+            已選 <strong>{subject.name} · {year === 'all' ? '跨年度' : `${year} 年`}</strong>
+          </>
+        }
+        action={<span className={styles.scopeCount}>總題數 <strong>{source.length}</strong> 題</span>}
       />
-      <section className={styles.filters} aria-label="分析條件">
-        <SimpleSelect
-          label="科目"
-          value={subjectId}
-          options={subjectOptions}
-          onValueChange={(value) => updateQuery({ subject: value })}
-        />
-        <SimpleSelect
-          label="年份"
-          value={String(year)}
-          options={yearOptions}
-          onValueChange={(value) => updateQuery({ year: value === 'all' ? 'all' : Number(value) })}
-        />
-        <div className={styles.total}>
-          <span>分析範圍</span>
-          <strong>{year === 'all' ? '跨年度' : `${year} 年`}・{subject.name}</strong>
-          <small>總題數 {source.length} 題</small>
-        </div>
-      </section>
 
       {analysis.length ? (
         <>
