@@ -330,6 +330,35 @@
   gap: 12px;
 }
 
+.reviewList a {
+  padding: 16px 18px;
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface-2);
+  color: var(--text);
+  text-decoration: none;
+  transition: border-color 150ms ease, color 150ms ease;
+}
+
+.reviewList a:hover {
+  border-color: var(--primary);
+  color: var(--primary-strong);
+}
+
+.reviewList a span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.reviewList a strong {
+  font-size: 13px;
+}
+
 @media (max-width: 1120px) {
   .quizLayout {
     grid-template-columns: 1fr;

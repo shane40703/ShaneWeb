@@ -25,6 +25,7 @@ describe('quizProgressReducer', () => {
       type: 'submit-question',
       questionId: 'construction-114-01',
       startedAt: '2026-07-23T00:00:01.000Z',
+      correct: true,
     });
     state = quizProgressReducer(state, {
       type: 'visit-question',
@@ -35,6 +36,7 @@ describe('quizProgressReducer', () => {
     expect(state['construction-114-01']).toEqual({
       selected: 1,
       submitted: true,
+      correct: true,
       elapsedSeconds: 1,
       startedAt: '2026-07-23T00:00:00.000Z',
     });
@@ -77,6 +79,7 @@ describe('quizProgressReducer', () => {
       type: 'submit-question',
       questionId: 'question-1',
       startedAt: '2026-07-23T00:00:01.000Z',
+      correct: false,
     });
     const submitted = state;
     state = quizProgressReducer(state, {

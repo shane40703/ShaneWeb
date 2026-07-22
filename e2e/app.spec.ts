@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-test('paper flow, timer, difficult marker, result, and history persist', async ({ page }, testInfo) => {
+test('paper flow, timer, difficult marker, and in-progress answers persist', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop');
 
   await page.goto('/');
@@ -44,11 +44,10 @@ test('paper flow, timer, difficult marker, result, and history persist', async (
   await expect(page.getByRole('button', { name: '取消難題標記' })).toBeVisible();
 
   await page.goto('/history');
-  await expect(page.getByText('0%', { exact: true })).toBeVisible();
-  await expect(page.getByText(/^答錯/)).toBeVisible();
+  await expect(page.getByRole('heading', { name: '還沒有作答紀錄' })).toBeVisible();
 });
 
-test('static question paths navigate between questions and keep answer state', async ({ page }, testInfo) => {
+test('static question paths preserve state and submit a paper result to history', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop');
 
   await page.goto('/questions/construction/114/01');
@@ -71,14 +70,27 @@ test('static question paths navigate between questions and keep answer state', a
 
   await expect(navigator.getByRole('link', { name: '前往第 1 題' })).toHaveAttribute('data-answered', 'true');
 
-  await page.getByText('圖 A', { exact: true }).click();
+  await page.getByText('圖 D', { exact: true }).click();
   await navigator.getByRole('link', { name: '前往第 1 題' }).click();
   await expect(page.getByText('答對了', { exact: true })).toBeVisible();
   await expect(page.getByRole('radio', { checked: true })).toHaveCount(1);
 
   await navigator.getByRole('link', { name: '前往第 49 題' }).click();
-  await expect(page.getByText('圖 A', { exact: true }).locator('..').getByRole('radio')).toBeChecked();
+  await expect(page.getByText('圖 D', { exact: true }).locator('..').getByRole('radio')).toBeChecked();
   await expect(page.getByRole('button', { name: '送出答案' })).toBeEnabled();
+  await page.getByRole('button', { name: '送出答案' }).click();
+  await expect(page.getByText('答案不正確', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: '交卷' }).click();
+
+  await expect(page.getByRole('heading', { name: '本次作答結果' })).toBeVisible();
+  await expect(page.getByLabel('正確率 50%')).toBeVisible();
+  await expect(page.getByRole('heading', { name: '答錯題目' })).toBeVisible();
+  await expect(page.getByRole('link', { name: /第 49 題/ })).toBeVisible();
+
+  await page.getByRole('button', { name: '查看作答紀錄' }).click();
+  await expect(page.getByText('50%', { exact: true })).toBeVisible();
+  await expect(page.getByText(/^答對/)).toContainText('1');
+  await expect(page.getByText(/^答錯/)).toContainText('1');
 });
 
 test('question content is present in build-time static HTML', async ({ request }, testInfo) => {

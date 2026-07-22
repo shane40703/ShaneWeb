@@ -27,6 +27,23 @@ function resultsFor(entry: ReturnType<typeof attempt>) {
 }
 
 describe('appReducer', () => {
+  it('records an answer without adding an unfinished attempt', () => {
+    const state = appReducer(createDefaultState(), {
+      type: 'save-answer',
+      questionId: 'law-114-01',
+      selected: 1,
+      correct: false,
+      answeredAt: '2026-07-23T00:00:00.000Z',
+    });
+
+    expect(state.answers['law-114-01']).toEqual({
+      selected: 1,
+      correct: false,
+      answeredAt: '2026-07-23T00:00:00.000Z',
+    });
+    expect(state.attempts).toHaveLength(0);
+  });
+
   it('does not add the same attempt twice and records answer correctness', () => {
     const entry = attempt();
     const results = resultsFor(entry);

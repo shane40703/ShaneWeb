@@ -3,6 +3,13 @@ import type { AppStateV4, DiscussionPost, DiscussionReply, QuizAttempt } from '@
 export type AppAction =
   | { type: 'hydrate'; state: AppStateV4 }
   | { type: 'toggle-difficult'; questionId: string }
+  | {
+      type: 'save-answer';
+      questionId: string;
+      selected: number;
+      correct: boolean;
+      answeredAt: string;
+    }
   | { type: 'save-attempt'; attempt: QuizAttempt; results: Record<string, boolean> }
   | { type: 'save-note'; questionId: string; content: string }
   | { type: 'add-discussion-post'; post: DiscussionPost }
@@ -23,6 +30,18 @@ export function appReducer(state: AppStateV4, action: AppAction): AppStateV4 {
           : [...state.difficultQuestionIds, action.questionId],
       };
     }
+    case 'save-answer':
+      return {
+        ...state,
+        answers: {
+          ...state.answers,
+          [action.questionId]: {
+            selected: action.selected,
+            correct: action.correct,
+            answeredAt: action.answeredAt,
+          },
+        },
+      };
     case 'save-attempt': {
       if (state.attempts.some((attempt) => attempt.id === action.attempt.id)) return state;
       const answers = { ...state.answers };
