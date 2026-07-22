@@ -2,6 +2,14 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useEffect, useMemo, useState } from 'react';
 import {
+  IconArrowLeft,
+  IconArrowRight,
+  IconCircleCheck,
+  IconExternalLink,
+  IconFileUnknown,
+  IconLoader2,
+} from '@tabler/icons-react';
+import {
   DifficultButton,
   EmptyState,
   PageHeader,
@@ -39,7 +47,7 @@ export function QuizPage() {
   }, [router.isReady, router.query.mode, router.query.questions, router.query.subject, router.query.year]);
 
   if (!router.isReady || source === null) {
-    return <EmptyState symbol="…" title="正在載入試卷" description="請稍候。" />;
+    return <EmptyState icon={IconLoader2} title="正在載入試卷" description="請稍候。" />;
   }
 
   if (!source.length) {
@@ -49,7 +57,7 @@ export function QuizPage() {
         <PageHeader eyebrow="QUIZ" title="作答頁" />
         <section className={styles.card}>
           <EmptyState
-            symbol="□"
+            icon={IconFileUnknown}
             title={hasPaperQuery ? '這份試卷尚無題目資料' : '尚未選擇試卷'}
             description={
               hasPaperQuery
@@ -133,7 +141,7 @@ function QuizSession({ source, mode }: { source: readonly Question[]; mode: Quiz
               ))}
             </div>
           ) : (
-            <EmptyState symbol="✓" title="沒有答錯題目" description="這次作答沒有已作答但答錯的題目。" />
+            <EmptyState icon={IconCircleCheck} title="沒有答錯題目" description="這次作答沒有已作答但答錯的題目。" />
           )}
         </section>
       </>
@@ -178,17 +186,17 @@ function QuizSession({ source, mode }: { source: readonly Question[]; mode: Quiz
             variant="ghost"
             render={<Link href={`/community?question=${currentQuestion.id}`} />}
           >
-            前往詳解與討論 <span aria-hidden="true">↗</span>
+            前往詳解與討論 <IconExternalLink size={17} stroke={2} aria-hidden="true" />
           </Button>
         </div>
         <footer className={styles.navigation}>
           <Button onClick={() => setQuestionIndex((current) => Math.max(0, current - 1))} disabled={questionIndex === 0}>
-            ← 上一題
+            <IconArrowLeft size={17} stroke={2} aria-hidden="true" /> 上一題
           </Button>
           <span>已作答 {answeredCount} / {source.length}</span>
           {questionIndex < source.length - 1 ? (
             <Button variant="primary" onClick={() => setQuestionIndex((current) => Math.min(source.length - 1, current + 1))}>
-              下一題 →
+              下一題 <IconArrowRight size={17} stroke={2} aria-hidden="true" />
             </Button>
           ) : (
             <Button variant="primary" onClick={submitQuiz}>交卷</Button>

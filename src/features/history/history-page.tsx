@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { IconHistory, IconLoader2 } from '@tabler/icons-react';
 import { EmptyState, PageHeader, Tag } from '@/components/content/content';
 import { Button } from '@/components/ui/ui';
 import { getQuestion, getSubject } from '@/data/questions';
@@ -24,7 +25,7 @@ export function HistoryPage() {
       />
       <section className={styles.panel}>
         {!hydrated ? (
-          <EmptyState symbol="…" title="正在讀取紀錄" description="請稍候。" />
+          <EmptyState icon={IconLoader2} title="正在讀取紀錄" description="請稍候。" />
         ) : state.attempts.length ? (
           <div className={styles.list}>
             {state.attempts.map((attempt) => {
@@ -79,7 +80,7 @@ export function HistoryPage() {
             })}
           </div>
         ) : (
-          <EmptyState symbol="◷" title="還沒有作答紀錄" description="完成並交卷後，結果會保存在這裡。" action={<Button variant="primary" render={<Link href="/papers" />}>開始第一份試卷</Button>} />
+          <EmptyState icon={IconHistory} title="還沒有作答紀錄" description="完成並交卷後，結果會保存在這裡。" action={<Button variant="primary" render={<Link href="/papers" />}>開始第一份試卷</Button>} />
         )}
       </section>
     </>

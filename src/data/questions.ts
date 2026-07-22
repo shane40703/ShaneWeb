@@ -5,28 +5,24 @@ export const subjects: readonly Subject[] = [
     id: 'law',
     name: '建築法規與實務',
     shortName: '法規',
-    symbol: '法',
     description: '建築法規、都市計畫、建築管理與實務應用',
   },
   {
     id: 'env',
     name: '建築環境控制',
     shortName: '環控',
-    symbol: '環',
     description: '環境物理、熱濕空氣、光環境、音環境與設備',
   },
   {
     id: 'construction',
     name: '建築構造與施工',
     shortName: '構造',
-    symbol: '構',
     description: '建築材料、構造原理、施工技術與工程管理',
   },
   {
     id: 'structure',
     name: '建築結構',
     shortName: '結構',
-    symbol: '力',
     description: '結構力學、鋼筋混凝土、鋼結構與基礎工程',
   },
 ];

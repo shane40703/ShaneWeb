@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import { IconArrowRight } from '@tabler/icons-react';
 import { PageHeader } from '@/components/content/content';
+import { SubjectIcon } from '@/components/subject-icon';
 import { Button, SimpleSelect } from '@/components/ui/ui';
 import { questions, subjects, years } from '@/data/questions';
 import { isSubjectId } from '@/lib/study';
@@ -45,7 +47,9 @@ export function PapersPage() {
             onValueChange={changeSubject}
           />
           <div>
-            <span className={styles.subjectMark}>{subject.symbol}</span>
+            <span className={styles.subjectMark} aria-hidden="true">
+              <SubjectIcon subject={subject.id} size={22} stroke={1.9} />
+            </span>
             <strong>{subject.name}</strong>
           </div>
         </div>
@@ -64,7 +68,7 @@ export function PapersPage() {
                   variant="primary"
                   render={<Link href={`/quiz?subject=${subjectId}&year=${year}`} />}
                 >
-                  開始作答 <span aria-hidden="true">→</span>
+                  開始作答 <IconArrowRight size={17} stroke={2} aria-hidden="true" />
                 </Button>
               </article>
             );

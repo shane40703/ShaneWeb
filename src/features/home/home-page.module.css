@@ -105,6 +105,9 @@
   margin-top: auto;
   position: relative;
   z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   color: var(--primary-strong);
   font-size: 13px;
   font-weight: 850;

@@ -108,8 +108,8 @@
 }
 
 .selectIcon {
+  display: flex;
   color: var(--muted);
-  font-size: 16px;
 }
 
 .selectPositioner {
@@ -160,6 +160,7 @@
 }
 
 .selectIndicator {
+  display: flex;
   color: var(--primary);
 }
 
@@ -231,7 +232,8 @@
   background: var(--surface-2);
   color: var(--text);
   font: inherit;
-  font-size: 18px;
+  display: grid;
+  place-items: center;
   cursor: pointer;
 }
 
@@ -439,7 +441,8 @@
   border-radius: 8px;
   background: transparent;
   color: var(--muted);
-  font-size: 20px;
+  display: grid;
+  place-items: center;
   cursor: pointer;
 }
 

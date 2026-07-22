@@ -1,6 +1,13 @@
 import Link from 'next/link';
 import { type FormEvent, useState } from 'react';
 import { useRouter } from 'next/router';
+import {
+  IconArrowLeft,
+  IconArrowRight,
+  IconHeart,
+  IconHelpCircle,
+  IconMessageCircle,
+} from '@tabler/icons-react';
 import { DifficultButton, EmptyState, PageHeader, Tag } from '@/components/content/content';
 import { Button, SimpleSelect, useToast } from '@/components/ui/ui';
 import { getQuestion, getSubject, questions, subjects } from '@/data/questions';
@@ -41,7 +48,7 @@ export function CommunityPage() {
   const [replyDrafts, setReplyDrafts] = useState<Record<string, string>>({});
 
   if (!currentQuestion) {
-    return <EmptyState symbol="?" title="題庫尚無資料" description="加入題目後即可使用詳解與討論。" />;
+    return <EmptyState icon={IconHelpCircle} title="題庫尚無資料" description="加入題目後即可使用詳解與討論。" />;
   }
 
   const subject = getSubject(currentQuestion.subject);
@@ -178,7 +185,7 @@ export function CommunityPage() {
             disabled={currentIndex <= 0}
             onClick={() => subjectQuestions[currentIndex - 1] && navigateTo(subjectQuestions[currentIndex - 1].id)}
           >
-            ← 上一題
+            <IconArrowLeft size={17} stroke={2} aria-hidden="true" /> 上一題
           </Button>
           <Button
             variant="ghost"
@@ -190,7 +197,7 @@ export function CommunityPage() {
             disabled={currentIndex >= subjectQuestions.length - 1}
             onClick={() => subjectQuestions[currentIndex + 1] && navigateTo(subjectQuestions[currentIndex + 1].id)}
           >
-            下一題 →
+            下一題 <IconArrowRight size={17} stroke={2} aria-hidden="true" />
           </Button>
         </footer>
       </section>
@@ -218,7 +225,9 @@ export function CommunityPage() {
                     </div>
                   ) : null}
                   <div className={styles.postActions}>
-                    <Button variant="ghost" onClick={() => dispatch({ type: 'like-discussion-post', postId: post.id })}>♡ 讚 {post.likes}</Button>
+                    <Button variant="ghost" onClick={() => dispatch({ type: 'like-discussion-post', postId: post.id })}>
+                      <IconHeart size={17} stroke={2} aria-hidden="true" /> 讚 {post.likes}
+                    </Button>
                     <Button
                       variant="ghost"
                       disabled={post.reported}
@@ -243,7 +252,7 @@ export function CommunityPage() {
               ))}
             </div>
           ) : (
-            <EmptyState symbol="◎" title="還沒有內容" description="成為第一個留下詳解或提問的人。" />
+            <EmptyState icon={IconMessageCircle} title="還沒有內容" description="成為第一個留下詳解或提問的人。" />
           )}
         </section>
 

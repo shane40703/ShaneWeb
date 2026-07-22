@@ -1,5 +1,6 @@
 import { type FormEvent, useState } from 'react';
 import { useRouter } from 'next/router';
+import { IconArrowRight, IconArrowsShuffle } from '@tabler/icons-react';
 import { EmptyState, PageHeader } from '@/components/content/content';
 import {
   Button,
@@ -109,12 +110,12 @@ export function RandomPage() {
             />
           </div>
           <Button type="submit" variant="primary" fullWidth>
-            產生題目並開始 <span aria-hidden="true">→</span>
+            產生題目並開始 <IconArrowRight size={18} stroke={2} aria-hidden="true" />
           </Button>
         </form>
         <section className={styles.previewCard}>
           <EmptyState
-            symbol="⤨"
+            icon={IconArrowsShuffle}
             title="從題庫打散練習"
             description="可跨科目、跨年度抽題。答題紀錄、筆記與難題標記都只保存在目前瀏覽器。"
           />

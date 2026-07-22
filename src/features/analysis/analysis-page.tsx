@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react';
 import { useRouter } from 'next/router';
+import { IconChartPie } from '@tabler/icons-react';
 import { EmptyState, PageHeader } from '@/components/content/content';
 import { SimpleSelect } from '@/components/ui/ui';
 import { questions, subjects, years } from '@/data/questions';
@@ -157,7 +158,7 @@ export function AnalysisPage() {
         </>
       ) : (
         <section className={styles.tableCard}>
-          <EmptyState symbol="▥" title="這個範圍尚無分析資料" description="題庫補齊後，分類題數與占比會自動出現在這裡。" />
+          <EmptyState icon={IconChartPie} title="這個範圍尚無分析資料" description="題庫補齊後，分類題數與占比會自動出現在這裡。" />
         </section>
       )}
     </>

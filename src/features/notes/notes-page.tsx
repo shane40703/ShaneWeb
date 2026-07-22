@@ -1,5 +1,6 @@
 import { useRouter } from 'next/router';
 import { useState } from 'react';
+import { IconLoader2, IconNotebook } from '@tabler/icons-react';
 import { EmptyState, PageHeader, Tag } from '@/components/content/content';
 import { Button, SimpleSelect, useToast } from '@/components/ui/ui';
 import { getQuestion, getSubject, questions, subjects } from '@/data/questions';
@@ -17,7 +18,7 @@ export function NotesPage() {
   const currentQuestion = getQuestion(valueOf(router.query.question) ?? '') ?? questions[0];
 
   if (!currentQuestion) {
-    return <EmptyState symbol="✎" title="題庫尚無資料" description="加入題目後即可建立筆記。" />;
+    return <EmptyState icon={IconNotebook} title="題庫尚無資料" description="加入題目後即可建立筆記。" />;
   }
 
   const subjectQuestions = questions.filter((question) => question.subject === currentQuestion.subject);
@@ -38,7 +39,7 @@ export function NotesPage() {
           description="筆記會自動跟題目對應，並只保存在目前瀏覽器。"
         />
         <section className={styles.loadingPanel}>
-          <EmptyState symbol="…" title="正在讀取筆記" description="請稍候。" />
+          <EmptyState icon={IconLoader2} title="正在讀取筆記" description="請稍候。" />
         </section>
       </>
     );

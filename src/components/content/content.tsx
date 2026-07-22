@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
+import { IconBulb, type TablerIcon } from '@tabler/icons-react';
 import { Button } from '@/components/ui/ui';
 import { getSubject } from '@/data/questions';
 import type { Question } from '@/lib/types';
@@ -37,12 +38,12 @@ export function Tag({ children, tone = 'blue' }: { children: ReactNode; tone?: s
 }
 
 export function EmptyState({
-  symbol,
+  icon: Icon,
   title,
   description,
   action,
 }: {
-  symbol: string;
+  icon: TablerIcon;
   title: string;
   description: string;
   action?: ReactNode;
@@ -50,7 +51,7 @@ export function EmptyState({
   return (
     <div className={styles.emptyState}>
       <span className={styles.emptySymbol} aria-hidden="true">
-        {symbol}
+        <Icon size={32} stroke={1.8} />
       </span>
       <h2>{title}</h2>
       <p>{description}</p>
@@ -75,7 +76,7 @@ export function DifficultButton({
       aria-pressed={active}
       aria-label={active ? '取消難題標記' : '標記為難題'}
     >
-      <span aria-hidden="true">💡</span>
+      <IconBulb size={18} stroke={2} aria-hidden="true" />
       {compact ? (active ? '已標記' : '標記難題') : active ? '已標記難題' : '標記為難題'}
     </Button>
   );

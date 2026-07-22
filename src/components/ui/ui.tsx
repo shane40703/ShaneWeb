@@ -16,6 +16,15 @@ import { RadioGroup } from '@base-ui/react/radio-group';
 import { Select } from '@base-ui/react/select';
 import { Switch } from '@base-ui/react/switch';
 import { Toast } from '@base-ui/react/toast';
+import {
+  IconAlertTriangle,
+  IconCheck,
+  IconChevronDown,
+  IconMenu2,
+  IconMinus,
+  IconPlus,
+  IconX,
+} from '@tabler/icons-react';
 import styles from './ui.module.css';
 
 function cx(...classes: Array<string | false | null | undefined>) {
@@ -74,7 +83,9 @@ export function SimpleSelect<T extends string>({
         <Select.Label className={styles.label}>{label}</Select.Label>
         <Select.Trigger className={styles.selectTrigger} aria-label={label}>
           <Select.Value />
-          <Select.Icon className={styles.selectIcon}>⌄</Select.Icon>
+          <Select.Icon className={styles.selectIcon}>
+            <IconChevronDown size={17} stroke={2} aria-hidden="true" />
+          </Select.Icon>
         </Select.Trigger>
       </div>
       <Select.Portal>
@@ -83,7 +94,9 @@ export function SimpleSelect<T extends string>({
             <Select.List className={styles.selectList}>
               {options.map((option) => (
                 <Select.Item key={option.value} value={option.value} className={styles.selectItem}>
-                  <Select.ItemIndicator className={styles.selectIndicator}>✓</Select.ItemIndicator>
+                  <Select.ItemIndicator className={styles.selectIndicator}>
+                    <IconCheck size={16} stroke={2.5} aria-hidden="true" />
+                  </Select.ItemIndicator>
                   <Select.ItemText>{option.label}</Select.ItemText>
                 </Select.Item>
               ))}
@@ -154,11 +167,11 @@ export function QuantityField({
       </label>
       <NumberField.Group className={styles.numberGroup}>
         <NumberField.Decrement aria-label="減少" className={styles.numberButton}>
-          −
+          <IconMinus size={18} stroke={2} aria-hidden="true" />
         </NumberField.Decrement>
         <NumberField.Input className={styles.numberInput} />
         <NumberField.Increment aria-label="增加" className={styles.numberButton}>
-          ＋
+          <IconPlus size={18} stroke={2} aria-hidden="true" />
         </NumberField.Increment>
       </NumberField.Group>
     </NumberField.Root>
@@ -232,13 +245,15 @@ function ToastBridge({ children }: { children: ReactNode }) {
           {manager.toasts.map((toast) => (
             <Toast.Root key={toast.id} toast={toast} className={styles.toastRoot}>
               <Toast.Content className={styles.toastContent}>
-                <span className={styles.toastMark}>✓</span>
+                <span className={styles.toastMark}>
+                  <IconCheck size={18} stroke={2.5} aria-hidden="true" />
+                </span>
                 <div className={styles.toastText}>
                   <Toast.Title className={styles.toastTitle} />
                   <Toast.Description className={styles.toastDescription} />
                 </div>
                 <Toast.Close className={styles.toastClose} aria-label="關閉通知">
-                  ×
+                  <IconX size={19} stroke={2} aria-hidden="true" />
                 </Toast.Close>
               </Toast.Content>
             </Toast.Root>
@@ -283,7 +298,9 @@ export function ConfirmDialog({
         <AlertDialog.Backdrop className={styles.backdrop} />
         <AlertDialog.Viewport className={styles.dialogViewport}>
           <AlertDialog.Popup className={styles.dialogPopup}>
-            <div className={styles.dialogIcon}>!</div>
+            <div className={styles.dialogIcon}>
+              <IconAlertTriangle size={25} stroke={2} aria-hidden="true" />
+            </div>
             <AlertDialog.Title className={styles.dialogTitle}>{title}</AlertDialog.Title>
             <AlertDialog.Description className={styles.dialogDescription}>
               {description}
@@ -322,7 +339,7 @@ export function SideDrawer({
   return (
     <Drawer.Root open={open} onOpenChange={onOpenChange} swipeDirection="left">
       <Drawer.Trigger className={cx(styles.button, styles.icon, styles.mobileTrigger)}>
-        <span aria-hidden="true">☰</span>
+        <IconMenu2 size={21} stroke={2} aria-hidden="true" />
         <span className={styles.visuallyHidden}>{triggerLabel}</span>
       </Drawer.Trigger>
       <Drawer.Portal>

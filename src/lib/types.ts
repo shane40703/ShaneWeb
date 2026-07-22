@@ -6,7 +6,6 @@ export interface Subject {
   id: SubjectId;
   name: string;
   shortName: string;
-  symbol: string;
   description: string;
 }
 

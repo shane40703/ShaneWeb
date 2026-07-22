@@ -1,4 +1,6 @@
 import Link from 'next/link';
+import { IconArrowRight } from '@tabler/icons-react';
+import { SubjectIcon } from '@/components/subject-icon';
 import { subjects } from '@/data/questions';
 import styles from './home-page.module.css';
 
@@ -19,11 +21,11 @@ export function HomePage() {
           >
             <span className={styles.cardNumber}>0{index + 1}</span>
             <span className={styles.subjectIcon} aria-hidden="true">
-              {subject.symbol}
+              <SubjectIcon subject={subject.id} size={38} stroke={1.7} />
             </span>
             <h2>{subject.name}</h2>
             <span className={styles.cardAction}>
-              選擇年份 <span aria-hidden="true">→</span>
+              選擇年份 <IconArrowRight size={17} stroke={2} aria-hidden="true" />
             </span>
           </Link>
         ))}
