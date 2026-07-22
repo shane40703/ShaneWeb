@@ -1,7 +1,7 @@
-import type { AppStateV4, DiscussionPost, DiscussionReply, QuizAttempt } from '@/lib/types';
+import type { AppState, DiscussionPost, DiscussionReply, QuizAttempt } from '@/lib/types';
 
 export type AppAction =
-  | { type: 'hydrate'; state: AppStateV4 }
+  | { type: 'hydrate'; state: AppState }
   | { type: 'toggle-difficult'; questionId: string }
   | {
       type: 'save-answer';
@@ -17,7 +17,7 @@ export type AppAction =
   | { type: 'report-discussion-post'; postId: string }
   | { type: 'add-discussion-reply'; postId: string; reply: DiscussionReply };
 
-export function appReducer(state: AppStateV4, action: AppAction): AppStateV4 {
+export function appReducer(state: AppState, action: AppAction): AppState {
   switch (action.type) {
     case 'hydrate':
       return action.state;

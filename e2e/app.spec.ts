@@ -35,7 +35,7 @@ test('paper flow, timer, difficult marker, and in-progress answers persist', asy
 
   await expect(page.getByText('答案不正確', { exact: true })).toBeVisible();
   await expect
-    .poll(() => page.evaluate(() => localStorage.getItem('shaneweb:v4')))
+    .poll(() => page.evaluate(() => localStorage.getItem('shaneweb:state')))
     .toContain('law-114-01');
 
   await page.goto('/difficult');

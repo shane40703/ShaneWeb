@@ -6,8 +6,6 @@ import {
   formatDuration,
   getAnalysis,
   isQuestionCorrect,
-  migrateLegacyState,
-  migrateV3State,
   parseStoredState,
 } from '@/lib/study';
 
@@ -46,55 +44,10 @@ describe('local state validation', () => {
     expect(parseStoredState(JSON.stringify({ version: 2 }))).toEqual(createDefaultState());
   });
 
-  it('accepts a valid v4 state', () => {
+  it('accepts a valid current state', () => {
     const state = createDefaultState();
     state.difficultQuestionIds = ['law-114-01'];
     expect(parseStoredState(JSON.stringify(state))).toEqual(state);
-  });
-
-  it('migrates v3 while removing state tied to replaced official questions', () => {
-    const migrated = migrateV3State(
-      JSON.stringify({
-        version: 3,
-        answers: {
-          'law-114-01': {
-            selected: 1,
-            correct: true,
-            answeredAt: '2026-01-01T00:00:00.000Z',
-          },
-          'env-114-01': {
-            selected: 1,
-            correct: true,
-            answeredAt: '2026-01-01T00:00:00.000Z',
-          },
-        },
-        difficultQuestionIds: ['law-114-01', 'env-114-01'],
-        attempts: [],
-        notes: { 'law-114-01': '舊題筆記', 'env-114-01': '保留筆記' },
-        discussionPosts: [],
-      }),
-    );
-    expect(migrated.version).toBe(4);
-    expect(migrated.answers['law-114-01']).toBeUndefined();
-    expect(migrated.answers['env-114-01']?.correct).toBe(true);
-    expect(migrated.difficultQuestionIds).toEqual(['env-114-01']);
-    expect(migrated.notes).toEqual({ 'env-114-01': '保留筆記' });
-  });
-
-  it('migrates v2 answers and difficult ids without interface preferences', () => {
-    const migrated = migrateLegacyState(
-      JSON.stringify({
-        version: 2,
-        answers: {
-          2: { selected: 1, correct: true, answeredAt: '2026-01-01T00:00:00.000Z' },
-        },
-        difficultQuestionIds: [1, 5],
-        preferences: { theme: 'dark' },
-      }),
-    );
-    expect(migrated.answers['env-114-01']?.correct).toBe(true);
-    expect(migrated.difficultQuestionIds).toEqual(['law-113-01']);
-    expect(migrated).not.toHaveProperty('preferences');
   });
 });
 

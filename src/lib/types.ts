@@ -109,17 +109,7 @@ export interface DiscussionPost {
   reported: boolean;
 }
 
-export interface AppStateV3 {
-  version: 3;
-  answers: Record<QuestionId, AnswerRecord>;
-  difficultQuestionIds: QuestionId[];
-  attempts: QuizAttempt[];
-  notes: Record<QuestionId, string>;
-  discussionPosts: DiscussionPost[];
-}
-
-export interface AppStateV4 {
-  version: 4;
+export interface AppState {
   answers: Record<QuestionId, AnswerRecord>;
   difficultQuestionIds: QuestionId[];
   attempts: QuizAttempt[];
