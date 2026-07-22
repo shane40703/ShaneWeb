@@ -65,8 +65,20 @@ test('static question paths navigate between questions and keep answer state', a
   await expect(page).toHaveURL(/\/questions\/construction\/114\/49/);
   await expect(page.getByText(/何者可能具有最佳的防水效果/)).toBeVisible();
   await expect(navigator.getByRole('link', { name: '前往第 49 題' })).toHaveAttribute('aria-current', 'step');
+  await expect(page.getByRole('radio', { checked: true })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: '送出答案' })).toBeDisabled();
+  await expect(page.getByText('答對了', { exact: true })).toHaveCount(0);
 
   await expect(navigator.getByRole('link', { name: '前往第 1 題' })).toHaveAttribute('data-answered', 'true');
+
+  await page.getByText('圖 A', { exact: true }).click();
+  await navigator.getByRole('link', { name: '前往第 1 題' }).click();
+  await expect(page.getByText('答對了', { exact: true })).toBeVisible();
+  await expect(page.getByRole('radio', { checked: true })).toHaveCount(1);
+
+  await navigator.getByRole('link', { name: '前往第 49 題' }).click();
+  await expect(page.getByText('圖 A', { exact: true }).locator('..').getByRole('radio')).toBeChecked();
+  await expect(page.getByRole('button', { name: '送出答案' })).toBeEnabled();
 });
 
 test('question content is present in build-time static HTML', async ({ request }, testInfo) => {

@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useReducer } from 'react';
 import {
   IconArrowLeft,
   IconArrowRight,
@@ -24,6 +24,7 @@ import {
 } from '@/lib/study';
 import type { Question } from '@/lib/types';
 import { useAppState } from '@/state/app-state';
+import { quizProgressReducer } from './quiz-state';
 import styles from './quiz-page.module.css';
 
 export interface QuestionRouteItem {
@@ -44,10 +45,11 @@ export function QuizPage({
   position,
 }: StaticQuestionPageProps) {
   const { state, dispatch } = useAppState();
-  const [selected, setSelected] = useState<number>();
-  const [elapsedSeconds, setElapsedSeconds] = useState(0);
-  const [startedAt] = useState(() => new Date().toISOString());
-  const [submitted, setSubmitted] = useState(false);
+  const [progressByQuestion, progressDispatch] = useReducer(quizProgressReducer, {});
+  const progress = progressByQuestion[question.id];
+  const selected = progress?.selected;
+  const submitted = progress?.submitted ?? false;
+  const elapsedSeconds = progress?.elapsedSeconds ?? 0;
   const subject = getSubject(question.subject);
   const difficult = state.difficultQuestionIds.includes(question.id);
   const correct = submitted && isQuestionCorrect(question, selected);
@@ -56,15 +58,21 @@ export function QuizPage({
   const next = paperQuestions[position + 1];
 
   useEffect(() => {
+    const questionId = question.id;
+    const startedAt = new Date().toISOString();
+    progressDispatch({ type: 'visit-question', questionId, startedAt });
     if (submitted) return;
-    const timer = window.setInterval(() => setElapsedSeconds((current) => current + 1), 1000);
+    const timer = window.setInterval(() => {
+      progressDispatch({ type: 'tick-question', questionId, startedAt });
+    }, 1000);
     return () => window.clearInterval(timer);
-  }, [submitted]);
+  }, [question.id, submitted]);
 
   function submitAnswer() {
     if (submitted || (selected === undefined && question.answerKey.kind !== 'all-credit')) {
       return;
     }
+    const startedAt = progress?.startedAt ?? new Date().toISOString();
     const answers = selected === undefined ? {} : { [question.id]: selected };
     const attempt = createAttempt({
       mode: 'paper',
@@ -78,7 +86,11 @@ export function QuizPage({
       attempt,
       results: selected === undefined ? {} : { [question.id]: isQuestionCorrect(question, selected) },
     });
-    setSubmitted(true);
+    progressDispatch({
+      type: 'submit-question',
+      questionId: question.id,
+      startedAt,
+    });
   }
 
   return (
@@ -124,7 +136,14 @@ export function QuizPage({
               options={question.options}
               value={selected}
               disabled={submitted}
-              onValueChange={setSelected}
+              onValueChange={(value) =>
+                progressDispatch({
+                  type: 'select-answer',
+                  questionId: question.id,
+                  selected: value,
+                  startedAt: new Date().toISOString(),
+                })
+              }
             />
             {!submitted ? (
               <Button
@@ -203,7 +222,9 @@ export function QuizPage({
                 href={item.path}
                 aria-current={index === position ? 'step' : undefined}
                 aria-label={`前往第 ${item.questionNumber} 題`}
-                data-answered={Boolean(state.answers[item.id])}
+                data-answered={Boolean(
+                  progressByQuestion[item.id]?.submitted || state.answers[item.id],
+                )}
               >
                 {item.questionNumber}
               </Link>
