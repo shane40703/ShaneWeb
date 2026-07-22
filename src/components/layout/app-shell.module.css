@@ -1,0 +1,284 @@
+.shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 270px minmax(0, 1fr);
+  background: var(--bg);
+  transition: grid-template-columns 200ms ease;
+}
+
+:global(html[data-sidebar='collapsed']) .shell {
+  grid-template-columns: 88px minmax(0, 1fr);
+}
+
+.desktopSidebar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  height: 100vh;
+  border-right: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.sidebarInner {
+  height: 100%;
+  padding: 22px 16px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.brand {
+  min-height: 56px;
+  padding: 4px 8px 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.brandMark {
+  width: 43px;
+  height: 43px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  border-radius: 13px;
+  background: linear-gradient(145deg, var(--primary), #7eabff);
+  color: white;
+  font-size: 21px;
+  font-weight: 900;
+  box-shadow: 0 9px 20px color-mix(in srgb, var(--primary) 28%, transparent);
+}
+
+.brandCopy {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+  white-space: nowrap;
+  transition: opacity 150ms ease;
+}
+
+.brandCopy strong {
+  font-size: 17px;
+}
+
+.brandCopy small {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.navigation {
+  display: grid;
+  gap: 5px;
+}
+
+.navItem {
+  min-height: 45px;
+  padding: 0 13px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-radius: 11px;
+  color: var(--text-soft);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+  transition: background 150ms ease, color 150ms ease;
+}
+
+.navItem:hover {
+  color: var(--primary-strong);
+  background: var(--primary-soft);
+}
+
+.navItem[aria-current='page'] {
+  color: var(--primary-strong);
+  background: var(--primary-soft);
+  box-shadow: inset 3px 0 0 var(--primary);
+}
+
+.navSymbol {
+  width: 22px;
+  flex: 0 0 auto;
+  color: var(--muted);
+  text-align: center;
+  font-size: 18px;
+}
+
+.navItem[aria-current='page'] .navSymbol {
+  color: var(--primary);
+}
+
+.navLabel {
+  overflow: hidden;
+  transition: opacity 150ms ease;
+}
+
+.studyCard {
+  margin-top: auto;
+  padding: 16px;
+  border: 1px solid var(--warm-line);
+  border-radius: 16px;
+  background: linear-gradient(180deg, var(--warm-surface), var(--warm-surface-2));
+  overflow: hidden;
+}
+
+.studyCard strong {
+  display: block;
+  white-space: nowrap;
+}
+
+.studyCard p {
+  margin: 7px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.65;
+}
+
+.planGraphic {
+  height: 58px;
+  margin-bottom: 12px;
+  position: relative;
+  border-radius: 11px;
+  overflow: hidden;
+  background-image: linear-gradient(var(--blueprint-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--blueprint-line) 1px, transparent 1px);
+  background-size: 13px 13px;
+}
+
+.planGraphic span {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  height: 2px;
+  background: var(--primary);
+  opacity: 0.45;
+}
+
+.planGraphic span:nth-child(1) {
+  top: 15px;
+  right: 35px;
+}
+
+.planGraphic span:nth-child(2) {
+  top: 28px;
+  left: 30px;
+}
+
+.planGraphic span:nth-child(3) {
+  top: 41px;
+  right: 50px;
+}
+
+:global(html[data-sidebar='collapsed']) .brandCopy,
+:global(html[data-sidebar='collapsed']) .navLabel,
+:global(html[data-sidebar='collapsed']) .studyCard {
+  opacity: 0;
+  pointer-events: none;
+}
+
+:global(html[data-sidebar='collapsed']) .navItem {
+  padding: 0;
+  justify-content: center;
+}
+
+:global(html[data-sidebar='collapsed']) .navSymbol {
+  width: 45px;
+}
+
+.workspace {
+  min-width: 0;
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 25;
+  height: 72px;
+  padding: 0 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  border-bottom: 1px solid var(--line);
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  backdrop-filter: blur(14px);
+}
+
+.topbarLeft,
+.topbarActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pageTitle {
+  font-weight: 800;
+}
+
+.anonymousBadge {
+  min-height: 32px;
+  padding: 0 11px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid color-mix(in srgb, var(--primary) 20%, var(--line));
+  border-radius: 999px;
+  background: var(--primary-soft);
+  color: var(--primary-strong);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.anonymousBadge::before {
+  content: '◎';
+}
+
+.main {
+  width: min(100%, 1600px);
+  margin: 0 auto;
+  padding: 24px 28px 48px;
+}
+
+@media (max-width: 800px) {
+  .shell,
+  :global(html[data-sidebar='collapsed']) .shell {
+    display: block;
+  }
+
+  .desktopSidebar {
+    display: none;
+  }
+
+  .topbar {
+    height: 66px;
+    padding: 0 16px;
+  }
+
+  .main {
+    padding: 18px 16px 36px;
+  }
+
+  .anonymousBadge {
+    display: none;
+  }
+
+  .sidebarInner {
+    padding: 20px 16px;
+  }
+
+  .studyCard {
+    display: block;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shell,
+  .brandCopy,
+  .navItem,
+  .navLabel {
+    transition-duration: 0.01ms;
+  }
+}

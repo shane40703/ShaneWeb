@@ -1,0 +1,124 @@
+.resultCount {
+  min-height: 38px;
+  padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid color-mix(in srgb, var(--primary) 24%, var(--line));
+  border-radius: 999px;
+  background: var(--primary-soft);
+  color: var(--primary-strong);
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.filterCard {
+  padding: 18px 20px;
+  display: grid;
+  grid-template-columns: 230px minmax(0, 1fr);
+  align-items: center;
+  gap: 24px;
+  border: 1px solid var(--line);
+  border-radius: 17px;
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.filterIntro {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.filterIcon {
+  width: 42px;
+  height: 42px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-size: 22px;
+  font-weight: 900;
+  transform: rotate(90deg);
+}
+
+.filterIntro strong {
+  display: block;
+  font-size: 14px;
+}
+
+.filterIntro p {
+  margin: 3px 0 0;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.filters {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(160px, 1fr));
+  gap: 13px;
+}
+
+.listHeader {
+  min-height: 74px;
+  padding: 18px 2px 12px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.listHeader strong,
+.listHeader span {
+  display: block;
+}
+
+.listHeader strong {
+  font-size: 17px;
+}
+
+.listHeader div > span,
+.legend {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.legend span {
+  display: inline;
+  color: var(--warning);
+}
+
+.questionList {
+  display: grid;
+  gap: 11px;
+}
+
+.emptyCard {
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--surface);
+}
+
+@media (max-width: 1020px) {
+  .filterCard {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .filterCard {
+    padding: 17px;
+  }
+
+  .filters {
+    grid-template-columns: 1fr;
+  }
+
+  .listHeader {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 5px;
+  }
+}
