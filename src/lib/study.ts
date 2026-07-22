@@ -1,47 +1,28 @@
-import { questions, subjects } from '@/data/questions';
+import { subjects } from '@/question-bank/catalog';
 import type {
   AnswerRecord,
   AppStateV3,
+  AppStateV4,
   DiscussionPost,
-  PracticeFilters,
   Question,
   QuizAttempt,
   SubjectId,
 } from '@/lib/types';
 
-export const STORAGE_KEY = 'shaneweb:v3';
+export const STORAGE_KEY = 'shaneweb:v4';
+export const V3_STORAGE_KEY = 'shaneweb:v3';
 export const LEGACY_STORAGE_KEY = 'shaneweb:v2';
 
-const starterDiscussions: DiscussionPost[] = [
-  {
-    id: 'starter-law-114-01',
-    questionId: 'law-114-01',
-    type: 'explanation',
-    content: '判讀這類題目時，可以先抓出「居室」與「採光有效面積」兩個關鍵詞，再對照比例規定。',
-    createdAt: '2026-07-18T09:20:00.000Z',
-    likes: 8,
-    replies: [
-      {
-        id: 'starter-reply-1',
-        content: '把八分之一和通風面積的規定分開記，會比較不容易混淆。',
-        createdAt: '2026-07-19T03:10:00.000Z',
-      },
-    ],
-    reported: false,
-  },
-];
+const REPLACED_QUESTION_IDS = new Set(['law-114-01', 'construction-114-01']);
 
-export function createDefaultState(): AppStateV3 {
+export function createDefaultState(): AppStateV4 {
   return {
-    version: 3,
+    version: 4,
     answers: {},
     difficultQuestionIds: [],
     attempts: [],
     notes: {},
-    discussionPosts: starterDiscussions.map((post) => ({
-      ...post,
-      replies: post.replies.map((reply) => ({ ...reply })),
-    })),
+    discussionPosts: [],
   };
 }
 
@@ -115,13 +96,65 @@ export function isAppStateV3(value: unknown): value is AppStateV3 {
   );
 }
 
-export function parseStoredState(raw: string | null): AppStateV3 {
+export function isAppStateV4(value: unknown): value is AppStateV4 {
+  if (!value || typeof value !== 'object') return false;
+  const state = value as Partial<AppStateV4>;
+  return (
+    state.version === 4 &&
+    Boolean(state.answers) &&
+    typeof state.answers === 'object' &&
+    Object.values(state.answers ?? {}).every(isAnswerRecord) &&
+    Array.isArray(state.difficultQuestionIds) &&
+    state.difficultQuestionIds.every((id) => typeof id === 'string') &&
+    Array.isArray(state.attempts) &&
+    state.attempts.every(isQuizAttempt) &&
+    Boolean(state.notes) &&
+    typeof state.notes === 'object' &&
+    Object.values(state.notes ?? {}).every((note) => typeof note === 'string') &&
+    Array.isArray(state.discussionPosts) &&
+    state.discussionPosts.every(isDiscussionPost)
+  );
+}
+
+export function parseStoredState(raw: string | null): AppStateV4 {
   if (!raw) return createDefaultState();
   try {
     const parsed: unknown = JSON.parse(raw);
-    return isAppStateV3(parsed) ? parsed : createDefaultState();
+    return isAppStateV4(parsed) ? parsed : createDefaultState();
   } catch {
     return createDefaultState();
+  }
+}
+
+export function migrateV3State(raw: string | null): AppStateV4 {
+  const fallback = createDefaultState();
+  if (!raw) return fallback;
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    if (!isAppStateV3(parsed)) return fallback;
+
+    const answers = Object.fromEntries(
+      Object.entries(parsed.answers).filter(([id]) => !REPLACED_QUESTION_IDS.has(id)),
+    );
+    const notes = Object.fromEntries(
+      Object.entries(parsed.notes).filter(([id]) => !REPLACED_QUESTION_IDS.has(id)),
+    );
+    return {
+      version: 4,
+      answers,
+      difficultQuestionIds: parsed.difficultQuestionIds.filter(
+        (id) => !REPLACED_QUESTION_IDS.has(id),
+      ),
+      attempts: parsed.attempts.filter((attempt) =>
+        attempt.questionIds.every((id) => !REPLACED_QUESTION_IDS.has(id)),
+      ),
+      notes,
+      discussionPosts: parsed.discussionPosts.filter(
+        (post) => !REPLACED_QUESTION_IDS.has(post.questionId),
+      ),
+    };
+  } catch {
+    return fallback;
   }
 }
 
@@ -131,20 +164,52 @@ interface LegacyState {
   difficultQuestionIds?: number[];
 }
 
-export function migrateLegacyState(raw: string | null): AppStateV3 {
+export function migrateLegacyState(raw: string | null): AppStateV4 {
   const fallback = createDefaultState();
   if (!raw) return fallback;
   try {
     const legacy = JSON.parse(raw) as LegacyState;
     if (legacy.version !== 2) return fallback;
 
+    const legacyQuestionIds = [
+      'law-114-01',
+      'env-114-01',
+      'construction-114-01',
+      'structure-114-01',
+      'law-113-01',
+      'env-113-01',
+      'construction-113-01',
+      'structure-113-01',
+      'law-112-01',
+      'env-112-01',
+      'construction-112-01',
+      'structure-112-01',
+      'law-111-01',
+      'env-111-01',
+      'construction-110-01',
+      'structure-110-01',
+      'law-108-01',
+      'env-106-01',
+      'construction-104-01',
+      'structure-102-01',
+    ] as const;
+
     for (const [legacyId, answer] of Object.entries(legacy.answers ?? {})) {
-      const question = questions[Number(legacyId) - 1];
-      if (question && isAnswerRecord(answer)) fallback.answers[question.id] = answer;
+      const questionId = legacyQuestionIds[Number(legacyId) - 1];
+      if (
+        questionId &&
+        !REPLACED_QUESTION_IDS.has(questionId) &&
+        isAnswerRecord(answer)
+      ) {
+        fallback.answers[questionId] = answer;
+      }
     }
     fallback.difficultQuestionIds = (legacy.difficultQuestionIds ?? [])
-      .map((legacyId) => questions[legacyId - 1]?.id)
-      .filter((questionId): questionId is string => Boolean(questionId));
+      .map((legacyId) => legacyQuestionIds[legacyId - 1])
+      .filter(
+        (questionId): questionId is NonNullable<typeof questionId> =>
+          Boolean(questionId) && !REPLACED_QUESTION_IDS.has(questionId),
+      );
     return fallback;
   } catch {
     return fallback;
@@ -161,46 +226,22 @@ export function parseYear(value: unknown): number | null {
   return Number.isInteger(year) && year >= 102 && year <= 114 ? year : null;
 }
 
-export function getPaperQuestions(subject: SubjectId, year: number) {
-  return questions
-    .filter((question) => question.subject === subject && question.year === year)
-    .sort((left, right) => left.questionNumber - right.questionNumber);
-}
-
-function shuffled<T>(items: readonly T[], random: () => number): T[] {
-  const result = [...items];
-  for (let index = result.length - 1; index > 0; index -= 1) {
-    const swapIndex = Math.floor(random() * (index + 1));
-    [result[index], result[swapIndex]] = [result[swapIndex], result[index]];
-  }
-  return result;
-}
-
-export function buildQuiz(
-  filters: PracticeFilters,
-  state: Pick<AppStateV3, 'answers' | 'difficultQuestionIds'>,
-  random: () => number = Math.random,
-  source: readonly Question[] = questions,
-) {
-  const minimumYear = Math.min(filters.fromYear, filters.toYear);
-  const maximumYear = Math.max(filters.fromYear, filters.toYear);
-  const pool = source.filter(
-    (question) =>
-      (filters.subject === 'all' || question.subject === filters.subject) &&
-      question.year >= minimumYear &&
-      question.year <= maximumYear &&
-      (!filters.onlyUnanswered || !state.answers[question.id]) &&
-      (!filters.onlyDifficult || state.difficultQuestionIds.includes(question.id)),
-  );
-  const count = Math.max(1, Math.min(filters.count, pool.length));
-  return shuffled(pool, random).slice(0, count);
-}
-
 export function formatDuration(totalSeconds: number) {
   const hours = Math.floor(totalSeconds / 3600);
   const minutes = Math.floor((totalSeconds % 3600) / 60);
   const seconds = Math.max(0, totalSeconds % 60);
   return [hours, minutes, seconds].map((value) => String(value).padStart(2, '0')).join(':');
+}
+
+export function getAcceptedAnswerIndexes(question: Question) {
+  return question.answerKey.kind === 'all-credit'
+    ? question.options.map((_, index) => index)
+    : question.answerKey.options;
+}
+
+export function isQuestionCorrect(question: Question, selected: number | undefined) {
+  if (question.answerKey.kind === 'all-credit') return true;
+  return selected !== undefined && question.answerKey.options.includes(selected);
 }
 
 export function createAttempt({
@@ -216,9 +257,12 @@ export function createAttempt({
   startedAt: string;
   elapsedSeconds: number;
 }): QuizAttempt {
-  const answeredQuestions = source.filter((question) => answers[question.id] !== undefined);
-  const correctCount = answeredQuestions.filter(
-    (question) => answers[question.id] === question.answer,
+  const correctCount = source.filter((question) =>
+    isQuestionCorrect(question, answers[question.id]),
+  ).length;
+  const unansweredCount = source.filter(
+    (question) =>
+      answers[question.id] === undefined && question.answerKey.kind !== 'all-credit',
   ).length;
   const first = source[0];
   const sameSubject = source.every((question) => question.subject === first?.subject);
@@ -235,12 +279,12 @@ export function createAttempt({
     submittedAt,
     elapsedSeconds,
     correctCount,
-    wrongCount: answeredQuestions.length - correctCount,
-    unansweredCount: source.length - answeredQuestions.length,
+    wrongCount: source.length - correctCount - unansweredCount,
+    unansweredCount,
   };
 }
 
-export function getAnalysis(source: readonly Question[]) {
+export function getAnalysis(source: readonly { primaryCategory: string }[]) {
   const counts = new Map<string, number>();
   source.forEach((question) => {
     counts.set(question.primaryCategory, (counts.get(question.primaryCategory) ?? 0) + 1);

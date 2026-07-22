@@ -11,7 +11,7 @@ export default function App({ Component, pageProps }: AppProps) {
         <title>建築師考試考古題練習平台</title>
         <meta
           name="description"
-          content="建築師考試歷屆試題、隨機練習、命題分析、詳解、筆記與難題整理。"
+          content="建築師考試歷屆試題、命題分析、詳解、筆記與難題整理。"
         />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>

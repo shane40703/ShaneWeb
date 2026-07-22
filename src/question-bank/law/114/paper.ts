@@ -1,0 +1,14 @@
+import { definePaper } from '@/question-bank/schema';
+
+export default definePaper({
+  status: 'official-partial',
+  paperCode: '1801',
+  officialName: '營建法規與實務',
+  totalQuestions: 80,
+  questionUrl:
+    'https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=114180&q=1&s=0101&t=Q',
+  answerUrl:
+    'https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=114180&q=1&s=0101&t=S',
+  correctionUrl:
+    'https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=114180&q=1&s=0101&t=M',
+});

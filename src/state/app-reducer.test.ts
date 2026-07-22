@@ -1,24 +1,37 @@
 import { describe, expect, it } from 'vitest';
-import { createAttempt, createDefaultState } from '@/lib/study';
-import { questions } from '@/data/questions';
+import { createAttempt, createDefaultState, isQuestionCorrect } from '@/lib/study';
+import { loadAllQuestions } from '@/server/question-bank.server';
 import { appReducer } from '@/state/app-reducer';
+
+const questions = await loadAllQuestions();
 
 function attempt(index = 0) {
   const question = questions[index % questions.length];
+  const selected = question.answerKey.kind === 'accepted' ? question.answerKey.options[0] : 0;
   return createAttempt({
     mode: 'paper',
     source: [question],
-    answers: { [question.id]: question.answer },
+    answers: { [question.id]: selected },
     startedAt: '2026-01-01T00:00:00.000Z',
     elapsedSeconds: 10,
   });
 }
 
+function resultsFor(entry: ReturnType<typeof attempt>) {
+  return Object.fromEntries(
+    Object.entries(entry.answers).map(([questionId, selected]) => {
+      const question = questions.find((candidate) => candidate.id === questionId);
+      return [questionId, question ? isQuestionCorrect(question, selected) : false];
+    }),
+  );
+}
+
 describe('appReducer', () => {
   it('does not add the same attempt twice and records answer correctness', () => {
     const entry = attempt();
-    const first = appReducer(createDefaultState(), { type: 'save-attempt', attempt: entry });
-    const duplicate = appReducer(first, { type: 'save-attempt', attempt: entry });
+    const results = resultsFor(entry);
+    const first = appReducer(createDefaultState(), { type: 'save-attempt', attempt: entry, results });
+    const duplicate = appReducer(first, { type: 'save-attempt', attempt: entry, results });
     expect(duplicate.attempts).toHaveLength(1);
     expect(duplicate.answers['law-114-01']?.correct).toBe(true);
   });
@@ -27,7 +40,11 @@ describe('appReducer', () => {
     let state = createDefaultState();
     for (let index = 0; index < 105; index += 1) {
       const entry = { ...attempt(index), id: `attempt-${index}` };
-      state = appReducer(state, { type: 'save-attempt', attempt: entry });
+      state = appReducer(state, {
+        type: 'save-attempt',
+        attempt: entry,
+        results: resultsFor(entry),
+      });
     }
     expect(state.attempts).toHaveLength(100);
     expect(state.attempts[0].id).toBe('attempt-104');
@@ -55,8 +72,18 @@ describe('appReducer', () => {
   });
 
   it('supports discussion likes, replies, and reports', () => {
-    const post = createDefaultState().discussionPosts[0];
-    let state = appReducer(createDefaultState(), {
+    const post = {
+      id: 'post-test',
+      questionId: 'env-114-01',
+      type: 'explanation' as const,
+      content: '測試內容',
+      createdAt: '2026-01-01T00:00:00.000Z',
+      likes: 0,
+      replies: [],
+      reported: false,
+    };
+    let state = appReducer(createDefaultState(), { type: 'add-discussion-post', post });
+    state = appReducer(state, {
       type: 'like-discussion-post',
       postId: post.id,
     });

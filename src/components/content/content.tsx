@@ -1,8 +1,9 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import type { ReactNode } from 'react';
-import { IconBulb, type TablerIcon } from '@tabler/icons-react';
+import { IconBulb, IconExternalLink, type TablerIcon } from '@tabler/icons-react';
 import { Button } from '@/components/ui/ui';
-import { getSubject } from '@/data/questions';
+import { getSubject } from '@/question-bank/catalog';
 import type { Question } from '@/lib/types';
 import styles from './content.module.css';
 
@@ -82,6 +83,53 @@ export function DifficultButton({
   );
 }
 
+export function QuestionPrompt({
+  question,
+  compact = false,
+}: {
+  question: Question;
+  compact?: boolean;
+}) {
+  return (
+    <div className={styles.questionPrompt} data-compact={compact || undefined}>
+      {question.content.map((block, index) =>
+        block.kind === 'text' ? (
+          <p className={styles.questionPromptText} key={`text-${index}`}>
+            {block.text}
+          </p>
+        ) : (
+          <figure className={styles.questionPromptImage} key={`image-${index}`}>
+            <Image
+              src={block.src}
+              alt={block.alt}
+              loading={compact ? 'lazy' : 'eager'}
+              {...(typeof block.src === 'string' ? { width: 1200, height: 800 } : {})}
+              sizes={compact ? '(max-width: 720px) 100vw, 560px' : '(max-width: 900px) 100vw, 820px'}
+            />
+          </figure>
+        ),
+      )}
+    </div>
+  );
+}
+
+export function QuestionSourceLine({ question }: { question: Question }) {
+  if (question.source.kind === 'sample') {
+    return <span className={styles.questionSource}>示範題・非完整官方試卷資料</span>;
+  }
+  return (
+    <a
+      className={styles.questionSource}
+      href={question.source.questionUrl}
+      target="_blank"
+      rel="noreferrer"
+    >
+      資料來源：考選部・試題 {question.source.paperCode}・第 {question.source.page} 頁
+      <IconExternalLink size={14} stroke={2} aria-hidden="true" />
+    </a>
+  );
+}
+
 export function QuestionCard({
   question,
   difficult,
@@ -102,8 +150,11 @@ export function QuestionCard({
           <Tag tone="green">{subject?.shortName}</Tag>
           <Tag tone="purple">第 {question.questionNumber} 題</Tag>
           <Tag tone="orange">{question.primaryCategory}</Tag>
+          <Tag tone={question.source.kind === 'official' ? 'green' : 'purple'}>
+            {question.source.kind === 'official' ? '官方題' : '示範題'}
+          </Tag>
         </div>
-        <h2>{question.text}</h2>
+        <QuestionPrompt question={question} compact />
       </div>
       <div className={styles.questionActions}>
         <DifficultButton active={difficult} onClick={onToggleDifficult} compact />

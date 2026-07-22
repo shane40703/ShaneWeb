@@ -2,7 +2,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useState } from 'react';
 import {
-  IconArrowsShuffle,
   IconBuildingSkyscraper,
   IconBulb,
   IconChartPie,
@@ -19,7 +18,6 @@ import styles from './app-shell.module.css';
 const navigation = [
   { href: '/', label: '首頁', icon: IconHome },
   { href: '/papers', label: '歷屆試題', icon: IconFileText },
-  { href: '/random', label: '隨機出題', icon: IconArrowsShuffle },
   { href: '/analysis', label: '考題分析', icon: IconChartPie },
   { href: '/community', label: '詳解與討論', icon: IconMessages },
   { href: '/notes', label: '使用者筆記', icon: IconNotebook },
@@ -80,7 +78,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const pathname = router.pathname;
   const currentPage = navigation.find((item) => isActive(pathname, item.href));
-  const pageTitle = pathname === '/quiz' ? '作答頁' : currentPage?.label ?? '建築師考試';
+  const pageTitle = pathname.startsWith('/questions/')
+    ? '作答頁'
+    : currentPage?.label ?? '建築師考試';
 
   return (
     <div className={styles.shell}>

@@ -4,12 +4,12 @@ import { IconArrowRight } from '@tabler/icons-react';
 import { PageHeader } from '@/components/content/content';
 import { SubjectIcon } from '@/components/subject-icon';
 import { Button } from '@/components/ui/ui';
-import { questions, subjects, years } from '@/data/questions';
+import { subjects, years } from '@/question-bank/catalog';
 import { isSubjectId } from '@/lib/study';
-import type { SubjectId } from '@/lib/types';
+import type { QuestionSummary, SubjectId } from '@/lib/types';
 import styles from './papers-page.module.css';
 
-export function PapersPage() {
+export function PapersPage({ questions }: { questions: QuestionSummary[] }) {
   const router = useRouter();
   const value = Array.isArray(router.query.subject)
     ? router.query.subject[0]
@@ -55,21 +55,28 @@ export function PapersPage() {
         </fieldset>
         <div className={styles.yearList}>
           {years.map((year) => {
-            const count = questions.filter(
+            const paperQuestions = questions.filter(
               (question) => question.subject === subjectId && question.year === year,
-            ).length;
+            );
+            const count = paperQuestions.length;
             return (
               <article className={styles.yearRow} key={year}>
                 <div>
                   <strong>{year} 年</strong>
                   <span>{count ? `目前收錄 ${count} 題` : '題庫資料待補'}</span>
                 </div>
-                <Button
-                  variant="primary"
-                  render={<Link href={`/quiz?subject=${subjectId}&year=${year}`} />}
-                >
-                  開始作答 <IconArrowRight size={17} stroke={2} aria-hidden="true" />
-                </Button>
+                {paperQuestions[0] ? (
+                  <Button
+                    variant="primary"
+                    render={<Link href={paperQuestions[0].path} />}
+                  >
+                    開始作答 <IconArrowRight size={17} stroke={2} aria-hidden="true" />
+                  </Button>
+                ) : (
+                  <Button variant="primary" disabled>
+                    尚未收錄
+                  </Button>
+                )}
               </article>
             );
           })}

@@ -3,9 +3,9 @@ import { useRouter } from 'next/router';
 import { IconChartPie } from '@tabler/icons-react';
 import { EmptyState, PageHeader } from '@/components/content/content';
 import { SimpleSelect } from '@/components/ui/ui';
-import { questions, subjects, years } from '@/data/questions';
+import { subjects, years } from '@/question-bank/catalog';
 import { getAnalysis, isSubjectId, parseYear } from '@/lib/study';
-import type { SubjectId } from '@/lib/types';
+import type { QuestionSummary, SubjectId } from '@/lib/types';
 import styles from './analysis-page.module.css';
 
 const colors = ['#2563eb', '#0d9488', '#d97706', '#7c3aed', '#dc4c64', '#64748b'];
@@ -19,7 +19,7 @@ function valueOf(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;
 }
 
-export function AnalysisPage() {
+export function AnalysisPage({ questions }: { questions: QuestionSummary[] }) {
   const router = useRouter();
   const querySubject = valueOf(router.query.subject);
   const subjectId: SubjectId = isSubjectId(querySubject) ? querySubject : 'law';

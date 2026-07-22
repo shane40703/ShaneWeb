@@ -1,0 +1,14 @@
+import { definePaper } from '@/question-bank/schema';
+
+export default definePaper({
+  status: 'official-partial',
+  paperCode: '3801',
+  officialName: '建築構造與施工',
+  totalQuestions: 80,
+  questionUrl:
+    'https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=114180&q=1&s=0103&t=Q',
+  answerUrl:
+    'https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=114180&q=1&s=0103&t=S',
+  correctionUrl:
+    'https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=114180&q=1&s=0103&t=M',
+});

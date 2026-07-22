@@ -72,9 +72,11 @@
   gap: 8px;
 }
 
-.questionNumbers button {
+.questionNumbers a {
   aspect-ratio: 1;
   padding: 0;
+  display: grid;
+  place-items: center;
   border: 1px solid var(--line);
   border-radius: 10px;
   background: var(--surface-2);
@@ -82,29 +84,30 @@
   font: inherit;
   font-size: 12px;
   font-weight: 800;
+  text-decoration: none;
   cursor: pointer;
   transition: border-color 150ms ease, background 150ms ease, color 150ms ease;
 }
 
-.questionNumbers button:hover {
+.questionNumbers a:hover {
   border-color: var(--primary);
   color: var(--primary-strong);
 }
 
-.questionNumbers button[data-answered='true'] {
+.questionNumbers a[data-answered='true'] {
   border-color: color-mix(in srgb, var(--success) 35%, var(--line));
   background: var(--success-soft);
   color: var(--success);
 }
 
-.questionNumbers button[aria-current='step'] {
+.questionNumbers a[aria-current='step'] {
   border-color: var(--primary);
   background: var(--primary);
   color: white;
   box-shadow: 0 7px 15px color-mix(in srgb, var(--primary) 22%, transparent);
 }
 
-.questionNumbers button:focus-visible {
+.questionNumbers a:focus-visible {
   outline: 3px solid color-mix(in srgb, var(--primary) 28%, transparent);
   outline-offset: 2px;
 }
@@ -198,6 +201,36 @@
 .questionBody > a,
 .questionBody > button {
   justify-self: start;
+}
+
+.answerFeedback {
+  padding: 18px;
+  display: grid;
+  gap: 9px;
+  border: 1px solid color-mix(in srgb, var(--danger) 28%, var(--line));
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--danger) 7%, var(--surface));
+}
+
+.answerFeedback[data-correct='true'] {
+  border-color: color-mix(in srgb, var(--success) 30%, var(--line));
+  background: var(--success-soft);
+}
+
+.answerFeedback header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--danger);
+}
+
+.answerFeedback[data-correct='true'] header {
+  color: var(--success);
+}
+
+.answerFeedback p {
+  margin: 0;
+  line-height: 1.7;
 }
 
 .navigation {

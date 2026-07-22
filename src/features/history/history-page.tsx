@@ -2,8 +2,10 @@ import Link from 'next/link';
 import { IconHistory, IconLoader2 } from '@tabler/icons-react';
 import { EmptyState, PageHeader, Tag } from '@/components/content/content';
 import { Button } from '@/components/ui/ui';
-import { getQuestion, getSubject } from '@/data/questions';
-import { formatDuration } from '@/lib/study';
+import { getSubject } from '@/question-bank/catalog';
+import { questionPathFromId } from '@/lib/question-path';
+import { formatDuration, isQuestionCorrect } from '@/lib/study';
+import type { Question } from '@/lib/types';
 import { useAppState } from '@/state/app-state';
 import styles from './history-page.module.css';
 
@@ -13,7 +15,7 @@ function formatDate(iso: string) {
   return `${date.replaceAll('-', '/')} ${time}`;
 }
 
-export function HistoryPage() {
+export function HistoryPage({ questions }: { questions: Question[] }) {
   const { state, hydrated } = useAppState();
 
   return (
@@ -31,17 +33,14 @@ export function HistoryPage() {
             {state.attempts.map((attempt) => {
               const subject = attempt.subject === 'mixed' ? null : getSubject(attempt.subject);
               const wrongQuestions = attempt.questionIds
-                .map((id) => getQuestion(id))
+                .map((id) => questions.find((question) => question.id === id))
                 .filter(
                   (question) =>
                     Boolean(question) &&
                     attempt.answers[question!.id] !== undefined &&
-                    attempt.answers[question!.id] !== question!.answer,
+                    !isQuestionCorrect(question!, attempt.answers[question!.id]),
                 );
-              const retryHref =
-                attempt.mode === 'paper' && attempt.subject !== 'mixed' && attempt.year
-                  ? `/quiz?subject=${attempt.subject}&year=${attempt.year}`
-                  : `/quiz?mode=random&questions=${attempt.questionIds.join(',')}`;
+              const retryHref = questionPathFromId(attempt.questionIds[0] ?? '') ?? '/papers';
               return (
                 <article className={styles.attempt} key={attempt.id}>
                   <header>
@@ -67,7 +66,7 @@ export function HistoryPage() {
                       <summary>查看答錯題目（{wrongQuestions.length}）</summary>
                       <div>
                         {wrongQuestions.map((question) => question && (
-                          <Link key={question.id} href={`/community?question=${question.id}`}>
+                          <Link key={question.id} href={questionPathFromId(question.id) ?? '/papers'}>
                             第 {question.questionNumber} 題・{question.text}
                           </Link>
                         ))}

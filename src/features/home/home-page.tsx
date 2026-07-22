@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { IconArrowRight } from '@tabler/icons-react';
 import { SubjectIcon } from '@/components/subject-icon';
-import { subjects } from '@/data/questions';
+import { subjects } from '@/question-bank/catalog';
 import styles from './home-page.module.css';
 
 export function HomePage() {

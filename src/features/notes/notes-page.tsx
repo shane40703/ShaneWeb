@@ -1,9 +1,15 @@
 import { useRouter } from 'next/router';
 import { useState } from 'react';
 import { IconLoader2, IconNotebook } from '@tabler/icons-react';
-import { EmptyState, PageHeader, Tag } from '@/components/content/content';
+import {
+  EmptyState,
+  PageHeader,
+  QuestionPrompt,
+  QuestionSourceLine,
+  Tag,
+} from '@/components/content/content';
 import { Button, SimpleSelect, useToast } from '@/components/ui/ui';
-import { getQuestion, getSubject, questions, subjects } from '@/data/questions';
+import { getSubject, subjects } from '@/question-bank/catalog';
 import type { Question, SubjectId } from '@/lib/types';
 import { useAppState } from '@/state/app-state';
 import styles from './notes-page.module.css';
@@ -12,10 +18,12 @@ function valueOf(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;
 }
 
-export function NotesPage() {
+export function NotesPage({ questions }: { questions: Question[] }) {
   const router = useRouter();
   const { state, hydrated } = useAppState();
-  const currentQuestion = getQuestion(valueOf(router.query.question) ?? '') ?? questions[0];
+  const currentQuestion =
+    questions.find((question) => question.id === (valueOf(router.query.question) ?? '')) ??
+    questions[0];
 
   if (!currentQuestion) {
     return <EmptyState icon={IconNotebook} title="題庫尚無資料" description="加入題目後即可建立筆記。" />;
@@ -27,7 +35,7 @@ export function NotesPage() {
     (question) => question.subject === currentQuestion.subject && question.year === currentQuestion.year,
   );
   const noteEntries = Object.entries(state.notes)
-    .map(([id, content]) => ({ question: getQuestion(id), content }))
+    .map(([id, content]) => ({ question: questions.find((question) => question.id === id), content }))
     .filter((entry): entry is { question: Question; content: string } => Boolean(entry.question));
 
   if (!hydrated) {
@@ -129,8 +137,12 @@ function NoteEditor({ question, initialValue }: { question: Question; initialVal
         <Tag>{question.year} 年</Tag>
         <Tag tone="green">{getSubject(question.subject)?.name}</Tag>
         <Tag tone="purple">第 {question.questionNumber} 題</Tag>
+        <Tag tone={question.source.kind === 'official' ? 'green' : 'purple'}>
+          {question.source.kind === 'official' ? '官方題' : '示範題'}
+        </Tag>
       </div>
-      <h2>{question.text}</h2>
+      <QuestionPrompt question={question} />
+      <QuestionSourceLine question={question} />
       <label htmlFor="question-note">我的筆記</label>
       <textarea
         id="question-note"

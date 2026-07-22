@@ -11,13 +11,15 @@ import {
   createDefaultState,
   LEGACY_STORAGE_KEY,
   migrateLegacyState,
+  migrateV3State,
   parseStoredState,
   STORAGE_KEY,
+  V3_STORAGE_KEY,
 } from '@/lib/study';
-import type { AppStateV3 } from '@/lib/types';
+import type { AppStateV4 } from '@/lib/types';
 
 interface AppStateContextValue {
-  state: AppStateV3;
+  state: AppStateV4;
   dispatch: Dispatch<AppAction>;
   hydrated: boolean;
 }
@@ -25,7 +27,7 @@ interface AppStateContextValue {
 const AppStateContext = createContext<AppStateContextValue | null>(null);
 
 interface ProviderState {
-  data: AppStateV3;
+  data: AppStateV4;
   hydrated: boolean;
 }
 
@@ -44,9 +46,12 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const stored = window.localStorage.getItem(STORAGE_KEY);
+    const storedV3 = window.localStorage.getItem(V3_STORAGE_KEY);
     const nextState = stored
       ? parseStoredState(stored)
-      : migrateLegacyState(window.localStorage.getItem(LEGACY_STORAGE_KEY));
+      : storedV3
+        ? migrateV3State(storedV3)
+        : migrateLegacyState(window.localStorage.getItem(LEGACY_STORAGE_KEY));
     dispatch({ type: 'hydrate', state: nextState });
   }, []);
 

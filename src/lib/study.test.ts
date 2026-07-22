@@ -1,14 +1,21 @@
 import { describe, expect, it } from 'vitest';
-import { questions } from '@/data/questions';
+import { loadAllQuestions } from '@/server/question-bank.server';
 import {
-  buildQuiz,
   createAttempt,
   createDefaultState,
   formatDuration,
   getAnalysis,
+  isQuestionCorrect,
   migrateLegacyState,
+  migrateV3State,
   parseStoredState,
 } from '@/lib/study';
+
+const questions = await loadAllQuestions();
+
+function firstAcceptedAnswer(question: (typeof questions)[number]) {
+  return question.answerKey.kind === 'accepted' ? question.answerKey.options[0] : 0;
+}
 
 describe('question data', () => {
   it('uses unique canonical ids and valid primary categories', () => {
@@ -19,10 +26,16 @@ describe('question data', () => {
       );
       expect(question.year).toBeGreaterThanOrEqual(102);
       expect(question.year).toBeLessThanOrEqual(114);
-      expect(question.answer).toBeGreaterThanOrEqual(0);
-      expect(question.answer).toBeLessThan(question.options.length);
+      if (question.answerKey.kind === 'accepted') {
+        expect(question.answerKey.options.length).toBeGreaterThan(0);
+        question.answerKey.options.forEach((answer) => {
+          expect(answer).toBeGreaterThanOrEqual(0);
+          expect(answer).toBeLessThan(question.options.length);
+        });
+      }
       expect(question.primaryCategory.length).toBeGreaterThan(0);
     });
+    expect(questions).toHaveLength(21);
   });
 });
 
@@ -33,10 +46,39 @@ describe('local state validation', () => {
     expect(parseStoredState(JSON.stringify({ version: 2 }))).toEqual(createDefaultState());
   });
 
-  it('accepts a valid v3 state', () => {
+  it('accepts a valid v4 state', () => {
     const state = createDefaultState();
     state.difficultQuestionIds = ['law-114-01'];
     expect(parseStoredState(JSON.stringify(state))).toEqual(state);
+  });
+
+  it('migrates v3 while removing state tied to replaced official questions', () => {
+    const migrated = migrateV3State(
+      JSON.stringify({
+        version: 3,
+        answers: {
+          'law-114-01': {
+            selected: 1,
+            correct: true,
+            answeredAt: '2026-01-01T00:00:00.000Z',
+          },
+          'env-114-01': {
+            selected: 1,
+            correct: true,
+            answeredAt: '2026-01-01T00:00:00.000Z',
+          },
+        },
+        difficultQuestionIds: ['law-114-01', 'env-114-01'],
+        attempts: [],
+        notes: { 'law-114-01': '舊題筆記', 'env-114-01': '保留筆記' },
+        discussionPosts: [],
+      }),
+    );
+    expect(migrated.version).toBe(4);
+    expect(migrated.answers['law-114-01']).toBeUndefined();
+    expect(migrated.answers['env-114-01']?.correct).toBe(true);
+    expect(migrated.difficultQuestionIds).toEqual(['env-114-01']);
+    expect(migrated.notes).toEqual({ 'env-114-01': '保留筆記' });
   });
 
   it('migrates v2 answers and difficult ids without interface preferences', () => {
@@ -44,67 +86,25 @@ describe('local state validation', () => {
       JSON.stringify({
         version: 2,
         answers: {
-          1: { selected: 1, correct: true, answeredAt: '2026-01-01T00:00:00.000Z' },
+          2: { selected: 1, correct: true, answeredAt: '2026-01-01T00:00:00.000Z' },
         },
         difficultQuestionIds: [1, 5],
         preferences: { theme: 'dark' },
       }),
     );
-    expect(migrated.answers['law-114-01']?.correct).toBe(true);
-    expect(migrated.difficultQuestionIds).toEqual(['law-114-01', 'law-113-01']);
+    expect(migrated.answers['env-114-01']?.correct).toBe(true);
+    expect(migrated.difficultQuestionIds).toEqual(['law-113-01']);
     expect(migrated).not.toHaveProperty('preferences');
   });
 });
 
-describe('quiz builder and result helpers', () => {
-  const emptyState = createDefaultState();
-
-  it('supports a reversed year range and caps the requested count', () => {
-    const quiz = buildQuiz(
-      {
-        subject: 'law',
-        fromYear: 114,
-        toYear: 112,
-        count: 20,
-        onlyUnanswered: false,
-        onlyDifficult: false,
-      },
-      emptyState,
-      () => 0.5,
-    );
-    expect(quiz).toHaveLength(3);
-    expect(quiz.every((question) => question.subject === 'law')).toBe(true);
-  });
-
-  it('honors unanswered and difficult filters together', () => {
-    const state = createDefaultState();
-    state.difficultQuestionIds = ['law-114-01', 'env-114-01'];
-    state.answers['law-114-01'] = {
-      selected: 1,
-      correct: true,
-      answeredAt: '2026-01-01T00:00:00.000Z',
-    };
-    const quiz = buildQuiz(
-      {
-        subject: 'all',
-        fromYear: 102,
-        toYear: 114,
-        count: 5,
-        onlyUnanswered: true,
-        onlyDifficult: true,
-      },
-      state,
-      () => 0.5,
-    );
-    expect(quiz.map((question) => question.id)).toEqual(['env-114-01']);
-  });
-
+describe('result helpers', () => {
   it('calculates complete submission totals and duration formatting', () => {
     const source = questions.slice(0, 3);
     const attempt = createAttempt({
-      mode: 'random',
+      mode: 'paper',
       source,
-      answers: { [source[0].id]: source[0].answer, [source[1].id]: 0 },
+      answers: { [source[0].id]: firstAcceptedAnswer(source[0]), [source[1].id]: 0 },
       startedAt: '2026-01-01T00:00:00.000Z',
       elapsedSeconds: 65,
     });
@@ -112,6 +112,26 @@ describe('quiz builder and result helpers', () => {
     expect(attempt.wrongCount).toBe(1);
     expect(attempt.unansweredCount).toBe(1);
     expect(formatDuration(3661)).toBe('01:01:01');
+  });
+
+  it('accepts every corrected answer and awards all-credit questions without a selection', () => {
+    const corrected = questions.find((question) => question.id === 'construction-114-49');
+    expect(corrected).toBeDefined();
+    expect(isQuestionCorrect(corrected!, 0)).toBe(true);
+    expect(isQuestionCorrect(corrected!, 1)).toBe(true);
+    expect(isQuestionCorrect(corrected!, 2)).toBe(false);
+
+    const allCredit = { ...corrected!, id: 'all-credit', answerKey: { kind: 'all-credit' as const } };
+    const attempt = createAttempt({
+      mode: 'paper',
+      source: [allCredit],
+      answers: {},
+      startedAt: '2026-01-01T00:00:00.000Z',
+      elapsedSeconds: 1,
+    });
+    expect(attempt.correctCount).toBe(1);
+    expect(attempt.wrongCount).toBe(0);
+    expect(attempt.unansweredCount).toBe(0);
   });
 });
 

@@ -1,4 +1,7 @@
-export type SubjectId = 'law' | 'env' | 'construction' | 'structure';
+import type { StaticImageData } from 'next/image';
+import type { SubjectId } from '@/question-bank/schema';
+
+export type { SubjectId };
 
 export type QuestionId = string;
 
@@ -8,6 +11,25 @@ export interface Subject {
   shortName: string;
   description: string;
 }
+
+export type QuestionContentBlock =
+  | { kind: 'text'; text: string }
+  | { kind: 'image'; src: StaticImageData | string; alt: string };
+
+export type AnswerKey =
+  | { kind: 'accepted'; options: readonly number[] }
+  | { kind: 'all-credit' };
+
+export type QuestionSource =
+  | { kind: 'sample' }
+  | {
+      kind: 'official';
+      paperCode: string;
+      page: number;
+      questionUrl: string;
+      answerUrl: string;
+      correctionUrl?: string;
+    };
 
 export interface Question {
   id: QuestionId;
@@ -19,9 +41,22 @@ export interface Question {
   tags: readonly string[];
   relatedLaws?: readonly string[];
   text: string;
+  content: readonly QuestionContentBlock[];
   options: readonly string[];
-  answer: number;
-  explanation: string;
+  answerKey: AnswerKey;
+  explanation?: string;
+  source: QuestionSource;
+}
+
+export interface QuestionSummary {
+  id: string;
+  subject: SubjectId;
+  year: number;
+  questionNumber: number;
+  primaryCategory: string;
+  topic: string;
+  tags: readonly string[];
+  path: string;
 }
 
 export interface AnswerRecord {
@@ -77,11 +112,11 @@ export interface AppStateV3 {
   discussionPosts: DiscussionPost[];
 }
 
-export interface PracticeFilters {
-  subject: SubjectId | 'all';
-  fromYear: number;
-  toYear: number;
-  count: number;
-  onlyUnanswered: boolean;
-  onlyDifficult: boolean;
+export interface AppStateV4 {
+  version: 4;
+  answers: Record<QuestionId, AnswerRecord>;
+  difficultQuestionIds: QuestionId[];
+  attempts: QuizAttempt[];
+  notes: Record<QuestionId, string>;
+  discussionPosts: DiscussionPost[];
 }

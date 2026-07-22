@@ -1,10 +1,10 @@
 import { EmptyState, PageHeader, QuestionCard } from '@/components/content/content';
 import { IconBulb, IconLoader2 } from '@tabler/icons-react';
-import { questions } from '@/data/questions';
+import type { Question } from '@/lib/types';
 import { useAppState } from '@/state/app-state';
 import styles from './difficult-page.module.css';
 
-export function DifficultPage() {
+export function DifficultPage({ questions }: { questions: Question[] }) {
   const { state, dispatch, hydrated } = useAppState();
   const difficultQuestions = questions.filter((question) =>
     state.difficultQuestionIds.includes(question.id),

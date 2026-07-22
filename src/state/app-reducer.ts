@@ -1,22 +1,16 @@
-import type {
-  AppStateV3,
-  DiscussionPost,
-  DiscussionReply,
-  QuizAttempt,
-} from '@/lib/types';
-import { getQuestion } from '@/data/questions';
+import type { AppStateV4, DiscussionPost, DiscussionReply, QuizAttempt } from '@/lib/types';
 
 export type AppAction =
-  | { type: 'hydrate'; state: AppStateV3 }
+  | { type: 'hydrate'; state: AppStateV4 }
   | { type: 'toggle-difficult'; questionId: string }
-  | { type: 'save-attempt'; attempt: QuizAttempt }
+  | { type: 'save-attempt'; attempt: QuizAttempt; results: Record<string, boolean> }
   | { type: 'save-note'; questionId: string; content: string }
   | { type: 'add-discussion-post'; post: DiscussionPost }
   | { type: 'like-discussion-post'; postId: string }
   | { type: 'report-discussion-post'; postId: string }
   | { type: 'add-discussion-reply'; postId: string; reply: DiscussionReply };
 
-export function appReducer(state: AppStateV3, action: AppAction): AppStateV3 {
+export function appReducer(state: AppStateV4, action: AppAction): AppStateV4 {
   switch (action.type) {
     case 'hydrate':
       return action.state;
@@ -33,10 +27,9 @@ export function appReducer(state: AppStateV3, action: AppAction): AppStateV3 {
       if (state.attempts.some((attempt) => attempt.id === action.attempt.id)) return state;
       const answers = { ...state.answers };
       for (const [questionId, selected] of Object.entries(action.attempt.answers)) {
-        const question = getQuestion(questionId);
         answers[questionId] = {
           selected,
-          correct: question ? selected === question.answer : false,
+          correct: action.results[questionId] ?? false,
           answeredAt: action.attempt.submittedAt,
         };
       }

@@ -8,10 +8,19 @@ import {
   IconHelpCircle,
   IconMessageCircle,
 } from '@tabler/icons-react';
-import { DifficultButton, EmptyState, PageHeader, Tag } from '@/components/content/content';
+import {
+  DifficultButton,
+  EmptyState,
+  PageHeader,
+  QuestionPrompt,
+  QuestionSourceLine,
+  Tag,
+} from '@/components/content/content';
 import { Button, SimpleSelect, useToast } from '@/components/ui/ui';
-import { getQuestion, getSubject, questions, subjects } from '@/data/questions';
-import type { DiscussionPostType, SubjectId } from '@/lib/types';
+import { getSubject, subjects } from '@/question-bank/catalog';
+import type { DiscussionPostType, Question, SubjectId } from '@/lib/types';
+import { questionPath } from '@/lib/question-path';
+import { getAcceptedAnswerIndexes } from '@/lib/study';
 import { useAppState } from '@/state/app-state';
 import styles from './community-page.module.css';
 
@@ -37,11 +46,13 @@ function formatDate(iso: string) {
   return `${date.replaceAll('-', '/')} ${time}`;
 }
 
-export function CommunityPage() {
+export function CommunityPage({ questions }: { questions: Question[] }) {
   const router = useRouter();
   const { state, dispatch } = useAppState();
   const { notify } = useToast();
-  const requestedQuestion = getQuestion(valueOf(router.query.question) ?? '');
+  const requestedQuestion = questions.find(
+    (question) => question.id === (valueOf(router.query.question) ?? ''),
+  );
   const currentQuestion = requestedQuestion ?? questions[0];
   const [postType, setPostType] = useState<DiscussionPostType>('explanation');
   const [postContent, setPostContent] = useState('');
@@ -68,6 +79,7 @@ export function CommunityPage() {
   const currentIndex = subjectQuestions.findIndex((question) => question.id === currentQuestion.id);
   const posts = state.discussionPosts.filter((post) => post.questionId === currentQuestion.id);
   const difficult = state.difficultQuestionIds.includes(currentQuestion.id);
+  const acceptedAnswers = getAcceptedAnswerIndexes(currentQuestion);
 
   function navigateTo(questionId: string) {
     void router.replace(
@@ -97,7 +109,7 @@ export function CommunityPage() {
     dispatch({
       type: 'add-discussion-post',
       post: {
-        id: `post-${now}-${Math.random().toString(36).slice(2, 7)}`,
+        id: `post-${now}`,
         questionId: currentQuestion.id,
         type: postType,
         content,
@@ -119,7 +131,7 @@ export function CommunityPage() {
       type: 'add-discussion-reply',
       postId,
       reply: {
-        id: `reply-${new Date().toISOString()}-${Math.random().toString(36).slice(2, 7)}`,
+        id: `reply-${postId}-${new Date().toISOString()}`,
         content,
         createdAt: new Date().toISOString(),
       },
@@ -161,24 +173,37 @@ export function CommunityPage() {
             <Tag tone="green">{subject?.name}</Tag>
             <Tag>{currentQuestion.year} 年</Tag>
             <Tag tone="purple">第 {currentQuestion.questionNumber} 題</Tag>
+            <Tag tone={currentQuestion.source.kind === 'official' ? 'green' : 'purple'}>
+              {currentQuestion.source.kind === 'official' ? '官方題' : '示範題'}
+            </Tag>
           </div>
           <DifficultButton
             active={difficult}
             onClick={() => dispatch({ type: 'toggle-difficult', questionId: currentQuestion.id })}
           />
         </header>
-        <h2>{currentQuestion.text}</h2>
+        <QuestionPrompt question={currentQuestion} />
+        <QuestionSourceLine question={currentQuestion} />
         <ol className={styles.options}>
           {currentQuestion.options.map((option, index) => (
-            <li key={option} data-correct={index === currentQuestion.answer}>
+            <li key={option} data-correct={acceptedAnswers.includes(index)}>
               <span>{String.fromCharCode(65 + index)}</span>{option}
             </li>
           ))}
         </ol>
         <div className={styles.explanation}>
           <span>正確答案</span>
-          <strong>{String.fromCharCode(65 + currentQuestion.answer)}・{currentQuestion.options[currentQuestion.answer]}</strong>
-          <p>{currentQuestion.explanation}</p>
+          <strong>
+            {currentQuestion.answerKey.kind === 'all-credit'
+              ? '本題一律給分'
+              : acceptedAnswers
+                  .map(
+                    (index) =>
+                      `${String.fromCharCode(65 + index)}・${currentQuestion.options[index]}`,
+                  )
+                  .join('、')}
+          </strong>
+          <p>{currentQuestion.explanation ?? '目前尚無詳解。'}</p>
         </div>
         <footer className={styles.questionNavigation}>
           <Button
@@ -189,7 +214,15 @@ export function CommunityPage() {
           </Button>
           <Button
             variant="ghost"
-            render={<Link href={`/quiz?subject=${currentQuestion.subject}&year=${currentQuestion.year}`} />}
+            render={
+              <Link
+                href={questionPath(
+                  currentQuestion.subject,
+                  currentQuestion.year,
+                  currentQuestion.questionNumber,
+                )}
+              />
+            }
           >
             返回作答頁
           </Button>

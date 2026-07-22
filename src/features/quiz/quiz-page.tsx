@@ -1,206 +1,189 @@
 import Link from 'next/link';
-import { useRouter } from 'next/router';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   IconArrowLeft,
   IconArrowRight,
   IconCircleCheck,
   IconExternalLink,
-  IconFileUnknown,
-  IconLoader2,
+  IconX,
 } from '@tabler/icons-react';
 import {
   DifficultButton,
-  EmptyState,
   PageHeader,
-  QuestionCard,
+  QuestionPrompt,
+  QuestionSourceLine,
   Tag,
 } from '@/components/content/content';
 import { Button, OptionGroup, ProgressBar } from '@/components/ui/ui';
-import { getQuestion, getSubject } from '@/data/questions';
+import { getSubject } from '@/question-bank/catalog';
 import {
   createAttempt,
   formatDuration,
-  getPaperQuestions,
-  isSubjectId,
-  parseYear,
+  getAcceptedAnswerIndexes,
+  isQuestionCorrect,
 } from '@/lib/study';
-import type { Question, QuizAttempt } from '@/lib/types';
+import type { Question } from '@/lib/types';
 import { useAppState } from '@/state/app-state';
 import styles from './quiz-page.module.css';
 
-function queryValue(value: string | string[] | undefined) {
-  return Array.isArray(value) ? value[0] : value;
+export interface QuestionRouteItem {
+  id: string;
+  questionNumber: number;
+  path: string;
 }
 
-export function QuizPage() {
-  const router = useRouter();
-  const source = useMemo(() => {
-    if (!router.isReady) return null;
-    if (queryValue(router.query.mode) === 'random') {
-      const ids = (queryValue(router.query.questions) ?? '').split(',').filter(Boolean);
-      return ids.map((id) => getQuestion(id)).filter((question): question is Question => Boolean(question));
-    }
-    const subject = queryValue(router.query.subject);
-    const year = parseYear(router.query.year);
-    return isSubjectId(subject) && year ? getPaperQuestions(subject, year) : [];
-  }, [router.isReady, router.query.mode, router.query.questions, router.query.subject, router.query.year]);
-
-  if (!router.isReady || source === null) {
-    return <EmptyState icon={IconLoader2} title="正在載入試卷" description="請稍候。" />;
-  }
-
-  if (!source.length) {
-    const hasPaperQuery = isSubjectId(queryValue(router.query.subject)) && parseYear(router.query.year);
-    return (
-      <>
-        <PageHeader eyebrow="QUIZ" title="作答頁" />
-        <section className={styles.card}>
-          <EmptyState
-            icon={IconFileUnknown}
-            title={hasPaperQuery ? '這份試卷尚無題目資料' : '尚未選擇試卷'}
-            description={
-              hasPaperQuery
-                ? '目前題庫資料尚未涵蓋這個科目與年度，請改選已收錄的試卷。'
-                : '請先到歷屆試題選擇科目與年度，或使用隨機出題。'
-            }
-            action={
-              <Button variant="primary" render={<Link href="/papers" />}>
-                返回歷屆試題
-              </Button>
-            }
-          />
-        </section>
-      </>
-    );
-  }
-
-  const mode = queryValue(router.query.mode) === 'random' ? 'random' : 'paper';
-  const sessionKey = `${mode}:${source.map((question) => question.id).join(',')}`;
-  return <QuizSession key={sessionKey} source={source} mode={mode} />;
+export interface StaticQuestionPageProps {
+  question: Question;
+  paperQuestions: QuestionRouteItem[];
+  position: number;
 }
 
-function QuizSession({ source, mode }: { source: readonly Question[]; mode: QuizAttempt['mode'] }) {
+export function QuizPage({
+  question,
+  paperQuestions,
+  position,
+}: StaticQuestionPageProps) {
   const { state, dispatch } = useAppState();
-  const [questionIndex, setQuestionIndex] = useState(0);
-  const [answers, setAnswers] = useState<Record<string, number>>({});
+  const [selected, setSelected] = useState<number>();
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [startedAt] = useState(() => new Date().toISOString());
-  const [attempt, setAttempt] = useState<QuizAttempt | null>(null);
-  const currentQuestion = source[questionIndex];
+  const [submitted, setSubmitted] = useState(false);
+  const subject = getSubject(question.subject);
+  const difficult = state.difficultQuestionIds.includes(question.id);
+  const correct = submitted && isQuestionCorrect(question, selected);
+  const acceptedAnswers = getAcceptedAnswerIndexes(question);
+  const previous = paperQuestions[position - 1];
+  const next = paperQuestions[position + 1];
 
   useEffect(() => {
-    if (attempt) return;
+    if (submitted) return;
     const timer = window.setInterval(() => setElapsedSeconds((current) => current + 1), 1000);
     return () => window.clearInterval(timer);
-  }, [attempt]);
+  }, [submitted]);
 
-  function submitQuiz() {
-    if (attempt) return;
-    const nextAttempt = createAttempt({ mode, source, answers, startedAt, elapsedSeconds });
-    dispatch({ type: 'save-attempt', attempt: nextAttempt });
-    setAttempt(nextAttempt);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+  function submitAnswer() {
+    if (submitted || (selected === undefined && question.answerKey.kind !== 'all-credit')) {
+      return;
+    }
+    const answers = selected === undefined ? {} : { [question.id]: selected };
+    const attempt = createAttempt({
+      mode: 'paper',
+      source: [question],
+      answers,
+      startedAt,
+      elapsedSeconds,
+    });
+    dispatch({
+      type: 'save-attempt',
+      attempt,
+      results: selected === undefined ? {} : { [question.id]: isQuestionCorrect(question, selected) },
+    });
+    setSubmitted(true);
   }
-
-  if (attempt) {
-    const wrongQuestions = source.filter(
-      (question) => answers[question.id] !== undefined && answers[question.id] !== question.answer,
-    );
-    const score = source.length ? Math.round((attempt.correctCount / source.length) * 100) : 0;
-    return (
-      <>
-        <PageHeader eyebrow="RESULT" title="本次作答結果" description={`總作答時間 ${formatDuration(attempt.elapsedSeconds)}`} />
-        <section className={styles.resultCard}>
-          <div className={styles.scoreRing} aria-label={`正確率 ${score}%`}>
-            <strong>{score}%</strong>
-            <span>正確率</span>
-          </div>
-          <div className={styles.resultStats}>
-            <div data-tone="success"><strong>{attempt.correctCount}</strong><span>答對</span></div>
-            <div data-tone="danger"><strong>{attempt.wrongCount}</strong><span>答錯</span></div>
-            <div><strong>{attempt.unansweredCount}</strong><span>未作答</span></div>
-            <div><strong>{formatDuration(attempt.elapsedSeconds)}</strong><span>總時間</span></div>
-          </div>
-          <div className={styles.resultActions}>
-            <Button render={<Link href="/papers" />}>選擇其他試卷</Button>
-            <Button variant="primary" render={<Link href="/history" />}>查看作答紀錄</Button>
-          </div>
-        </section>
-        <section className={styles.reviewSection}>
-          <h2>答錯題目</h2>
-          {wrongQuestions.length ? (
-            <div className={styles.reviewList}>
-              {wrongQuestions.map((question) => (
-                <QuestionCard
-                  key={question.id}
-                  question={question}
-                  difficult={state.difficultQuestionIds.includes(question.id)}
-                  onToggleDifficult={() => dispatch({ type: 'toggle-difficult', questionId: question.id })}
-                />
-              ))}
-            </div>
-          ) : (
-            <EmptyState icon={IconCircleCheck} title="沒有答錯題目" description="這次作答沒有已作答但答錯的題目。" />
-          )}
-        </section>
-      </>
-    );
-  }
-
-  const subject = getSubject(currentQuestion.subject);
-  const selected = answers[currentQuestion.id];
-  const answeredCount = Object.keys(answers).length;
-  const difficult = state.difficultQuestionIds.includes(currentQuestion.id);
 
   return (
     <>
       <PageHeader
-        eyebrow={mode === 'random' ? 'RANDOM QUIZ' : 'PAPER QUIZ'}
-        title={mode === 'random' ? '隨機題組' : `${currentQuestion.year} 年・${subject?.name}`}
-        action={<div className={styles.timer}><span>作答時間</span><strong>{formatDuration(elapsedSeconds)}</strong></div>}
+        eyebrow="STATIC QUESTION"
+        title={`${question.year} 年・${subject?.name}`}
+        action={
+          <div className={styles.timer}>
+            <span>作答時間</span>
+            <strong>{formatDuration(elapsedSeconds)}</strong>
+          </div>
+        }
       />
       <div className={styles.quizLayout}>
         <section className={styles.card}>
           <header className={styles.quizHeader}>
             <div className={styles.meta}>
               <Tag tone="green">{subject?.shortName}</Tag>
-              <Tag>{currentQuestion.year} 年</Tag>
-              <Tag tone="orange">{currentQuestion.primaryCategory}</Tag>
+              <Tag>{question.year} 年</Tag>
+              <Tag tone="orange">{question.primaryCategory}</Tag>
+              <Tag tone={question.source.kind === 'official' ? 'green' : 'purple'}>
+                {question.source.kind === 'official' ? '官方題' : '示範題'}
+              </Tag>
             </div>
             <DifficultButton
               active={difficult}
-              onClick={() => dispatch({ type: 'toggle-difficult', questionId: currentQuestion.id })}
+              onClick={() => dispatch({ type: 'toggle-difficult', questionId: question.id })}
             />
           </header>
-          <ProgressBar value={((questionIndex + 1) / source.length) * 100} label="答題進度" />
+          <ProgressBar
+            value={((position + 1) / paperQuestions.length) * 100}
+            label="試卷進度"
+          />
           <div className={styles.questionBody}>
-            <span className={styles.questionNumber}>第 {currentQuestion.questionNumber} 題・題組 {questionIndex + 1}/{source.length}</span>
-            <h2>{currentQuestion.text}</h2>
+            <span className={styles.questionNumber}>
+              第 {question.questionNumber} 題・收錄題目 {position + 1}/{paperQuestions.length}
+            </span>
+            <QuestionPrompt question={question} />
+            <QuestionSourceLine question={question} />
             <OptionGroup
               label="請選擇答案"
-              options={currentQuestion.options}
+              options={question.options}
               value={selected}
-              onValueChange={(value) => setAnswers((current) => ({ ...current, [currentQuestion.id]: value }))}
+              disabled={submitted}
+              onValueChange={setSelected}
             />
+            {!submitted ? (
+              <Button
+                variant="primary"
+                onClick={submitAnswer}
+                disabled={selected === undefined && question.answerKey.kind !== 'all-credit'}
+              >
+                送出答案
+              </Button>
+            ) : (
+              <section className={styles.answerFeedback} data-correct={correct}>
+                <header>
+                  {correct ? (
+                    <IconCircleCheck size={25} stroke={2.2} aria-hidden="true" />
+                  ) : (
+                    <IconX size={25} stroke={2.2} aria-hidden="true" />
+                  )}
+                  <strong>{correct ? '答對了' : '答案不正確'}</strong>
+                </header>
+                <p>
+                  正確答案：
+                  {question.answerKey.kind === 'all-credit'
+                    ? '本題一律給分'
+                    : acceptedAnswers
+                        .map(
+                          (index) =>
+                            `${String.fromCharCode(65 + index)}・${question.options[index]}`,
+                        )
+                        .join('、')}
+                </p>
+                <p>{question.explanation ?? '目前尚無詳解。'}</p>
+              </section>
+            )}
             <Button
               variant="ghost"
-              render={<Link href={`/community?question=${currentQuestion.id}`} />}
+              render={<Link href={`/community?question=${question.id}`} />}
             >
               前往詳解與討論 <IconExternalLink size={17} stroke={2} aria-hidden="true" />
             </Button>
           </div>
           <footer className={styles.navigation}>
-            <Button onClick={() => setQuestionIndex((current) => Math.max(0, current - 1))} disabled={questionIndex === 0}>
-              <IconArrowLeft size={17} stroke={2} aria-hidden="true" /> 上一題
-            </Button>
-            <span>已作答 {answeredCount} / {source.length}</span>
-            {questionIndex < source.length - 1 ? (
-              <Button variant="primary" onClick={() => setQuestionIndex((current) => Math.min(source.length - 1, current + 1))}>
+            {previous ? (
+              <Button render={<Link href={previous.path} />}>
+                <IconArrowLeft size={17} stroke={2} aria-hidden="true" /> 上一題
+              </Button>
+            ) : (
+              <Button disabled>
+                <IconArrowLeft size={17} stroke={2} aria-hidden="true" /> 上一題
+              </Button>
+            )}
+            <span>靜態題目頁 {position + 1} / {paperQuestions.length}</span>
+            {next ? (
+              <Button variant="primary" render={<Link href={next.path} />}>
                 下一題 <IconArrowRight size={17} stroke={2} aria-hidden="true" />
               </Button>
             ) : (
-              <Button variant="primary" onClick={submitQuiz}>交卷</Button>
+              <Button variant="primary" render={<Link href="/papers" />}>
+                返回歷屆試題
+              </Button>
             )}
           </footer>
         </section>
@@ -208,27 +191,23 @@ function QuizSession({ source, mode }: { source: readonly Question[]; mode: Quiz
         <aside className={styles.questionNavigator} aria-label="題號導覽">
           <header>
             <div>
-              <span>QUESTION NAVIGATION</span>
+              <span>STATIC PATHS</span>
               <h2>題號導覽</h2>
             </div>
-            <strong>{questionIndex + 1}/{source.length}</strong>
+            <strong>{position + 1}/{paperQuestions.length}</strong>
           </header>
           <div className={styles.questionNumbers}>
-            {source.map((question, index) => {
-              const isAnswered = answers[question.id] !== undefined;
-              return (
-                <button
-                  key={question.id}
-                  type="button"
-                  onClick={() => setQuestionIndex(index)}
-                  aria-current={index === questionIndex ? 'step' : undefined}
-                  aria-label={`前往第 ${index + 1} 題${isAnswered ? '（已作答）' : ''}`}
-                  data-answered={isAnswered}
-                >
-                  {index + 1}
-                </button>
-              );
-            })}
+            {paperQuestions.map((item, index) => (
+              <Link
+                key={item.id}
+                href={item.path}
+                aria-current={index === position ? 'step' : undefined}
+                aria-label={`前往第 ${item.questionNumber} 題`}
+                data-answered={Boolean(state.answers[item.id])}
+              >
+                {item.questionNumber}
+              </Link>
+            ))}
           </div>
           <footer className={styles.navigatorLegend}>
             <span><i data-tone="current" />目前題目</span>

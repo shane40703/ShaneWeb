@@ -108,10 +108,70 @@
   min-width: 0;
 }
 
-.questionContent h2 {
-  margin: 10px 0 7px;
+.questionPrompt {
+  min-width: 0;
+  display: grid;
+  gap: 18px;
+}
+
+.questionPromptText {
+  max-width: 920px;
+  margin: 0;
+  white-space: pre-line;
+  font-size: clamp(20px, 2.4vw, 30px);
+  font-weight: 750;
+  line-height: 1.6;
+  letter-spacing: -0.02em;
+}
+
+.questionPromptImage {
+  width: fit-content;
+  max-width: min(100%, 820px);
+  margin: 0;
+  padding: 12px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: white;
+}
+
+.questionPromptImage img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  object-fit: contain;
+}
+
+.questionPrompt[data-compact='true'] {
+  margin-top: 10px;
+  gap: 12px;
+}
+
+.questionPrompt[data-compact='true'] .questionPromptText {
   font-size: 16px;
+  font-weight: 700;
   line-height: 1.65;
+}
+
+.questionPrompt[data-compact='true'] .questionPromptImage {
+  max-width: min(100%, 560px);
+  padding: 8px;
+}
+
+.questionSource {
+  width: fit-content;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+  text-decoration: none;
+}
+
+a.questionSource:hover {
+  color: var(--primary-strong);
+  text-decoration: underline;
 }
 
 .questionContent p {
