@@ -1,22 +1,18 @@
-'use client';
-
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { useRouter } from 'next/router';
 import { useState } from 'react';
-import { Button, SideDrawer, useToast } from '@/components/ui/ui';
-import { useAppState } from '@/state/app-state';
+import { SideDrawer } from '@/components/ui/ui';
 import styles from './app-shell.module.css';
 
 const navigation = [
   { href: '/', label: '首頁', symbol: '⌂' },
   { href: '/papers', label: '歷屆試題', symbol: '▤' },
-  { href: '/practice', label: '隨機出題', symbol: '⤨' },
+  { href: '/random', label: '隨機出題', symbol: '⤨' },
   { href: '/analysis', label: '考題分析', symbol: '▥' },
-  { href: '/community', label: '匿名詳解與討論', symbol: '◎' },
+  { href: '/community', label: '詳解與討論', symbol: '◎' },
   { href: '/notes', label: '使用者筆記', symbol: '✎' },
-  { href: '/difficult', label: '難題標記', symbol: '☆' },
+  { href: '/difficult', label: '難題標記', symbol: '💡' },
   { href: '/history', label: '已作答紀錄', symbol: '◷' },
-  { href: '/settings', label: '網頁介面設定', symbol: '⚙' },
 ] as const;
 
 function isActive(pathname: string, href: string) {
@@ -67,25 +63,19 @@ function SidebarContent({ pathname, onNavigate }: { pathname: string; onNavigate
           <span />
           <span />
         </div>
-        <strong>準備建築師考試</strong>
-        <p>從歷屆題目、弱點分析與重複練習開始。</p>
+        <strong>專注每一題</strong>
+        <p>練習紀錄、筆記與難題標記只保留在這台裝置。</p>
       </aside>
     </div>
   );
 }
 
 export function AppShell({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
+  const router = useRouter();
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const { state, dispatch } = useAppState();
-  const { notify } = useToast();
+  const pathname = router.pathname;
   const currentPage = navigation.find((item) => isActive(pathname, item.href));
-
-  function toggleTheme() {
-    const theme = state.preferences.theme === 'dark' ? 'light' : 'dark';
-    dispatch({ type: 'update-preferences', preferences: { theme } });
-    notify(theme === 'dark' ? '已切換為深色模式' : '已切換為亮色模式');
-  }
+  const pageTitle = pathname === '/quiz' ? '作答頁' : currentPage?.label ?? '建築師考試';
 
   return (
     <div className={styles.shell}>
@@ -103,19 +93,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             >
               <SidebarContent pathname={pathname} onNavigate={() => setDrawerOpen(false)} />
             </SideDrawer>
-            <span className={styles.pageTitle}>{currentPage?.label ?? '建築師考試'}</span>
+            <span className={styles.pageTitle}>{pageTitle}</span>
           </div>
-          <div className={styles.topbarActions}>
-            <span className={styles.anonymousBadge}>免登入・裝置端使用</span>
-            <Button
-              variant="icon"
-              onClick={toggleTheme}
-              aria-label={state.preferences.theme === 'dark' ? '切換為亮色模式' : '切換為深色模式'}
-              title={state.preferences.theme === 'dark' ? '切換為亮色模式' : '切換為深色模式'}
-            >
-              <span aria-hidden="true">{state.preferences.theme === 'dark' ? '☀' : '◐'}</span>
-            </Button>
-          </div>
+          <span className={styles.anonymousBadge}>免登入・本機保存</span>
         </header>
         <main className={styles.main}>{children}</main>
       </div>

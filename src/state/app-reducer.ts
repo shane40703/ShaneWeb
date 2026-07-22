@@ -1,14 +1,22 @@
-import type { AppStateV2, HistoryEntry, Preferences } from '@/lib/types';
-import { createDefaultState } from '@/lib/study';
+import type {
+  AppStateV3,
+  DiscussionPost,
+  DiscussionReply,
+  QuizAttempt,
+} from '@/lib/types';
+import { getQuestion } from '@/data/questions';
 
 export type AppAction =
-  | { type: 'hydrate'; state: AppStateV2 }
-  | { type: 'toggle-difficult'; questionId: number }
-  | { type: 'record-answer'; entry: HistoryEntry }
-  | { type: 'update-preferences'; preferences: Partial<Preferences> }
-  | { type: 'reset' };
+  | { type: 'hydrate'; state: AppStateV3 }
+  | { type: 'toggle-difficult'; questionId: string }
+  | { type: 'save-attempt'; attempt: QuizAttempt }
+  | { type: 'save-note'; questionId: string; content: string }
+  | { type: 'add-discussion-post'; post: DiscussionPost }
+  | { type: 'like-discussion-post'; postId: string }
+  | { type: 'report-discussion-post'; postId: string }
+  | { type: 'add-discussion-reply'; postId: string; reply: DiscussionReply };
 
-export function appReducer(state: AppStateV2, action: AppAction): AppStateV2 {
+export function appReducer(state: AppStateV3, action: AppAction): AppStateV3 {
   switch (action.type) {
     case 'hydrate':
       return action.state;
@@ -21,26 +29,53 @@ export function appReducer(state: AppStateV2, action: AppAction): AppStateV2 {
           : [...state.difficultQuestionIds, action.questionId],
       };
     }
-    case 'record-answer':
-      if (state.history.some((entry) => entry.id === action.entry.id)) return state;
+    case 'save-attempt': {
+      if (state.attempts.some((attempt) => attempt.id === action.attempt.id)) return state;
+      const answers = { ...state.answers };
+      for (const [questionId, selected] of Object.entries(action.attempt.answers)) {
+        const question = getQuestion(questionId);
+        answers[questionId] = {
+          selected,
+          correct: question ? selected === question.answer : false,
+          answeredAt: action.attempt.submittedAt,
+        };
+      }
       return {
         ...state,
-        answers: {
-          ...state.answers,
-          [action.entry.questionId]: {
-            selected: action.entry.selected,
-            correct: action.entry.correct,
-            answeredAt: action.entry.answeredAt,
-          },
-        },
-        history: [action.entry, ...state.history].slice(0, 100),
+        answers,
+        attempts: [action.attempt, ...state.attempts].slice(0, 100),
       };
-    case 'update-preferences':
+    }
+    case 'save-note': {
+      const notes = { ...state.notes };
+      if (action.content.trim()) notes[action.questionId] = action.content.trim();
+      else delete notes[action.questionId];
+      return { ...state, notes };
+    }
+    case 'add-discussion-post':
+      return { ...state, discussionPosts: [action.post, ...state.discussionPosts] };
+    case 'like-discussion-post':
       return {
         ...state,
-        preferences: { ...state.preferences, ...action.preferences },
+        discussionPosts: state.discussionPosts.map((post) =>
+          post.id === action.postId ? { ...post, likes: post.likes + 1 } : post,
+        ),
       };
-    case 'reset':
-      return createDefaultState();
+    case 'report-discussion-post':
+      return {
+        ...state,
+        discussionPosts: state.discussionPosts.map((post) =>
+          post.id === action.postId ? { ...post, reported: true } : post,
+        ),
+      };
+    case 'add-discussion-reply':
+      return {
+        ...state,
+        discussionPosts: state.discussionPosts.map((post) =>
+          post.id === action.postId
+            ? { ...post, replies: [...post.replies, action.reply] }
+            : post,
+        ),
+      };
   }
 }

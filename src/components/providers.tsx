@@ -1,5 +1,3 @@
-'use client';
-
 import type { ReactNode } from 'react';
 import { AppStateProvider } from '@/state/app-state';
 import { ToastProvider } from '@/components/ui/ui';

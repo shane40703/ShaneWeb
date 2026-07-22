@@ -1,5 +1,3 @@
-'use client';
-
 import {
   createContext,
   type Dispatch,
@@ -7,48 +5,64 @@ import {
   useContext,
   useEffect,
   useReducer,
-  useState,
 } from 'react';
 import { appReducer, type AppAction } from '@/state/app-reducer';
-import { createDefaultState, parseStoredState, STORAGE_KEY } from '@/lib/study';
-import type { AppStateV2 } from '@/lib/types';
+import {
+  createDefaultState,
+  LEGACY_STORAGE_KEY,
+  migrateLegacyState,
+  parseStoredState,
+  STORAGE_KEY,
+} from '@/lib/study';
+import type { AppStateV3 } from '@/lib/types';
 
 interface AppStateContextValue {
-  state: AppStateV2;
+  state: AppStateV3;
   dispatch: Dispatch<AppAction>;
   hydrated: boolean;
 }
 
 const AppStateContext = createContext<AppStateContextValue | null>(null);
 
-function applyPreferences(state: AppStateV2) {
-  const root = document.documentElement;
-  root.dataset.theme = state.preferences.theme;
-  root.dataset.fontScale = state.preferences.fontScale;
-  root.dataset.sidebar = state.preferences.sidebarCollapsed ? 'collapsed' : 'expanded';
+interface ProviderState {
+  data: AppStateV3;
+  hydrated: boolean;
+}
+
+function providerReducer(current: ProviderState, action: AppAction): ProviderState {
+  return {
+    data: appReducer(current.data, action),
+    hydrated: action.type === 'hydrate' ? true : current.hydrated,
+  };
 }
 
 export function AppStateProvider({ children }: { children: ReactNode }) {
-  const [state, dispatch] = useReducer(appReducer, undefined, createDefaultState);
-  const [hydrated, setHydrated] = useState(false);
+  const [store, dispatch] = useReducer(providerReducer, undefined, () => ({
+    data: createDefaultState(),
+    hydrated: false,
+  }));
 
   useEffect(() => {
-    const storedState = parseStoredState(window.localStorage.getItem(STORAGE_KEY));
-    dispatch({ type: 'hydrate', state: storedState });
-    applyPreferences(storedState);
-    // Hydration is the one intentional state sync from the browser storage boundary.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setHydrated(true);
+    const stored = window.localStorage.getItem(STORAGE_KEY);
+    const nextState = stored
+      ? parseStoredState(stored)
+      : migrateLegacyState(window.localStorage.getItem(LEGACY_STORAGE_KEY));
+    dispatch({ type: 'hydrate', state: nextState });
   }, []);
 
   useEffect(() => {
-    if (!hydrated) return;
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    applyPreferences(state);
-  }, [hydrated, state]);
+    if (!store.hydrated) return;
+    try {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(store.data));
+    } catch {
+      // Storage can be unavailable in private or quota-constrained browser contexts.
+    }
+  }, [store.data, store.hydrated]);
 
   return (
-    <AppStateContext.Provider value={{ state, dispatch, hydrated }}>
+    <AppStateContext.Provider
+      value={{ state: store.data, dispatch, hydrated: store.hydrated }}
+    >
       {children}
     </AppStateContext.Provider>
   );

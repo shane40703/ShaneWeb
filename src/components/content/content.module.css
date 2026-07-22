@@ -128,68 +128,15 @@
   flex-wrap: wrap;
 }
 
-.star {
+.difficult {
   color: var(--muted) !important;
+  background: var(--surface) !important;
 }
 
-.starActive {
-  color: #e69b18 !important;
+.difficultActive {
+  color: #8c5900 !important;
   border-color: #e9c371 !important;
   background: var(--warning-soft) !important;
-}
-
-.comingSoon {
-  min-height: 520px;
-  padding: 48px 24px;
-  position: relative;
-  display: grid;
-  place-content: center;
-  justify-items: center;
-  border: 1px solid color-mix(in srgb, var(--primary) 20%, var(--line));
-  border-radius: 22px;
-  overflow: hidden;
-  background: linear-gradient(140deg, var(--surface), var(--primary-soft));
-  text-align: center;
-  box-shadow: var(--shadow-md);
-}
-
-.blueprintGrid {
-  position: absolute;
-  inset: 0;
-  opacity: 0.65;
-  background-image: linear-gradient(var(--blueprint-line) 1px, transparent 1px),
-    linear-gradient(90deg, var(--blueprint-line) 1px, transparent 1px);
-  background-size: 28px 28px;
-  mask-image: radial-gradient(circle, #000 0%, transparent 72%);
-}
-
-.comingSoon > *:not(.blueprintGrid) {
-  position: relative;
-}
-
-.comingSymbol {
-  width: 84px;
-  height: 84px;
-  margin-bottom: 20px;
-  display: grid;
-  place-items: center;
-  border-radius: 25px;
-  background: var(--surface);
-  color: var(--primary);
-  box-shadow: var(--shadow-md);
-  font-size: 36px;
-}
-
-.comingSoon h2 {
-  margin: 10px 0 9px;
-  font-size: 28px;
-}
-
-.comingSoon p {
-  max-width: 520px;
-  margin: 0 0 22px;
-  color: var(--muted);
-  line-height: 1.75;
 }
 
 @media (max-width: 720px) {

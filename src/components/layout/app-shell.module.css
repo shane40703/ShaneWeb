@@ -3,11 +3,6 @@
   display: grid;
   grid-template-columns: 270px minmax(0, 1fr);
   background: var(--bg);
-  transition: grid-template-columns 200ms ease;
-}
-
-:global(html[data-sidebar='collapsed']) .shell {
-  grid-template-columns: 88px minmax(0, 1fr);
 }
 
 .desktopSidebar {
@@ -172,22 +167,6 @@
   right: 50px;
 }
 
-:global(html[data-sidebar='collapsed']) .brandCopy,
-:global(html[data-sidebar='collapsed']) .navLabel,
-:global(html[data-sidebar='collapsed']) .studyCard {
-  opacity: 0;
-  pointer-events: none;
-}
-
-:global(html[data-sidebar='collapsed']) .navItem {
-  padding: 0;
-  justify-content: center;
-}
-
-:global(html[data-sidebar='collapsed']) .navSymbol {
-  width: 45px;
-}
-
 .workspace {
   min-width: 0;
 }
@@ -243,8 +222,7 @@
 }
 
 @media (max-width: 800px) {
-  .shell,
-  :global(html[data-sidebar='collapsed']) .shell {
+  .shell {
     display: block;
   }
 
@@ -275,7 +253,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .shell,
   .brandCopy,
   .navItem,
   .navLabel {

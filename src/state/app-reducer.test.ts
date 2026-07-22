@@ -1,55 +1,74 @@
 import { describe, expect, it } from 'vitest';
-import { createDefaultState } from '@/lib/study';
-import type { HistoryEntry } from '@/lib/types';
+import { createAttempt, createDefaultState } from '@/lib/study';
+import { questions } from '@/data/questions';
 import { appReducer } from '@/state/app-reducer';
 
-function entry(id: string, questionId = 1): HistoryEntry {
-  return {
-    id,
-    questionId,
-    selected: 1,
-    correct: true,
-    answeredAt: '2026-01-01T00:00:00.000Z',
-  };
+function attempt(index = 0) {
+  const question = questions[index % questions.length];
+  return createAttempt({
+    mode: 'paper',
+    source: [question],
+    answers: { [question.id]: question.answer },
+    startedAt: '2026-01-01T00:00:00.000Z',
+    elapsedSeconds: 10,
+  });
 }
 
 describe('appReducer', () => {
-  it('does not add the same attempt twice', () => {
-    const first = appReducer(createDefaultState(), {
-      type: 'record-answer',
-      entry: entry('attempt-1'),
-    });
-    const duplicate = appReducer(first, {
-      type: 'record-answer',
-      entry: entry('attempt-1'),
-    });
-    expect(duplicate.history).toHaveLength(1);
+  it('does not add the same attempt twice and records answer correctness', () => {
+    const entry = attempt();
+    const first = appReducer(createDefaultState(), { type: 'save-attempt', attempt: entry });
+    const duplicate = appReducer(first, { type: 'save-attempt', attempt: entry });
+    expect(duplicate.attempts).toHaveLength(1);
+    expect(duplicate.answers['law-114-01']?.correct).toBe(true);
   });
 
-  it('keeps only the newest 100 history entries', () => {
+  it('keeps only the newest 100 attempts', () => {
     let state = createDefaultState();
     for (let index = 0; index < 105; index += 1) {
-      state = appReducer(state, {
-        type: 'record-answer',
-        entry: entry(`attempt-${index}`, (index % 20) + 1),
-      });
+      const entry = { ...attempt(index), id: `attempt-${index}` };
+      state = appReducer(state, { type: 'save-attempt', attempt: entry });
     }
-    expect(state.history).toHaveLength(100);
-    expect(state.history[0].id).toBe('attempt-104');
-    expect(state.history.at(-1)?.id).toBe('attempt-5');
+    expect(state.attempts).toHaveLength(100);
+    expect(state.attempts[0].id).toBe('attempt-104');
+    expect(state.attempts.at(-1)?.id).toBe('attempt-5');
   });
 
-  it('toggles difficult questions and resets all preferences', () => {
+  it('toggles difficult questions and saves or removes notes', () => {
     let state = appReducer(createDefaultState(), {
       type: 'toggle-difficult',
-      questionId: 7,
+      questionId: 'law-114-01',
     });
     state = appReducer(state, {
-      type: 'update-preferences',
-      preferences: { theme: 'dark', sidebarCollapsed: true },
+      type: 'save-note',
+      questionId: 'law-114-01',
+      content: '採光比例要再確認',
     });
-    expect(state.difficultQuestionIds).toEqual([7]);
-    expect(state.preferences.theme).toBe('dark');
-    expect(appReducer(state, { type: 'reset' })).toEqual(createDefaultState());
+    expect(state.difficultQuestionIds).toEqual(['law-114-01']);
+    expect(state.notes['law-114-01']).toBe('採光比例要再確認');
+    state = appReducer(state, {
+      type: 'save-note',
+      questionId: 'law-114-01',
+      content: ' ',
+    });
+    expect(state.notes['law-114-01']).toBeUndefined();
+  });
+
+  it('supports discussion likes, replies, and reports', () => {
+    const post = createDefaultState().discussionPosts[0];
+    let state = appReducer(createDefaultState(), {
+      type: 'like-discussion-post',
+      postId: post.id,
+    });
+    state = appReducer(state, {
+      type: 'add-discussion-reply',
+      postId: post.id,
+      reply: { id: 'reply-test', content: '補充內容', createdAt: '2026-01-01T00:00:00.000Z' },
+    });
+    state = appReducer(state, { type: 'report-discussion-post', postId: post.id });
+    const updated = state.discussionPosts.find((candidate) => candidate.id === post.id);
+    expect(updated?.likes).toBe(post.likes + 1);
+    expect(updated?.replies.at(-1)?.content).toBe('補充內容');
+    expect(updated?.reported).toBe(true);
   });
 });

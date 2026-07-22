@@ -1,47 +1,104 @@
 import { expect, test } from '@playwright/test';
 
-test('desktop navigation, filters, and persisted answer flow', async ({ page }, testInfo) => {
+test('paper flow, timer, difficult marker, result, and history persist', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop');
 
   await page.goto('/');
-  await expect(page.getByRole('heading', { name: /把每一次練習/ })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '選擇練習科目' })).toBeVisible();
+  await expect(page.locator('main h2')).toHaveCount(4);
+  await page.getByRole('link', { name: /建築法規與實務/ }).click();
+  await expect(page).toHaveURL(/\/papers\?subject=law/);
+  await expect(page.locator('article')).toHaveCount(13);
 
-  await page.getByRole('link', { name: '歷屆試題' }).click();
-  await expect(page).toHaveURL(/\/papers$/);
-  await page.getByRole('combobox', { name: '年度' }).click();
-  await page.getByRole('option', { name: '民國 114 年' }).click();
-  await expect(page).toHaveURL(/year=114/);
+  await page.getByRole('link', { name: /開始作答/ }).first().click();
+  await expect(page).toHaveURL(/\/quiz\?subject=law&year=114/);
+  await expect(page.getByText('作答時間')).toBeVisible();
+  await expect(page.getByText(/00:00:0\d/)).toBeVisible();
 
-  await page.goto('/practice?question=1');
-  await page.getByText('1/8', { exact: true }).click();
-  await page.getByRole('button', { name: '送出答案' }).click();
-  await expect(page.getByRole('status').getByText('回答正確', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: '標記為難題' }).click();
+  await expect(page.getByRole('button', { name: '取消難題標記' })).toBeVisible();
+  await page.getByText('1/5', { exact: true }).click();
+  await page.getByRole('button', { name: '交卷' }).click();
+
+  await expect(page.getByRole('heading', { name: '本次作答結果' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '答錯題目' })).toBeVisible();
   await expect
-    .poll(() => page.evaluate(() => localStorage.getItem('shaneweb:v2')))
-    .toContain('"correct":true');
+    .poll(() => page.evaluate(() => localStorage.getItem('shaneweb:v3')))
+    .toContain('law-114-01');
 
-  await page.goto('/papers?status=answered');
-  await expect(page.getByText('最近作答：答對')).toBeVisible();
+  await page.goto('/difficult');
+  await expect(page.getByText(/住宅居室採光有效面積/)).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole('button', { name: '取消難題標記' })).toBeVisible();
+
+  await page.goto('/history');
+  await expect(page.getByText('0%', { exact: true })).toBeVisible();
+  await expect(page.getByText('答錯')).toBeVisible();
 });
 
-test('settings persist after reload', async ({ page }, testInfo) => {
+test('analysis only shows exam-content distribution', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop');
 
-  await page.goto('/settings');
-  await page.getByRole('switch', { name: '深色模式' }).focus();
-  await page.keyboard.press('Space');
-  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
-  await page.reload();
-  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+  await page.goto('/analysis?subject=law&year=all');
+  await expect(page.getByRole('heading', { name: '考題分析' })).toBeVisible();
+  await expect(page.getByText('總題數 5 題')).toBeVisible();
+  await expect(page.getByRole('table')).toBeVisible();
+  await expect(page.getByText('主要分類占比')).toBeVisible();
+  await expect(page.locator('main')).not.toContainText('個人答對率');
+  await expect(page.locator('main')).not.toContainText('弱點分析');
+
+  await page.getByRole('combobox', { name: '科目' }).click();
+  await page.getByRole('option', { name: '建築環境控制' }).click();
+  await expect(page).toHaveURL(/subject=env/);
 });
 
-test('all public routes support direct visits and reloads', async ({ page }, testInfo) => {
+test('community selectors and local anonymous interactions work', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop');
+
+  await page.goto('/community?question=law-114-01');
+  await expect(page.getByRole('combobox', { name: '科目' })).toBeVisible();
+  await expect(page.getByRole('combobox', { name: '年份' })).toBeVisible();
+  await expect(page.getByRole('combobox', { name: '題號' })).toBeVisible();
+  await expect(page.getByText('正確答案')).toBeVisible();
+
+  await page.getByRole('button', { name: '下一題' }).click();
+  await expect(page).toHaveURL(/question=law-113-01/);
+  await page.getByRole('button', { name: '上一題' }).click();
+  await expect(page).toHaveURL(/question=law-114-01/);
+
+  const content = '先確認題目限定的是居室採光，再比對八分之一。';
+  await page.getByLabel('內容').fill(content);
+  await page.getByRole('button', { name: '匿名送出' }).click();
+  const post = page.locator('article').filter({ hasText: content });
+  await expect(post).toBeVisible();
+  await post.getByRole('button', { name: /讚 0/ }).click();
+  await expect(post.getByRole('button', { name: /讚 1/ })).toBeVisible();
+  await post.getByLabel('回覆這則內容').fill('這個記法很清楚。');
+  await post.getByRole('button', { name: '回覆' }).click();
+  await expect(post.getByText('這個記法很清楚。')).toBeVisible();
+  await post.getByRole('button', { name: '檢舉' }).click();
+  await expect(post.getByRole('button', { name: '已檢舉' })).toBeVisible();
+  await page.reload();
+  await expect(page.getByText(content)).toBeVisible();
+});
+
+test('notes save and reload from local storage', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop');
+
+  await page.goto('/notes?question=law-114-01');
+  await page.getByLabel('我的筆記').fill('採光有效面積：樓地板面積的八分之一。');
+  await page.getByRole('button', { name: '儲存筆記' }).click();
+  await page.reload();
+  await expect(page.getByLabel('我的筆記')).toHaveValue('採光有效面積：樓地板面積的八分之一。');
+});
+
+test('all Pages Router routes support direct visits and settings is gone', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop');
   const routes = [
     '/',
-    '/papers',
-    '/practice',
-    '/settings',
+    '/papers?subject=law',
+    '/quiz?subject=law&year=114',
+    '/random',
     '/analysis',
     '/community',
     '/notes',
@@ -56,15 +113,19 @@ test('all public routes support direct visits and reloads', async ({ page }, tes
     await page.reload();
     await expect(page.locator('main')).toBeVisible();
   }
+
+  const settingsResponse = await page.goto('/settings');
+  expect(settingsResponse?.status()).toBe(404);
+  await expect(page.getByRole('link', { name: '網頁介面設定' })).toHaveCount(0);
 });
 
-test('mobile drawer navigates and closes', async ({ page }, testInfo) => {
+test('mobile drawer navigates to the independent random route', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'mobile');
 
   await page.goto('/');
   await page.getByRole('button', { name: '開啟選單' }).click();
   await page.getByRole('link', { name: '隨機出題' }).click();
-  await expect(page).toHaveURL(/\/practice$/);
+  await expect(page).toHaveURL(/\/random$/);
   await expect(page.getByRole('heading', { name: '隨機出題' })).toBeVisible();
   const hasHorizontalOverflow = await page.evaluate(
     () => document.documentElement.scrollWidth > window.innerWidth,

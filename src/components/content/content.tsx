@@ -2,7 +2,7 @@ import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { Button } from '@/components/ui/ui';
 import { getSubject } from '@/data/questions';
-import type { AnswerRecord, Question } from '@/lib/types';
+import type { Question } from '@/lib/types';
 import styles from './content.module.css';
 
 export function PageHeader({
@@ -13,7 +13,7 @@ export function PageHeader({
 }: {
   eyebrow: string;
   title: string;
-  description: string;
+  description?: string;
   action?: ReactNode;
 }) {
   return (
@@ -21,7 +21,7 @@ export function PageHeader({
       <div>
         <span className={styles.eyebrow}>{eyebrow}</span>
         <h1>{title}</h1>
-        <p>{description}</p>
+        {description ? <p>{description}</p> : null}
       </div>
       {action ? <div>{action}</div> : null}
     </header>
@@ -59,16 +59,38 @@ export function EmptyState({
   );
 }
 
-export function QuestionRow({
+export function DifficultButton({
+  active,
+  onClick,
+  compact = false,
+}: {
+  active: boolean;
+  onClick: () => void;
+  compact?: boolean;
+}) {
+  return (
+    <Button
+      onClick={onClick}
+      className={active ? styles.difficultActive : styles.difficult}
+      aria-pressed={active}
+      aria-label={active ? '取消難題標記' : '標記為難題'}
+    >
+      <span aria-hidden="true">💡</span>
+      {compact ? (active ? '已標記' : '標記難題') : active ? '已標記難題' : '標記為難題'}
+    </Button>
+  );
+}
+
+export function QuestionCard({
   question,
-  answer,
   difficult,
   onToggleDifficult,
+  action,
 }: {
   question: Question;
-  answer?: AnswerRecord;
   difficult: boolean;
   onToggleDifficult: () => void;
+  action?: ReactNode;
 }) {
   const subject = getSubject(question.subject);
   return (
@@ -77,57 +99,19 @@ export function QuestionRow({
         <div className={styles.tagList}>
           <Tag>{question.year} 年</Tag>
           <Tag tone="green">{subject?.shortName}</Tag>
-          <Tag tone="purple">{question.topic}</Tag>
+          <Tag tone="purple">第 {question.questionNumber} 題</Tag>
+          <Tag tone="orange">{question.primaryCategory}</Tag>
         </div>
         <h2>{question.text}</h2>
-        <p>
-          {answer ? (answer.correct ? '最近作答：答對' : '最近作答：答錯') : '尚未作答'}
-        </p>
       </div>
       <div className={styles.questionActions}>
-        <Button
-          variant="icon"
-          aria-label={difficult ? '取消難題標記' : '加入難題標記'}
-          title={difficult ? '取消難題標記' : '加入難題標記'}
-          onClick={onToggleDifficult}
-          className={difficult ? styles.starActive : styles.star}
-        >
-          <span aria-hidden="true">★</span>
-        </Button>
-        <Button variant="primary" render={<Link href={`/practice?question=${question.id}`} />}>
-          開始作答
-        </Button>
+        <DifficultButton active={difficult} onClick={onToggleDifficult} compact />
+        {action ?? (
+          <Button variant="primary" render={<Link href={`/community?question=${question.id}`} />}>
+            查看詳解
+          </Button>
+        )}
       </div>
     </article>
-  );
-}
-
-export function ComingSoon({
-  eyebrow,
-  title,
-  description,
-  symbol,
-}: {
-  eyebrow: string;
-  title: string;
-  description: string;
-  symbol: string;
-}) {
-  return (
-    <>
-      <PageHeader eyebrow={eyebrow} title={title} description={description} />
-      <section className={styles.comingSoon}>
-        <div className={styles.blueprintGrid} aria-hidden="true" />
-        <span className={styles.comingSymbol} aria-hidden="true">
-          {symbol}
-        </span>
-        <span className={styles.eyebrow}>NEXT PHASE</span>
-        <h2>這個功能正在搭建中</h2>
-        <p>目前已保留正式網址與導覽位置，下一階段可直接接上完整功能。</p>
-        <Button variant="primary" render={<Link href="/practice" />}>
-          先開始練習
-        </Button>
-      </section>
-    </>
   );
 }

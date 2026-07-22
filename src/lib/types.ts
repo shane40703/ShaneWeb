@@ -1,6 +1,6 @@
 export type SubjectId = 'law' | 'env' | 'construction' | 'structure';
 
-export type PaperStatus = 'all' | 'unanswered' | 'answered' | 'wrong';
+export type QuestionId = string;
 
 export interface Subject {
   id: SubjectId;
@@ -11,10 +11,14 @@ export interface Subject {
 }
 
 export interface Question {
-  id: number;
+  id: QuestionId;
   year: number;
   subject: SubjectId;
+  questionNumber: number;
   topic: string;
+  primaryCategory: string;
+  tags: readonly string[];
+  relatedLaws?: readonly string[];
   text: string;
   options: readonly string[];
   answer: number;
@@ -27,30 +31,51 @@ export interface AnswerRecord {
   answeredAt: string;
 }
 
-export interface HistoryEntry extends AnswerRecord {
+export interface QuizAttempt {
   id: string;
-  questionId: number;
+  mode: 'paper' | 'random';
+  subject: SubjectId | 'mixed';
+  year: number | null;
+  questionIds: QuestionId[];
+  answers: Record<QuestionId, number>;
+  startedAt: string;
+  submittedAt: string;
+  elapsedSeconds: number;
+  correctCount: number;
+  wrongCount: number;
+  unansweredCount: number;
 }
 
-export interface Preferences {
-  theme: 'light' | 'dark';
-  fontScale: 'normal' | 'large';
-  sidebarCollapsed: boolean;
-  instantFeedback: boolean;
+export type DiscussionPostType =
+  | 'explanation'
+  | 'supplement'
+  | 'question'
+  | 'correction';
+
+export interface DiscussionReply {
+  id: string;
+  content: string;
+  createdAt: string;
 }
 
-export interface AppStateV2 {
-  version: 2;
-  answers: Record<number, AnswerRecord>;
-  difficultQuestionIds: number[];
-  history: HistoryEntry[];
-  preferences: Preferences;
+export interface DiscussionPost {
+  id: string;
+  questionId: QuestionId;
+  type: DiscussionPostType;
+  content: string;
+  createdAt: string;
+  likes: number;
+  replies: DiscussionReply[];
+  reported: boolean;
 }
 
-export interface PaperFilters {
-  year: number | 'all';
-  subject: SubjectId | 'all';
-  status: PaperStatus;
+export interface AppStateV3 {
+  version: 3;
+  answers: Record<QuestionId, AnswerRecord>;
+  difficultQuestionIds: QuestionId[];
+  attempts: QuizAttempt[];
+  notes: Record<QuestionId, string>;
+  discussionPosts: DiscussionPost[];
 }
 
 export interface PracticeFilters {

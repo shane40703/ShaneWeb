@@ -1,30 +1,47 @@
-import { questions, subjects, years } from '@/data/questions';
+import { questions, subjects } from '@/data/questions';
 import type {
   AnswerRecord,
-  AppStateV2,
-  PaperFilters,
-  PaperStatus,
+  AppStateV3,
+  DiscussionPost,
   PracticeFilters,
   Question,
+  QuizAttempt,
   SubjectId,
 } from '@/lib/types';
 
-export const STORAGE_KEY = 'shaneweb:v2';
+export const STORAGE_KEY = 'shaneweb:v3';
+export const LEGACY_STORAGE_KEY = 'shaneweb:v2';
 
-export const defaultPreferences: AppStateV2['preferences'] = {
-  theme: 'light',
-  fontScale: 'normal',
-  sidebarCollapsed: false,
-  instantFeedback: true,
-};
+const starterDiscussions: DiscussionPost[] = [
+  {
+    id: 'starter-law-114-01',
+    questionId: 'law-114-01',
+    type: 'explanation',
+    content: '判讀這類題目時，可以先抓出「居室」與「採光有效面積」兩個關鍵詞，再對照比例規定。',
+    createdAt: '2026-07-18T09:20:00.000Z',
+    likes: 8,
+    replies: [
+      {
+        id: 'starter-reply-1',
+        content: '把八分之一和通風面積的規定分開記，會比較不容易混淆。',
+        createdAt: '2026-07-19T03:10:00.000Z',
+      },
+    ],
+    reported: false,
+  },
+];
 
-export function createDefaultState(): AppStateV2 {
+export function createDefaultState(): AppStateV3 {
   return {
-    version: 2,
+    version: 3,
     answers: {},
     difficultQuestionIds: [],
-    history: [],
-    preferences: { ...defaultPreferences },
+    attempts: [],
+    notes: {},
+    discussionPosts: starterDiscussions.map((post) => ({
+      ...post,
+      replies: post.replies.map((reply) => ({ ...reply })),
+    })),
   };
 }
 
@@ -38,85 +55,116 @@ function isAnswerRecord(value: unknown): value is AnswerRecord {
   );
 }
 
-export function isAppStateV2(value: unknown): value is AppStateV2 {
+function isQuizAttempt(value: unknown): value is QuizAttempt {
   if (!value || typeof value !== 'object') return false;
-  const state = value as Partial<AppStateV2>;
-  const preferences = state.preferences;
-  if (
-    state.version !== 2 ||
-    !state.answers ||
-    typeof state.answers !== 'object' ||
-    !Array.isArray(state.difficultQuestionIds) ||
-    !Array.isArray(state.history) ||
-    !preferences ||
-    !['light', 'dark'].includes(preferences.theme) ||
-    !['normal', 'large'].includes(preferences.fontScale) ||
-    typeof preferences.sidebarCollapsed !== 'boolean' ||
-    typeof preferences.instantFeedback !== 'boolean'
-  ) {
-    return false;
-  }
-
+  const attempt = value as Partial<QuizAttempt>;
   return (
-    Object.values(state.answers).every(isAnswerRecord) &&
-    state.difficultQuestionIds.every(Number.isInteger) &&
-    state.history.every(
-      (entry) =>
-        isAnswerRecord(entry) &&
-        typeof entry.id === 'string' &&
-        Number.isInteger(entry.questionId),
-    )
+    typeof attempt.id === 'string' &&
+    (attempt.mode === 'paper' || attempt.mode === 'random') &&
+    typeof attempt.startedAt === 'string' &&
+    typeof attempt.submittedAt === 'string' &&
+    Number.isInteger(attempt.elapsedSeconds) &&
+    Array.isArray(attempt.questionIds) &&
+    Boolean(attempt.answers) &&
+    typeof attempt.answers === 'object' &&
+    Number.isInteger(attempt.correctCount) &&
+    Number.isInteger(attempt.wrongCount) &&
+    Number.isInteger(attempt.unansweredCount)
   );
 }
 
-export function parseStoredState(raw: string | null): AppStateV2 {
+function isDiscussionPost(value: unknown): value is DiscussionPost {
+  if (!value || typeof value !== 'object') return false;
+  const post = value as Partial<DiscussionPost>;
+  return (
+    typeof post.id === 'string' &&
+    typeof post.questionId === 'string' &&
+    ['explanation', 'supplement', 'question', 'correction'].includes(post.type ?? '') &&
+    typeof post.content === 'string' &&
+    typeof post.createdAt === 'string' &&
+    Number.isInteger(post.likes) &&
+    Array.isArray(post.replies) &&
+    post.replies.every(
+      (reply) =>
+        Boolean(reply) &&
+        typeof reply.id === 'string' &&
+        typeof reply.content === 'string' &&
+        typeof reply.createdAt === 'string',
+    ) &&
+    typeof post.reported === 'boolean'
+  );
+}
+
+export function isAppStateV3(value: unknown): value is AppStateV3 {
+  if (!value || typeof value !== 'object') return false;
+  const state = value as Partial<AppStateV3>;
+  return (
+    state.version === 3 &&
+    Boolean(state.answers) &&
+    typeof state.answers === 'object' &&
+    Object.values(state.answers ?? {}).every(isAnswerRecord) &&
+    Array.isArray(state.difficultQuestionIds) &&
+    state.difficultQuestionIds.every((id) => typeof id === 'string') &&
+    Array.isArray(state.attempts) &&
+    state.attempts.every(isQuizAttempt) &&
+    Boolean(state.notes) &&
+    typeof state.notes === 'object' &&
+    Object.values(state.notes ?? {}).every((note) => typeof note === 'string') &&
+    Array.isArray(state.discussionPosts) &&
+    state.discussionPosts.every(isDiscussionPost)
+  );
+}
+
+export function parseStoredState(raw: string | null): AppStateV3 {
   if (!raw) return createDefaultState();
   try {
     const parsed: unknown = JSON.parse(raw);
-    return isAppStateV2(parsed) ? parsed : createDefaultState();
+    return isAppStateV3(parsed) ? parsed : createDefaultState();
   } catch {
     return createDefaultState();
   }
 }
 
-export function isSubjectId(value: string | null): value is SubjectId {
-  return subjects.some((subject) => subject.id === value);
+interface LegacyState {
+  version: 2;
+  answers?: Record<string, AnswerRecord>;
+  difficultQuestionIds?: number[];
 }
 
-export function isPaperStatus(value: string | null): value is PaperStatus {
-  return ['all', 'unanswered', 'answered', 'wrong'].includes(value ?? '');
+export function migrateLegacyState(raw: string | null): AppStateV3 {
+  const fallback = createDefaultState();
+  if (!raw) return fallback;
+  try {
+    const legacy = JSON.parse(raw) as LegacyState;
+    if (legacy.version !== 2) return fallback;
+
+    for (const [legacyId, answer] of Object.entries(legacy.answers ?? {})) {
+      const question = questions[Number(legacyId) - 1];
+      if (question && isAnswerRecord(answer)) fallback.answers[question.id] = answer;
+    }
+    fallback.difficultQuestionIds = (legacy.difficultQuestionIds ?? [])
+      .map((legacyId) => questions[legacyId - 1]?.id)
+      .filter((questionId): questionId is string => Boolean(questionId));
+    return fallback;
+  } catch {
+    return fallback;
+  }
 }
 
-export function parsePaperFilters(params: URLSearchParams): PaperFilters {
-  const yearValue = Number(params.get('year'));
-  const year = years.includes(yearValue) ? yearValue : 'all';
-  const subjectValue = params.get('subject');
-  const statusValue = params.get('status');
-  return {
-    year,
-    subject: isSubjectId(subjectValue) ? subjectValue : 'all',
-    status: isPaperStatus(statusValue) ? statusValue : 'all',
-  };
+export function isSubjectId(value: unknown): value is SubjectId {
+  return typeof value === 'string' && subjects.some((subject) => subject.id === value);
 }
 
-export function filterPapers(
-  source: readonly Question[],
-  answers: AppStateV2['answers'],
-  filters: PaperFilters,
-) {
-  return source.filter((question) => {
-    const answer = answers[question.id];
-    const matchesStatus =
-      filters.status === 'all' ||
-      (filters.status === 'unanswered' && !answer) ||
-      (filters.status === 'answered' && Boolean(answer)) ||
-      (filters.status === 'wrong' && Boolean(answer) && !answer.correct);
-    return (
-      (filters.year === 'all' || question.year === filters.year) &&
-      (filters.subject === 'all' || question.subject === filters.subject) &&
-      matchesStatus
-    );
-  });
+export function parseYear(value: unknown): number | null {
+  const normalized = Array.isArray(value) ? value[0] : value;
+  const year = Number(normalized);
+  return Number.isInteger(year) && year >= 102 && year <= 114 ? year : null;
+}
+
+export function getPaperQuestions(subject: SubjectId, year: number) {
+  return questions
+    .filter((question) => question.subject === subject && question.year === year)
+    .sort((left, right) => left.questionNumber - right.questionNumber);
 }
 
 function shuffled<T>(items: readonly T[], random: () => number): T[] {
@@ -130,7 +178,7 @@ function shuffled<T>(items: readonly T[], random: () => number): T[] {
 
 export function buildQuiz(
   filters: PracticeFilters,
-  state: Pick<AppStateV2, 'answers' | 'difficultQuestionIds'>,
+  state: Pick<AppStateV3, 'answers' | 'difficultQuestionIds'>,
   random: () => number = Math.random,
   source: readonly Question[] = questions,
 ) {
@@ -148,14 +196,60 @@ export function buildQuiz(
   return shuffled(pool, random).slice(0, count);
 }
 
-export function getStudyStats(state: AppStateV2) {
-  const answerValues = Object.values(state.answers);
-  const correct = answerValues.filter((answer) => answer.correct).length;
+export function formatDuration(totalSeconds: number) {
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = Math.max(0, totalSeconds % 60);
+  return [hours, minutes, seconds].map((value) => String(value).padStart(2, '0')).join(':');
+}
+
+export function createAttempt({
+  mode,
+  source,
+  answers,
+  startedAt,
+  elapsedSeconds,
+}: {
+  mode: QuizAttempt['mode'];
+  source: readonly Question[];
+  answers: Record<string, number>;
+  startedAt: string;
+  elapsedSeconds: number;
+}): QuizAttempt {
+  const answeredQuestions = source.filter((question) => answers[question.id] !== undefined);
+  const correctCount = answeredQuestions.filter(
+    (question) => answers[question.id] === question.answer,
+  ).length;
+  const first = source[0];
+  const sameSubject = source.every((question) => question.subject === first?.subject);
+  const sameYear = source.every((question) => question.year === first?.year);
+  const submittedAt = new Date().toISOString();
   return {
-    total: questions.length,
-    answered: answerValues.length,
-    difficult: state.difficultQuestionIds.length,
-    completion: Math.round((answerValues.length / questions.length) * 100),
-    accuracy: answerValues.length ? Math.round((correct / answerValues.length) * 100) : 0,
+    id: `attempt-${submittedAt}-${Math.random().toString(36).slice(2, 8)}`,
+    mode,
+    subject: sameSubject && first ? first.subject : 'mixed',
+    year: sameYear && first ? first.year : null,
+    questionIds: source.map((question) => question.id),
+    answers: { ...answers },
+    startedAt,
+    submittedAt,
+    elapsedSeconds,
+    correctCount,
+    wrongCount: answeredQuestions.length - correctCount,
+    unansweredCount: source.length - answeredQuestions.length,
   };
+}
+
+export function getAnalysis(source: readonly Question[]) {
+  const counts = new Map<string, number>();
+  source.forEach((question) => {
+    counts.set(question.primaryCategory, (counts.get(question.primaryCategory) ?? 0) + 1);
+  });
+  return [...counts.entries()]
+    .map(([category, count]) => ({
+      category,
+      count,
+      percentage: source.length ? (count / source.length) * 100 : 0,
+    }))
+    .sort((left, right) => right.count - left.count || left.category.localeCompare(right.category));
 }

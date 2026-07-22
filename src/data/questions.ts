@@ -33,7 +33,12 @@ export const subjects: readonly Subject[] = [
 
 export const years = Array.from({ length: 13 }, (_, index) => 114 - index);
 
-export const questions: readonly Question[] = [
+type QuestionSeed = Omit<
+  Question,
+  'id' | 'questionNumber' | 'primaryCategory' | 'tags'
+> & { id: number };
+
+const questionSeeds: readonly QuestionSeed[] = [
   {
     id: 1,
     year: 114,
@@ -236,6 +241,49 @@ export const questions: readonly Question[] = [
   },
 ];
 
+const categoryAliases: Record<string, string> = {
+  無障礙設計: '無障礙設施設計規範',
+  消防避難: '消防法規',
+  熱環境: '熱',
+  照明: '光',
+  音環境: '聲',
+  通風: '空氣',
+  空調: '設備',
+  混凝土施工: '施工程序',
+  鋼構施工: '施工程序',
+  基礎工程: '構法',
+  材料: '材料',
+  結構力學: '力學',
+  耐震設計: '耐震',
+  鋼筋混凝土: '鋼筋混凝土',
+  基礎設計: '結構系統',
+  載重: '力學',
+};
+
+export const questions: readonly Question[] = questionSeeds.map((seed, index) => {
+  const { id: _legacyId, ...question } = seed;
+  void _legacyId;
+  const questionNumber =
+    questionSeeds
+      .slice(0, index)
+      .filter(
+        (candidate) =>
+          candidate.subject === question.subject && candidate.year === question.year,
+      ).length + 1;
+
+  return {
+    ...question,
+    id: `${question.subject}-${question.year}-${String(questionNumber).padStart(2, '0')}`,
+    questionNumber,
+    primaryCategory: categoryAliases[question.topic] ?? question.topic,
+    tags: [question.topic],
+  };
+});
+
 export function getSubject(subjectId: string) {
   return subjects.find((subject) => subject.id === subjectId);
+}
+
+export function getQuestion(questionId: string) {
+  return questions.find((question) => question.id === questionId);
 }

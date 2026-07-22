@@ -1,0 +1,19 @@
+.panel { min-height: 430px; }
+.list { display: grid; gap: 14px; }
+.attempt { padding: 22px; border: 1px solid var(--line); border-radius: 19px; background: var(--surface); box-shadow: var(--shadow-sm); }
+.attempt > header { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; }
+.tags { display: flex; gap: 7px; flex-wrap: wrap; }
+.attempt h2 { margin: 12px 0 6px; font-size: 20px; }
+.attempt time { color: var(--muted); font-size: 11px; }
+.score { min-width: 86px; display: grid; justify-items: end; }
+.score strong { color: var(--primary-strong); font-size: 27px; }
+.score span { color: var(--muted); font-size: 10px; }
+.stats { margin: 18px 0; display: flex; gap: 8px; flex-wrap: wrap; }
+.stats span { min-height: 35px; padding: 0 11px; display: inline-flex; align-items: center; gap: 5px; border-radius: 10px; background: var(--surface-2); color: var(--muted); font-size: 11px; }
+.stats strong { color: var(--text); }
+.attempt details { margin-bottom: 16px; padding: 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface-2); }
+.attempt summary { color: var(--danger); cursor: pointer; font-size: 12px; font-weight: 800; }
+.attempt details div { padding-top: 10px; display: grid; gap: 7px; }
+.attempt details a { overflow: hidden; color: var(--text-soft); font-size: 12px; line-height: 1.5; text-decoration: none; text-overflow: ellipsis; white-space: nowrap; }
+.attempt details a:hover { color: var(--primary-strong); }
+@media (max-width: 560px) { .attempt > header { flex-direction: column; } .score { justify-items: start; } }

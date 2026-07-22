@@ -1,0 +1,83 @@
+.selectorCard {
+  margin-bottom: 20px;
+  padding: 20px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--surface);
+}
+
+.questionCard,
+.postsCard,
+.composeCard {
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.questionCard { padding: 24px; }
+.questionCard > header { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.tags { display: flex; gap: 7px; flex-wrap: wrap; }
+.questionCard > h2 { max-width: 1000px; margin: 25px 0; font-size: clamp(20px, 2.2vw, 29px); line-height: 1.6; }
+
+.options { padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; list-style: none; }
+.options li { min-height: 56px; padding: 12px 14px; display: flex; align-items: center; gap: 11px; border: 1px solid var(--line); border-radius: 13px; background: var(--surface-2); }
+.options li span { width: 27px; height: 27px; display: grid; place-items: center; flex: 0 0 auto; border-radius: 8px; background: var(--surface); color: var(--muted); font-size: 12px; font-weight: 850; }
+.options li[data-correct='true'] { border-color: color-mix(in srgb, var(--success) 35%, var(--line)); background: var(--success-soft); }
+.options li[data-correct='true'] span { color: var(--success); }
+
+.explanation { margin-top: 20px; padding: 18px; display: grid; gap: 5px; border-left: 4px solid var(--primary); border-radius: 0 13px 13px 0; background: var(--primary-soft); }
+.explanation span { color: var(--primary-strong); font-size: 11px; font-weight: 800; }
+.explanation p { margin: 7px 0 0; color: var(--text-soft); line-height: 1.7; }
+
+.questionNavigation { margin-top: 22px; padding-top: 18px; display: flex; align-items: center; justify-content: space-between; gap: 10px; border-top: 1px solid var(--line); }
+
+.discussionLayout { margin-top: 20px; display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 20px; align-items: start; }
+.postsCard { padding: 22px; }
+.sectionHeader { display: flex; align-items: center; justify-content: space-between; }
+.sectionHeader div { display: grid; gap: 3px; }
+.sectionHeader span,
+.composeEyebrow { color: var(--primary-strong); font-size: 10px; font-weight: 850; letter-spacing: .12em; }
+.sectionHeader h2,
+.composeCard h2 { margin: 0; }
+.sectionHeader > strong { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 11px; background: var(--primary-soft); color: var(--primary-strong); }
+
+.postList { margin-top: 18px; display: grid; gap: 14px; }
+.post { padding: 18px; border: 1px solid var(--line); border-radius: 15px; background: var(--surface-2); }
+.post > header { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.post time { color: var(--muted); font-size: 10px; }
+.post > p { margin: 15px 0; line-height: 1.75; white-space: pre-wrap; }
+.postActions { display: flex; gap: 6px; }
+.postActions button { min-height: 34px; padding-inline: 8px; font-size: 12px; }
+
+.replies { margin: 12px 0; padding-left: 13px; display: grid; gap: 8px; border-left: 2px solid var(--line-strong); }
+.replies > div { padding: 10px; border-radius: 10px; background: var(--surface); }
+.replies span { color: var(--muted); font-size: 10px; }
+.replies p { margin: 5px 0 0; font-size: 13px; line-height: 1.6; }
+
+.replyForm { margin-top: 8px; display: grid; gap: 6px; }
+.replyForm label,
+.composeCard > label { color: var(--muted); font-size: 11px; font-weight: 750; }
+.replyForm > div { display: flex; gap: 7px; }
+.replyForm input,
+.composeCard textarea { width: 100%; min-width: 0; border: 1px solid var(--line); border-radius: 11px; background: var(--surface); color: var(--text); }
+.replyForm input { padding: 0 12px; }
+
+.composeCard { padding: 22px; position: sticky; top: 92px; display: grid; gap: 16px; }
+.composeCard textarea { padding: 12px; resize: vertical; line-height: 1.6; }
+.composeCard > p { margin: -4px 0 0; color: var(--muted); font-size: 10px; line-height: 1.6; }
+
+@media (max-width: 950px) {
+  .discussionLayout { grid-template-columns: 1fr; }
+  .composeCard { position: static; }
+}
+
+@media (max-width: 680px) {
+  .selectorCard { grid-template-columns: 1fr; }
+  .questionCard > header { align-items: flex-start; flex-direction: column; }
+  .options { grid-template-columns: 1fr; }
+  .questionNavigation { flex-wrap: wrap; }
+}
