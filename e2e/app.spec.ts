@@ -8,11 +8,22 @@ test('paper flow, timer, difficult marker, result, and history persist', async (
   await expect(page.locator('main h2')).toHaveCount(4);
   await page.getByRole('link', { name: /建築法規與實務/ }).click();
   await expect(page).toHaveURL(/\/papers\?subject=law/);
+  const subjectPicker = page.getByRole('group', { name: '科目' });
+  await expect(subjectPicker.getByRole('button')).toHaveCount(4);
+  await expect(page.getByRole('combobox', { name: '科目' })).toHaveCount(0);
+  await subjectPicker.getByRole('button', { name: /建築環境控制/ }).click();
+  await expect(page).toHaveURL(/\/papers\?subject=env/);
+  await expect(subjectPicker.getByRole('button', { name: /建築環境控制/ })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+  await subjectPicker.getByRole('button', { name: /建築法規與實務/ }).click();
+  await expect(page).toHaveURL(/\/papers\?subject=law/);
   await expect(page.locator('article')).toHaveCount(13);
   await expect(page.locator('main')).not.toContainText('民國');
   await expect(page.locator('main')).not.toContainText('住宅居室採光有效面積');
 
-  await page.getByRole('link', { name: /開始作答/ }).first().click();
+  await page.getByRole('button', { name: /開始作答/ }).first().click();
   await expect(page).toHaveURL(/\/quiz\?subject=law&year=114/);
   await expect(page.getByText('作答時間')).toBeVisible();
   await expect(page.getByText(/00:00:0\d/)).toBeVisible();
@@ -35,7 +46,7 @@ test('paper flow, timer, difficult marker, result, and history persist', async (
 
   await page.goto('/history');
   await expect(page.getByText('0%', { exact: true })).toBeVisible();
-  await expect(page.getByText('答錯')).toBeVisible();
+  await expect(page.getByText(/^答錯/)).toBeVisible();
 });
 
 test('question navigator jumps between questions and keeps answer state', async ({ page }, testInfo) => {

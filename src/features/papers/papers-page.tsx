@@ -3,16 +3,11 @@ import { useRouter } from 'next/router';
 import { IconArrowRight } from '@tabler/icons-react';
 import { PageHeader } from '@/components/content/content';
 import { SubjectIcon } from '@/components/subject-icon';
-import { Button, SimpleSelect } from '@/components/ui/ui';
+import { Button } from '@/components/ui/ui';
 import { questions, subjects, years } from '@/data/questions';
 import { isSubjectId } from '@/lib/study';
 import type { SubjectId } from '@/lib/types';
 import styles from './papers-page.module.css';
-
-const subjectOptions = subjects.map((subject) => ({
-  value: subject.id,
-  label: subject.name,
-}));
 
 export function PapersPage() {
   const router = useRouter();
@@ -29,8 +24,6 @@ export function PapersPage() {
     );
   }
 
-  const subject = subjects.find((candidate) => candidate.id === subjectId) ?? subjects[0];
-
   return (
     <>
       <PageHeader
@@ -39,20 +32,27 @@ export function PapersPage() {
         description="選擇科目與年度，直接開始作答。"
       />
       <section className={styles.paperPanel}>
-        <div className={styles.subjectPicker}>
-          <SimpleSelect
-            label="科目"
-            value={subjectId}
-            options={subjectOptions}
-            onValueChange={changeSubject}
-          />
-          <div>
-            <span className={styles.subjectMark} aria-hidden="true">
-              <SubjectIcon subject={subject.id} size={22} stroke={1.9} />
-            </span>
-            <strong>{subject.name}</strong>
+        <fieldset className={styles.subjectPicker}>
+          <legend>科目</legend>
+          <div className={styles.subjectGrid}>
+            {subjects.map((item, index) => (
+              <button
+                key={item.id}
+                type="button"
+                className={styles.subjectButton}
+                data-subject={item.id}
+                aria-pressed={item.id === subjectId}
+                onClick={() => changeSubject(item.id)}
+              >
+                <span className={styles.subjectNumber}>0{index + 1}</span>
+                <span className={styles.subjectButtonIcon} aria-hidden="true">
+                  <SubjectIcon subject={item.id} size={27} stroke={1.8} />
+                </span>
+                <strong>{item.name}</strong>
+              </button>
+            ))}
           </div>
-        </div>
+        </fieldset>
         <div className={styles.yearList}>
           {years.map((year) => {
             const count = questions.filter(
