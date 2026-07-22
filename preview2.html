@@ -1,0 +1,1311 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>築題｜建築師考試考古題練習平台</title>
+  <style>
+    :root {
+      --bg: #f3f1ec;
+      --surface: #ffffff;
+      --surface-soft: #f8f7f3;
+      --sidebar: #17231f;
+      --sidebar-soft: #22332d;
+      --primary: #315f50;
+      --primary-strong: #244a3e;
+      --primary-soft: #e8f0ec;
+      --accent: #bf7a4d;
+      --accent-soft: #f7eee8;
+      --ink: #1d2824;
+      --muted: #6f7975;
+      --line: #e5e4df;
+      --success: #43866b;
+      --warning: #ca8a3a;
+      --danger: #be5d52;
+      --shadow: 0 12px 32px rgba(28, 43, 37, .07);
+      --radius: 18px;
+      --radius-sm: 12px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      background:
+        linear-gradient(rgba(49, 95, 80, .025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(49, 95, 80, .025) 1px, transparent 1px),
+        var(--bg);
+      background-size: 32px 32px;
+      font-family: Inter, "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
+    }
+
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+    a { color: inherit; text-decoration: none; }
+
+    .app-shell {
+      display: grid;
+      grid-template-columns: 264px minmax(0, 1fr);
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      padding: 24px 18px;
+      color: #edf4f1;
+      background:
+        radial-gradient(circle at 18% 2%, rgba(109, 161, 140, .20), transparent 25%),
+        var(--sidebar);
+      overflow-y: auto;
+      z-index: 20;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 4px 8px 24px;
+      border-bottom: 1px solid rgba(255,255,255,.10);
+    }
+
+    .brand-mark {
+      width: 44px;
+      height: 44px;
+      display: grid;
+      place-items: center;
+      border-radius: 12px;
+      color: #fff;
+      background: linear-gradient(145deg, #5c8f7a, #315f50);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.18);
+    }
+
+    .brand-title { font-size: 19px; font-weight: 800; letter-spacing: .08em; }
+    .brand-sub { margin-top: 2px; font-size: 11px; color: #aebdb7; letter-spacing: .08em; }
+
+    .nav-label {
+      margin: 24px 10px 9px;
+      color: #7f938b;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .18em;
+    }
+
+    .nav-list { display: grid; gap: 6px; }
+
+    .nav-item {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-height: 46px;
+      padding: 0 12px;
+      border: 0;
+      border-radius: 12px;
+      color: #b9c8c2;
+      background: transparent;
+      text-align: left;
+      transition: .2s ease;
+    }
+
+    .nav-item:hover {
+      color: #fff;
+      background: rgba(255,255,255,.06);
+      transform: translateX(2px);
+    }
+
+    .nav-item.active {
+      color: #fff;
+      background: linear-gradient(90deg, rgba(103, 156, 135, .26), rgba(103, 156, 135, .08));
+      box-shadow: inset 3px 0 0 #88b29f;
+    }
+
+    .nav-icon {
+      width: 21px;
+      height: 21px;
+      flex: 0 0 auto;
+    }
+
+    .nav-item .badge {
+      margin-left: auto;
+      min-width: 24px;
+      padding: 3px 7px;
+      border-radius: 999px;
+      color: #f8fff8;
+      background: rgba(255,255,255,.11);
+      font-size: 11px;
+      text-align: center;
+    }
+
+    .sidebar-goal {
+      margin: 28px 4px 0;
+      padding: 16px;
+      border: 1px solid rgba(255,255,255,.09);
+      border-radius: 15px;
+      background: rgba(255,255,255,.045);
+    }
+
+    .goal-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 13px;
+    }
+    .goal-top strong { color: #fff; }
+    .goal-bar {
+      height: 7px;
+      margin: 12px 0 8px;
+      border-radius: 10px;
+      background: rgba(255,255,255,.12);
+      overflow: hidden;
+    }
+    .goal-bar span {
+      display: block;
+      width: 68%;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #75aa93, #d5a170);
+    }
+    .goal-copy { color: #91a49c; font-size: 11px; line-height: 1.6; }
+
+    .main {
+      min-width: 0;
+      padding: 0 34px 44px;
+    }
+
+    .topbar {
+      height: 82px;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      position: sticky;
+      top: 0;
+      z-index: 15;
+      background: rgba(243, 241, 236, .88);
+      backdrop-filter: blur(15px);
+    }
+
+    .mobile-menu {
+      display: none;
+      width: 42px; height: 42px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      color: var(--ink);
+      background: var(--surface);
+    }
+
+    .search {
+      position: relative;
+      flex: 1;
+      max-width: 620px;
+    }
+
+    .search svg {
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      width: 18px;
+      transform: translateY(-50%);
+      color: #89918e;
+    }
+
+    .search input {
+      width: 100%;
+      height: 46px;
+      padding: 0 16px 0 44px;
+      border: 1px solid transparent;
+      border-radius: 13px;
+      outline: none;
+      color: var(--ink);
+      background: rgba(255,255,255,.82);
+      box-shadow: 0 3px 12px rgba(30,45,39,.035);
+      transition: .2s;
+    }
+
+    .search input:focus {
+      border-color: #adc7bc;
+      box-shadow: 0 0 0 4px rgba(49,95,80,.08);
+    }
+
+    .top-actions { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+
+    .icon-btn {
+      position: relative;
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      color: #52605a;
+      background: rgba(255,255,255,.8);
+    }
+    .icon-btn svg { width: 19px; }
+    .dot {
+      position: absolute;
+      top: 8px;
+      right: 9px;
+      width: 7px;
+      height: 7px;
+      border: 2px solid #fff;
+      border-radius: 50%;
+      background: var(--danger);
+    }
+
+    .profile {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 5px 8px 5px 5px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(255,255,255,.8);
+    }
+    .avatar {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 10px;
+      color: #fff;
+      background: linear-gradient(135deg, #315f50, #6c9986);
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .profile strong { display: block; font-size: 12px; }
+    .profile span { display: block; margin-top: 2px; color: var(--muted); font-size: 10px; }
+
+    .page { display: none; animation: fade .28s ease; }
+    .page.active { display: block; }
+    @keyframes fade { from { opacity: .4; transform: translateY(3px); } to { opacity: 1; transform: none; } }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: minmax(0, 1.45fr) minmax(280px, .75fr);
+      gap: 24px;
+      padding: 34px;
+      border-radius: 24px;
+      color: #fff;
+      background:
+        linear-gradient(110deg, rgba(20,46,37,.98), rgba(49,95,80,.93)),
+        var(--sidebar);
+      box-shadow: var(--shadow);
+    }
+
+    .hero::before, .hero::after {
+      content: "";
+      position: absolute;
+      border: 1px solid rgba(255,255,255,.10);
+      transform: rotate(-11deg);
+    }
+    .hero::before { width: 330px; height: 220px; right: -85px; top: -80px; }
+    .hero::after { width: 210px; height: 300px; right: 90px; bottom: -220px; }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      color: #c5d8cf;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .1em;
+    }
+    .eyebrow::before {
+      content: "";
+      width: 18px;
+      height: 1px;
+      background: #a8c6b9;
+    }
+
+    .hero h1 {
+      max-width: 740px;
+      margin: 16px 0 13px;
+      font-size: clamp(29px, 3vw, 45px);
+      line-height: 1.18;
+      letter-spacing: -.03em;
+    }
+
+    .hero p {
+      max-width: 680px;
+      margin: 0;
+      color: #cbd9d3;
+      font-size: 14px;
+      line-height: 1.85;
+    }
+
+    .hero-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
+
+    .btn {
+      min-height: 43px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 0 17px;
+      border: 0;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 13px;
+      transition: transform .18s, box-shadow .18s, background .18s;
+    }
+    .btn:hover { transform: translateY(-1px); }
+    .btn-light { color: var(--primary-strong); background: #f7faf8; box-shadow: 0 8px 20px rgba(0,0,0,.12); }
+    .btn-ghost { color: #fff; border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.07); }
+    .btn-primary { color: #fff; background: var(--primary); box-shadow: 0 8px 18px rgba(49,95,80,.18); }
+    .btn-soft { color: var(--primary); background: var(--primary-soft); }
+    .btn-danger-soft { color: var(--danger); background: #faece9; }
+    .btn svg { width: 16px; }
+
+    .hero-side {
+      align-self: stretch;
+      position: relative;
+      z-index: 2;
+      padding: 20px;
+      border: 1px solid rgba(255,255,255,.13);
+      border-radius: 18px;
+      background: rgba(255,255,255,.07);
+      backdrop-filter: blur(8px);
+    }
+    .hero-side-top { display: flex; align-items: center; justify-content: space-between; }
+    .hero-side-top span { color: #bed1c8; font-size: 12px; }
+    .streak {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 8px;
+      border-radius: 999px;
+      color: #ffe0bb !important;
+      background: rgba(191,122,77,.19);
+    }
+    .hero-number { margin-top: 22px; font-size: 34px; font-weight: 800; }
+    .hero-number small { color: #afc3ba; font-size: 13px; font-weight: 500; }
+    .mini-progress { display: flex; gap: 5px; margin: 14px 0 18px; }
+    .mini-progress i { flex: 1; height: 5px; border-radius: 9px; background: rgba(255,255,255,.13); }
+    .mini-progress i.done { background: #a9c9ba; }
+    .today-list { display: grid; gap: 10px; }
+    .today-item { display: flex; align-items: center; gap: 9px; color: #dbe7e2; font-size: 12px; }
+    .today-item b { width: 26px; height: 26px; display: grid; place-items: center; border-radius: 8px; background: rgba(255,255,255,.09); }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 16px;
+      margin-top: 18px;
+    }
+    .stat-card {
+      display: flex;
+      gap: 13px;
+      align-items: center;
+      padding: 18px;
+      border: 1px solid rgba(229,228,223,.9);
+      border-radius: var(--radius);
+      background: rgba(255,255,255,.88);
+      box-shadow: 0 6px 22px rgba(31,48,41,.035);
+    }
+    .stat-icon {
+      width: 44px;
+      height: 44px;
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+      border-radius: 13px;
+      color: var(--primary);
+      background: var(--primary-soft);
+    }
+    .stat-icon.warm { color: var(--accent); background: var(--accent-soft); }
+    .stat-icon svg { width: 20px; }
+    .stat-card strong { display: block; font-size: 22px; letter-spacing: -.02em; }
+    .stat-card span { display: block; margin-top: 3px; color: var(--muted); font-size: 11px; }
+
+    .content-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.65fr) minmax(300px, .85fr);
+      gap: 18px;
+      margin-top: 18px;
+    }
+
+    .card {
+      padding: 22px;
+      border: 1px solid rgba(229,228,223,.95);
+      border-radius: var(--radius);
+      background: rgba(255,255,255,.9);
+      box-shadow: 0 8px 26px rgba(31,48,41,.035);
+    }
+
+    .card-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+    .card-head h2, .card-head h3 { margin: 0; font-size: 17px; letter-spacing: -.01em; }
+    .card-head p { margin: 5px 0 0; color: var(--muted); font-size: 11px; line-height: 1.5; }
+    .text-link { border: 0; color: var(--primary); background: none; font-size: 12px; font-weight: 700; }
+
+    .subject-list { display: grid; gap: 10px; }
+    .subject-row {
+      display: grid;
+      grid-template-columns: 38px minmax(150px, 1fr) minmax(120px, .75fr) 56px;
+      gap: 12px;
+      align-items: center;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      transition: .18s;
+    }
+    .subject-row:hover { border-color: #bad0c6; transform: translateY(-1px); box-shadow: 0 7px 16px rgba(49,95,80,.05); }
+    .subject-no {
+      width: 34px; height: 34px;
+      display: grid; place-items: center;
+      border-radius: 10px;
+      color: var(--primary); background: var(--primary-soft);
+      font-size: 12px; font-weight: 800;
+    }
+    .subject-info strong { display: block; font-size: 13px; }
+    .subject-info span { display: block; margin-top: 4px; color: var(--muted); font-size: 10px; }
+    .progress-line { height: 7px; border-radius: 8px; background: #edf0ed; overflow: hidden; }
+    .progress-line span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--primary), #76a08f); }
+    .percent { color: var(--primary); font-size: 12px; font-weight: 800; text-align: right; }
+
+    .daily-card {
+      color: var(--ink);
+      background:
+        linear-gradient(150deg, rgba(247,238,232,.75), rgba(255,255,255,.9));
+    }
+    .daily-ring {
+      width: 134px;
+      height: 134px;
+      display: grid;
+      place-items: center;
+      margin: 8px auto 20px;
+      border-radius: 50%;
+      background: conic-gradient(var(--accent) 0 72%, #eee5df 72% 100%);
+      position: relative;
+    }
+    .daily-ring::after {
+      content: "";
+      position: absolute;
+      width: 103px;
+      height: 103px;
+      border-radius: 50%;
+      background: #fffaf7;
+    }
+    .daily-ring div { position: relative; z-index: 1; text-align: center; }
+    .daily-ring strong { display: block; font-size: 27px; }
+    .daily-ring span { color: var(--muted); font-size: 10px; }
+    .daily-meta { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
+    .daily-meta div { padding: 10px 7px; border-radius: 11px; background: rgba(255,255,255,.72); text-align: center; }
+    .daily-meta strong { display: block; font-size: 14px; }
+    .daily-meta span { color: var(--muted); font-size: 9px; }
+
+    .wide-card { margin-top: 18px; }
+
+    .filters { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chip {
+      min-height: 33px;
+      padding: 0 12px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: #66716c;
+      background: #fff;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .chip.active { color: #fff; border-color: var(--primary); background: var(--primary); }
+
+    .papers-table { display: grid; gap: 8px; margin-top: 15px; }
+    .paper-row {
+      display: grid;
+      grid-template-columns: 72px minmax(170px, 1.5fr) minmax(120px, .6fr) 86px 34px;
+      gap: 12px;
+      align-items: center;
+      min-height: 58px;
+      padding: 8px 12px;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      background: #fff;
+    }
+    .year-pill { width: 54px; padding: 6px 0; border-radius: 9px; color: var(--primary); background: var(--primary-soft); text-align: center; font-size: 11px; font-weight: 800; }
+    .paper-title strong { display: block; font-size: 12px; }
+    .paper-title span { display: block; margin-top: 4px; color: var(--muted); font-size: 9px; }
+    .paper-progress { color: var(--muted); font-size: 10px; }
+    .paper-progress b { display: block; margin-top: 4px; color: var(--ink); font-size: 11px; }
+    .status {
+      display: inline-flex;
+      justify-content: center;
+      padding: 6px 8px;
+      border-radius: 999px;
+      color: var(--success);
+      background: #eaf4ef;
+      font-size: 9px;
+      font-weight: 800;
+    }
+    .status.todo { color: var(--warning); background: #fbf1e2; }
+    .round-arrow {
+      width: 30px; height: 30px; display: grid; place-items: center;
+      border: 0; border-radius: 9px; color: var(--primary); background: var(--primary-soft);
+    }
+
+    .analysis-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.4fr) minmax(250px, .6fr);
+      gap: 22px;
+      align-items: center;
+    }
+    .bar-chart { display: grid; gap: 13px; }
+    .bar-item { display: grid; grid-template-columns: 104px 1fr 34px; gap: 10px; align-items: center; }
+    .bar-item label { color: #58645f; font-size: 11px; }
+    .bar-track { height: 11px; border-radius: 10px; background: #edf0ed; overflow: hidden; }
+    .bar-fill { height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--primary), #83a997); }
+    .bar-item b { font-size: 11px; }
+    .analysis-note {
+      padding: 18px;
+      border-radius: 15px;
+      color: #dce9e3;
+      background: var(--sidebar-soft);
+    }
+    .analysis-note span { color: #a7bcb3; font-size: 10px; }
+    .analysis-note strong { display: block; margin: 10px 0 7px; color: #fff; font-size: 23px; }
+    .analysis-note p { margin: 0; color: #b8c9c2; font-size: 11px; line-height: 1.65; }
+
+    .bottom-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 18px; }
+
+    .note-list, .hard-list { display: grid; gap: 9px; }
+    .note-item, .hard-item {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 11px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fff;
+    }
+    .note-mark {
+      width: 32px; height: 32px; display: grid; place-items: center; flex: 0 0 auto;
+      border-radius: 9px; color: var(--accent); background: var(--accent-soft);
+      font-size: 12px; font-weight: 800;
+    }
+    .note-item strong, .hard-item strong { display: block; font-size: 11px; }
+    .note-item span, .hard-item span { display: block; margin-top: 4px; color: var(--muted); font-size: 9px; }
+    .note-item time { margin-left: auto; color: #9aa19e; font-size: 9px; }
+    .star-btn {
+      margin-left: auto;
+      border: 0;
+      color: #b8bdbb;
+      background: none;
+      font-size: 20px;
+      line-height: 1;
+    }
+    .star-btn.active { color: #db9b3e; }
+
+    /* Inner pages */
+    .page-title {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 18px;
+      margin: 8px 0 20px;
+    }
+    .page-title h1 { margin: 0; font-size: 28px; letter-spacing: -.03em; }
+    .page-title p { margin: 7px 0 0; color: var(--muted); font-size: 12px; }
+
+    .year-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .year-card {
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      background: #fff;
+      transition: .18s;
+    }
+    .year-card:hover { transform: translateY(-2px); border-color: #afc8bd; box-shadow: var(--shadow); }
+    .year-card-top { display: flex; justify-content: space-between; align-items: center; }
+    .year-card h3 { margin: 0; font-size: 21px; }
+    .year-card p { margin: 7px 0 14px; color: var(--muted); font-size: 10px; }
+    .tiny-bars { display: grid; gap: 6px; }
+    .tiny-bar { height: 5px; border-radius: 8px; background: #edf0ed; overflow: hidden; }
+    .tiny-bar span { display: block; height: 100%; background: var(--primary); border-radius: inherit; }
+    .year-card-foot { display: flex; justify-content: space-between; margin-top: 12px; color: var(--muted); font-size: 9px; }
+
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    .field { display: grid; gap: 7px; }
+    .field label { font-size: 11px; font-weight: 800; }
+    .field input, .field select, .field textarea {
+      width: 100%;
+      min-height: 44px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      outline: none;
+      color: var(--ink);
+      background: #fff;
+    }
+    .field input:focus, .field select:focus, .field textarea:focus { border-color: #9fbdaf; box-shadow: 0 0 0 4px rgba(49,95,80,.07); }
+    .field.full { grid-column: 1 / -1; }
+    .range-line { display: flex; align-items: center; gap: 12px; }
+    .range-line input { padding: 0; }
+    .range-value { min-width: 46px; text-align: right; color: var(--primary); font-weight: 800; }
+
+    .quiz-preview {
+      display: none;
+      margin-top: 18px;
+      padding: 22px;
+      border-radius: 16px;
+      color: #eaf4ef;
+      background: var(--sidebar-soft);
+    }
+    .quiz-preview.show { display: block; animation: fade .25s ease; }
+    .quiz-preview .q-meta { color: #9fb6ac; font-size: 10px; }
+    .quiz-preview h3 { margin: 12px 0 16px; color: #fff; font-size: 16px; line-height: 1.6; }
+    .option { padding: 11px 13px; margin-top: 8px; border: 1px solid rgba(255,255,255,.12); border-radius: 10px; color: #d6e3dd; font-size: 11px; }
+    .option:hover { border-color: #7ca18f; background: rgba(255,255,255,.05); }
+
+    .analysis-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+    .donut-wrap { display: flex; align-items: center; gap: 22px; }
+    .donut {
+      width: 150px; height: 150px; flex: 0 0 auto;
+      display: grid; place-items: center; border-radius: 50%;
+      background: conic-gradient(#315f50 0 33%, #668f7e 33% 56%, #bf7a4d 56% 76%, #cbb8a8 76% 100%);
+      position: relative;
+    }
+    .donut::after { content: ""; width: 104px; height: 104px; position: absolute; border-radius: 50%; background: #fff; }
+    .donut strong { position: relative; z-index: 1; font-size: 24px; }
+    .legend { display: grid; gap: 9px; }
+    .legend-item { display: flex; align-items: center; gap: 8px; font-size: 10px; color: var(--muted); }
+    .legend-item i { width: 9px; height: 9px; border-radius: 50%; background: var(--primary); }
+
+    .notes-layout { display: grid; grid-template-columns: 340px 1fr; gap: 18px; }
+    .note-editor textarea { min-height: 280px; resize: vertical; }
+    .saved-note-card {
+      padding: 15px;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      background: #fff;
+    }
+    .saved-note-card + .saved-note-card { margin-top: 9px; }
+    .saved-note-card h4 { margin: 0 0 7px; font-size: 12px; }
+    .saved-note-card p { margin: 0; color: var(--muted); font-size: 10px; line-height: 1.65; white-space: pre-wrap; }
+    .saved-note-card time { display: block; margin-top: 10px; color: #a2a9a6; font-size: 9px; }
+
+    .empty { padding: 28px; border: 1px dashed #cfd3d0; border-radius: 14px; color: var(--muted); text-align: center; font-size: 11px; }
+
+    .mobile-overlay { display: none; }
+
+    .toast {
+      position: fixed;
+      right: 24px;
+      bottom: 24px;
+      z-index: 100;
+      padding: 12px 16px;
+      border-radius: 12px;
+      color: #fff;
+      background: var(--sidebar);
+      box-shadow: var(--shadow);
+      font-size: 12px;
+      transform: translateY(20px);
+      opacity: 0;
+      pointer-events: none;
+      transition: .25s;
+    }
+    .toast.show { transform: none; opacity: 1; }
+
+    @media (max-width: 1180px) {
+      .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .hero { grid-template-columns: 1fr; }
+      .hero-side { max-width: 520px; }
+      .year-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 920px) {
+      .app-shell { grid-template-columns: 1fr; }
+      .sidebar {
+        position: fixed;
+        left: 0;
+        transform: translateX(-100%);
+        width: 264px;
+        transition: .25s ease;
+      }
+      .sidebar.open { transform: none; }
+      .mobile-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 18;
+        background: rgba(15,25,21,.45);
+      }
+      .mobile-overlay.show { display: block; }
+      .main { padding: 0 20px 36px; }
+      .mobile-menu { display: grid; place-items: center; }
+      .content-grid, .bottom-grid, .analysis-grid, .notes-layout { grid-template-columns: 1fr; }
+      .analysis-layout { grid-template-columns: 1fr; }
+      .year-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 640px) {
+      .main { padding: 0 13px 28px; }
+      .topbar { height: 70px; }
+      .profile > div:last-child { display: none; }
+      .search { display: none; }
+      .top-actions { margin-left: auto; }
+      .hero { padding: 25px 20px; border-radius: 19px; }
+      .hero-actions .btn { flex: 1; }
+      .stats-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+      .stat-card { padding: 13px; }
+      .stat-icon { width: 38px; height: 38px; }
+      .stat-card strong { font-size: 18px; }
+      .card { padding: 17px; }
+      .subject-row { grid-template-columns: 34px 1fr 42px; }
+      .subject-row .progress-line { grid-column: 2 / 4; }
+      .papers-table .paper-row { grid-template-columns: 62px 1fr 30px; }
+      .paper-progress, .status { display: none; }
+      .form-grid { grid-template-columns: 1fr; }
+      .field.full { grid-column: auto; }
+      .year-grid { grid-template-columns: 1fr; }
+      .page-title { align-items: flex-start; flex-direction: column; }
+      .donut-wrap { align-items: flex-start; flex-direction: column; }
+      .bar-item { grid-template-columns: 82px 1fr 28px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <div class="brand-mark">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+            <path d="M4 20V8l8-4 8 4v12M8 20v-7h8v7M3 20h18"/>
+            <path d="M9 8h6M12 4v4"/>
+          </svg>
+        </div>
+        <div>
+          <div class="brand-title">築題</div>
+          <div class="brand-sub">ARCHITECT EXAM PREP</div>
+        </div>
+      </div>
+
+      <div class="nav-label">學習中心</div>
+      <nav class="nav-list">
+        <button class="nav-item active" data-page="home">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 11 12 3l9 8"/><path d="M5 10v10h14V10M9 20v-6h6v6"/></svg>
+          首頁總覽
+        </button>
+        <button class="nav-item" data-page="papers">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M7 3h10l3 3v15H4V3h3Z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>
+          歷屆試題
+          <span class="badge">13</span>
+        </button>
+        <button class="nav-item" data-page="random">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 7h3l10 10h3"/><path d="m17 14 3 3-3 3M4 17h3l3-3M14 10l3-3h3"/><path d="m17 4 3 3-3 3"/></svg>
+          隨機出題
+        </button>
+        <button class="nav-item" data-page="analysis">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>
+          考題分析
+        </button>
+        <button class="nav-item" data-page="notes">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M5 3h14v18H5z"/><path d="M8 7h8M8 11h8M8 15h5"/></svg>
+          使用者筆記
+          <span class="badge" id="noteBadge">3</span>
+        </button>
+        <button class="nav-item" data-page="hard">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9L12 3Z"/></svg>
+          難題標記
+          <span class="badge" id="hardBadge">18</span>
+        </button>
+      </nav>
+
+      <div class="nav-label">個人進度</div>
+      <div class="sidebar-goal">
+        <div class="goal-top"><span>本週目標</span><strong>34 / 50 題</strong></div>
+        <div class="goal-bar"><span></span></div>
+        <div class="goal-copy">維持目前進度，預計週六可完成本週題數。</div>
+      </div>
+    </aside>
+
+    <div class="mobile-overlay" id="overlay"></div>
+
+    <main class="main">
+      <header class="topbar">
+        <button class="mobile-menu" id="menuBtn" aria-label="開啟選單">
+          <svg width="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        </button>
+        <div class="search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+          <input id="globalSearch" type="search" placeholder="搜尋年份、科目、法條或題目關鍵字…" />
+        </div>
+        <div class="top-actions">
+          <button class="icon-btn" aria-label="通知">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg>
+            <i class="dot"></i>
+          </button>
+          <div class="profile">
+            <div class="avatar">YA</div>
+            <div><strong>準建築師</strong><span>備考中 · 2026</span></div>
+          </div>
+        </div>
+      </header>
+
+      <!-- HOME -->
+      <section class="page active" id="page-home">
+        <section class="hero">
+          <div>
+            <span class="eyebrow">建築師專技高考 · 考古題學習平台</span>
+            <h1>把歷屆考題，整理成<br>清楚可追蹤的備考路徑。</h1>
+            <p>涵蓋民國 102–114 年四大專業科目，從歷屆試題、隨機練習、法條命題統計到個人筆記，讓複習不再只是反覆刷題。</p>
+            <div class="hero-actions">
+              <button class="btn btn-light jump" data-page="random">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m8 5 11 7-11 7V5Z"/></svg>
+                開始隨機練習
+              </button>
+              <button class="btn btn-ghost jump" data-page="papers">瀏覽歷屆試題</button>
+            </div>
+          </div>
+          <div class="hero-side">
+            <div class="hero-side-top">
+              <span>今日進度</span>
+              <span class="streak">🔥 連續 12 天</span>
+            </div>
+            <div class="hero-number">18 <small>/ 25 題</small></div>
+            <div class="mini-progress">
+              <i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i></i><i></i><i></i>
+            </div>
+            <div class="today-list">
+              <div class="today-item"><b>12</b> 建築法規與實務</div>
+              <div class="today-item"><b>4</b> 建築環境控制</div>
+              <div class="today-item"><b>2</b> 建築構造與施工</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M7 3h10l3 3v15H4V3h3Z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></div>
+            <div><strong>2,184</strong><span>已收錄歷屆題目</span></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon warm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 3v18M3 12h18"/><circle cx="12" cy="12" r="9"/></svg></div>
+            <div><strong>13 年</strong><span>102–114 年完整題庫</span></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9L12 3Z"/></svg></div>
+            <div><strong>18 題</strong><span>已標記重點難題</span></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon warm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg></div>
+            <div><strong>68%</strong><span>本月平均正確率</span></div>
+          </div>
+        </section>
+
+        <section class="content-grid">
+          <div class="card">
+            <div class="card-head">
+              <div><h2>考試大綱與科目進度</h2><p>依四大科目拆解複習範圍，快速掌握目前覆蓋率。</p></div>
+              <button class="text-link jump" data-page="analysis">查看分析 →</button>
+            </div>
+            <div class="subject-list">
+              <div class="subject-row">
+                <div class="subject-no">01</div>
+                <div class="subject-info"><strong>建築法規與實務</strong><span>建築法、技術規則、都市計畫與相關法令</span></div>
+                <div class="progress-line"><span style="width:76%"></span></div>
+                <div class="percent">76%</div>
+              </div>
+              <div class="subject-row">
+                <div class="subject-no">02</div>
+                <div class="subject-info"><strong>建築環境控制</strong><span>熱環境、光環境、音環境、空氣與設備</span></div>
+                <div class="progress-line"><span style="width:62%"></span></div>
+                <div class="percent">62%</div>
+              </div>
+              <div class="subject-row">
+                <div class="subject-no">03</div>
+                <div class="subject-info"><strong>建築構造與施工</strong><span>材料、工法、品質管理與施工安全</span></div>
+                <div class="progress-line"><span style="width:54%"></span></div>
+                <div class="percent">54%</div>
+              </div>
+              <div class="subject-row">
+                <div class="subject-no">04</div>
+                <div class="subject-info"><strong>建築結構</strong><span>結構系統、載重、耐震與基本計算</span></div>
+                <div class="progress-line"><span style="width:45%"></span></div>
+                <div class="percent">45%</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card daily-card">
+            <div class="card-head"><div><h2>每日練習</h2><p>依弱項自動安排今日題目。</p></div><span class="status">進行中</span></div>
+            <div class="daily-ring"><div><strong>72%</strong><span>今日完成度</span></div></div>
+            <div class="daily-meta">
+              <div><strong>18</strong><span>已作答</span></div>
+              <div><strong>13</strong><span>答對</span></div>
+              <div><strong>6m</strong><span>平均用時</span></div>
+            </div>
+            <button class="btn btn-primary jump" data-page="random" style="width:100%">繼續練習</button>
+          </div>
+        </section>
+
+        <section class="card wide-card">
+          <div class="card-head">
+            <div><h2>歷屆試題快速入口</h2><p>點選年份與科目，直接進入該年度題目。</p></div>
+            <button class="text-link jump" data-page="papers">全部年份 →</button>
+          </div>
+          <div class="filters" id="homeYearFilters">
+            <button class="chip active">114 年</button><button class="chip">113 年</button><button class="chip">112 年</button><button class="chip">111 年</button><button class="chip">110 年</button>
+          </div>
+          <div class="papers-table" id="homePapers">
+            <div class="paper-row">
+              <div class="year-pill">114 年</div>
+              <div class="paper-title"><strong>建築法規與實務</strong><span>共 50 題 · 已建立法條標籤</span></div>
+              <div class="paper-progress">作答進度<b>36 / 50</b></div>
+              <span class="status">已開始</span>
+              <button class="round-arrow">→</button>
+            </div>
+            <div class="paper-row">
+              <div class="year-pill">114 年</div>
+              <div class="paper-title"><strong>建築環境控制</strong><span>共 50 題 · 含計算題 8 題</span></div>
+              <div class="paper-progress">作答進度<b>18 / 50</b></div>
+              <span class="status">已開始</span>
+              <button class="round-arrow">→</button>
+            </div>
+            <div class="paper-row">
+              <div class="year-pill">114 年</div>
+              <div class="paper-title"><strong>建築構造與施工</strong><span>共 50 題 · 施工圖示題 6 題</span></div>
+              <div class="paper-progress">作答進度<b>0 / 50</b></div>
+              <span class="status todo">未開始</span>
+              <button class="round-arrow">→</button>
+            </div>
+            <div class="paper-row">
+              <div class="year-pill">114 年</div>
+              <div class="paper-title"><strong>建築結構</strong><span>共 50 題 · 含計算題 15 題</span></div>
+              <div class="paper-progress">作答進度<b>0 / 50</b></div>
+              <span class="status todo">未開始</span>
+              <button class="round-arrow">→</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="card wide-card">
+          <div class="card-head">
+            <div><h2>命題熱度分析 · 建築法規與實務</h2><p>統計 102–114 年法規題目所對應的主要法令類別。</p></div>
+            <button class="text-link jump" data-page="analysis">完整報表 →</button>
+          </div>
+          <div class="analysis-layout">
+            <div class="bar-chart">
+              <div class="bar-item"><label>建築技術規則</label><div class="bar-track"><div class="bar-fill" style="width:88%"></div></div><b>286</b></div>
+              <div class="bar-item"><label>建築法</label><div class="bar-track"><div class="bar-fill" style="width:71%"></div></div><b>231</b></div>
+              <div class="bar-item"><label>都市計畫法</label><div class="bar-track"><div class="bar-fill" style="width:48%"></div></div><b>156</b></div>
+              <div class="bar-item"><label>公寓大廈條例</label><div class="bar-track"><div class="bar-fill" style="width:33%"></div></div><b>107</b></div>
+              <div class="bar-item"><label>消防相關法規</label><div class="bar-track"><div class="bar-fill" style="width:28%"></div></div><b>91</b></div>
+            </div>
+            <div class="analysis-note">
+              <span>最常出題範圍</span>
+              <strong>建築技術規則</strong>
+              <p>近 13 年共出現 286 題，占法規科約 33%。其中「建築設計施工編」為最高頻章節。</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="bottom-grid">
+          <div class="card">
+            <div class="card-head"><div><h3>最近筆記</h3><p>複習時建立的題目關聯筆記。</p></div><button class="text-link jump" data-page="notes">新增筆記</button></div>
+            <div class="note-list">
+              <div class="note-item"><div class="note-mark">法</div><div><strong>防火區劃面積限制整理</strong><span>114 年 · 建築法規與實務 · 第 18 題</span></div><time>今天</time></div>
+              <div class="note-item"><div class="note-mark">環</div><div><strong>PMV 與 PPD 的判讀</strong><span>112 年 · 建築環境控制 · 第 32 題</span></div><time>昨天</time></div>
+              <div class="note-item"><div class="note-mark">構</div><div><strong>鋼筋續接位置原則</strong><span>109 年 · 建築構造與施工 · 第 7 題</span></div><time>7/18</time></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-head"><div><h3>難題清單</h3><p>優先複習近期標記的高錯誤題。</p></div><button class="text-link jump" data-page="hard">查看全部</button></div>
+            <div class="hard-list">
+              <div class="hard-item"><div class="note-mark">114</div><div><strong>法規第 41 題 · 避難層出入口</strong><span>連續答錯 2 次</span></div><button class="star-btn active">★</button></div>
+              <div class="hard-item"><div class="note-mark">113</div><div><strong>結構第 16 題 · 柱挫屈</strong><span>平均答對率 34%</span></div><button class="star-btn active">★</button></div>
+              <div class="hard-item"><div class="note-mark">111</div><div><strong>環控第 28 題 · 室內音響</strong><span>尚未加入筆記</span></div><button class="star-btn active">★</button></div>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <!-- PAPERS -->
+      <section class="page" id="page-papers">
+        <div class="page-title">
+          <div><h1>歷屆試題</h1><p>收錄民國 102–114 年四科題目，可依年度、科目與完成狀態篩選。</p></div>
+          <button class="btn btn-primary jump" data-page="random">建立自訂練習</button>
+        </div>
+        <div class="card">
+          <div class="card-head">
+            <div><h2>年度題庫</h2><p>示意資料：每年度含四科、各 50 題。</p></div>
+            <div class="filters"><button class="chip active">全部科目</button><button class="chip">法規</button><button class="chip">環控</button><button class="chip">構造施工</button><button class="chip">結構</button></div>
+          </div>
+          <div class="year-grid" id="yearGrid"></div>
+        </div>
+      </section>
+
+      <!-- RANDOM -->
+      <section class="page" id="page-random">
+        <div class="page-title">
+          <div><h1>隨機出題</h1><p>依科目、年度、題數、難度與未完成狀態產生個人化練習。</p></div>
+        </div>
+        <div class="content-grid">
+          <div class="card">
+            <div class="card-head"><div><h2>自訂練習條件</h2><p>設定越精確，題目就越貼近目前的複習需求。</p></div></div>
+            <div class="form-grid">
+              <div class="field"><label>科目</label><select id="quizSubject"><option>全部科目</option><option>建築法規與實務</option><option>建築環境控制</option><option>建築構造與施工</option><option>建築結構</option></select></div>
+              <div class="field"><label>年份範圍</label><select><option>102–114 年</option><option>近 3 年</option><option>近 5 年</option><option>自訂年份</option></select></div>
+              <div class="field full"><label>題數</label><div class="range-line"><input id="questionRange" type="range" min="5" max="50" value="20" step="5"><span class="range-value" id="rangeValue">20 題</span></div></div>
+              <div class="field"><label>題目來源</label><select><option>全部題目</option><option>尚未作答</option><option>曾經答錯</option><option>已標記難題</option></select></div>
+              <div class="field"><label>排序方式</label><select><option>完全隨機</option><option>弱項優先</option><option>高頻題型優先</option><option>依年份新到舊</option></select></div>
+              <div class="field full"><label>難度</label><div class="filters"><button class="chip active" type="button">不限</button><button class="chip" type="button">基礎</button><button class="chip" type="button">進階</button><button class="chip" type="button">高錯誤率</button></div></div>
+            </div>
+            <button class="btn btn-primary" id="startQuiz" style="margin-top:20px;width:100%">產生練習題</button>
+            <div class="quiz-preview" id="quizPreview">
+              <div class="q-meta">建築法規與實務 · 114 年 · 第 18 題</div>
+              <h3>依建築技術規則建築設計施工編規定，下列有關防火區劃之敘述，何者正確？</h3>
+              <div class="option">A. 每一防火區劃面積均不得超過 500 平方公尺</div>
+              <div class="option">B. 防火區劃之防火門應隨時保持開啟</div>
+              <div class="option">C. 特定用途建築物得依規定以防火設備區劃</div>
+              <div class="option">D. 地下建築物不適用防火區劃規定</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-head"><div><h2>建議練習組合</h2><p>依近期作答表現自動推薦。</p></div></div>
+            <div class="subject-list">
+              <div class="subject-row" style="grid-template-columns:38px 1fr 60px">
+                <div class="subject-no">A</div><div class="subject-info"><strong>法規高頻條文</strong><span>20 題 · 約 25 分鐘</span></div><button class="text-link">開始</button>
+              </div>
+              <div class="subject-row" style="grid-template-columns:38px 1fr 60px">
+                <div class="subject-no">B</div><div class="subject-info"><strong>環控計算題</strong><span>15 題 · 約 35 分鐘</span></div><button class="text-link">開始</button>
+              </div>
+              <div class="subject-row" style="grid-template-columns:38px 1fr 60px">
+                <div class="subject-no">C</div><div class="subject-info"><strong>本週錯題複習</strong><span>12 題 · 約 18 分鐘</span></div><button class="text-link">開始</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ANALYSIS -->
+      <section class="page" id="page-analysis">
+        <div class="page-title">
+          <div><h1>考題分析</h1><p>從年度、題型、法條與個人作答結果找出命題趨勢。</p></div>
+          <div class="filters"><button class="chip active">法規</button><button class="chip">環控</button><button class="chip">構造施工</button><button class="chip">結構</button></div>
+        </div>
+        <div class="analysis-grid">
+          <div class="card">
+            <div class="card-head"><div><h2>法規類別分布</h2><p>102–114 年累計題數比例。</p></div></div>
+            <div class="donut-wrap">
+              <div class="donut"><strong>871</strong></div>
+              <div class="legend">
+                <div class="legend-item"><i style="background:#315f50"></i>建築技術規則 33%</div>
+                <div class="legend-item"><i style="background:#668f7e"></i>建築法 23%</div>
+                <div class="legend-item"><i style="background:#bf7a4d"></i>都市計畫法 20%</div>
+                <div class="legend-item"><i style="background:#cbb8a8"></i>其他法規 24%</div>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-head"><div><h2>個人弱項排行</h2><p>依近 90 天正確率排序。</p></div></div>
+            <div class="bar-chart">
+              <div class="bar-item"><label>避難設施</label><div class="bar-track"><div class="bar-fill" style="width:42%"></div></div><b>42%</b></div>
+              <div class="bar-item"><label>防火構造</label><div class="bar-track"><div class="bar-fill" style="width:48%"></div></div><b>48%</b></div>
+              <div class="bar-item"><label>基地與道路</label><div class="bar-track"><div class="bar-fill" style="width:56%"></div></div><b>56%</b></div>
+              <div class="bar-item"><label>使用管理</label><div class="bar-track"><div class="bar-fill" style="width:63%"></div></div><b>63%</b></div>
+            </div>
+          </div>
+        </div>
+        <div class="card wide-card">
+          <div class="card-head"><div><h2>法條命題次數</h2><p>可進一步展開至條、項、款層級。</p></div><button class="btn btn-soft">匯出分析</button></div>
+          <div class="papers-table">
+            <div class="paper-row"><div class="year-pill">§79</div><div class="paper-title"><strong>建築技術規則設計施工編第 79 條</strong><span>防火區劃相關規定</span></div><div class="paper-progress">出題次數<b>28 題</b></div><span class="status">高頻</span><button class="round-arrow">→</button></div>
+            <div class="paper-row"><div class="year-pill">§90</div><div class="paper-title"><strong>建築技術規則設計施工編第 90 條</strong><span>直通樓梯與避難路徑</span></div><div class="paper-progress">出題次數<b>24 題</b></div><span class="status">高頻</span><button class="round-arrow">→</button></div>
+            <div class="paper-row"><div class="year-pill">§33</div><div class="paper-title"><strong>建築法第 33 條</strong><span>工程圖樣及說明書審查</span></div><div class="paper-progress">出題次數<b>17 題</b></div><span class="status todo">中頻</span><button class="round-arrow">→</button></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- NOTES -->
+      <section class="page" id="page-notes">
+        <div class="page-title"><div><h1>使用者筆記</h1><p>建立可連結到年份、科目與題號的個人複習資料庫。</p></div></div>
+        <div class="notes-layout">
+          <div class="card">
+            <div class="card-head"><div><h2>筆記列表</h2><p>儲存於瀏覽器本機。</p></div></div>
+            <div id="savedNotes"></div>
+          </div>
+          <div class="card note-editor">
+            <div class="card-head"><div><h2>新增筆記</h2><p>這個原型會使用 localStorage 保存內容。</p></div></div>
+            <div class="form-grid">
+              <div class="field"><label>筆記標題</label><input id="noteTitle" placeholder="例如：防火區劃面積限制整理"></div>
+              <div class="field"><label>關聯科目</label><select id="noteSubject"><option>建築法規與實務</option><option>建築環境控制</option><option>建築構造與施工</option><option>建築結構</option></select></div>
+              <div class="field full"><label>筆記內容</label><textarea id="noteContent" placeholder="輸入條文、計算過程、易錯觀念或解題提示…"></textarea></div>
+            </div>
+            <button class="btn btn-primary" id="saveNote" style="margin-top:16px">儲存筆記</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- HARD -->
+      <section class="page" id="page-hard">
+        <div class="page-title">
+          <div><h1>難題標記</h1><p>集中管理手動收藏與系統判定的高錯誤題目。</p></div>
+          <div class="filters"><button class="chip active">全部 18 題</button><button class="chip">法規 7</button><button class="chip">環控 4</button><button class="chip">構造施工 3</button><button class="chip">結構 4</button></div>
+        </div>
+        <div class="card">
+          <div class="papers-table" id="hardTable">
+            <div class="paper-row"><div class="year-pill">114-41</div><div class="paper-title"><strong>避難層出入口與步行距離判定</strong><span>建築法規與實務 · 已答錯 2 次</span></div><div class="paper-progress">個人正確率<b>0%</b></div><span class="status todo">待複習</span><button class="star-btn active">★</button></div>
+            <div class="paper-row"><div class="year-pill">113-16</div><div class="paper-title"><strong>細長柱之彈性挫屈載重</strong><span>建築結構 · 平均答對率 34%</span></div><div class="paper-progress">個人正確率<b>33%</b></div><span class="status todo">待複習</span><button class="star-btn active">★</button></div>
+            <div class="paper-row"><div class="year-pill">112-32</div><div class="paper-title"><strong>PMV 與 PPD 熱舒適指標判讀</strong><span>建築環境控制 · 已建立筆記</span></div><div class="paper-progress">個人正確率<b>50%</b></div><span class="status">已複習</span><button class="star-btn active">★</button></div>
+            <div class="paper-row"><div class="year-pill">111-07</div><div class="paper-title"><strong>梁柱接頭鋼筋續接位置</strong><span>建築構造與施工 · 已答錯 1 次</span></div><div class="paper-progress">個人正確率<b>50%</b></div><span class="status todo">待複習</span><button class="star-btn active">★</button></div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const pages = document.querySelectorAll('.page');
+    const navItems = document.querySelectorAll('.nav-item');
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('overlay');
+
+    function switchPage(name) {
+      pages.forEach(page => page.classList.toggle('active', page.id === `page-${name}`));
+      navItems.forEach(item => item.classList.toggle('active', item.dataset.page === name));
+      sidebar.classList.remove('open');
+      overlay.classList.remove('show');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    navItems.forEach(item => item.addEventListener('click', () => switchPage(item.dataset.page)));
+    document.querySelectorAll('.jump').forEach(btn => btn.addEventListener('click', () => switchPage(btn.dataset.page)));
+
+    document.getElementById('menuBtn').addEventListener('click', () => {
+      sidebar.classList.toggle('open');
+      overlay.classList.toggle('show');
+    });
+    overlay.addEventListener('click', () => {
+      sidebar.classList.remove('open');
+      overlay.classList.remove('show');
+    });
+
+    document.querySelectorAll('.filters').forEach(group => {
+      group.addEventListener('click', (e) => {
+        const chip = e.target.closest('.chip');
+        if (!chip) return;
+        group.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+      });
+    });
+
+    const years = Array.from({ length: 13 }, (_, i) => 114 - i);
+    const yearGrid = document.getElementById('yearGrid');
+    yearGrid.innerHTML = years.map((year, idx) => {
+      const progress = Math.max(8, 88 - idx * 5);
+      return `
+        <article class="year-card">
+          <div class="year-card-top"><h3>${year} 年</h3><span class="status ${idx > 5 ? 'todo' : ''}">${idx > 5 ? '待複習' : '已收錄'}</span></div>
+          <p>四科共 200 題 · 題解與分類標籤</p>
+          <div class="tiny-bars">
+            <div class="tiny-bar"><span style="width:${progress}%"></span></div>
+            <div class="tiny-bar"><span style="width:${Math.max(5, progress-12)}%"></span></div>
+            <div class="tiny-bar"><span style="width:${Math.max(5, progress-23)}%"></span></div>
+            <div class="tiny-bar"><span style="width:${Math.max(5, progress-31)}%"></span></div>
+          </div>
+          <div class="year-card-foot"><span>完成度 ${Math.max(0, progress-15)}%</span><button class="text-link">開啟題庫 →</button></div>
+        </article>`;
+    }).join('');
+
+    const range = document.getElementById('questionRange');
+    const rangeValue = document.getElementById('rangeValue');
+    range.addEventListener('input', () => rangeValue.textContent = `${range.value} 題`);
+
+    document.getElementById('startQuiz').addEventListener('click', () => {
+      document.getElementById('quizPreview').classList.add('show');
+      showToast(`已建立 ${range.value} 題練習組合`);
+    });
+
+    document.querySelectorAll('.star-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        btn.classList.toggle('active');
+        btn.textContent = btn.classList.contains('active') ? '★' : '☆';
+        showToast(btn.classList.contains('active') ? '已加入難題清單' : '已移除難題標記');
+      });
+    });
+
+    const defaultNotes = [
+      { title: '防火區劃面積限制整理', subject: '建築法規與實務', content: '整理不同用途、樓層與設置自動滅火設備時的面積限制。', date: '今天' },
+      { title: 'PMV 與 PPD 的判讀', subject: '建築環境控制', content: 'PMV 越接近 0 代表熱感受越中性；PPD 為預測不滿意百分比。', date: '昨天' },
+      { title: '鋼筋續接位置原則', subject: '建築構造與施工', content: '續接位置應避開最大應力區，並依規範錯開配置。', date: '7/18' }
+    ];
+
+    function loadNotes() {
+      try { return JSON.parse(localStorage.getItem('archiNotes') || 'null') || defaultNotes; }
+      catch (error) { return defaultNotes; }
+    }
+
+    function persistNotes() {
+      try { localStorage.setItem('archiNotes', JSON.stringify(notes)); }
+      catch (error) { /* 部分預覽環境不開放 localStorage，仍保留本次操作狀態 */ }
+    }
+
+    let notes = loadNotes();
+    const savedNotes = document.getElementById('savedNotes');
+    const noteBadge = document.getElementById('noteBadge');
+
+    function renderNotes() {
+      noteBadge.textContent = notes.length;
+      savedNotes.innerHTML = notes.length ? notes.map(note => `
+        <article class="saved-note-card">
+          <h4>${escapeHtml(note.title)}</h4>
+          <p>${escapeHtml(note.subject)}｜${escapeHtml(note.content)}</p>
+          <time>${escapeHtml(note.date)}</time>
+        </article>`).join('') : '<div class="empty">尚未建立任何筆記</div>';
+    }
+
+    document.getElementById('saveNote').addEventListener('click', () => {
+      const title = document.getElementById('noteTitle').value.trim();
+      const subject = document.getElementById('noteSubject').value;
+      const content = document.getElementById('noteContent').value.trim();
+      if (!title || !content) return showToast('請填寫筆記標題與內容');
+      notes.unshift({ title, subject, content, date: new Date().toLocaleDateString('zh-TW') });
+      persistNotes();
+      document.getElementById('noteTitle').value = '';
+      document.getElementById('noteContent').value = '';
+      renderNotes();
+      showToast('筆記已儲存');
+    });
+
+    function escapeHtml(text) {
+      return String(text).replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[s]));
+    }
+
+    const globalSearch = document.getElementById('globalSearch');
+    globalSearch.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && globalSearch.value.trim()) {
+        switchPage('papers');
+        showToast(`搜尋：「${globalSearch.value.trim()}」`);
+      }
+    });
+
+    document.querySelectorAll('.round-arrow, .year-card .text-link, .subject-row .text-link').forEach(btn => {
+      btn.addEventListener('click', () => showToast('原型功能：已開啟題目入口'));
+    });
+
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.classList.add('show');
+      clearTimeout(window.toastTimer);
+      window.toastTimer = setTimeout(() => toast.classList.remove('show'), 1800);
+    }
+
+    renderNotes();
+  </script>
+</body>
+</html>
