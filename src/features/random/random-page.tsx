@@ -20,7 +20,7 @@ const subjectOptions = [
   ...subjects.map((subject) => ({ value: subject.id, label: subject.name })),
 ] as const;
 
-const yearOptions = years.map((year) => ({ value: String(year), label: `民國 ${year} 年` }));
+const yearOptions = years.map((year) => ({ value: String(year), label: `${year} 年` }));
 
 export function RandomPage() {
   const router = useRouter();

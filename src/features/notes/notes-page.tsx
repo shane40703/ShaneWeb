@@ -81,7 +81,7 @@ export function NotesPage() {
         <SimpleSelect
           label="年份"
           value={String(currentQuestion.year)}
-          options={availableYears.map((year) => ({ value: String(year), label: `民國 ${year} 年` }))}
+          options={availableYears.map((year) => ({ value: String(year), label: `${year} 年` }))}
           onValueChange={selectYear}
         />
         <SimpleSelect

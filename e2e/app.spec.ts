@@ -9,6 +9,8 @@ test('paper flow, timer, difficult marker, result, and history persist', async (
   await page.getByRole('link', { name: /建築法規與實務/ }).click();
   await expect(page).toHaveURL(/\/papers\?subject=law/);
   await expect(page.locator('article')).toHaveCount(13);
+  await expect(page.locator('main')).not.toContainText('民國');
+  await expect(page.locator('main')).not.toContainText('住宅居室採光有效面積');
 
   await page.getByRole('link', { name: /開始作答/ }).first().click();
   await expect(page).toHaveURL(/\/quiz\?subject=law&year=114/);
@@ -34,6 +36,26 @@ test('paper flow, timer, difficult marker, result, and history persist', async (
   await page.goto('/history');
   await expect(page.getByText('0%', { exact: true })).toBeVisible();
   await expect(page.getByText('答錯')).toBeVisible();
+});
+
+test('question navigator jumps between questions and keeps answer state', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop');
+
+  await page.goto('/quiz?mode=random&questions=law-114-01,env-114-01,construction-114-01');
+  const navigator = page.getByRole('complementary', { name: '題號導覽' });
+  await expect(navigator).toBeVisible();
+  await expect(navigator.getByRole('button')).toHaveCount(3);
+  await expect(navigator.getByRole('button', { name: '前往第 1 題' })).toHaveAttribute('aria-current', 'step');
+
+  await navigator.getByRole('button', { name: '前往第 2 題' }).click();
+  await expect(page.getByRole('heading', { name: /U 值越小/ })).toBeVisible();
+  await expect(navigator.getByRole('button', { name: '前往第 2 題' })).toHaveAttribute('aria-current', 'step');
+
+  await page.getByText('隔熱性能越好', { exact: true }).click();
+  await expect(navigator.getByRole('button', { name: '前往第 2 題（已作答）' })).toBeVisible();
+
+  await navigator.getByRole('button', { name: '前往第 1 題' }).click();
+  await expect(page.getByRole('heading', { name: /住宅居室採光有效面積/ })).toBeVisible();
 });
 
 test('analysis only shows exam-content distribution', async ({ page }, testInfo) => {

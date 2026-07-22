@@ -71,15 +71,6 @@ function SidebarContent({ pathname, onNavigate }: { pathname: string; onNavigate
     <div className={styles.sidebarInner}>
       <Brand />
       <Navigation pathname={pathname} onNavigate={onNavigate} />
-      <aside className={styles.studyCard}>
-        <div className={styles.planGraphic} aria-hidden="true">
-          <span />
-          <span />
-          <span />
-        </div>
-        <strong>專注每一題</strong>
-        <p>練習紀錄、筆記與難題標記只保留在這台裝置。</p>
-      </aside>
     </div>
   );
 }

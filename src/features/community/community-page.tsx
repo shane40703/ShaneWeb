@@ -144,7 +144,7 @@ export function CommunityPage() {
         <SimpleSelect
           label="年份"
           value={String(currentQuestion.year)}
-          options={availableYears.map((year) => ({ value: String(year), label: `民國 ${year} 年` }))}
+          options={availableYears.map((year) => ({ value: String(year), label: `${year} 年` }))}
           onValueChange={selectYear}
         />
         <SimpleSelect
@@ -159,7 +159,7 @@ export function CommunityPage() {
         <header>
           <div className={styles.tags}>
             <Tag tone="green">{subject?.name}</Tag>
-            <Tag>民國 {currentQuestion.year} 年</Tag>
+            <Tag>{currentQuestion.year} 年</Tag>
             <Tag tone="purple">第 {currentQuestion.questionNumber} 題</Tag>
           </div>
           <DifficultButton

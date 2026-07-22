@@ -111,62 +111,6 @@
   transition: opacity 150ms ease;
 }
 
-.studyCard {
-  margin-top: auto;
-  padding: 16px;
-  border: 1px solid var(--warm-line);
-  border-radius: 16px;
-  background: linear-gradient(180deg, var(--warm-surface), var(--warm-surface-2));
-  overflow: hidden;
-}
-
-.studyCard strong {
-  display: block;
-  white-space: nowrap;
-}
-
-.studyCard p {
-  margin: 7px 0 0;
-  color: var(--muted);
-  font-size: 12px;
-  line-height: 1.65;
-}
-
-.planGraphic {
-  height: 58px;
-  margin-bottom: 12px;
-  position: relative;
-  border-radius: 11px;
-  overflow: hidden;
-  background-image: linear-gradient(var(--blueprint-line) 1px, transparent 1px),
-    linear-gradient(90deg, var(--blueprint-line) 1px, transparent 1px);
-  background-size: 13px 13px;
-}
-
-.planGraphic span {
-  position: absolute;
-  left: 16px;
-  right: 16px;
-  height: 2px;
-  background: var(--primary);
-  opacity: 0.45;
-}
-
-.planGraphic span:nth-child(1) {
-  top: 15px;
-  right: 35px;
-}
-
-.planGraphic span:nth-child(2) {
-  top: 28px;
-  left: 30px;
-}
-
-.planGraphic span:nth-child(3) {
-  top: 41px;
-  right: 50px;
-}
-
 .workspace {
   min-width: 0;
 }
@@ -243,9 +187,6 @@
     padding: 20px 16px;
   }
 
-  .studyCard {
-    display: block;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {

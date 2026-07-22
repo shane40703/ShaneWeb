@@ -61,7 +61,7 @@ export function PapersPage() {
             return (
               <article className={styles.yearRow} key={year}>
                 <div>
-                  <strong>民國 {year} 年</strong>
+                  <strong>{year} 年</strong>
                   <span>{count ? `目前收錄 ${count} 題` : '題庫資料待補'}</span>
                 </div>
                 <Button

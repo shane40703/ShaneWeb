@@ -51,7 +51,7 @@ export function HistoryPage() {
                         {subject ? <Tag tone="green">{subject.name}</Tag> : <Tag tone="green">跨科目</Tag>}
                         {attempt.year ? <Tag>{attempt.year} 年</Tag> : null}
                       </div>
-                      <h2>{subject?.name ?? '跨科目練習'}{attempt.year ? `・民國 ${attempt.year} 年` : ''}</h2>
+                      <h2>{subject?.name ?? '跨科目練習'}{attempt.year ? `・${attempt.year} 年` : ''}</h2>
                       <time dateTime={attempt.submittedAt}>{formatDate(attempt.submittedAt)}</time>
                     </div>
                     <div className={styles.score}><strong>{attempt.questionIds.length ? Math.round((attempt.correctCount / attempt.questionIds.length) * 100) : 0}%</strong><span>正確率</span></div>

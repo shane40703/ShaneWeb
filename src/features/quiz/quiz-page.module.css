@@ -8,10 +8,133 @@
 }
 
 .card {
+  min-width: 0;
   min-height: 610px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+}
+
+.quizLayout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 210px;
+  align-items: start;
+  gap: 20px;
+}
+
+.questionNavigator {
+  position: sticky;
+  top: 92px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  overflow: hidden;
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.questionNavigator > header {
+  padding: 18px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  border-bottom: 1px solid var(--line);
+}
+
+.questionNavigator > header span {
+  color: var(--primary-strong);
+  font-size: 9px;
+  font-weight: 850;
+  letter-spacing: 0.1em;
+}
+
+.questionNavigator > header h2 {
+  margin: 5px 0 0;
+  font-size: 17px;
+}
+
+.questionNavigator > header strong {
+  min-width: 43px;
+  min-height: 30px;
+  padding-inline: 8px;
+  display: grid;
+  place-items: center;
+  border-radius: 9px;
+  background: var(--primary-soft);
+  color: var(--primary-strong);
+  font-size: 11px;
+}
+
+.questionNumbers {
+  padding: 16px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.questionNumbers button {
+  aspect-ratio: 1;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface-2);
+  color: var(--text-soft);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: border-color 150ms ease, background 150ms ease, color 150ms ease;
+}
+
+.questionNumbers button:hover {
+  border-color: var(--primary);
+  color: var(--primary-strong);
+}
+
+.questionNumbers button[data-answered='true'] {
+  border-color: color-mix(in srgb, var(--success) 35%, var(--line));
+  background: var(--success-soft);
+  color: var(--success);
+}
+
+.questionNumbers button[aria-current='step'] {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: white;
+  box-shadow: 0 7px 15px color-mix(in srgb, var(--primary) 22%, transparent);
+}
+
+.questionNumbers button:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--primary) 28%, transparent);
+  outline-offset: 2px;
+}
+
+.navigatorLegend {
+  padding: 12px 16px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.navigatorLegend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.navigatorLegend i {
+  width: 8px;
+  height: 8px;
+  display: block;
+  border-radius: 3px;
+  background: var(--primary);
+}
+
+.navigatorLegend i[data-tone='answered'] {
+  background: var(--success);
 }
 
 .timer {
@@ -172,6 +295,25 @@
 .reviewList {
   display: grid;
   gap: 12px;
+}
+
+@media (max-width: 1120px) {
+  .quizLayout {
+    grid-template-columns: 1fr;
+  }
+
+  .questionNavigator {
+    position: static;
+    grid-row: 1;
+  }
+
+  .questionNumbers {
+    grid-template-columns: repeat(auto-fill, 42px);
+  }
+
+  .card {
+    grid-row: 2;
+  }
 }
 
 @media (max-width: 800px) {

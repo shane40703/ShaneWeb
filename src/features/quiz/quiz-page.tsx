@@ -160,49 +160,82 @@ function QuizSession({ source, mode }: { source: readonly Question[]; mode: Quiz
         title={mode === 'random' ? '隨機題組' : `${currentQuestion.year} 年・${subject?.name}`}
         action={<div className={styles.timer}><span>作答時間</span><strong>{formatDuration(elapsedSeconds)}</strong></div>}
       />
-      <section className={styles.card}>
-        <header className={styles.quizHeader}>
-          <div className={styles.meta}>
-            <Tag tone="green">{subject?.shortName}</Tag>
-            <Tag>{currentQuestion.year} 年</Tag>
-            <Tag tone="orange">{currentQuestion.primaryCategory}</Tag>
-          </div>
-          <DifficultButton
-            active={difficult}
-            onClick={() => dispatch({ type: 'toggle-difficult', questionId: currentQuestion.id })}
-          />
-        </header>
-        <ProgressBar value={((questionIndex + 1) / source.length) * 100} label="答題進度" />
-        <div className={styles.questionBody}>
-          <span className={styles.questionNumber}>第 {currentQuestion.questionNumber} 題・題組 {questionIndex + 1}/{source.length}</span>
-          <h2>{currentQuestion.text}</h2>
-          <OptionGroup
-            label="請選擇答案"
-            options={currentQuestion.options}
-            value={selected}
-            onValueChange={(value) => setAnswers((current) => ({ ...current, [currentQuestion.id]: value }))}
-          />
-          <Button
-            variant="ghost"
-            render={<Link href={`/community?question=${currentQuestion.id}`} />}
-          >
-            前往詳解與討論 <IconExternalLink size={17} stroke={2} aria-hidden="true" />
-          </Button>
-        </div>
-        <footer className={styles.navigation}>
-          <Button onClick={() => setQuestionIndex((current) => Math.max(0, current - 1))} disabled={questionIndex === 0}>
-            <IconArrowLeft size={17} stroke={2} aria-hidden="true" /> 上一題
-          </Button>
-          <span>已作答 {answeredCount} / {source.length}</span>
-          {questionIndex < source.length - 1 ? (
-            <Button variant="primary" onClick={() => setQuestionIndex((current) => Math.min(source.length - 1, current + 1))}>
-              下一題 <IconArrowRight size={17} stroke={2} aria-hidden="true" />
+      <div className={styles.quizLayout}>
+        <section className={styles.card}>
+          <header className={styles.quizHeader}>
+            <div className={styles.meta}>
+              <Tag tone="green">{subject?.shortName}</Tag>
+              <Tag>{currentQuestion.year} 年</Tag>
+              <Tag tone="orange">{currentQuestion.primaryCategory}</Tag>
+            </div>
+            <DifficultButton
+              active={difficult}
+              onClick={() => dispatch({ type: 'toggle-difficult', questionId: currentQuestion.id })}
+            />
+          </header>
+          <ProgressBar value={((questionIndex + 1) / source.length) * 100} label="答題進度" />
+          <div className={styles.questionBody}>
+            <span className={styles.questionNumber}>第 {currentQuestion.questionNumber} 題・題組 {questionIndex + 1}/{source.length}</span>
+            <h2>{currentQuestion.text}</h2>
+            <OptionGroup
+              label="請選擇答案"
+              options={currentQuestion.options}
+              value={selected}
+              onValueChange={(value) => setAnswers((current) => ({ ...current, [currentQuestion.id]: value }))}
+            />
+            <Button
+              variant="ghost"
+              render={<Link href={`/community?question=${currentQuestion.id}`} />}
+            >
+              前往詳解與討論 <IconExternalLink size={17} stroke={2} aria-hidden="true" />
             </Button>
-          ) : (
-            <Button variant="primary" onClick={submitQuiz}>交卷</Button>
-          )}
-        </footer>
-      </section>
+          </div>
+          <footer className={styles.navigation}>
+            <Button onClick={() => setQuestionIndex((current) => Math.max(0, current - 1))} disabled={questionIndex === 0}>
+              <IconArrowLeft size={17} stroke={2} aria-hidden="true" /> 上一題
+            </Button>
+            <span>已作答 {answeredCount} / {source.length}</span>
+            {questionIndex < source.length - 1 ? (
+              <Button variant="primary" onClick={() => setQuestionIndex((current) => Math.min(source.length - 1, current + 1))}>
+                下一題 <IconArrowRight size={17} stroke={2} aria-hidden="true" />
+              </Button>
+            ) : (
+              <Button variant="primary" onClick={submitQuiz}>交卷</Button>
+            )}
+          </footer>
+        </section>
+
+        <aside className={styles.questionNavigator} aria-label="題號導覽">
+          <header>
+            <div>
+              <span>QUESTION NAVIGATION</span>
+              <h2>題號導覽</h2>
+            </div>
+            <strong>{questionIndex + 1}/{source.length}</strong>
+          </header>
+          <div className={styles.questionNumbers}>
+            {source.map((question, index) => {
+              const isAnswered = answers[question.id] !== undefined;
+              return (
+                <button
+                  key={question.id}
+                  type="button"
+                  onClick={() => setQuestionIndex(index)}
+                  aria-current={index === questionIndex ? 'step' : undefined}
+                  aria-label={`前往第 ${index + 1} 題${isAnswered ? '（已作答）' : ''}`}
+                  data-answered={isAnswered}
+                >
+                  {index + 1}
+                </button>
+              );
+            })}
+          </div>
+          <footer className={styles.navigatorLegend}>
+            <span><i data-tone="current" />目前題目</span>
+            <span><i data-tone="answered" />已作答</span>
+          </footer>
+        </aside>
+      </div>
     </>
   );
 }

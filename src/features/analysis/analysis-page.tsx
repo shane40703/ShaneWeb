@@ -12,7 +12,7 @@ const colors = ['#2563eb', '#0d9488', '#d97706', '#7c3aed', '#dc4c64', '#64748b'
 const subjectOptions = subjects.map((subject) => ({ value: subject.id, label: subject.name }));
 const yearOptions = [
   { value: 'all', label: '跨年度比較' },
-  ...years.map((year) => ({ value: String(year), label: `民國 ${year} 年` })),
+  ...years.map((year) => ({ value: String(year), label: `${year} 年` })),
 ];
 
 function valueOf(value: string | string[] | undefined) {
@@ -80,7 +80,7 @@ export function AnalysisPage() {
         />
         <div className={styles.total}>
           <span>分析範圍</span>
-          <strong>{year === 'all' ? '跨年度' : `民國 ${year} 年`}・{subject.name}</strong>
+          <strong>{year === 'all' ? '跨年度' : `${year} 年`}・{subject.name}</strong>
           <small>總題數 {source.length} 題</small>
         </div>
       </section>
@@ -145,7 +145,7 @@ export function AnalysisPage() {
 
           <section className={styles.tableCard}>
             <table>
-              <caption>{year === 'all' ? '跨年度' : `民國 ${year} 年`}分類統計</caption>
+              <caption>{year === 'all' ? '跨年度' : `${year} 年`}分類統計</caption>
               <thead><tr><th>主要分類</th><th>題數</th><th>占比</th></tr></thead>
               <tbody>
                 {analysis.map((item) => (
