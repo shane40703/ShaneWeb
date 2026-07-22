@@ -6,9 +6,9 @@
 src/question-bank/
 ├── schema.ts
 ├── registry.ts
-├── law/
-├── env/
-├── construction/
+├── 法規/
+├── 環控/
+├── 構造/
 │   └── 114/
 │       ├── paper.ts
 │       ├── source/paper.pdf
@@ -20,12 +20,12 @@ src/question-bank/
 │           ├── B.txt
 │           ├── C.txt
 │           └── D.txt
-└── structure/
+└── 結構/
 ```
 
 ## 題目檔案規則
 
-- 科目資料夾固定為 `law`、`env`、`construction`、`structure`。
+- 科目 ID 與資料夾固定對應為 `law` → `法規`、`env` → `環控`、`construction` → `構造`、`structure` → `結構`。題目 ID 與網址仍使用英文科目 ID。
 - 年度使用三位數民國年，題號資料夾使用兩位數。
 - 題幹檔名為 `question-NN.txt` 或 `question-NN.png|jpg|jpeg|webp`；文字與圖片依 `NN` 由小到大顯示。
 - 每題必須有 `A.txt`、`B.txt`、`C.txt`、`D.txt`，選項只接受非空白純文字，不接受圖片。

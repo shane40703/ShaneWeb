@@ -19,6 +19,12 @@ import { questionPath } from '@/lib/question-path';
 import type { Question, QuestionSummary } from '@/lib/types';
 
 const bankRoot = path.join(process.cwd(), 'src/question-bank');
+const subjectDirectories = {
+  law: '法規',
+  env: '環控',
+  construction: '構造',
+  structure: '結構',
+} as const satisfies Record<SubjectId, string>;
 const questionFilePattern = /^question-(\d{2})\.(txt|png|jpe?g|webp)$/;
 const subjectOrder = new Map(subjects.map((subject, index) => [subject.id, index]));
 
@@ -53,7 +59,7 @@ function questionId(entry: QuestionRegistryEntry) {
 function questionDirectory(entry: QuestionRegistryEntry) {
   return path.join(
     bankRoot,
-    entry.subject,
+    subjectDirectories[entry.subject],
     String(entry.year),
     String(entry.questionNumber).padStart(2, '0'),
   );
