@@ -1,0 +1,11 @@
+import { defineQuestionMeta } from '@/question-bank/schema';
+
+export default defineQuestionMeta({
+  subject: 'law',
+  primaryCategory: '建築法',
+  topic: '建築管理法規',
+  tags: ['建築管理法規'],
+  relatedLaws: ['建築法', '建築物部分使用執照核發辦法'],
+  answerKey: { kind: 'accepted', options: ['B'] },
+  provenance: { kind: 'official', page: 2 },
+});

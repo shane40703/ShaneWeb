@@ -1,0 +1,11 @@
+import { defineQuestionMeta } from '@/question-bank/schema';
+
+export default defineQuestionMeta({
+  subject: 'law',
+  primaryCategory: '政府採購法',
+  topic: '政府採購法',
+  tags: ['政府採購法'],
+  relatedLaws: ['政府採購法'],
+  answerKey: { kind: 'accepted', options: ['C'] },
+  provenance: { kind: 'official', page: 7 },
+});

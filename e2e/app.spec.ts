@@ -130,7 +130,7 @@ test('analysis only shows exam-content distribution', async ({ page }, testInfo)
 
   await page.goto('/analysis?subject=law&year=all');
   await expect(page.getByRole('heading', { name: '考題分析' })).toBeVisible();
-  await expect(page.getByText('總題數 5 題')).toBeVisible();
+  await expect(page.getByText('總題數 84 題')).toBeVisible();
   await expect(page.getByRole('table')).toBeVisible();
   await expect(page.getByText('主要分類占比')).toBeVisible();
   await expect(page.locator('main')).not.toContainText('個人答對率');
@@ -151,7 +151,7 @@ test('community selectors and local anonymous interactions work', async ({ page 
   await expect(page.getByText('正確答案')).toBeVisible();
 
   await page.getByRole('button', { name: '下一題' }).click();
-  await expect(page).toHaveURL(/question=law-113-01/);
+  await expect(page).toHaveURL(/question=law-114-02/);
   await page.getByRole('button', { name: '上一題' }).click();
   await expect(page).toHaveURL(/question=law-114-01/);
 

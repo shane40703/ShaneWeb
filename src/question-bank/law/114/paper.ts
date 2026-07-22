@@ -1,7 +1,7 @@
 import { definePaper } from '@/question-bank/schema';
 
 export default definePaper({
-  status: 'official-partial',
+  status: 'official-complete',
   paperCode: '1801',
   officialName: '營建法規與實務',
   totalQuestions: 80,

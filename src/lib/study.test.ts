@@ -35,7 +35,7 @@ describe('question data', () => {
       }
       expect(question.primaryCategory.length).toBeGreaterThan(0);
     });
-    expect(questions).toHaveLength(21);
+    expect(questions).toHaveLength(100);
   });
 });
 
