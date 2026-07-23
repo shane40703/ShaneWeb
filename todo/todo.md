@@ -11,3 +11,4 @@ doc:
 ![alt text](image-2.png)逐題作答結果可以展開選項，有連結連過去詳解與討論
 ![alt text](image-3.png)加入隨機出題，依據考古題範圍隨機抽使用者定的題數
 ![alt text](image-4.png)![alt text](image-5.png)選擇題目拉長拉扁
+![alt text](image-6.png) 送出答案按鈕刪除，不用在這邊有即時對答案，使用者寫完整份直接對答案即可，或者出一個單題模式
