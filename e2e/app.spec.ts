@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-test('paper flow, timer, difficult marker, and in-progress answers persist', async ({ page }, testInfo) => {
+test('paper flow, timer, difficult marker, and draft answers stay ungraded', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop');
 
   await page.goto('/');
@@ -44,12 +44,16 @@ test('paper flow, timer, difficult marker, and in-progress answers persist', asy
   await page.getByRole('button', { name: '標記為難題' }).click();
   await expect(page.getByRole('button', { name: '取消難題標記' })).toBeVisible();
   await page.getByText('建築基地，為供建築物本身所占之地面及其所應留設之法定空地', { exact: true }).click();
-  await page.getByRole('button', { name: '送出答案' }).click();
-
-  await expect(page.getByText('答案不正確', { exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: '送出答案' })).toHaveCount(0);
+  await expect(page.getByText('答案不正確', { exact: true })).toHaveCount(0);
   await expect
-    .poll(() => page.evaluate(() => localStorage.getItem('shaneweb:state')))
-    .toContain('law-114-01');
+    .poll(() =>
+      page.evaluate(() => {
+        const state = JSON.parse(localStorage.getItem('shaneweb:state') ?? '{}');
+        return state.answers?.['law-114-01'];
+      }),
+    )
+    .toBeUndefined();
 
   await page.goto('/difficult');
   await expect(page.getByText(/依建築法規定，下列敘述何者錯誤/)).toBeVisible();
@@ -77,35 +81,31 @@ test('static question paths preserve state and submit a paper result to history'
   await expect(navigator.getByRole('link', { name: '前往第 1 題' })).toHaveAttribute('aria-current', 'step');
 
   await page.getByText('(3)＞(2)＞(1)', { exact: true }).click();
-  await page.getByRole('button', { name: '送出答案' }).click();
-  await expect(page.getByText('答對了', { exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: '送出答案' })).toHaveCount(0);
+  await expect(navigator.getByRole('link', { name: '前往第 1 題' })).toHaveAttribute('data-answered', 'true');
 
   await navigator.getByRole('link', { name: '前往第 49 題' }).click();
   await expect(page).toHaveURL(/\/questions\/construction\/114\/49/);
   await expect(page.getByText(/何者可能具有最佳的防水效果/)).toBeVisible();
   await expect(navigator.getByRole('link', { name: '前往第 49 題' })).toHaveAttribute('aria-current', 'step');
   await expect(page.getByRole('radio', { checked: true })).toHaveCount(0);
-  await expect(page.getByRole('button', { name: '送出答案' })).toBeDisabled();
   await expect(page.getByText('答對了', { exact: true })).toHaveCount(0);
-
-  await expect(navigator.getByRole('link', { name: '前往第 1 題' })).toHaveAttribute('data-answered', 'true');
 
   await page.getByText('圖 D', { exact: true }).click();
   await navigator.getByRole('link', { name: '前往第 1 題' }).click();
-  await expect(page.getByText('答對了', { exact: true })).toBeVisible();
+  await expect(page.getByText('答對了', { exact: true })).toHaveCount(0);
   await expect(page.getByRole('radio', { checked: true })).toHaveCount(1);
 
   await navigator.getByRole('link', { name: '前往第 49 題' }).click();
   await expect(page.getByText('圖 D', { exact: true }).locator('..').getByRole('radio')).toBeChecked();
-  await expect(page.getByRole('button', { name: '送出答案' })).toBeEnabled();
-  await page.getByRole('button', { name: '送出答案' }).click();
-  await expect(page.getByText('答案不正確', { exact: true })).toBeVisible();
-  await page.getByRole('button', { name: '交卷' }).click();
+  await page.getByRole('button', { name: '對答案' }).click();
 
   await expect(page.getByRole('heading', { name: '本次作答結果' })).toBeVisible();
-  await expect(page.getByLabel('正確率 50%')).toBeVisible();
-  await expect(page.getByRole('heading', { name: '答錯題目' })).toBeVisible();
-  await expect(page.getByRole('link', { name: /第 49 題/ })).toBeVisible();
+  await expect(page.getByLabel('本次得分 30.00 分')).toBeVisible();
+  await expect(page.getByRole('heading', { name: '逐題作答結果' })).toBeVisible();
+  await expect(page.getByText('1 / 2 題答對')).toBeVisible();
+  await page.getByText('檢視完整選項').last().click();
+  await expect(page.getByRole('link', { name: '詳解與討論' }).last()).toBeVisible();
 
   await page.getByRole('button', { name: '查看作答紀錄' }).click();
   await expect(page.getByText('50%', { exact: true })).toBeVisible();
@@ -153,8 +153,9 @@ test('official corrected answer accepts every published answer', async ({ page }
 
   await page.goto('/questions/construction/114/49');
   await page.getByText('圖 B', { exact: true }).click();
-  await page.getByRole('button', { name: '送出答案' }).click();
-  await expect(page.getByText('答對了', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: '對答案' }).click();
+  await expect(page.getByText('1 / 2 題答對')).toBeVisible();
+  await expect(page.getByText('你的答案：B')).toBeVisible();
 });
 
 test('analysis only shows exam-content distribution', async ({ page }, testInfo) => {
@@ -165,6 +166,10 @@ test('analysis only shows exam-content distribution', async ({ page }, testInfo)
   await expect(page.getByText('總題數 84 題')).toBeVisible();
   await expect(page.getByRole('table')).toBeVisible();
   await expect(page.getByText('主要分類占比')).toBeVisible();
+  const lawAnalysis = page.getByRole('region', { name: '法規命題占比' });
+  await expect(lawAnalysis).toBeVisible();
+  await lawAnalysis.getByRole('button', { name: /建築物公共安全檢查簽證及申報辦法/ }).click();
+  await expect(lawAnalysis.getByText(/目前範圍共 2 題/)).toBeVisible();
   await expect(page.locator('main')).not.toContainText('個人答對率');
   await expect(page.locator('main')).not.toContainText('弱點分析');
 
@@ -183,6 +188,10 @@ test('community selectors and local anonymous interactions work', async ({ page 
   await expect(page.getByRole('group', { name: '年度' })).toBeVisible();
   await expect(page.getByRole('group', { name: '題號' })).toBeVisible();
   await expect(page.getByText('正確答案')).toBeVisible();
+  await expect(
+    page.getByText('正確答案').locator('..').getByText('D', { exact: true }),
+  ).toBeVisible();
+  await expect(page.getByText(/D・/)).toHaveCount(0);
 
   await page.getByRole('button', { name: '下一題' }).click();
   await expect(page).toHaveURL(/question=law-114-02/);
@@ -203,6 +212,20 @@ test('community selectors and local anonymous interactions work', async ({ page 
   await expect(post.getByRole('button', { name: '已檢舉' })).toBeVisible();
   await page.reload();
   await expect(page.getByText(content)).toBeVisible();
+});
+
+test('random quiz draws the requested number of unique questions', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop');
+
+  await page.goto('/papers?subject=law&year=114');
+  const randomQuiz = page.getByRole('region', { name: /隨機出題/ });
+  await expect(randomQuiz).toBeVisible();
+  await randomQuiz.getByRole('button').filter({ hasText: /^5 題/ }).click();
+  await randomQuiz.getByRole('button', { name: '抽出題組' }).click();
+  await expect(page).toHaveURL(/mode=random/);
+  await expect(page).toHaveURL(/questions=/);
+  await expect(page.getByRole('heading', { name: /隨機練習/ })).toBeVisible();
+  await expect(page.getByRole('complementary', { name: '題號導覽' }).getByRole('link')).toHaveCount(5);
 });
 
 test('notes save and reload from local storage', async ({ page }, testInfo) => {
