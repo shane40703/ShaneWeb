@@ -1,0 +1,16 @@
+{
+  "year": 105,
+  "subject": "environment",
+  "subjectName": "環控",
+  "questionNumber": 37,
+  "hasImage": true,
+  "imageFile": "images/figure1.png",
+  "imageReasons": [
+    "題幹引用圖示",
+    "PDF 題目區含嵌入圖片"
+  ],
+  "sourcePages": [
+    4
+  ],
+  "warnings": []
+}

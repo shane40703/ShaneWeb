@@ -1,0 +1,6 @@
+26. 下列結構系統中，何者在基礎差異沉陷時，不致造成桿件內力變化？
+
+A. 固定支承的門形剛架系統
+B. 固定拱（fixed arch）系統
+C. 兩鉸拱（two-hinge arch）系統
+D. 三鉸拱（three-hinge arch）系統

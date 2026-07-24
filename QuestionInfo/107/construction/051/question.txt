@@ -1,0 +1,8 @@
+51. 下圖為鋼骨工程之銲接部位詳細圖，下列敘述何者錯誤？
+
+[圖片：images/figure1.png]
+
+A. ①為母材（Base Metal），意指欲施銲的工件
+B. ③為熔合深度（Depth of Fusion），意指銲接金屬融入母材的深度
+C. ⑤為角銲腳長（Leg of a Fillet Weld），意指角銲根部到趾部的距離
+D. ⑦為角銲喉深（Throat of Fillet Weld），意指根部到銲面間的最大距離

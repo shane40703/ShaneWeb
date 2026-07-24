@@ -1,0 +1,8 @@
+31. 如下圖所示的三鉸式剛構架，A、E 為鉸支承，C 為鉸接。此剛構架於B 點承受6 kN 之外力作用。有關此剛構架的受力情況，下列敘述何者正確？
+
+[圖片：images/figure1.png]
+
+A. Ax=3 kN(←)，Ay=3 kN(↓)，Ex=3 kN(←)，Ey=3 kN(↑)
+B. Ax=3 kN(←)，Ay=3 kN(↑)，Ex=3 kN(←)，Ey=3 kN(↑)
+C. Ax=3 kN(→)，Ay=3 kN(↑)，Ex=3 kN(←)，Ey=3 kN(↑)
+D. Cx=0 kN，Cy=0 kN

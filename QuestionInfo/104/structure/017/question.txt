@@ -1,0 +1,8 @@
+17. 下圖的桁架結構，那一桿件有發生挫屈之可能性？
+
+[圖片：images/figure1.png]
+
+A. OA
+B. OB
+C. OD
+D. AB

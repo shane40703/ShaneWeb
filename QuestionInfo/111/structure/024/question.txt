@@ -1,0 +1,8 @@
+24. 如圖所示桿件受軸向外力作用，F1 = 100 kN，F2 = 500 kN，則A、B 處反力大小為何？
+
+[圖片：images/figure1.png]
+
+A. RA = 250 kN, RB = 350 kN
+B. RA = 270 kN, RB = 330 kN
+C. RA = 290 kN, RB = 310 kN
+D. RA = 350 kN, RB = 250 kN

@@ -1,0 +1,15 @@
+{
+  "year": 107,
+  "subject": "structure",
+  "subjectName": "結構",
+  "questionNumber": 5,
+  "hasImage": true,
+  "imageFile": "images/figure1.png",
+  "imageReasons": [
+    "PDF 題目區含嵌入圖片"
+  ],
+  "sourcePages": [
+    2
+  ],
+  "warnings": []
+}

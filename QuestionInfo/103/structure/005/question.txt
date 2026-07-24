@@ -1,0 +1,8 @@
+5. 針對同一棟鋼骨構造，在不同結構系統考量下，有SMRF（特殊抗彎構架），CBF（同心斜撐構架），EBF（偏心斜撐構架），其側力P 及側移D 關係如下圖，其中有關（a）、（b）、（c）三曲線與結構系統之對應關係，何者正確？
+
+[圖片：images/figure1.png]
+
+A. （a）SMRF、（b）CBF、（c）EBF
+B. （a）EBF、（b）SMRF、（c）CBF
+C. （a）CBF、（b）EBF、（c）SMRF
+D. （a）SMRF、（b）EBF、（c）CBF

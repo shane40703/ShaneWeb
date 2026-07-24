@@ -1,0 +1,8 @@
+24. 下圖各柱之斷面及長度L 皆相同，當出現彈性挫屈時，其有效長度表示為KiL，Ki為有效長度因子，其中i=a, b, c, d。下列敘述何者正確？
+
+[圖片：images/figure1.png]
+
+A. Ka>Kc>Kd
+B. Kb>Ka>Kd
+C. Kd>Ka>Kc
+D. Kb>Kd>Kc

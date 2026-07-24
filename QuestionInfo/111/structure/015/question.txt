@@ -1,0 +1,6 @@
+15. 近年在房屋結構之耐震設計，相當關注近斷層地震對地表振動之影響，下列敘述何者錯誤？
+
+A. 地表振動強度與斷層之指向性（Forward directivity）有關
+B. 在斷層平行方向（Fault parallel）較易觀察到最大地表加速度與速度（PGA, PGV）
+C. 經常會伴隨一永久地表位移（Fling step）
+D. 常可見明顯速度脈衝（Velocity pulse）

@@ -1,0 +1,8 @@
+21. 下圖桁架結構中C、D 為鉸支承，BC 桿之受力狀況，下列何者正確（T 為張力，C 為壓力）？
+
+[圖片：images/figure1.png]
+
+A. FBC=2.25 kN（T）
+B. FBC=4 kN（C）
+C. FBC=6.75 kN（C）
+D. FBC=9.25 kN（T）

@@ -1,0 +1,9 @@
+
+34. 下圖之四條趨勢線中，何者符合薄板（thin-plate）鋼結構構件在受壓力作用下的Nult/Ny 對L/r之關係？
+
+[圖片：images/figure1.png]
+
+A. 水平線(A)
+B. 曲線(B)
+C. 曲線(C)
+D. 曲線(D)

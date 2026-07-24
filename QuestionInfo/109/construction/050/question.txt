@@ -1,0 +1,8 @@
+50. 下圖之半預鑄樓板屬於下列何種系統？
+
+[圖片：images/figure1.png]
+
+A. FC 半預鑄樓板系統
+B. Kaiser Truss 半預鑄樓板系統
+C. Picos 半預鑄樓板系統
+D. 旋楞鋼管半預鑄樓板系統

@@ -1,0 +1,8 @@
+26. 試分析下圖桁架結構，下列選項何者正確（T 為張力，C 為壓力）？
+
+[圖片：images/figure1.png]
+
+A. FBG = 2 N（T）
+B. AY = 133.3 N（up）
+C. FDE = 643 N（T）
+D. FDC = 666.7 N（T）

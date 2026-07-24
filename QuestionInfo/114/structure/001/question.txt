@@ -1,0 +1,6 @@
+1. 下列何者為材料彈性模數E（modulus of elasticity）之單位？
+
+A. N
+B. kgf/cm
+C. kgf/cm3
+D. MPa

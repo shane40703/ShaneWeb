@@ -1,0 +1,6 @@
+12. 具有延展性的結構鋼材，其應力到達某一臨界值時，變形曲線趨於平緩，卻隨之會出現較大的伸長量，此臨界值為：
+
+A. 零強度（zero strength）
+B. 降伏強度（yielding strength）
+C. 極限強度（ultimate strength）
+D. 破裂強度（fracture strength）

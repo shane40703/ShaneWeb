@@ -1,0 +1,8 @@
+75. 下圖為某一工程作業之施工網圖，試判斷何者為要徑？
+
+[圖片：images/figure1.png]
+
+A. B→D→G
+B. B→E→H
+C. A→C→F
+D. A→C→G

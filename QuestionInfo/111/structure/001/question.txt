@@ -1,0 +1,8 @@
+1. 某材料應力與應變關係如圖所示，試問其彈性模數為何？σε
+
+[圖片：images/figure1.png]
+
+A. 25 GPa
+B. 50 GPa
+C. 150 MPa
+D. 250 MPa

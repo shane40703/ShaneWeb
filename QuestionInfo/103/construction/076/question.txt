@@ -1,0 +1,6 @@
+76. 快速跟進施工方式（fast-track construction）於下列何種專案推動方式（project delivery process）中最常採行？
+
+A. 設計/招標/施工（design/bid/build）
+B. 興建/營運/轉移（BOT）
+C. 統包（turn-key）
+D. 總包（general contract）

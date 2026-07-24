@@ -1,0 +1,6 @@
+24. 鋼構造建築中，柱梁接合的型態或作法不包含下列何者？
+
+A. 剪力接合（shear connection）
+B. 扭力接合（torsion connection）
+C. 彎矩接合（moment connection）
+D. 半剛性接合（semi-rigid connection）

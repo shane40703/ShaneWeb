@@ -1,0 +1,8 @@
+23. 如圖所示桁架，桿件ED 的內力為何？
+
+[圖片：images/figure1.png]
+
+A. 6tf 壓力
+B. 0 
+C. 10tf 壓力
+D. 6tf 張力

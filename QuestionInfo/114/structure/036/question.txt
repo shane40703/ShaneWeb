@@ -1,0 +1,6 @@
+36. 由鋼骨構造所形成的特殊抗彎矩構架系統（SMRF）、同心斜撐構架系統（CBF）及偏心斜撐構架系統（EBF）中，根據建築物耐震設計規範，其韌性容量之高低順序為何？
+
+A. SMRF＞EBF＞CBF
+B. EBF>＞CBF＞SMRF
+C. CBF＞SMRF＞EBF
+D. SMRF＞CBF＞EBF

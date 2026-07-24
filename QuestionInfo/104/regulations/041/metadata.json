@@ -1,0 +1,15 @@
+{
+  "year": 104,
+  "subject": "regulations",
+  "subjectName": "法規",
+  "questionNumber": 41,
+  "hasImage": true,
+  "imageFile": "images/figure1.png",
+  "imageReasons": [
+    "題幹引用圖示"
+  ],
+  "sourcePages": [
+    5
+  ],
+  "warnings": []
+}

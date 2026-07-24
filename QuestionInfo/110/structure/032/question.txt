@@ -1,0 +1,8 @@
+32. 圖示桁架結構在F、E 點受力分別為P1 = 10 kN 及P2 = 15 kN，下列關於桿件受力大小的敘述何者錯誤？
+
+[圖片：images/figure1.png]
+
+A. FBC = 15 kN
+B. FCD = 0 kN
+C. FEC = 15 kN
+D. FBF = 20 kN

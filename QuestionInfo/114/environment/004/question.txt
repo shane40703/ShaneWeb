@@ -1,0 +1,8 @@
+4. 下圖中的甲與乙分別是空氣線圖（Psychrometric chart）上的兩個空氣狀態，下列敘述何者正確？f e乙c甲d a b
+
+[圖片：images/figure1.png]
+
+A. a 與b 的乾球溫度相同
+B. c 與d 的絕對濕度相同
+C. e 與f 的相對濕度相同
+D. g 與h 的熱焓相同

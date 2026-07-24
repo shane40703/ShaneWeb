@@ -1,0 +1,8 @@
+28. 下圖桁架中，那些桿件可改以鋼索取代？
+
+[圖片：images/figure1.png]
+
+A. a、c
+B. b、d
+C. a、b
+D. b、c

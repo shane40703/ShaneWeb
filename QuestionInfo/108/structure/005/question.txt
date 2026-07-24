@@ -1,0 +1,8 @@
+5. 如圖所示為梁（OAB）與桁架（BCDE）之複合結構，OA、AB、BC、CD 及CE 長度均為L。有關桁架內力及支承反力之敘述，下列何者錯誤？
+
+[圖片：images/figure1.png]
+
+A. CE 內力為拉力P
+B. BE 及DE 內力為壓力
+C. BC 及CD 內力為壓力
+D. D 支承反力為P/2

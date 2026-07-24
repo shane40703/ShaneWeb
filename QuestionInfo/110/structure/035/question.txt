@@ -1,0 +1,8 @@
+35. 下圖的結構中，關於支承A、B 點之反力的敘述何者錯誤？
+
+[圖片：images/figure1.png]
+
+A. Ax = 300 N
+B. Ay = 100 N
+C. Bx = 220 N
+D. By = 220 N

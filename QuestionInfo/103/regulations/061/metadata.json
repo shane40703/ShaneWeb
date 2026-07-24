@@ -1,0 +1,15 @@
+{
+  "year": 103,
+  "subject": "regulations",
+  "subjectName": "法規",
+  "questionNumber": 61,
+  "hasImage": true,
+  "imageFile": "images/figure1.png",
+  "imageReasons": [
+    "PDF 題目區含嵌入圖片"
+  ],
+  "sourcePages": [
+    7
+  ],
+  "warnings": []
+}

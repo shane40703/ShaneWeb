@@ -1,0 +1,17 @@
+{
+  "year": 105,
+  "subject": "construction",
+  "subjectName": "構造",
+  "questionNumber": 52,
+  "hasImage": true,
+  "imageFile": "images/figure1.png",
+  "imageReasons": [
+    "題幹引用圖示",
+    "選項疑似為圖片",
+    "PDF 題目區含嵌入圖片"
+  ],
+  "sourcePages": [
+    8
+  ],
+  "warnings": []
+}

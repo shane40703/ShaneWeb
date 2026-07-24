@@ -1,0 +1,15 @@
+{
+  "year": 112,
+  "subject": "construction",
+  "subjectName": "構造",
+  "questionNumber": 79,
+  "hasImage": true,
+  "imageFile": "images/figure1.png",
+  "imageReasons": [
+    "題幹引用表格"
+  ],
+  "sourcePages": [
+    10
+  ],
+  "warnings": []
+}

@@ -1,0 +1,8 @@
+14. 如圖所示，AB 為梁，BCDE 為桁架，B、C 及E 均為鉸接，AB 長度為2L，BC、CD 及CE長度均為L。下列敘述何者錯誤？
+
+[圖片：images/figure1.png]
+
+A. D 支承垂直反力為3P/4
+B. CE 桿件承受拉力
+C. A 支承垂直反力為P/2
+D. A 支承力矩為PL

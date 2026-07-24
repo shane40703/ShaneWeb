@@ -1,0 +1,6 @@
+5. 關於纜索結構（cable structures）的敘述，下列何者錯誤？
+
+A. 單曲率（single-curvature）結構的穩定性會優於雙曲率（double-curvature）結構
+B. 雙索（double-cable）結構的穩定性會優於單索（single-cable）結構
+C. 雙索結構中，曲率凹向上的纜索為主索，負責承擔大部分的荷載
+D. 纜索內應施加預張力

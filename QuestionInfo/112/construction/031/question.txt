@@ -1,0 +1,8 @@
+31. 下列之圖例，最有可能是那一種工法？
+
+[圖片：images/figure1.png]
+
+A. SSG 工法（Structural Sealant Glazing）
+B. MPG 工法（Metal Point Glazing）
+C. DPG 工法（Dot Point Glazing）
+D. MJG 工法（Minimum Joint Glazing）

@@ -1,0 +1,8 @@
+33. 下圖為一偏心斜撐構架（Eccentrically Braced Frame）之示意圖，下列針對此類型鋼結構系統之敘述，何者正確？
+
+[圖片：images/figure1.png]
+
+A. 地震時會先在部位(i)處產生塑鉸（plastic hinge）
+B. 地震時主要的吸能（消能）部位在(ii)
+C. 地震時主要的吸能（消能）部位在(iv)
+D. 此類型設計相比於同心斜撐構架更容易出現挫屈（buckling）破壞

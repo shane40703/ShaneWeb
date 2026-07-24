@@ -1,0 +1,8 @@
+25. 下圖所示結構中，支承A 與B 的反力大小為何？
+
+[圖片：images/figure1.png]
+
+A. RA=20 kN, RB=75 kN
+B. RA=25 kN, RB=100 kN
+C. RA=15 kN, RB=80 kN
+D. RA=50 kN, RB=100 kN

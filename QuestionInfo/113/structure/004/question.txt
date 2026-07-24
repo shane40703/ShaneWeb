@@ -1,0 +1,6 @@
+4. 下列材料性質之敘述何者正確？
+
+A. 材料楊氏係數（Young’s modulus）為材料應力－應變曲線圖中座標原點至極限點（Ultimate point）之斜率
+B. 韌性材料（Ductile material）破壞時會吸收較多能量
+C. 鋼材料頸縮（Necking）現象通常是發生在最大強度點之前
+D. 極限點（Ultimate point）越接近降伏點（Yield point）之材料，破壞時能吸收較多能量

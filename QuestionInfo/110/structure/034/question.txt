@@ -1,0 +1,8 @@
+34. 圖中構架ABCD 之A 點固端彎矩為何？
+
+[圖片：images/figure1.png]
+
+A. 2 kN-m
+B. 4 kN-m
+C. 6 kN-m
+D. 8 kN-m

@@ -1,0 +1,6 @@
+72. 依據我國低碳建築評估系統LEBR（Low Embodied-carbon Building Rating System）之內容，下列敘述何者錯誤？
+
+A. 假設在相同規模（樓層數與樓地板面積）、相同格局（平面與立面）與相同結構斷面尺寸的條件下，木構造較SRC 低碳
+B. 評估制度鎖定於建築物的蘊含碳排（Embodied Carbon）；使用碳排（Operational Carbon）則是以建築能效評估系統BERS（Building Efficiency Rating System）作為評估與標示之依據
+C. 合理的結構系統設計（例如均勻跨距結構系統）係建築減碳設計之重要影響因子
+D. 主結構工程的減碳評估範疇包含地上層結構、地下層結構（含地下連續壁與基樁）
