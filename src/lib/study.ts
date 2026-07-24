@@ -180,3 +180,25 @@ export function getAnalysis(source: readonly { primaryCategory: string }[]) {
     }))
     .sort((left, right) => right.count - left.count || left.category.localeCompare(right.category));
 }
+
+export function getLawAnalysis(
+  source: readonly { relatedLaws?: readonly string[] }[],
+) {
+  const counts = new Map<string, number>();
+  let totalReferences = 0;
+
+  source.forEach((question) => {
+    question.relatedLaws?.forEach((law) => {
+      counts.set(law, (counts.get(law) ?? 0) + 1);
+      totalReferences += 1;
+    });
+  });
+
+  return [...counts.entries()]
+    .map(([law, count]) => ({
+      law,
+      count,
+      percentage: totalReferences ? (count / totalReferences) * 100 : 0,
+    }))
+    .sort((left, right) => right.count - left.count || left.law.localeCompare(right.law));
+}

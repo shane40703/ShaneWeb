@@ -356,6 +356,7 @@ async function discoverQuestionEntries() {
 }
 
 let cachedQuestionEntries: Promise<QuestionEntry[]> | undefined;
+let cachedQuestionSummaries: Promise<QuestionSummary[]> | undefined;
 
 function getQuestionEntries() {
   if (process.env.NODE_ENV === 'development') return discoverQuestionEntries();
@@ -379,17 +380,30 @@ function runtimeAnswerKey(answerKey: SourceAnswerKey) {
   };
 }
 
+async function discoverQuestionSummaries(): Promise<QuestionSummary[]> {
+  return Promise.all(
+    (await getQuestionEntries()).map(async (entry) => {
+      const question = await loadQuestion(entry);
+      return {
+        id: question.id,
+        subject: question.subject,
+        year: question.year,
+        questionNumber: question.questionNumber,
+        primaryCategory: question.primaryCategory,
+        topic: question.topic,
+        tags: question.tags,
+        ...(question.relatedLaws?.length ? { relatedLaws: question.relatedLaws } : {}),
+        text: question.text,
+        path: questionPath(entry.subject, entry.year, entry.questionNumber),
+      };
+    }),
+  );
+}
+
 export async function getQuestionSummaries(): Promise<QuestionSummary[]> {
-  return (await getQuestionEntries()).map((entry) => ({
-    id: questionId(entry),
-    subject: entry.subject,
-    year: entry.year,
-    questionNumber: entry.questionNumber,
-    primaryCategory: entry.meta.primaryCategory,
-    topic: entry.meta.topic,
-    tags: entry.meta.tags,
-    path: questionPath(entry.subject, entry.year, entry.questionNumber),
-  }));
+  if (process.env.NODE_ENV === 'development') return discoverQuestionSummaries();
+  cachedQuestionSummaries ??= discoverQuestionSummaries();
+  return cachedQuestionSummaries;
 }
 
 export async function getQuestionStaticPaths() {

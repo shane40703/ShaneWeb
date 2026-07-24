@@ -5,6 +5,7 @@ import {
   createDefaultState,
   formatDuration,
   getAnalysis,
+  getLawAnalysis,
   isQuestionCorrect,
   parseStoredState,
 } from '@/lib/study';
@@ -94,5 +95,19 @@ describe('analysis', () => {
     const analysis = getAnalysis(source);
     expect(analysis.reduce((sum, item) => sum + item.count, 0)).toBe(source.length);
     expect(analysis.reduce((sum, item) => sum + item.percentage, 0)).toBeCloseTo(100);
+  });
+
+  it('counts every related-law reference and sorts by frequency', () => {
+    const analysis = getLawAnalysis([
+      { relatedLaws: ['建築法', '建築技術規則'] },
+      { relatedLaws: ['建築法'] },
+      {},
+    ]);
+    expect(analysis.map(({ law, count }) => ({ law, count }))).toEqual([
+      { law: '建築法', count: 2 },
+      { law: '建築技術規則', count: 1 },
+    ]);
+    expect(analysis[0].percentage).toBeCloseTo(200 / 3);
+    expect(analysis[1].percentage).toBeCloseTo(100 / 3);
   });
 });

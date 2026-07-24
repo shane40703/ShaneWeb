@@ -1,13 +1,14 @@
-import type { CSSProperties } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { IconChartPie } from '@tabler/icons-react';
+import { type CSSProperties, useState } from 'react';
+import { IconChartPie, IconExternalLink } from '@tabler/icons-react';
 import { EmptyState } from '@/components/content/content';
 import {
   QuestionSelector,
   type SelectorYear,
 } from '@/components/question-selector';
 import { subjects, years } from '@/question-bank/catalog';
-import { getAnalysis, isSubjectId, parseYear } from '@/lib/study';
+import { getAnalysis, getLawAnalysis, isSubjectId, parseYear } from '@/lib/study';
 import type { QuestionSummary, SubjectId } from '@/lib/types';
 import styles from './analysis-page.module.css';
 
@@ -35,6 +36,14 @@ export function AnalysisPage({ questions }: { questions: QuestionSummary[] }) {
       question.subject === subjectId && (year === 'all' || question.year === year),
   );
   const analysis = getAnalysis(source);
+  const lawAnalysis = getLawAnalysis(source);
+  const [selectedLawValue, setSelectedLawValue] = useState<string>();
+  const selectedLaw = lawAnalysis.some((item) => item.law === selectedLawValue)
+    ? selectedLawValue
+    : lawAnalysis[0]?.law;
+  const selectedLawQuestions = selectedLaw
+    ? source.filter((question) => question.relatedLaws?.includes(selectedLaw))
+    : [];
 
   function updateQuery(next: { subject?: SubjectId; year?: number | 'all' }) {
     void router.replace(
@@ -109,6 +118,55 @@ export function AnalysisPage({ questions }: { questions: QuestionSummary[] }) {
 
       {analysis.length ? (
         <>
+          {subjectId === 'law' && lawAnalysis.length && selectedLaw ? (
+            <section className={styles.lawAnalysis} aria-label="法規命題占比">
+              <div className={styles.lawDistribution}>
+                <header>
+                  <span>法規占比</span>
+                  <strong>{year === 'all' ? '跨年度命題來源' : `${year} 年命題來源`}</strong>
+                  <p>依題目標註的相關法規統計，共 {source.length} 題。</p>
+                </header>
+                <div className={styles.lawList}>
+                  {lawAnalysis.map((item) => (
+                    <button
+                      type="button"
+                      key={item.law}
+                      aria-pressed={item.law === selectedLaw}
+                      onClick={() => setSelectedLawValue(item.law)}
+                    >
+                      <span>
+                        <strong>{item.law}</strong>
+                        <small>{item.count} 題</small>
+                      </span>
+                      <i aria-hidden="true">
+                        <span style={{ width: `${item.percentage}%` }} />
+                      </i>
+                      <b>{item.percentage.toFixed(1)}%</b>
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className={styles.lawQuestions}>
+                <header>
+                  <span>對應考古題</span>
+                  <strong>{selectedLaw}</strong>
+                  <p>
+                    目前範圍共 {selectedLawQuestions.length} 題，點選即可前往作答。
+                  </p>
+                </header>
+                <div>
+                  {selectedLawQuestions.map((question) => (
+                    <Link href={question.path} key={question.id}>
+                      <span>{question.year} 年・{question.questionNumber} 題</span>
+                      <strong>{question.text || `${question.topic}題目`}</strong>
+                      <IconExternalLink size={16} stroke={2} aria-hidden="true" />
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </section>
+          ) : null}
+
           <div className={styles.chartGrid}>
             <section className={styles.chartCard}>
               <header><span>比例分布</span><strong>主要分類占比</strong></header>

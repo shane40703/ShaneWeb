@@ -62,6 +62,8 @@ export interface QuestionSummary {
   primaryCategory: string;
   topic: string;
   tags: readonly string[];
+  relatedLaws?: readonly string[];
+  text: string;
   path: string;
 }
 
