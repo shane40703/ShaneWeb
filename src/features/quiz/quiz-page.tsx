@@ -27,7 +27,6 @@ import { getSubject } from '@/question-bank/catalog';
 import {
   calculateScore,
   formatDuration,
-  getAcceptedAnswerIndexes,
   isQuestionCorrect,
 } from '@/lib/study';
 import type { Question, QuizAttempt, QuizQuestion } from '@/lib/types';
@@ -56,12 +55,9 @@ export function QuizPage({
   const [attempt, setAttempt] = useState<QuizAttempt | null>(null);
   const progress = progressByQuestion[question.id];
   const selected = progress?.selected;
-  const submitted = progress?.submitted ?? false;
   const elapsedSeconds = progress?.elapsedSeconds ?? 0;
   const subject = getSubject(question.subject);
   const difficult = state.difficultQuestionIds.includes(question.id);
-  const correct = submitted && isQuestionCorrect(question, selected);
-  const acceptedAnswers = getAcceptedAnswerIndexes(question);
   const randomQuestionIds =
     router.query.mode === 'random' && typeof router.query.questions === 'string'
       ? router.query.questions.split(',').filter(Boolean)
@@ -87,67 +83,58 @@ export function QuizPage({
   const previous = paperQuestions[position - 1];
   const next = paperQuestions[position + 1];
   const answeredCount = paperQuestions.filter(
-    (item) => progressByQuestion[item.id]?.submitted,
+    (item) =>
+      progressByQuestion[item.id]?.selected !== undefined ||
+      item.answerKey.kind === 'all-credit',
   ).length;
 
   useEffect(() => {
     const questionId = question.id;
     const startedAt = new Date().toISOString();
     progressDispatch({ type: 'visit-question', questionId, startedAt });
-    if (submitted) return;
+    if (attempt) return;
     const timer = window.setInterval(() => {
       progressDispatch({ type: 'tick-question', questionId, startedAt });
     }, 1000);
     return () => window.clearInterval(timer);
-  }, [question.id, submitted]);
-
-  function submitAnswer() {
-    if (submitted || (selected === undefined && question.answerKey.kind !== 'all-credit')) {
-      return;
-    }
-    const startedAt = progress?.startedAt ?? new Date().toISOString();
-    const answerIsCorrect = isQuestionCorrect(question, selected);
-    if (selected !== undefined) {
-      dispatch({
-        type: 'save-answer',
-        questionId: question.id,
-        selected,
-        correct: answerIsCorrect,
-        answeredAt: new Date().toISOString(),
-      });
-    }
-    progressDispatch({
-      type: 'submit-question',
-      questionId: question.id,
-      startedAt,
-      correct: answerIsCorrect,
-    });
-  }
+  }, [attempt, question.id]);
 
   function submitQuiz() {
     if (attempt) return;
 
     const submittedAt = new Date().toISOString();
-    const questionProgress = paperQuestions
-      .map((item) => [item.id, progressByQuestion[item.id]] as const)
-      .filter((entry) => entry[1]?.submitted);
     const answers = Object.fromEntries(
-      questionProgress.flatMap(([questionId, item]) =>
-        item?.selected === undefined ? [] : [[questionId, item.selected]],
-      ),
+      paperQuestions.flatMap((item) => {
+        const itemProgress = progressByQuestion[item.id];
+        return itemProgress?.selected === undefined
+          ? []
+          : [[item.id, itemProgress.selected]];
+      }),
     );
     const results = Object.fromEntries(
-      questionProgress.map(([questionId, item]) => [questionId, item?.correct ?? false]),
+      paperQuestions.map((item) => [
+        item.id,
+        isQuestionCorrect(item, progressByQuestion[item.id]?.selected),
+      ]),
     );
-    const correctCount = questionProgress.filter(([, item]) => item?.correct).length;
-    const unansweredCount = paperQuestions.length - questionProgress.length;
-    const elapsedSeconds = questionProgress.reduce(
-      (total, [, item]) => total + (item?.elapsedSeconds ?? 0),
+    const correctCount = paperQuestions.filter((item) =>
+      isQuestionCorrect(item, progressByQuestion[item.id]?.selected),
+    ).length;
+    const unansweredCount = paperQuestions.filter(
+      (item) =>
+        progressByQuestion[item.id]?.selected === undefined &&
+        item.answerKey.kind !== 'all-credit',
+    ).length;
+    const visitedProgress = paperQuestions.flatMap((item) =>
+      progressByQuestion[item.id] ? [progressByQuestion[item.id]!] : [],
+    );
+    const elapsedSeconds = visitedProgress.reduce(
+      (total, item) => total + item.elapsedSeconds,
       0,
     );
-    const startedAt = questionProgress.reduce(
-      (earliest, [, item]) =>
-        item && item.startedAt < earliest ? item.startedAt : earliest,
+    const startedAt = visitedProgress.reduce(
+      (earliest, item) =>
+        item.startedAt < earliest ? item.startedAt : earliest,
       submittedAt,
     );
     const nextAttempt: QuizAttempt = {
@@ -216,16 +203,18 @@ export function QuizPage({
           </header>
           <div className={styles.reviewList}>
             {paperQuestions.map((item, index) => {
-              const itemProgress = progressByQuestion[item.id];
               const selectedAnswer =
-                itemProgress?.selected === undefined
+                attempt.answers[item.id] === undefined
                   ? '未作答'
-                  : String.fromCharCode(65 + itemProgress.selected);
-              const result = itemProgress?.submitted
-                ? itemProgress.correct
-                  ? 'correct'
-                  : 'wrong'
-                : 'unanswered';
+                  : String.fromCharCode(65 + attempt.answers[item.id]);
+              const itemCorrect = isQuestionCorrect(item, attempt.answers[item.id]);
+              const result =
+                attempt.answers[item.id] === undefined &&
+                item.answerKey.kind !== 'all-credit'
+                  ? 'unanswered'
+                  : itemCorrect
+                    ? 'correct'
+                    : 'wrong';
               return (
                 <article key={item.id} data-result={result}>
                   <span className={styles.reviewStatus} aria-label={
@@ -259,7 +248,7 @@ export function QuizPage({
                     </summary>
                     <div className={styles.reviewOptionList}>
                       {item.options.map((option, optionIndex) => {
-                        const selected = itemProgress?.selected === optionIndex;
+                        const selected = attempt.answers[item.id] === optionIndex;
                         const accepted =
                           item.answerKey.kind === 'all-credit' ||
                           item.answerKey.options.includes(optionIndex);
@@ -346,7 +335,6 @@ export function QuizPage({
               label="請選擇答案"
               options={question.options}
               value={selected}
-              disabled={submitted}
               onValueChange={(value) =>
                 progressDispatch({
                   type: 'select-answer',
@@ -356,38 +344,6 @@ export function QuizPage({
                 })
               }
             />
-            {!submitted ? (
-              <Button
-                variant="primary"
-                onClick={submitAnswer}
-                disabled={selected === undefined && question.answerKey.kind !== 'all-credit'}
-              >
-                送出答案
-              </Button>
-            ) : (
-              <section className={styles.answerFeedback} data-correct={correct}>
-                <header>
-                  {correct ? (
-                    <IconCircleCheck size={25} stroke={2.2} aria-hidden="true" />
-                  ) : (
-                    <IconX size={25} stroke={2.2} aria-hidden="true" />
-                  )}
-                  <strong>{correct ? '答對了' : '答案不正確'}</strong>
-                </header>
-                <p>
-                  正確答案：
-                  {question.answerKey.kind === 'all-credit'
-                    ? '本題一律給分'
-                    : acceptedAnswers
-                        .map(
-                          (index) =>
-                            `${String.fromCharCode(65 + index)}・${question.options[index]}`,
-                        )
-                        .join('、')}
-                </p>
-                <p>{question.explanation ?? '目前尚無詳解。'}</p>
-              </section>
-            )}
             <Button
               variant="ghost"
               render={<Link href={`/community?question=${question.id}`} />}
@@ -411,7 +367,7 @@ export function QuizPage({
                 下一題 <IconArrowRight size={17} stroke={2} aria-hidden="true" />
               </Button>
             ) : (
-              <Button variant="primary" onClick={submitQuiz}>交卷</Button>
+              <Button variant="primary" onClick={submitQuiz}>對答案</Button>
             )}
           </footer>
         </section>
@@ -432,7 +388,10 @@ export function QuizPage({
                   href={questionHref(item)}
                   ariaLabel={`前往第 ${item.questionNumber} 題`}
                   active={index === position}
-                  answered={Boolean(progressByQuestion[item.id]?.submitted)}
+                  answered={
+                    progressByQuestion[item.id]?.selected !== undefined ||
+                    item.answerKey.kind === 'all-credit'
+                  }
                 >
                   {item.questionNumber}
                 </QuestionNumberButton>

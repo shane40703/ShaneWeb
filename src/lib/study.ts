@@ -143,7 +143,10 @@ export function getAcceptedAnswerIndexes(question: Question) {
     : question.answerKey.options;
 }
 
-export function isQuestionCorrect(question: Question, selected: number | undefined) {
+export function isQuestionCorrect(
+  question: Pick<Question, 'answerKey'>,
+  selected: number | undefined,
+) {
   if (question.answerKey.kind === 'all-credit') return true;
   return selected !== undefined && question.answerKey.options.includes(selected);
 }

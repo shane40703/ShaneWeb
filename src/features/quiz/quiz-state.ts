@@ -2,8 +2,6 @@ import type { QuestionId } from '@/lib/types';
 
 export interface QuizQuestionProgress {
   selected?: number;
-  submitted: boolean;
-  correct?: boolean;
   elapsedSeconds: number;
   startedAt: string;
 }
@@ -18,17 +16,10 @@ export type QuizProgressAction =
       selected: number;
       startedAt: string;
     }
-  | { type: 'tick-question'; questionId: QuestionId; startedAt: string }
-  | {
-      type: 'submit-question';
-      questionId: QuestionId;
-      startedAt: string;
-      correct: boolean;
-    };
+  | { type: 'tick-question'; questionId: QuestionId; startedAt: string };
 
 function createQuestionProgress(startedAt: string): QuizQuestionProgress {
   return {
-    submitted: false,
     elapsedSeconds: 0,
     startedAt,
   };
@@ -54,28 +45,17 @@ export function quizProgressReducer(
         ? state
         : { ...state, [action.questionId]: current };
     case 'select-answer':
-      if (current.submitted || current.selected === action.selected) return state;
+      if (current.selected === action.selected) return state;
       return {
         ...state,
         [action.questionId]: { ...current, selected: action.selected },
       };
     case 'tick-question':
-      if (current.submitted) return state;
       return {
         ...state,
         [action.questionId]: {
           ...current,
           elapsedSeconds: current.elapsedSeconds + 1,
-        },
-      };
-    case 'submit-question':
-      if (current.submitted) return state;
-      return {
-        ...state,
-        [action.questionId]: {
-          ...current,
-          submitted: true,
-          correct: action.correct,
         },
       };
   }
