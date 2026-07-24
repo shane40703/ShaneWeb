@@ -3,12 +3,12 @@
 
 # 已完成，待審核
 
-- [x] ![alt text](image.png)考題分析新增條列式法規占比，按該法規後右側顯示該年度對應考古題
-- [x] ![alt text](image-1.png)下一步測試作答完後對答案計算分數，下面有逐題作答結果
-- [x] ![alt text](image-2.png)逐題作答結果可以展開選項，有連結連過去詳解與討論
-- [x] ![alt text](image-3.png)加入隨機出題，依據考古題範圍隨機抽使用者定的題數
-- [x] ![alt text](image-4.png)![alt text](image-5.png)選擇題目拉長拉扁
-- [x] ![alt text](image-6.png)送出答案按鈕刪除，不用在這邊有即時對答案，使用者寫完整份直接對答案即可
-- [x] ![alt text](image-7.png)部分題目分類錯誤，比如這題應該是建築物公共安全檢查簽證及申報辦法，卻判斷成建築法
-- [x] ![alt text](image-8.png)應該把官方題刪除，沒有意義
-- [x] ![alt text](image-9.png)解答不用重複答案內容，有答案就好
+＃新問題
+![alt text](image-10.png)已作答紀錄點進去可以看到完整的答題紀錄
+![alt text](image-11.png)查看題目無用直接刪除
+![alt text](image-12.png)詳解討論直接顯示最佳解（仍然要保留捷徑）
+![alt text](image-13.png) 使用者筆記放進完整題目含選項，並在這里直接顯示答案
+![alt text](image-14.png)主要佔比這邊尚未與上面統計結果同步
+![alt text](image-15.png)已作答紀錄紀錄該份試題已經做過幾次
+![alt text](image-16.png)作答介面上方標題沒意義可以縮小，版面以題目為主
+![alt text](image-17.png)如果本題是難題標注題，在右側題號導覽以不同顏色註記
