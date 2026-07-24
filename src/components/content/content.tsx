@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { IconBulb, IconExternalLink, type TablerIcon } from '@tabler/icons-react';
 import { Button } from '@/components/ui/ui';
 import { getSubject } from '@/question-bank/catalog';
+import { getQuestionDisplayCategory } from '@/lib/study';
 import type { Question } from '@/lib/types';
 import styles from './content.module.css';
 
@@ -150,7 +151,7 @@ export function QuestionCard({
           <Tag>{question.year} 年</Tag>
           <Tag tone="green">{subject?.shortName}</Tag>
           <Tag tone="purple">第 {question.questionNumber} 題</Tag>
-          <Tag tone="orange">{question.primaryCategory}</Tag>
+          <Tag tone="orange">{getQuestionDisplayCategory(question)}</Tag>
           <Tag tone={question.source.kind === 'official' ? 'green' : 'purple'}>
             {question.source.kind === 'official' ? '官方題' : '示範題'}
           </Tag>

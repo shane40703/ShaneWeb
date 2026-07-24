@@ -7,6 +7,7 @@ import {
   formatDuration,
   getAnalysis,
   getLawAnalysis,
+  getQuestionDisplayCategory,
   isQuestionCorrect,
   pickRandomItems,
   parseStoredState,
@@ -37,6 +38,16 @@ describe('question data', () => {
       expect(question.primaryCategory.length).toBeGreaterThan(0);
     });
     expect(questions).toHaveLength(100);
+  });
+
+  it('uses the precise related law as the displayed question category', () => {
+    const publicSafetyQuestion = questions.find(
+      (question) => question.id === 'law-114-16',
+    );
+    expect(publicSafetyQuestion).toBeDefined();
+    expect(getQuestionDisplayCategory(publicSafetyQuestion!)).toBe(
+      '建築物公共安全檢查簽證及申報辦法',
+    );
   });
 });
 

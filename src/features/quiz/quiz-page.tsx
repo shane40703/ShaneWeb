@@ -27,6 +27,7 @@ import { getSubject } from '@/question-bank/catalog';
 import {
   calculateScore,
   formatDuration,
+  getQuestionDisplayCategory,
   isQuestionCorrect,
 } from '@/lib/study';
 import type { Question, QuizAttempt, QuizQuestion } from '@/lib/types';
@@ -311,7 +312,7 @@ export function QuizPage({
             <div className={styles.meta}>
               <Tag tone="green">{subject?.shortName}</Tag>
               <Tag>{question.year} 年</Tag>
-              <Tag tone="orange">{question.primaryCategory}</Tag>
+              <Tag tone="orange">{getQuestionDisplayCategory(question)}</Tag>
               <Tag tone={question.source.kind === 'official' ? 'green' : 'purple'}>
                 {question.source.kind === 'official' ? '官方題' : '示範題'}
               </Tag>

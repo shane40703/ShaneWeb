@@ -143,6 +143,12 @@ export function getAcceptedAnswerIndexes(question: Question) {
     : question.answerKey.options;
 }
 
+export function getQuestionDisplayCategory(
+  question: Pick<Question, 'primaryCategory' | 'relatedLaws'>,
+) {
+  return question.relatedLaws?.[0] ?? question.primaryCategory;
+}
+
 export function isQuestionCorrect(
   question: Pick<Question, 'answerKey'>,
   selected: number | undefined,
