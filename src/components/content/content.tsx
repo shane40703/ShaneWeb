@@ -152,9 +152,9 @@ export function QuestionCard({
           <Tag tone="green">{subject?.shortName}</Tag>
           <Tag tone="purple">第 {question.questionNumber} 題</Tag>
           <Tag tone="orange">{getQuestionDisplayCategory(question)}</Tag>
-          <Tag tone={question.source.kind === 'official' ? 'green' : 'purple'}>
-            {question.source.kind === 'official' ? '官方題' : '示範題'}
-          </Tag>
+          {question.source.kind === 'sample' ? (
+            <Tag tone="purple">示範題</Tag>
+          ) : null}
         </div>
         <QuestionPrompt question={question} compact />
       </div>

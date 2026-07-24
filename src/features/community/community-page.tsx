@@ -184,9 +184,9 @@ export function CommunityPage({ questions }: { questions: Question[] }) {
             <Tag tone="green">{subject?.name}</Tag>
             <Tag>{currentQuestion.year} 年</Tag>
             <Tag tone="purple">第 {currentQuestion.questionNumber} 題</Tag>
-            <Tag tone={currentQuestion.source.kind === 'official' ? 'green' : 'purple'}>
-              {currentQuestion.source.kind === 'official' ? '官方題' : '示範題'}
-            </Tag>
+            {currentQuestion.source.kind === 'sample' ? (
+              <Tag tone="purple">示範題</Tag>
+            ) : null}
           </div>
           <DifficultButton
             active={difficult}
