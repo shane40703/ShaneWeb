@@ -3,8 +3,10 @@ import { useEffect, useReducer, useState } from 'react';
 import {
   IconArrowLeft,
   IconArrowRight,
+  IconChevronDown,
   IconCircleCheck,
   IconExternalLink,
+  IconMessages,
   IconMinus,
   IconX,
 } from '@tabler/icons-react';
@@ -226,6 +228,49 @@ export function QuizPage({
                   <Link href={item.path} onClick={() => setAttempt(null)} aria-label={`查看第 ${item.questionNumber} 題`}>
                     <IconExternalLink size={18} stroke={2} aria-hidden="true" />
                   </Link>
+                  <details className={styles.reviewOptions}>
+                    <summary>
+                      <span>檢視完整選項</span>
+                      <IconChevronDown size={17} stroke={2} aria-hidden="true" />
+                    </summary>
+                    <div className={styles.reviewOptionList}>
+                      {item.options.map((option, optionIndex) => {
+                        const selected = itemProgress?.selected === optionIndex;
+                        const accepted =
+                          item.answerKey.kind === 'all-credit' ||
+                          item.answerKey.options.includes(optionIndex);
+                        return (
+                          <div
+                            key={`${item.id}-${optionIndex}`}
+                            data-selected={selected || undefined}
+                            data-accepted={accepted || undefined}
+                          >
+                            <b>{String.fromCharCode(65 + optionIndex)}</b>
+                            <span>{option}</span>
+                            <small>
+                              {selected && accepted
+                                ? '你的答案・正確答案'
+                                : selected
+                                  ? '你的答案'
+                                  : accepted
+                                    ? '正確答案'
+                                    : ''}
+                            </small>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <footer>
+                      <Link href={item.path} onClick={() => setAttempt(null)}>
+                        查看題目
+                        <IconExternalLink size={15} stroke={2} aria-hidden="true" />
+                      </Link>
+                      <Link href={`/community?question=${item.id}`}>
+                        詳解與討論
+                        <IconMessages size={16} stroke={2} aria-hidden="true" />
+                      </Link>
+                    </footer>
+                  </details>
                 </article>
               );
             })}
