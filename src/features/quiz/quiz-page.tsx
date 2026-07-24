@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import { useEffect, useReducer, useState } from 'react';
 import {
   IconArrowLeft,
@@ -36,8 +37,7 @@ import styles from './quiz-page.module.css';
 
 export interface StaticQuestionPageProps {
   question: Question;
-  paperQuestions: QuizQuestion[];
-  position: number;
+  questionBank: QuizQuestion[];
 }
 
 function answerLabels(question: QuizQuestion) {
@@ -48,9 +48,9 @@ function answerLabels(question: QuizQuestion) {
 
 export function QuizPage({
   question,
-  paperQuestions,
-  position,
+  questionBank,
 }: StaticQuestionPageProps) {
+  const router = useRouter();
   const { state, dispatch } = useAppState();
   const [progressByQuestion, progressDispatch] = useReducer(quizProgressReducer, {});
   const [attempt, setAttempt] = useState<QuizAttempt | null>(null);
@@ -62,6 +62,28 @@ export function QuizPage({
   const difficult = state.difficultQuestionIds.includes(question.id);
   const correct = submitted && isQuestionCorrect(question, selected);
   const acceptedAnswers = getAcceptedAnswerIndexes(question);
+  const randomQuestionIds =
+    router.query.mode === 'random' && typeof router.query.questions === 'string'
+      ? router.query.questions.split(',').filter(Boolean)
+      : [];
+  const questionById = new Map(questionBank.map((item) => [item.id, item]));
+  const randomQuestions = [
+    ...new Set(randomQuestionIds),
+  ].flatMap((questionId) => {
+    const item = questionById.get(questionId);
+    return item ? [item] : [];
+  });
+  const isRandomQuiz =
+    randomQuestions.length > 0 &&
+    randomQuestions.some((item) => item.id === question.id);
+  const paperQuestions = isRandomQuiz
+    ? randomQuestions
+    : questionBank.filter((item) => item.year === question.year);
+  const position = paperQuestions.findIndex((item) => item.id === question.id);
+  const randomSearch = isRandomQuiz
+    ? `?mode=random&questions=${encodeURIComponent(randomQuestions.map((item) => item.id).join(','))}`
+    : '';
+  const questionHref = (item: QuizQuestion) => `${item.path}${randomSearch}`;
   const previous = paperQuestions[position - 1];
   const next = paperQuestions[position + 1];
   const answeredCount = paperQuestions.filter(
@@ -129,10 +151,12 @@ export function QuizPage({
       submittedAt,
     );
     const nextAttempt: QuizAttempt = {
-      id: `attempt-${submittedAt}-${Math.random().toString(36).slice(2, 8)}`,
-      mode: 'paper',
+      id: `attempt-${submittedAt}-${question.id}`,
+      mode: isRandomQuiz ? 'random' : 'paper',
       subject: question.subject,
-      year: question.year,
+      year: paperQuestions.every((item) => item.year === question.year)
+        ? question.year
+        : null,
       questionIds: paperQuestions.map((item) => item.id),
       answers,
       startedAt,
@@ -225,7 +249,7 @@ export function QuizPage({
                       <b>標準答案：{answerLabels(item)}</b>
                     </p>
                   </div>
-                  <Link href={item.path} onClick={() => setAttempt(null)} aria-label={`查看第 ${item.questionNumber} 題`}>
+                  <Link href={questionHref(item)} onClick={() => setAttempt(null)} aria-label={`查看第 ${item.questionNumber} 題`}>
                     <IconExternalLink size={18} stroke={2} aria-hidden="true" />
                   </Link>
                   <details className={styles.reviewOptions}>
@@ -261,7 +285,7 @@ export function QuizPage({
                       })}
                     </div>
                     <footer>
-                      <Link href={item.path} onClick={() => setAttempt(null)}>
+                      <Link href={questionHref(item)} onClick={() => setAttempt(null)}>
                         查看題目
                         <IconExternalLink size={15} stroke={2} aria-hidden="true" />
                       </Link>
@@ -283,8 +307,8 @@ export function QuizPage({
   return (
     <>
       <PageHeader
-        eyebrow="PAPER QUIZ"
-        title={`${question.year} 年・${subject?.name}`}
+        eyebrow={isRandomQuiz ? 'RANDOM QUIZ' : 'PAPER QUIZ'}
+        title={isRandomQuiz ? `${subject?.name}・隨機練習` : `${question.year} 年・${subject?.name}`}
         action={
           <div className={styles.timer}>
             <span>作答時間</span>
@@ -373,7 +397,7 @@ export function QuizPage({
           </div>
           <footer className={styles.navigation}>
             {previous ? (
-              <Button render={<Link href={previous.path} />}>
+              <Button render={<Link href={questionHref(previous)} />}>
                 <IconArrowLeft size={17} stroke={2} aria-hidden="true" /> 上一題
               </Button>
             ) : (
@@ -383,7 +407,7 @@ export function QuizPage({
             )}
             <span>已作答 {answeredCount} / {paperQuestions.length}</span>
             {next ? (
-              <Button variant="primary" render={<Link href={next.path} />}>
+              <Button variant="primary" render={<Link href={questionHref(next)} />}>
                 下一題 <IconArrowRight size={17} stroke={2} aria-hidden="true" />
               </Button>
             ) : (
@@ -405,7 +429,7 @@ export function QuizPage({
               {paperQuestions.map((item, index) => (
                 <QuestionNumberButton
                   key={item.id}
-                  href={item.path}
+                  href={questionHref(item)}
                   ariaLabel={`前往第 ${item.questionNumber} 題`}
                   active={index === position}
                   answered={Boolean(progressByQuestion[item.id]?.submitted)}

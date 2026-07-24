@@ -31,16 +31,14 @@ export const getStaticProps: GetStaticProps<
   if (!entry) return { notFound: true };
 
   const question = await loadQuestion(entry);
-  const paperQuestions = await loadQuizQuestions(entry.subject, entry.year);
-  const position = paperQuestions.findIndex((candidate) => candidate.id === question.id);
+  const questionBank = await loadQuizQuestions(entry.subject);
 
-  return { props: { question, paperQuestions, position } };
+  return { props: { question, questionBank } };
 };
 
 export default function StaticQuestionRoute({
   question,
-  paperQuestions,
-  position,
+  questionBank,
 }: InferGetStaticPropsType<typeof getStaticProps>) {
   return (
     <>
@@ -49,8 +47,7 @@ export default function StaticQuestionRoute({
       </Head>
       <QuizPage
         question={question}
-        paperQuestions={paperQuestions}
-        position={position}
+        questionBank={questionBank}
       />
     </>
   );

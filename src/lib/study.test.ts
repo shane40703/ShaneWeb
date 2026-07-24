@@ -8,6 +8,7 @@ import {
   getAnalysis,
   getLawAnalysis,
   isQuestionCorrect,
+  pickRandomItems,
   parseStoredState,
 } from '@/lib/study';
 
@@ -57,6 +58,13 @@ describe('result helpers', () => {
   it('calculates a 60-point score from the number of correct answers', () => {
     expect(calculateScore(33, 40)).toBe(49.5);
     expect(calculateScore(0, 0)).toBe(0);
+  });
+
+  it('draws the requested number of unique random items without exceeding the source', () => {
+    const source = ['a', 'b', 'c', 'd'];
+    expect(pickRandomItems(source, 2, () => 0)).toHaveLength(2);
+    expect(new Set(pickRandomItems(source, 4, () => 0)).size).toBe(4);
+    expect(pickRandomItems(source, 10, () => 0)).toHaveLength(4);
   });
 
   it('calculates complete submission totals and duration formatting', () => {

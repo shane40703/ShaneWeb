@@ -553,10 +553,10 @@ export async function loadAllQuestions() {
 
 export async function loadQuizQuestions(
   subject: SubjectId,
-  year: number,
+  year?: number,
 ): Promise<QuizQuestion[]> {
   const entries = (await getQuestionEntries()).filter(
-    (entry) => entry.subject === subject && entry.year === year,
+    (entry) => entry.subject === subject && (year === undefined || entry.year === year),
   );
   const questions = await Promise.all(entries.map((entry) => loadQuestion(entry)));
   return questions.map((question) => ({

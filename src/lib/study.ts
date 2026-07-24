@@ -124,6 +124,19 @@ export function calculateScore(
   return totalQuestions ? (correctCount / totalQuestions) * maximumScore : 0;
 }
 
+export function pickRandomItems<T>(
+  source: readonly T[],
+  count: number,
+  random: () => number = Math.random,
+) {
+  const shuffled = [...source];
+  for (let index = shuffled.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(random() * (index + 1));
+    [shuffled[index], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[index]];
+  }
+  return shuffled.slice(0, Math.max(0, Math.min(Math.floor(count), shuffled.length)));
+}
+
 export function getAcceptedAnswerIndexes(question: Question) {
   return question.answerKey.kind === 'all-credit'
     ? question.options.map((_, index) => index)
