@@ -1,0 +1,22 @@
+{
+  "primaryCategory": "力學",
+  "topic": "結構力學",
+  "tags": [
+    "結構力學"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "A"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 4
+  },
+  "images": {
+    "question-02.png": {
+      "alt": "承受集中載重的正三角形桁架示意圖"
+    }
+  }
+}

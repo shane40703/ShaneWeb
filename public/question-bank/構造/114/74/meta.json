@@ -1,0 +1,17 @@
+{
+  "primaryCategory": "工程管理",
+  "topic": "BIM",
+  "tags": [
+    "BIM"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "D"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 12
+  }
+}

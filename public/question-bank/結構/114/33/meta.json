@@ -1,0 +1,22 @@
+{
+  "primaryCategory": "鋼結構",
+  "topic": "鋼結構",
+  "tags": [
+    "鋼結構"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "A"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 7
+  },
+  "images": {
+    "question-02.png": {
+      "alt": "偏心斜撐構架及連接梁段示意圖"
+    }
+  }
+}

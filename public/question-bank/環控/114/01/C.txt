@@ -1,1 +1,1 @@
-熱容量越小
+PMV 與身體承受的熱應力（thermal stress）成正比

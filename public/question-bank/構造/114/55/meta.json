@@ -1,0 +1,22 @@
+{
+  "primaryCategory": "構法",
+  "topic": "木構造",
+  "tags": [
+    "木構造"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "C"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 9
+  },
+  "images": {
+    "question-02.png": {
+      "alt": "小角材、鋸板與直交層組成的工程木材強弱軸方向示意圖"
+    }
+  }
+}

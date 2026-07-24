@@ -1,0 +1,22 @@
+{
+  "primaryCategory": "構法",
+  "topic": "帷幕牆與外牆",
+  "tags": [
+    "帷幕牆與外牆"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "C"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 9
+  },
+  "images": {
+    "question-02.png": {
+      "alt": "帷幕外牆鋁擠型、複層玻璃與填縫構造平面詳圖"
+    }
+  }
+}

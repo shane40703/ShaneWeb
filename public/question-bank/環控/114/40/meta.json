@@ -1,0 +1,17 @@
+{
+  "primaryCategory": "設備",
+  "topic": "垂直運輸",
+  "tags": [
+    "垂直運輸"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "D"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 6
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "primaryCategory": "力學",
+  "topic": "結構力學",
+  "tags": [
+    "結構力學"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "B"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 6
+  },
+  "images": {
+    "question-02.png": {
+      "alt": "懸臂梁的三種載重分布示意圖"
+    }
+  }
+}

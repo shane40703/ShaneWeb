@@ -1,0 +1,1 @@
+Ax=0 KN，Ay=18 KN（↑）；Ex=0 KN，Ey=18 KN（↑）

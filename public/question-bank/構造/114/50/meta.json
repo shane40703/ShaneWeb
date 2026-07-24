@@ -1,0 +1,22 @@
+{
+  "primaryCategory": "施工程序",
+  "topic": "裝修施工",
+  "tags": [
+    "裝修施工"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "A"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 7
+  },
+  "images": {
+    "question-02.png": {
+      "alt": "老舊外牆瓷磚網釘改修工法剖面示意圖"
+    }
+  }
+}

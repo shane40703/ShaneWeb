@@ -1,0 +1,22 @@
+{
+  "primaryCategory": "施工程序",
+  "topic": "裝修施工",
+  "tags": [
+    "裝修施工"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "B"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 8
+  },
+  "images": {
+    "question-02.png": {
+      "alt": "標示材料編號的輕隔間牆轉角構造詳圖"
+    }
+  }
+}

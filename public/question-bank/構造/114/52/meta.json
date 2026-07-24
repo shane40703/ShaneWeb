@@ -1,0 +1,22 @@
+{
+  "primaryCategory": "構法",
+  "topic": "砌體與隔間",
+  "tags": [
+    "砌體與隔間"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "D"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 8
+  },
+  "images": {
+    "question-02.png": {
+      "alt": "填充玻璃棉與多層石膏板的輕隔間牆剖面圖"
+    }
+  }
+}

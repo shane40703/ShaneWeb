@@ -1,0 +1,23 @@
+{
+  "primaryCategory": "構法",
+  "topic": "基礎工程",
+  "tags": [
+    "基礎工程"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "B",
+      "C"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 12
+  },
+  "images": {
+    "question-02.png": {
+      "alt": "地下開挖因地下水滲流造成土砂隆起與地面塌陷示意圖"
+    }
+  }
+}

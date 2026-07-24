@@ -38,7 +38,7 @@ describe('question data', () => {
       }
       expect(question.primaryCategory.length).toBeGreaterThan(0);
     });
-    expect(questions).toHaveLength(100);
+    expect(questions).toHaveLength(256);
   });
 
   it('uses the precise related law as the displayed question category', () => {

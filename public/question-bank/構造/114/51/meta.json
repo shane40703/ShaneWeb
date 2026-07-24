@@ -1,0 +1,22 @@
+{
+  "primaryCategory": "施工程序",
+  "topic": "裝修施工",
+  "tags": [
+    "裝修施工"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "D"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 8
+  },
+  "images": {
+    "question-02.png": {
+      "alt": "戶外磨石子磚樓梯踏步剖面詳圖"
+    }
+  }
+}

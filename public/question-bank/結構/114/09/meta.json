@@ -1,0 +1,22 @@
+{
+  "primaryCategory": "力學",
+  "topic": "結構力學",
+  "tags": [
+    "結構力學"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "A"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 2
+  },
+  "images": {
+    "question-02.png": {
+      "alt": "等跨距構架的活載重配置及對應彎矩圖"
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "primaryCategory": "力學",
+  "topic": "結構力學",
+  "tags": [
+    "結構力學"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "B"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 3
+  },
+  "images": {
+    "question-02.png": {
+      "alt": "C 點承受集中載重的對稱桁架示意圖"
+    }
+  }
+}

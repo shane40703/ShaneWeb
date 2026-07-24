@@ -1,0 +1,22 @@
+{
+  "primaryCategory": "力學",
+  "topic": "結構力學",
+  "tags": [
+    "結構力學"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "C"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 6
+  },
+  "images": {
+    "question-02.png": {
+      "alt": "標示 A 至 E 點的三鉸式剛架示意圖"
+    }
+  }
+}

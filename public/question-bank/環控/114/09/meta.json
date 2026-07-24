@@ -1,0 +1,22 @@
+{
+  "primaryCategory": "空氣",
+  "topic": "通風",
+  "tags": [
+    "通風"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "D"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 2
+  },
+  "images": {
+    "question-02.png": {
+      "alt": "房間尺寸及 A、B 兩扇窗戶位置與尺寸示意圖"
+    }
+  }
+}

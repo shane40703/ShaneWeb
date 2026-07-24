@@ -1,0 +1,22 @@
+{
+  "primaryCategory": "力學",
+  "topic": "結構力學",
+  "tags": [
+    "結構力學"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "C"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 5
+  },
+  "images": {
+    "question-02.png": {
+      "alt": "三鉸拱結構的跨度、高度與集中載重示意圖"
+    }
+  }
+}

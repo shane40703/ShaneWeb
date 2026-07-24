@@ -1,0 +1,17 @@
+{
+  "primaryCategory": "木結構",
+  "topic": "木結構",
+  "tags": [
+    "木結構"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "B"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 8
+  }
+}

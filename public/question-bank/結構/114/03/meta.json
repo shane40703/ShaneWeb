@@ -1,0 +1,22 @@
+{
+  "primaryCategory": "力學",
+  "topic": "材料力學",
+  "tags": [
+    "材料力學"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "A"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 2
+  },
+  "images": {
+    "question-02.png": {
+      "alt": "鋼材承受應力與反覆加載週期數目的關係曲線圖"
+    }
+  }
+}

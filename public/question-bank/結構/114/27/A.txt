@@ -1,0 +1,1 @@
+Ax=0 KN，Ay=3 KN（↑）；Ex=0 KN，Ey=3 KN（↑）
