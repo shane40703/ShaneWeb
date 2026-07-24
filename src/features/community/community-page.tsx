@@ -24,7 +24,7 @@ import { Button, SimpleSelect, useToast } from '@/components/ui/ui';
 import { getSubject, years } from '@/question-bank/catalog';
 import type { DiscussionPostType, Question, SubjectId } from '@/lib/types';
 import { questionPath } from '@/lib/question-path';
-import { getAcceptedAnswerIndexes } from '@/lib/study';
+import { formatCorrectAnswer, getAcceptedAnswerIndexes } from '@/lib/study';
 import { useAppState } from '@/state/app-state';
 import styles from './community-page.module.css';
 
@@ -204,16 +204,7 @@ export function CommunityPage({ questions }: { questions: Question[] }) {
         </ol>
         <div className={styles.explanation}>
           <span>正確答案</span>
-          <strong>
-            {currentQuestion.answerKey.kind === 'all-credit'
-              ? '本題一律給分'
-              : acceptedAnswers
-                  .map(
-                    (index) =>
-                      `${String.fromCharCode(65 + index)}・${currentQuestion.options[index]}`,
-                  )
-                  .join('、')}
-          </strong>
+          <strong>{formatCorrectAnswer(currentQuestion)}</strong>
           <p>{currentQuestion.explanation ?? '目前尚無詳解。'}</p>
         </div>
         <footer className={styles.questionNavigation}>

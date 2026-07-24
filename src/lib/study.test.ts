@@ -4,6 +4,7 @@ import {
   createAttempt,
   createDefaultState,
   calculateScore,
+  formatCorrectAnswer,
   formatDuration,
   getAnalysis,
   getLawAnalysis,
@@ -66,6 +67,12 @@ describe('local state validation', () => {
 });
 
 describe('result helpers', () => {
+  it('formats correct answers without repeating option text', () => {
+    const question = questions.find((item) => item.id === 'law-114-01');
+    expect(question).toBeDefined();
+    expect(formatCorrectAnswer(question!)).toBe('D');
+  });
+
   it('calculates a 60-point score from the number of correct answers', () => {
     expect(calculateScore(33, 40)).toBe(49.5);
     expect(calculateScore(0, 0)).toBe(0);

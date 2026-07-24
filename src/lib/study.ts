@@ -143,6 +143,16 @@ export function getAcceptedAnswerIndexes(question: Question) {
     : question.answerKey.options;
 }
 
+export function formatCorrectAnswer(
+  question: Pick<Question, 'answerKey'>,
+) {
+  return question.answerKey.kind === 'all-credit'
+    ? '本題一律給分'
+    : question.answerKey.options
+        .map((index) => String.fromCharCode(65 + index))
+        .join('、');
+}
+
 export function getQuestionDisplayCategory(
   question: Pick<Question, 'primaryCategory' | 'relatedLaws'>,
 ) {

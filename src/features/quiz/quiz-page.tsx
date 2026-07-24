@@ -27,6 +27,7 @@ import { getSubject } from '@/question-bank/catalog';
 import {
   calculateScore,
   formatDuration,
+  formatCorrectAnswer,
   getQuestionDisplayCategory,
   isQuestionCorrect,
 } from '@/lib/study';
@@ -38,12 +39,6 @@ import styles from './quiz-page.module.css';
 export interface StaticQuestionPageProps {
   question: Question;
   questionBank: QuizQuestion[];
-}
-
-function answerLabels(question: QuizQuestion) {
-  return question.answerKey.kind === 'all-credit'
-    ? '一律給分'
-    : question.answerKey.options.map((index) => String.fromCharCode(65 + index)).join('、');
 }
 
 export function QuizPage({
@@ -236,7 +231,7 @@ export function QuizPage({
                     <strong>{item.text || '圖片題目'}</strong>
                     <p>
                       你的答案：{selectedAnswer}
-                      <b>標準答案：{answerLabels(item)}</b>
+                      <b>標準答案：{formatCorrectAnswer(item)}</b>
                     </p>
                   </div>
                   <Link href={questionHref(item)} onClick={() => setAttempt(null)} aria-label={`查看第 ${item.questionNumber} 題`}>
