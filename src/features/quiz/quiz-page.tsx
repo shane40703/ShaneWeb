@@ -5,11 +5,11 @@ import {
   IconArrowRight,
   IconCircleCheck,
   IconExternalLink,
+  IconMinus,
   IconX,
 } from '@tabler/icons-react';
 import {
   DifficultButton,
-  EmptyState,
   PageHeader,
   QuestionPrompt,
   QuestionSourceLine,
@@ -22,25 +22,26 @@ import {
 import { Button, OptionGroup, ProgressBar } from '@/components/ui/ui';
 import { getSubject } from '@/question-bank/catalog';
 import {
+  calculateScore,
   formatDuration,
   getAcceptedAnswerIndexes,
   isQuestionCorrect,
 } from '@/lib/study';
-import type { Question, QuizAttempt } from '@/lib/types';
+import type { Question, QuizAttempt, QuizQuestion } from '@/lib/types';
 import { useAppState } from '@/state/app-state';
 import { quizProgressReducer } from './quiz-state';
 import styles from './quiz-page.module.css';
 
-export interface QuestionRouteItem {
-  id: string;
-  questionNumber: number;
-  path: string;
-}
-
 export interface StaticQuestionPageProps {
   question: Question;
-  paperQuestions: QuestionRouteItem[];
+  paperQuestions: QuizQuestion[];
   position: number;
+}
+
+function answerLabels(question: QuizQuestion) {
+  return question.answerKey.kind === 'all-credit'
+    ? '一律給分'
+    : question.answerKey.options.map((index) => String.fromCharCode(65 + index)).join('、');
 }
 
 export function QuizPage({
@@ -146,12 +147,7 @@ export function QuizPage({
   }
 
   if (attempt) {
-    const wrongQuestions = paperQuestions.filter(
-      (item) => progressByQuestion[item.id]?.correct === false,
-    );
-    const score = paperQuestions.length
-      ? Math.round((attempt.correctCount / paperQuestions.length) * 100)
-      : 0;
+    const score = calculateScore(attempt.correctCount, paperQuestions.length);
 
     return (
       <>
@@ -161,15 +157,23 @@ export function QuizPage({
           description={`總作答時間 ${formatDuration(attempt.elapsedSeconds)}`}
         />
         <section className={styles.resultCard}>
-          <div className={styles.scoreRing} aria-label={`正確率 ${score}%`}>
-            <strong>{score}%</strong>
-            <span>正確率</span>
+          <div className={styles.scoreRing} aria-label={`本次得分 ${score.toFixed(2)} 分`}>
+            <strong>{score.toFixed(2)}</strong>
+            <span>/ 60.00 分</span>
           </div>
-          <div className={styles.resultStats}>
-            <div data-tone="success"><strong>{attempt.correctCount}</strong><span>答對</span></div>
-            <div data-tone="danger"><strong>{attempt.wrongCount}</strong><span>答錯</span></div>
-            <div><strong>{attempt.unansweredCount}</strong><span>未作答</span></div>
-            <div><strong>{formatDuration(attempt.elapsedSeconds)}</strong><span>總時間</span></div>
+          <div className={styles.resultSummary}>
+            <span>本回作答結果</span>
+            <h2>{attempt.correctCount} / {paperQuestions.length} 題答對</h2>
+            <p>
+              已作答 {paperQuestions.length - attempt.unansweredCount} 題・
+              未作答 {attempt.unansweredCount} 題
+            </p>
+            <div className={styles.resultStats}>
+              <div data-tone="success"><strong>{attempt.correctCount}</strong><span>答對</span></div>
+              <div data-tone="danger"><strong>{attempt.wrongCount}</strong><span>答錯</span></div>
+              <div><strong>{attempt.unansweredCount}</strong><span>未作答</span></div>
+              <div><strong>{formatDuration(attempt.elapsedSeconds)}</strong><span>總時間</span></div>
+            </div>
           </div>
           <div className={styles.resultActions}>
             <Button render={<Link href="/papers" />}>選擇其他試卷</Button>
@@ -177,24 +181,55 @@ export function QuizPage({
           </div>
         </section>
         <section className={styles.reviewSection}>
-          <h2>答錯題目</h2>
-          {wrongQuestions.length ? (
-            <div className={styles.reviewList}>
-              {wrongQuestions.map((item) => (
-                <Link key={item.id} href={item.path} onClick={() => setAttempt(null)}>
-                  <span>第 {item.questionNumber} 題</span>
-                  <strong>查看答案與詳解</strong>
-                  <IconArrowRight size={18} stroke={2} aria-hidden="true" />
-                </Link>
-              ))}
+          <header className={styles.reviewHeader}>
+            <div>
+              <span>完整對答案</span>
+              <h2>逐題作答結果</h2>
             </div>
-          ) : (
-            <EmptyState
-              icon={IconCircleCheck}
-              title="沒有答錯題目"
-              description="這次作答沒有已作答但答錯的題目。"
-            />
-          )}
+            <strong>共 {paperQuestions.length} 題</strong>
+          </header>
+          <div className={styles.reviewList}>
+            {paperQuestions.map((item, index) => {
+              const itemProgress = progressByQuestion[item.id];
+              const selectedAnswer =
+                itemProgress?.selected === undefined
+                  ? '未作答'
+                  : String.fromCharCode(65 + itemProgress.selected);
+              const result = itemProgress?.submitted
+                ? itemProgress.correct
+                  ? 'correct'
+                  : 'wrong'
+                : 'unanswered';
+              return (
+                <article key={item.id} data-result={result}>
+                  <span className={styles.reviewStatus} aria-label={
+                    result === 'correct' ? '答對' : result === 'wrong' ? '答錯' : '未作答'
+                  }>
+                    {result === 'correct' ? (
+                      <IconCircleCheck size={19} stroke={2.2} aria-hidden="true" />
+                    ) : result === 'wrong' ? (
+                      <IconX size={19} stroke={2.2} aria-hidden="true" />
+                    ) : (
+                      <IconMinus size={19} stroke={2.2} aria-hidden="true" />
+                    )}
+                  </span>
+                  <div className={styles.reviewContent}>
+                    <span>
+                      {index + 1}. {item.year} 年・第 {item.questionNumber} 題
+                    </span>
+                    <strong>{item.text || '圖片題目'}</strong>
+                    <p>
+                      你的答案：{selectedAnswer}
+                      <b>標準答案：{answerLabels(item)}</b>
+                    </p>
+                  </div>
+                  <Link href={item.path} onClick={() => setAttempt(null)} aria-label={`查看第 ${item.questionNumber} 題`}>
+                    <IconExternalLink size={18} stroke={2} aria-hidden="true" />
+                  </Link>
+                </article>
+              );
+            })}
+          </div>
         </section>
       </>
     );

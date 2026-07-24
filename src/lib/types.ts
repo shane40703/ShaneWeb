@@ -67,6 +67,13 @@ export interface QuestionSummary {
   path: string;
 }
 
+export type QuizQuestion = Pick<
+  Question,
+  'id' | 'subject' | 'year' | 'questionNumber' | 'text' | 'options' | 'answerKey'
+> & {
+  path: string;
+};
+
 export interface AnswerRecord {
   selected: number;
   correct: boolean;

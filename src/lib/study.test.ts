@@ -3,6 +3,7 @@ import { loadAllQuestions } from '@/server/question-bank.server';
 import {
   createAttempt,
   createDefaultState,
+  calculateScore,
   formatDuration,
   getAnalysis,
   getLawAnalysis,
@@ -53,6 +54,11 @@ describe('local state validation', () => {
 });
 
 describe('result helpers', () => {
+  it('calculates a 60-point score from the number of correct answers', () => {
+    expect(calculateScore(33, 40)).toBe(49.5);
+    expect(calculateScore(0, 0)).toBe(0);
+  });
+
   it('calculates complete submission totals and duration formatting', () => {
     const source = questions.slice(0, 3);
     const attempt = createAttempt({

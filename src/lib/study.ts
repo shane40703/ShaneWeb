@@ -116,6 +116,14 @@ export function formatDuration(totalSeconds: number) {
   return [hours, minutes, seconds].map((value) => String(value).padStart(2, '0')).join(':');
 }
 
+export function calculateScore(
+  correctCount: number,
+  totalQuestions: number,
+  maximumScore = 60,
+) {
+  return totalQuestions ? (correctCount / totalQuestions) * maximumScore : 0;
+}
+
 export function getAcceptedAnswerIndexes(question: Question) {
   return question.answerKey.kind === 'all-credit'
     ? question.options.map((_, index) => index)

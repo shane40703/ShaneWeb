@@ -12,7 +12,7 @@ import {
   type SubjectId,
 } from '@/question-bank/schema';
 import { questionPath } from '@/lib/question-path';
-import type { Question, QuestionSummary } from '@/lib/types';
+import type { Question, QuestionSummary, QuizQuestion } from '@/lib/types';
 
 const bankRoot = path.join(process.cwd(), 'public/question-bank');
 const yearDirectoryPattern = /^\d{3}$/;
@@ -549,4 +549,24 @@ export async function loadQuestion(entry: QuestionEntry): Promise<Question> {
 
 export async function loadAllQuestions() {
   return Promise.all((await getQuestionEntries()).map((entry) => loadQuestion(entry)));
+}
+
+export async function loadQuizQuestions(
+  subject: SubjectId,
+  year: number,
+): Promise<QuizQuestion[]> {
+  const entries = (await getQuestionEntries()).filter(
+    (entry) => entry.subject === subject && entry.year === year,
+  );
+  const questions = await Promise.all(entries.map((entry) => loadQuestion(entry)));
+  return questions.map((question) => ({
+    id: question.id,
+    subject: question.subject,
+    year: question.year,
+    questionNumber: question.questionNumber,
+    text: question.text,
+    options: question.options,
+    answerKey: question.answerKey,
+    path: questionPath(question.subject, question.year, question.questionNumber),
+  }));
 }

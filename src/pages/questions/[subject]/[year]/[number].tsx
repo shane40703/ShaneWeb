@@ -5,8 +5,8 @@ import { QuizPage, type StaticQuestionPageProps } from '@/features/quiz/quiz-pag
 import {
   findQuestionEntry,
   getQuestionStaticPaths,
-  getQuestionSummaries,
   loadQuestion,
+  loadQuizQuestions,
 } from '@/server/question-bank.server';
 
 interface QuestionParams extends ParsedUrlQuery {
@@ -31,13 +31,7 @@ export const getStaticProps: GetStaticProps<
   if (!entry) return { notFound: true };
 
   const question = await loadQuestion(entry);
-  const paperQuestions = (await getQuestionSummaries())
-    .filter((candidate) => candidate.subject === entry.subject && candidate.year === entry.year)
-    .map((candidate) => ({
-      id: candidate.id,
-      questionNumber: candidate.questionNumber,
-      path: candidate.path,
-    }));
+  const paperQuestions = await loadQuizQuestions(entry.subject, entry.year);
   const position = paperQuestions.findIndex((candidate) => candidate.id === question.id);
 
   return { props: { question, paperQuestions, position } };
