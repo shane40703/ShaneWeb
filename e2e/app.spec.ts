@@ -40,9 +40,24 @@ test('paper flow, timer, difficult marker, and draft answers stay ungraded', asy
   await expect(page).toHaveURL(/\/questions\/law\/114\/01/);
   await expect(page.getByText('作答時間')).toBeVisible();
   await expect(page.getByText(/00:00:0\d/)).toBeVisible();
+  const quizHeading = page.getByRole('heading', {
+    level: 1,
+    name: '114 年・建築法規與實務',
+  });
+  await expect(quizHeading.locator('..').locator('..')).toHaveAttribute(
+    'data-compact',
+    'true',
+  );
 
   await page.getByRole('button', { name: '標記為難題' }).click();
   await expect(page.getByRole('button', { name: '取消難題標記' })).toBeVisible();
+  const quizNavigator = page.getByRole('complementary', { name: '題號導覽' });
+  await expect(
+    quizNavigator.getByRole('link', {
+      name: '前往第 1 題（已標記難題）',
+    }),
+  ).toHaveAttribute('data-difficult', 'true');
+  await expect(quizNavigator.getByText('難題', { exact: true })).toBeVisible();
   await page.getByText('建築基地，為供建築物本身所占之地面及其所應留設之法定空地', { exact: true }).click();
   await expect(page.getByRole('button', { name: '送出答案' })).toHaveCount(0);
   await expect(page.getByText('答案不正確', { exact: true })).toHaveCount(0);
@@ -67,7 +82,9 @@ test('paper flow, timer, difficult marker, and draft answers stay ungraded', asy
 test('static question paths preserve state and submit a paper result to history', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop');
 
-  await page.goto('/questions/construction/114/01');
+  await page.goto(
+    '/questions/construction/114/01?mode=random&questions=construction-114-01%2Cconstruction-114-49',
+  );
   const navigator = page.getByRole('complementary', { name: '題號導覽' });
   await expect(navigator).toBeVisible();
   await expect(navigator.getByRole('link')).toHaveCount(2);
@@ -104,13 +121,18 @@ test('static question paths preserve state and submit a paper result to history'
   await expect(page.getByLabel('本次得分 30.00 分')).toBeVisible();
   await expect(page.getByRole('heading', { name: '逐題作答結果' })).toBeVisible();
   await expect(page.getByText('1 / 2 題答對')).toBeVisible();
+  await expect(page.getByText('最佳解').first()).toBeVisible();
   await page.getByText('檢視完整選項').last().click();
   await expect(page.getByRole('link', { name: '詳解與討論' }).last()).toBeVisible();
+  await expect(page.getByText('查看題目')).toHaveCount(0);
 
   await page.getByRole('button', { name: '查看作答紀錄' }).click();
   await expect(page.getByText('50%', { exact: true })).toBeVisible();
   await expect(page.getByText(/^答對/)).toContainText('1');
   await expect(page.getByText(/^答錯/)).toContainText('1');
+  await expect(page.getByText(/此題組已作答/)).toContainText('1');
+  await page.getByText('查看完整作答紀錄（2）').click();
+  await expect(page.getByRole('region', { name: '完整作答紀錄' })).toBeVisible();
 });
 
 test('question content is present in build-time static HTML', async ({ request }, testInfo) => {
@@ -126,7 +148,9 @@ test('question content is present in build-time static HTML', async ({ request }
 test('static question files render ordered images and text-only options', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop');
 
-  await page.goto('/questions/construction/114/01');
+  await page.goto(
+    '/questions/construction/114/01?mode=random&questions=construction-114-01%2Cconstruction-114-49',
+  );
   const firstPromptText = page.getByText(/依據下圖中之衝擊韌性試片結果圖/);
   await expect(firstPromptText).toBeVisible();
   const firstPrompt = firstPromptText.locator('..');
@@ -151,8 +175,11 @@ test('static question files render ordered images and text-only options', async 
 test('official corrected answer accepts every published answer', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop');
 
-  await page.goto('/questions/construction/114/49');
+  await page.goto(
+    '/questions/construction/114/49?mode=random&questions=construction-114-49%2Cconstruction-114-50',
+  );
   await page.getByText('圖 B', { exact: true }).click();
+  await page.getByRole('button', { name: /下一題/ }).click();
   await page.getByRole('button', { name: '對答案' }).click();
   await expect(page.getByText('1 / 2 題答對')).toBeVisible();
   await expect(page.getByText('你的答案：B')).toBeVisible();
@@ -165,7 +192,8 @@ test('analysis only shows exam-content distribution', async ({ page }, testInfo)
   await expect(page.getByRole('heading', { name: '選擇分析範圍' })).toBeVisible();
   await expect(page.getByText('總題數 84 題')).toBeVisible();
   await expect(page.getByRole('table')).toBeVisible();
-  await expect(page.getByText('主要分類占比')).toBeVisible();
+  await expect(page.getByText('相關法規占比')).toBeVisible();
+  await expect(page.getByRole('table').getByText('86 筆法規標註')).toBeVisible();
   const lawAnalysis = page.getByRole('region', { name: '法規命題占比' });
   await expect(lawAnalysis).toBeVisible();
   await lawAnalysis.getByRole('button', { name: /建築物公共安全檢查簽證及申報辦法/ }).click();
