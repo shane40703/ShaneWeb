@@ -48,7 +48,7 @@
 .reviewList article {
   padding: 16px 18px;
   display: grid;
-  grid-template-columns: 22px minmax(0, 1fr) auto;
+  grid-template-columns: 22px minmax(0, 1fr);
   align-items: start;
   gap: 10px;
   border: 1px solid var(--line);
@@ -108,19 +108,6 @@
 .reviewContent p b {
   margin-left: 16px;
   color: var(--text);
-}
-
-.reviewList article > a {
-  width: 34px;
-  height: 34px;
-  display: grid;
-  place-items: center;
-  border-radius: 9px;
-  color: var(--primary);
-}
-
-.reviewList article > a:hover {
-  background: var(--primary-soft);
 }
 
 .reviewOptions {

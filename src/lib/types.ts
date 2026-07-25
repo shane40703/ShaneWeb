@@ -69,7 +69,14 @@ export interface QuestionSummary {
 
 export type QuizQuestion = Pick<
   Question,
-  'id' | 'subject' | 'year' | 'questionNumber' | 'text' | 'options' | 'answerKey'
+  | 'id'
+  | 'subject'
+  | 'year'
+  | 'questionNumber'
+  | 'text'
+  | 'content'
+  | 'options'
+  | 'answerKey'
 > & {
   path: string;
 };

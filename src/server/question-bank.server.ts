@@ -565,6 +565,7 @@ export async function loadQuizQuestions(
     year: question.year,
     questionNumber: question.questionNumber,
     text: question.text,
+    content: question.content,
     options: question.options,
     answerKey: question.answerKey,
     path: questionPath(question.subject, question.year, question.questionNumber),

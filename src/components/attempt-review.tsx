@@ -2,7 +2,6 @@ import Link from 'next/link';
 import {
   IconChevronDown,
   IconCircleCheck,
-  IconExternalLink,
   IconMessages,
   IconMinus,
   IconX,
@@ -18,17 +17,13 @@ type ReviewQuestion = Pick<
 > &
   Partial<Pick<Question, 'content'>>;
 
-export function AttemptReview<QuestionType extends ReviewQuestion>({
+export function AttemptReview({
   attempt,
   questions,
-  hrefForQuestion,
-  onQuestionClick,
   embedded = false,
 }: {
   attempt: QuizAttempt;
-  questions: readonly QuestionType[];
-  hrefForQuestion: (question: QuestionType) => string;
-  onQuestionClick?: () => void;
+  questions: readonly ReviewQuestion[];
   embedded?: boolean;
 }) {
   return (
@@ -58,8 +53,6 @@ export function AttemptReview<QuestionType extends ReviewQuestion>({
               : questionCorrect
                 ? 'correct'
                 : 'wrong';
-          const questionHref = hrefForQuestion(question);
-
           return (
             <article key={question.id} data-result={result}>
               <span
@@ -99,13 +92,6 @@ export function AttemptReview<QuestionType extends ReviewQuestion>({
                   <b>標準答案：{formatCorrectAnswer(question)}</b>
                 </p>
               </div>
-              <Link
-                href={questionHref}
-                onClick={onQuestionClick}
-                aria-label={`查看第 ${question.questionNumber} 題`}
-              >
-                <IconExternalLink size={18} stroke={2} aria-hidden="true" />
-              </Link>
               <details className={styles.reviewOptions}>
                 <summary>
                   <span>檢視完整選項</span>
@@ -140,10 +126,6 @@ export function AttemptReview<QuestionType extends ReviewQuestion>({
                   })}
                 </div>
                 <footer>
-                  <Link href={questionHref} onClick={onQuestionClick}>
-                    查看題目
-                    <IconExternalLink size={15} stroke={2} aria-hidden="true" />
-                  </Link>
                   <Link href={`/community?question=${question.id}`}>
                     詳解與討論
                     <IconMessages size={16} stroke={2} aria-hidden="true" />

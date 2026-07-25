@@ -187,8 +187,6 @@ export function QuizPage({
         <AttemptReview
           attempt={attempt}
           questions={paperQuestions}
-          hrefForQuestion={questionHref}
-          onQuestionClick={() => setAttempt(null)}
         />
       </>
     );

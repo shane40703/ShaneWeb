@@ -66,9 +66,6 @@ export function HistoryPage({ questions }: { questions: Question[] }) {
                       <AttemptReview
                         attempt={attempt}
                         questions={attemptQuestions}
-                        hrefForQuestion={(question) =>
-                          questionPathFromId(question.id) ?? '/papers'
-                        }
                         embedded
                       />
                     </details>
