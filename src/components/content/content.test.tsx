@@ -1,6 +1,10 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { QuestionPrompt, QuestionSourceLine } from '@/components/content/content';
+import {
+  PageHeader,
+  QuestionPrompt,
+  QuestionSourceLine,
+} from '@/components/content/content';
 import { loadAllQuestions } from '@/server/question-bank.server';
 
 const questions = await loadAllQuestions();
@@ -35,5 +39,21 @@ describe('question content renderer', () => {
       'href',
       expect.stringContaining('s=0103&t=Q'),
     );
+  });
+
+  it('marks the quiz header as compact without changing its heading semantics', () => {
+    render(
+      <PageHeader
+        eyebrow="PAPER QUIZ"
+        title="114 年・建築結構"
+        compact
+      />,
+    );
+
+    const heading = screen.getByRole('heading', {
+      level: 1,
+      name: '114 年・建築結構',
+    });
+    expect(heading.closest('header')).toHaveAttribute('data-compact', 'true');
   });
 });

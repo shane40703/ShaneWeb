@@ -13,14 +13,19 @@ export function PageHeader({
   title,
   description,
   action,
+  compact = false,
 }: {
   eyebrow: string;
   title: string;
   description?: string;
   action?: ReactNode;
+  compact?: boolean;
 }) {
   return (
-    <header className={styles.pageHeader}>
+    <header
+      className={styles.pageHeader}
+      data-compact={compact || undefined}
+    >
       <div>
         <span className={styles.eyebrow}>{eyebrow}</span>
         <h1>{title}</h1>

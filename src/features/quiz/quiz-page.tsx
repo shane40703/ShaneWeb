@@ -197,6 +197,7 @@ export function QuizPage({
       <PageHeader
         eyebrow={isRandomQuiz ? 'RANDOM QUIZ' : 'PAPER QUIZ'}
         title={isRandomQuiz ? `${subject?.name}・隨機練習` : `${question.year} 年・${subject?.name}`}
+        compact
         action={
           <div className={styles.timer}>
             <span>作答時間</span>
