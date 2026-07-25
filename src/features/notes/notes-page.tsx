@@ -7,6 +7,7 @@ import {
   QuestionSourceLine,
   Tag,
 } from '@/components/content/content';
+import { QuestionAnswerPanel } from '@/components/question-answer-panel';
 import {
   QuestionNumberPicker,
   QuestionSelector,
@@ -161,6 +162,7 @@ function NoteEditor({ question, initialValue }: { question: Question; initialVal
       </div>
       <QuestionPrompt question={question} />
       <QuestionSourceLine question={question} />
+      <QuestionAnswerPanel question={question} />
       <label htmlFor="question-note">我的筆記</label>
       <textarea
         id="question-note"
