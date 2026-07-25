@@ -10,6 +10,7 @@ import {
   formatCorrectAnswer,
   formatDuration,
   getAnalysis,
+  getAttemptScopeKey,
   getLawAnalysis,
   getQuestionDisplayCategory,
   isQuestionCorrect,
@@ -110,6 +111,29 @@ describe('result helpers', () => {
     expect(attempt.wrongCount).toBe(1);
     expect(attempt.unansweredCount).toBe(1);
     expect(formatDuration(3661)).toBe('01:01:01');
+  });
+
+  it('groups repeated papers and identical random sets for attempt counts', () => {
+    const paperQuestions = questions
+      .filter((question) => question.subject === 'law' && question.year === 114)
+      .slice(0, 2);
+    const paper = createAttempt({
+      mode: 'paper',
+      source: paperQuestions,
+      answers: {},
+      startedAt: '2026-01-01T00:00:00.000Z',
+      elapsedSeconds: 1,
+    });
+    const random = { ...paper, mode: 'random' as const };
+
+    expect(getAttemptScopeKey(paper)).toBe(getAttemptScopeKey({ ...paper }));
+    expect(getAttemptScopeKey(random)).toBe(
+      getAttemptScopeKey({
+        ...random,
+        questionIds: [...random.questionIds].reverse(),
+      }),
+    );
+    expect(getAttemptScopeKey(paper)).not.toBe(getAttemptScopeKey(random));
   });
 
   it('accepts every corrected answer and awards all-credit questions without a selection', () => {

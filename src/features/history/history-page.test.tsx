@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { HistoryPage } from '@/features/history/history-page';
 import {
@@ -39,7 +39,10 @@ describe('HistoryPage', () => {
       elapsedSeconds: 60,
     });
     const state = createDefaultState();
-    state.attempts = [attempt];
+    state.attempts = [
+      { ...attempt, id: 'attempt-second' },
+      attempt,
+    ];
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 
     render(
@@ -48,13 +51,21 @@ describe('HistoryPage', () => {
       </AppStateProvider>,
     );
 
-    const summary = await screen.findByText('查看完整作答紀錄（2）');
-    fireEvent.click(summary);
+    const summaries = await screen.findAllByText('查看完整作答紀錄（2）');
+    fireEvent.click(summaries[0]);
 
     expect(
-      screen.getByRole('region', { name: '完整作答紀錄' }),
-    ).toBeInTheDocument();
-    expect(screen.getByText(paperQuestions[0].text)).toBeInTheDocument();
-    expect(screen.getByText(paperQuestions[1].text)).toBeInTheDocument();
+      screen.getAllByText((_, element) =>
+        element?.textContent === '此試卷已作答2次',
+      ),
+    ).toHaveLength(2);
+    const openedAttempt = summaries[0].parentElement;
+    expect(openedAttempt).not.toBeNull();
+    const review = within(openedAttempt!).getByRole('region', {
+      name: '完整作答紀錄',
+    });
+    expect(review).toBeInTheDocument();
+    expect(within(review).getByText(paperQuestions[0].text)).toBeInTheDocument();
+    expect(within(review).getByText(paperQuestions[1].text)).toBeInTheDocument();
   });
 });

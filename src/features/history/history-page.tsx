@@ -5,7 +5,7 @@ import { EmptyState, PageHeader, Tag } from '@/components/content/content';
 import { Button } from '@/components/ui/ui';
 import { getSubject } from '@/question-bank/catalog';
 import { questionPathFromId } from '@/lib/question-path';
-import { formatDuration } from '@/lib/study';
+import { formatDuration, getAttemptScopeKey } from '@/lib/study';
 import type { Question } from '@/lib/types';
 import { useAppState } from '@/state/app-state';
 import styles from './history-page.module.css';
@@ -18,6 +18,11 @@ function formatDate(iso: string) {
 
 export function HistoryPage({ questions }: { questions: Question[] }) {
   const { state, hydrated } = useAppState();
+  const attemptCounts = state.attempts.reduce((counts, attempt) => {
+    const key = getAttemptScopeKey(attempt);
+    counts.set(key, (counts.get(key) ?? 0) + 1);
+    return counts;
+  }, new Map<string, number>());
 
   return (
     <>
@@ -38,6 +43,8 @@ export function HistoryPage({ questions }: { questions: Question[] }) {
                 return question ? [question] : [];
               });
               const retryHref = questionPathFromId(attempt.questionIds[0] ?? '') ?? '/papers';
+              const attemptCount =
+                attemptCounts.get(getAttemptScopeKey(attempt)) ?? 1;
               return (
                 <article className={styles.attempt} key={attempt.id}>
                   <header>
@@ -57,6 +64,10 @@ export function HistoryPage({ questions }: { questions: Question[] }) {
                     <span>答錯 <strong>{attempt.wrongCount}</strong></span>
                     <span>未答 <strong>{attempt.unansweredCount}</strong></span>
                     <span>時間 <strong>{formatDuration(attempt.elapsedSeconds)}</strong></span>
+                    <span>
+                      {attempt.mode === 'paper' ? '此試卷' : '此題組'}已作答
+                      <strong>{attemptCount}</strong>次
+                    </span>
                   </div>
                   {attemptQuestions.length ? (
                     <details className={styles.attemptReview}>

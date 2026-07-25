@@ -116,6 +116,23 @@ export function formatDuration(totalSeconds: number) {
   return [hours, minutes, seconds].map((value) => String(value).padStart(2, '0')).join(':');
 }
 
+export function getAttemptScopeKey(
+  attempt: Pick<
+    QuizAttempt,
+    'mode' | 'subject' | 'year' | 'questionIds'
+  >,
+) {
+  if (
+    attempt.mode === 'paper' &&
+    attempt.subject !== 'mixed' &&
+    attempt.year !== null
+  ) {
+    return `paper:${attempt.subject}:${attempt.year}`;
+  }
+
+  return `random:${[...attempt.questionIds].sort().join(',')}`;
+}
+
 export function calculateScore(
   correctCount: number,
   totalQuestions: number,
