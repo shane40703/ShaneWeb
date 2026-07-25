@@ -137,7 +137,9 @@ export function pickRandomItems<T>(
   return shuffled.slice(0, Math.max(0, Math.min(Math.floor(count), shuffled.length)));
 }
 
-export function getAcceptedAnswerIndexes(question: Question) {
+export function getAcceptedAnswerIndexes(
+  question: Pick<Question, 'options' | 'answerKey'>,
+) {
   return question.answerKey.kind === 'all-credit'
     ? question.options.map((_, index) => index)
     : question.answerKey.options;

@@ -7,7 +7,11 @@ import {
   IconX,
 } from '@tabler/icons-react';
 import { QuestionPrompt } from '@/components/content/content';
-import { formatCorrectAnswer, isQuestionCorrect } from '@/lib/study';
+import {
+  formatCorrectAnswer,
+  getAcceptedAnswerIndexes,
+  isQuestionCorrect,
+} from '@/lib/study';
 import type { Question, QuizAttempt } from '@/lib/types';
 import styles from './attempt-review.module.css';
 
@@ -15,7 +19,19 @@ type ReviewQuestion = Pick<
   Question,
   'id' | 'year' | 'questionNumber' | 'text' | 'options' | 'answerKey'
 > &
-  Partial<Pick<Question, 'content'>>;
+  Partial<Pick<Question, 'content' | 'explanation'>>;
+
+function bestAnswerText(question: ReviewQuestion) {
+  if (question.explanation) return question.explanation;
+  if (question.answerKey.kind === 'all-credit') return '本題一律給分。';
+
+  return getAcceptedAnswerIndexes(question)
+    .map(
+      (index) =>
+        `${String.fromCharCode(65 + index)}．${question.options[index]}`,
+    )
+    .join('\n');
+}
 
 export function AttemptReview({
   attempt,
@@ -91,6 +107,13 @@ export function AttemptReview({
                   你的答案：{selectedAnswer}
                   <b>標準答案：{formatCorrectAnswer(question)}</b>
                 </p>
+              </div>
+              <div className={styles.bestAnswer}>
+                <header>
+                  <span>最佳解</span>
+                  <strong>答案 {formatCorrectAnswer(question)}</strong>
+                </header>
+                <p>{bestAnswerText(question)}</p>
               </div>
               <details className={styles.reviewOptions}>
                 <summary>

@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { loadAllQuestions } from '@/server/question-bank.server';
+import {
+  loadAllQuestions,
+  loadQuizQuestions,
+} from '@/server/question-bank.server';
 import {
   createAttempt,
   createDefaultState,
@@ -49,6 +52,15 @@ describe('question data', () => {
     expect(getQuestionDisplayCategory(publicSafetyQuestion!)).toBe(
       '建築物公共安全檢查簽證及申報辦法',
     );
+  });
+
+  it('includes available explanations in quiz review data', async () => {
+    const quizQuestions = await loadQuizQuestions('law');
+    const explainedQuestion = quizQuestions.find(
+      (question) => question.id === 'law-111-01',
+    );
+
+    expect(explainedQuestion?.explanation).toBeTruthy();
   });
 });
 

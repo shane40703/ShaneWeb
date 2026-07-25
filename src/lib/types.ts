@@ -77,6 +77,7 @@ export type QuizQuestion = Pick<
   | 'content'
   | 'options'
   | 'answerKey'
+  | 'explanation'
 > & {
   path: string;
 };

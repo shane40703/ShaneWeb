@@ -11,6 +11,7 @@ const questions = [
     text: '第一題',
     options: ['選項 A', '選項 B', '選項 C', '選項 D'],
     answerKey: { kind: 'accepted' as const, options: [1] },
+    explanation: '官方題目詳解',
     path: '/questions/law/114/01',
   },
   {
@@ -59,6 +60,9 @@ describe('AttemptReview', () => {
     expect(screen.getByText(/你的答案：B/)).toHaveTextContent('標準答案：B');
     expect(screen.getByText(/你的答案：A/)).toHaveTextContent('標準答案：C');
     expect(screen.getAllByText('選項 D')).toHaveLength(2);
+    expect(screen.getAllByText('最佳解')).toHaveLength(2);
+    expect(screen.getByText('官方題目詳解')).toBeInTheDocument();
+    expect(screen.getByText('C．選項 C')).toBeInTheDocument();
     expect(screen.queryByText('查看題目')).not.toBeInTheDocument();
     expect(
       screen.queryByRole('link', { name: '查看第 1 題' }),

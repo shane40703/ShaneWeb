@@ -568,6 +568,9 @@ export async function loadQuizQuestions(
     content: question.content,
     options: question.options,
     answerKey: question.answerKey,
+    ...(question.explanation
+      ? { explanation: question.explanation }
+      : {}),
     path: questionPath(question.subject, question.year, question.questionNumber),
   }));
 }
