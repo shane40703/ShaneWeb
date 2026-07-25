@@ -282,25 +282,32 @@ export function QuizPage({
           </header>
           <div className={styles.questionNumbers}>
             <QuestionNumberGrid>
-              {paperQuestions.map((item, index) => (
-                <QuestionNumberButton
-                  key={item.id}
-                  href={questionHref(item)}
-                  ariaLabel={`前往第 ${item.questionNumber} 題`}
-                  active={index === position}
-                  answered={
-                    progressByQuestion[item.id]?.selected !== undefined ||
-                    item.answerKey.kind === 'all-credit'
-                  }
-                >
-                  {item.questionNumber}
-                </QuestionNumberButton>
-              ))}
+              {paperQuestions.map((item, index) => {
+                const itemDifficult =
+                  state.difficultQuestionIds.includes(item.id);
+
+                return (
+                  <QuestionNumberButton
+                    key={item.id}
+                    href={questionHref(item)}
+                    ariaLabel={`前往第 ${item.questionNumber} 題`}
+                    active={index === position}
+                    answered={
+                      progressByQuestion[item.id]?.selected !== undefined ||
+                      item.answerKey.kind === 'all-credit'
+                    }
+                    difficult={itemDifficult}
+                  >
+                    {item.questionNumber}
+                  </QuestionNumberButton>
+                );
+              })}
             </QuestionNumberGrid>
           </div>
           <footer className={styles.navigatorLegend}>
             <span><i data-tone="current" />目前題目</span>
             <span><i data-tone="answered" />已作答</span>
+            <span><i data-tone="difficult" />難題</span>
           </footer>
         </aside>
       </div>

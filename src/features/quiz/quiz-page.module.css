@@ -96,6 +96,10 @@
   background: var(--success);
 }
 
+.navigatorLegend i[data-tone='difficult'] {
+  background: var(--warning);
+}
+
 .timer {
   min-width: 145px;
   padding: 12px 16px;

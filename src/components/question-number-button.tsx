@@ -11,6 +11,7 @@ export function QuestionNumberButton({
   ariaLabel,
   active,
   answered = false,
+  difficult = false,
   href,
   onClick,
 }: {
@@ -18,13 +19,17 @@ export function QuestionNumberButton({
   ariaLabel: string;
   active: boolean;
   answered?: boolean;
+  difficult?: boolean;
   href?: string;
   onClick?: () => void;
 }) {
   const commonProps = {
     className: styles.button,
-    'aria-label': ariaLabel,
+    'aria-label': difficult
+      ? `${ariaLabel}（已標記難題）`
+      : ariaLabel,
     'data-answered': answered || undefined,
+    'data-difficult': difficult || undefined,
   };
 
   if (href) {

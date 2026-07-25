@@ -34,12 +34,34 @@
   color: var(--success);
 }
 
+.button[data-difficult='true'] {
+  border-color: color-mix(in srgb, var(--warning) 55%, var(--line));
+  background: var(--warning-soft);
+  color: var(--warning);
+  box-shadow: inset 0 -3px 0 var(--warning);
+}
+
+.button[data-answered='true'][data-difficult='true'] {
+  background: var(--success-soft);
+  color: var(--success);
+}
+
 .button[aria-current='step'],
 .button[aria-pressed='true'] {
   border-color: var(--primary);
   background: var(--primary);
   color: white;
   box-shadow: 0 7px 15px color-mix(in srgb, var(--primary) 22%, transparent);
+}
+
+.button[data-difficult='true'][aria-current='step'],
+.button[data-difficult='true'][aria-pressed='true'] {
+  border-color: var(--warning);
+  background: var(--primary);
+  color: white;
+  box-shadow:
+    0 7px 15px color-mix(in srgb, var(--primary) 22%, transparent),
+    inset 0 0 0 3px var(--warning);
 }
 
 .button:focus-visible {
