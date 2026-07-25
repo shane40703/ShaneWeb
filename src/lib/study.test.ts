@@ -154,4 +154,18 @@ describe('analysis', () => {
     expect(analysis[0].percentage).toBeCloseTo(200 / 3);
     expect(analysis[1].percentage).toBeCloseTo(100 / 3);
   });
+
+  it('keeps the law chart total aligned with every related-law reference', () => {
+    const source = questions.filter(
+      (question) => question.subject === 'law' && question.year === 114,
+    );
+    const primaryAnalysis = getAnalysis(source);
+    const lawAnalysis = getLawAnalysis(source);
+
+    expect(primaryAnalysis.reduce((sum, item) => sum + item.count, 0)).toBe(80);
+    expect(lawAnalysis.reduce((sum, item) => sum + item.count, 0)).toBe(86);
+    expect(
+      lawAnalysis.reduce((sum, item) => sum + item.percentage, 0),
+    ).toBeCloseTo(100);
+  });
 });

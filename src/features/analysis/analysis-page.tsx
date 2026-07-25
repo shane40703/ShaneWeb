@@ -35,8 +35,19 @@ export function AnalysisPage({ questions }: { questions: QuestionSummary[] }) {
     (question) =>
       question.subject === subjectId && (year === 'all' || question.year === year),
   );
-  const analysis = getAnalysis(source);
+  const primaryAnalysis = getAnalysis(source);
   const lawAnalysis = getLawAnalysis(source);
+  const analysis =
+    subjectId === 'law'
+      ? lawAnalysis.map(({ law, count, percentage }) => ({
+          category: law,
+          count,
+          percentage,
+        }))
+      : primaryAnalysis;
+  const analysisTotal = analysis.reduce((total, item) => total + item.count, 0);
+  const categoryLabel = subjectId === 'law' ? '相關法規' : '主要分類';
+  const totalLabel = subjectId === 'law' ? '筆法規標註' : '題';
   const [selectedLawValue, setSelectedLawValue] = useState<string>();
   const selectedLaw = lawAnalysis.some((item) => item.law === selectedLawValue)
     ? selectedLawValue
@@ -95,7 +106,11 @@ export function AnalysisPage({ questions }: { questions: QuestionSummary[] }) {
     <>
       <QuestionSelector
         heading="選擇分析範圍"
-        description="依題庫的主要分類統計命題分布；每題只計入一個主要分類。"
+        description={
+          subjectId === 'law'
+            ? '依題目標註的相關法規統計命題分布；同一題可能對應多筆法規標註。'
+            : '依題庫的主要分類統計命題分布；每題只計入一個主要分類。'
+        }
         subjectId={subjectId}
         year={year}
         yearOptions={[
@@ -124,7 +139,10 @@ export function AnalysisPage({ questions }: { questions: QuestionSummary[] }) {
                 <header>
                   <span>法規占比</span>
                   <strong>{year === 'all' ? '跨年度命題來源' : `${year} 年命題來源`}</strong>
-                  <p>依題目標註的相關法規統計，共 {source.length} 題。</p>
+                  <p>
+                    依題目標註的相關法規統計，共 {source.length} 題、
+                    {analysisTotal} 筆法規標註。
+                  </p>
                 </header>
                 <div className={styles.lawList}>
                   {lawAnalysis.map((item) => (
@@ -169,7 +187,10 @@ export function AnalysisPage({ questions }: { questions: QuestionSummary[] }) {
 
           <div className={styles.chartGrid}>
             <section className={styles.chartCard}>
-              <header><span>比例分布</span><strong>主要分類占比</strong></header>
+              <header>
+                <span>比例分布</span>
+                <strong>{categoryLabel}占比</strong>
+              </header>
               <div className={styles.pieLayout}>
                 <div
                   className={styles.pie}
@@ -177,7 +198,10 @@ export function AnalysisPage({ questions }: { questions: QuestionSummary[] }) {
                   role="img"
                   aria-label={analysis.map((item) => `${item.category} ${item.percentage.toFixed(1)}%`).join('、')}
                 >
-                  <span><strong>{source.length}</strong>題</span>
+                  <span>
+                    <strong>{analysisTotal}</strong>
+                    {totalLabel}
+                  </span>
                 </div>
                 <div className={styles.legend}>
                   {analysis.map((item, index) => (
@@ -191,7 +215,10 @@ export function AnalysisPage({ questions }: { questions: QuestionSummary[] }) {
               </div>
             </section>
             <section className={styles.chartCard}>
-              <header><span>題數比較</span><strong>各分類出題數</strong></header>
+              <header>
+                <span>{subjectId === 'law' ? '標註比較' : '題數比較'}</span>
+                <strong>各{categoryLabel}{subjectId === 'law' ? '命題數' : '出題數'}</strong>
+              </header>
               <div className={styles.bars}>
                 {analysis.map((item, index) => (
                   <div className={styles.barRow} key={item.category}>
@@ -225,14 +252,31 @@ export function AnalysisPage({ questions }: { questions: QuestionSummary[] }) {
 
           <section className={styles.tableCard}>
             <table>
-              <caption>{year === 'all' ? '跨年度' : `${year} 年`}分類統計</caption>
-              <thead><tr><th>主要分類</th><th>題數</th><th>占比</th></tr></thead>
+              <caption>
+                {year === 'all' ? '跨年度' : `${year} 年`}
+                {categoryLabel}統計
+              </caption>
+              <thead>
+                <tr>
+                  <th>{categoryLabel}</th>
+                  <th>題數</th>
+                  <th>占比</th>
+                </tr>
+              </thead>
               <tbody>
                 {analysis.map((item) => (
                   <tr key={item.category}><th>{item.category}</th><td>{item.count} 題</td><td>{item.percentage.toFixed(1)}%</td></tr>
                 ))}
               </tbody>
-              <tfoot><tr><th>合計</th><td>{source.length} 題</td><td>100%</td></tr></tfoot>
+              <tfoot>
+                <tr>
+                  <th>合計</th>
+                  <td>
+                    {analysisTotal} {totalLabel}
+                  </td>
+                  <td>100%</td>
+                </tr>
+              </tfoot>
             </table>
           </section>
         </>
