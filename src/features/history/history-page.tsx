@@ -1,10 +1,11 @@
 import Link from 'next/link';
 import { IconHistory, IconLoader2 } from '@tabler/icons-react';
+import { AttemptReview } from '@/components/attempt-review';
 import { EmptyState, PageHeader, Tag } from '@/components/content/content';
 import { Button } from '@/components/ui/ui';
 import { getSubject } from '@/question-bank/catalog';
 import { questionPathFromId } from '@/lib/question-path';
-import { formatDuration, isQuestionCorrect } from '@/lib/study';
+import { formatDuration } from '@/lib/study';
 import type { Question } from '@/lib/types';
 import { useAppState } from '@/state/app-state';
 import styles from './history-page.module.css';
@@ -32,14 +33,10 @@ export function HistoryPage({ questions }: { questions: Question[] }) {
           <div className={styles.list}>
             {state.attempts.map((attempt) => {
               const subject = attempt.subject === 'mixed' ? null : getSubject(attempt.subject);
-              const wrongQuestions = attempt.questionIds
-                .map((id) => questions.find((question) => question.id === id))
-                .filter(
-                  (question) =>
-                    Boolean(question) &&
-                    attempt.answers[question!.id] !== undefined &&
-                    !isQuestionCorrect(question!, attempt.answers[question!.id]),
-                );
+              const attemptQuestions = attempt.questionIds.flatMap((id) => {
+                const question = questions.find((candidate) => candidate.id === id);
+                return question ? [question] : [];
+              });
               const retryHref = questionPathFromId(attempt.questionIds[0] ?? '') ?? '/papers';
               return (
                 <article className={styles.attempt} key={attempt.id}>
@@ -61,16 +58,19 @@ export function HistoryPage({ questions }: { questions: Question[] }) {
                     <span>未答 <strong>{attempt.unansweredCount}</strong></span>
                     <span>時間 <strong>{formatDuration(attempt.elapsedSeconds)}</strong></span>
                   </div>
-                  {wrongQuestions.length ? (
-                    <details>
-                      <summary>查看答錯題目（{wrongQuestions.length}）</summary>
-                      <div>
-                        {wrongQuestions.map((question) => question && (
-                          <Link key={question.id} href={questionPathFromId(question.id) ?? '/papers'}>
-                            第 {question.questionNumber} 題・{question.text}
-                          </Link>
-                        ))}
-                      </div>
+                  {attemptQuestions.length ? (
+                    <details className={styles.attemptReview}>
+                      <summary>
+                        查看完整作答紀錄（{attemptQuestions.length}）
+                      </summary>
+                      <AttemptReview
+                        attempt={attempt}
+                        questions={attemptQuestions}
+                        hrefForQuestion={(question) =>
+                          questionPathFromId(question.id) ?? '/papers'
+                        }
+                        embedded
+                      />
                     </details>
                   ) : null}
                   <Button variant="primary" render={<Link href={retryHref} />}>再做一次</Button>

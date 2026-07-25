@@ -11,9 +11,7 @@
 .stats { margin: 18px 0; display: flex; gap: 8px; flex-wrap: wrap; }
 .stats span { min-height: 35px; padding: 0 11px; display: inline-flex; align-items: center; gap: 5px; border-radius: 10px; background: var(--surface-2); color: var(--muted); font-size: 11px; }
 .stats strong { color: var(--text); }
-.attempt details { margin-bottom: 16px; padding: 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface-2); }
-.attempt summary { color: var(--danger); cursor: pointer; font-size: 12px; font-weight: 800; }
-.attempt details div { padding-top: 10px; display: grid; gap: 7px; }
-.attempt details a { overflow: hidden; color: var(--text-soft); font-size: 12px; line-height: 1.5; text-decoration: none; text-overflow: ellipsis; white-space: nowrap; }
-.attempt details a:hover { color: var(--primary-strong); }
+.attemptReview { margin-bottom: 16px; padding: 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface-2); }
+.attemptReview > summary { color: var(--primary-strong); cursor: pointer; font-size: 12px; font-weight: 800; }
+.attemptReview[open] > summary { margin-bottom: 16px; }
 @media (max-width: 560px) { .attempt > header { flex-direction: column; } .score { justify-items: start; } }

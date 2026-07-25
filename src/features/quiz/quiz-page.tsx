@@ -4,13 +4,9 @@ import { useEffect, useReducer, useState } from 'react';
 import {
   IconArrowLeft,
   IconArrowRight,
-  IconChevronDown,
-  IconCircleCheck,
   IconExternalLink,
-  IconMessages,
-  IconMinus,
-  IconX,
 } from '@tabler/icons-react';
+import { AttemptReview } from '@/components/attempt-review';
 import {
   DifficultButton,
   PageHeader,
@@ -27,7 +23,6 @@ import { getSubject } from '@/question-bank/catalog';
 import {
   calculateScore,
   formatDuration,
-  formatCorrectAnswer,
   getQuestionDisplayCategory,
   isQuestionCorrect,
 } from '@/lib/study';
@@ -189,102 +184,12 @@ export function QuizPage({
             <Button variant="primary" render={<Link href="/history" />}>查看作答紀錄</Button>
           </div>
         </section>
-        <section className={styles.reviewSection}>
-          <header className={styles.reviewHeader}>
-            <div>
-              <span>完整對答案</span>
-              <h2>逐題作答結果</h2>
-            </div>
-            <strong>共 {paperQuestions.length} 題</strong>
-          </header>
-          <div className={styles.reviewList}>
-            {paperQuestions.map((item, index) => {
-              const selectedAnswer =
-                attempt.answers[item.id] === undefined
-                  ? '未作答'
-                  : String.fromCharCode(65 + attempt.answers[item.id]);
-              const itemCorrect = isQuestionCorrect(item, attempt.answers[item.id]);
-              const result =
-                attempt.answers[item.id] === undefined &&
-                item.answerKey.kind !== 'all-credit'
-                  ? 'unanswered'
-                  : itemCorrect
-                    ? 'correct'
-                    : 'wrong';
-              return (
-                <article key={item.id} data-result={result}>
-                  <span className={styles.reviewStatus} aria-label={
-                    result === 'correct' ? '答對' : result === 'wrong' ? '答錯' : '未作答'
-                  }>
-                    {result === 'correct' ? (
-                      <IconCircleCheck size={19} stroke={2.2} aria-hidden="true" />
-                    ) : result === 'wrong' ? (
-                      <IconX size={19} stroke={2.2} aria-hidden="true" />
-                    ) : (
-                      <IconMinus size={19} stroke={2.2} aria-hidden="true" />
-                    )}
-                  </span>
-                  <div className={styles.reviewContent}>
-                    <span>
-                      {index + 1}. {item.year} 年・第 {item.questionNumber} 題
-                    </span>
-                    <strong>{item.text || '圖片題目'}</strong>
-                    <p>
-                      你的答案：{selectedAnswer}
-                      <b>標準答案：{formatCorrectAnswer(item)}</b>
-                    </p>
-                  </div>
-                  <Link href={questionHref(item)} onClick={() => setAttempt(null)} aria-label={`查看第 ${item.questionNumber} 題`}>
-                    <IconExternalLink size={18} stroke={2} aria-hidden="true" />
-                  </Link>
-                  <details className={styles.reviewOptions}>
-                    <summary>
-                      <span>檢視完整選項</span>
-                      <IconChevronDown size={17} stroke={2} aria-hidden="true" />
-                    </summary>
-                    <div className={styles.reviewOptionList}>
-                      {item.options.map((option, optionIndex) => {
-                        const selected = attempt.answers[item.id] === optionIndex;
-                        const accepted =
-                          item.answerKey.kind === 'all-credit' ||
-                          item.answerKey.options.includes(optionIndex);
-                        return (
-                          <div
-                            key={`${item.id}-${optionIndex}`}
-                            data-selected={selected || undefined}
-                            data-accepted={accepted || undefined}
-                          >
-                            <b>{String.fromCharCode(65 + optionIndex)}</b>
-                            <span>{option}</span>
-                            <small>
-                              {selected && accepted
-                                ? '你的答案・正確答案'
-                                : selected
-                                  ? '你的答案'
-                                  : accepted
-                                    ? '正確答案'
-                                    : ''}
-                            </small>
-                          </div>
-                        );
-                      })}
-                    </div>
-                    <footer>
-                      <Link href={questionHref(item)} onClick={() => setAttempt(null)}>
-                        查看題目
-                        <IconExternalLink size={15} stroke={2} aria-hidden="true" />
-                      </Link>
-                      <Link href={`/community?question=${item.id}`}>
-                        詳解與討論
-                        <IconMessages size={16} stroke={2} aria-hidden="true" />
-                      </Link>
-                    </footer>
-                  </details>
-                </article>
-              );
-            })}
-          </div>
-        </section>
+        <AttemptReview
+          attempt={attempt}
+          questions={paperQuestions}
+          hrefForQuestion={questionHref}
+          onQuestionClick={() => setAttempt(null)}
+        />
       </>
     );
   }

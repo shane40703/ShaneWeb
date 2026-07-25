@@ -88,7 +88,7 @@ export function QuestionPrompt({
   question,
   compact = false,
 }: {
-  question: Question;
+  question: Pick<Question, 'content'>;
   compact?: boolean;
 }) {
   return (
