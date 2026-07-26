@@ -198,7 +198,7 @@ export function AnalysisPage({ questions }: { questions: QuestionSummary[] }) {
                 </header>
                 <div>
                   {selectedCategoryQuestions.map((question) => (
-                    <Link href={question.path} key={question.id}>
+                    <Link href={`${question.path}?mode=single`} key={question.id}>
                       <span>{question.year} 年・{question.questionNumber} 題</span>
                       <strong>{question.text || `${question.topic}題目`}</strong>
                       <IconExternalLink size={16} stroke={2} aria-hidden="true" />

@@ -126,10 +126,9 @@ export function AttemptReview({
                 </header>
                 <p>{bestAnswerText(question)}</p>
               </div>
-              <ReviewNoteEditor question={question} />
               <details className={styles.reviewOptions}>
                 <summary>
-                  <span>檢視完整選項</span>
+                  <span>檢視完整選項與筆記</span>
                   <IconChevronDown size={17} stroke={2} aria-hidden="true" />
                 </summary>
                 <div className={styles.reviewOptionList}>
@@ -160,6 +159,7 @@ export function AttemptReview({
                     );
                   })}
                 </div>
+                <ReviewNoteEditor question={question} />
               </details>
             </article>
           );

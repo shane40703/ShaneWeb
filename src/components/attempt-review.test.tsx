@@ -79,5 +79,10 @@ describe('AttemptReview', () => {
     expect(
       screen.getByRole('region', { name: '第 1 題使用者筆記' }),
     ).toBeInTheDocument();
+    expect(
+      screen
+        .getByRole('region', { name: '第 1 題使用者筆記' })
+        .closest('details'),
+    ).toHaveTextContent('檢視完整選項與筆記');
   });
 });

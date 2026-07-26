@@ -63,6 +63,7 @@ describe('HistoryPage', () => {
     expect(
       screen.getByRole('button', { name: '清除第 2 次紀錄' }),
     ).toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: '再做一次' })).toHaveLength(1);
     const openedAttempt = summaries[0].parentElement;
     expect(openedAttempt).not.toBeNull();
     const review = within(openedAttempt!).getByRole('region', {

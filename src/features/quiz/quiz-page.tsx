@@ -48,12 +48,17 @@ export function QuizPage({
   const selected = progress?.selected;
   const elapsedSeconds = progress?.elapsedSeconds ?? 0;
   const subject = getSubject(question.subject);
+  const questionHasImage = question.content.some(
+    (block) => block.kind === 'image',
+  );
   const difficult = state.difficultQuestionIds.includes(question.id);
   const randomQuestionIds =
     router.query.mode === 'random' && typeof router.query.questions === 'string'
       ? router.query.questions.split(',').filter(Boolean)
       : [];
   const questionById = new Map(questionBank.map((item) => [item.id, item]));
+  const currentQuizQuestion = questionById.get(question.id);
+  const isSingleQuestion = router.query.mode === 'single';
   const randomQuestions = [
     ...new Set(randomQuestionIds),
   ].flatMap((questionId) => {
@@ -65,12 +70,18 @@ export function QuizPage({
     randomQuestions.some((item) => item.id === question.id);
   const paperQuestions = isRandomQuiz
     ? randomQuestions
-    : questionBank.filter((item) => item.year === question.year);
+    : isSingleQuestion
+      ? currentQuizQuestion
+        ? [currentQuizQuestion]
+        : []
+      : questionBank.filter((item) => item.year === question.year);
   const position = paperQuestions.findIndex((item) => item.id === question.id);
-  const randomSearch = isRandomQuiz
+  const questionSearch = isRandomQuiz
     ? `?mode=random&questions=${encodeURIComponent(randomQuestions.map((item) => item.id).join(','))}`
-    : '';
-  const questionHref = (item: QuizQuestion) => `${item.path}${randomSearch}`;
+    : isSingleQuestion
+      ? '?mode=single'
+      : '';
+  const questionHref = (item: QuizQuestion) => `${item.path}${questionSearch}`;
   const previous = paperQuestions[position - 1];
   const next = paperQuestions[position + 1];
   const answeredCount = paperQuestions.filter(
@@ -197,8 +208,20 @@ export function QuizPage({
   return (
     <>
       <PageHeader
-        eyebrow={isRandomQuiz ? 'RANDOM QUIZ' : 'PAPER QUIZ'}
-        title={isRandomQuiz ? `${subject?.name}・隨機練習` : `${question.year} 年・${subject?.name}`}
+        eyebrow={
+          isRandomQuiz
+            ? 'RANDOM QUIZ'
+            : isSingleQuestion
+              ? 'SINGLE QUESTION'
+              : 'PAPER QUIZ'
+        }
+        title={
+          isRandomQuiz
+            ? `${subject?.name}・隨機練習`
+            : isSingleQuestion
+              ? `${question.year} 年・${subject?.name}・第 ${question.questionNumber} 題`
+              : `${question.year} 年・${subject?.name}`
+        }
         compact
         action={
           <div className={styles.timer}>
@@ -227,7 +250,10 @@ export function QuizPage({
             value={((position + 1) / paperQuestions.length) * 100}
             label="試卷進度"
           />
-          <div className={styles.questionBody}>
+          <div
+            className={styles.questionBody}
+            data-has-image={questionHasImage || undefined}
+          >
             <div className={styles.questionContentColumn}>
               <span className={styles.questionNumber}>
                 第 {question.questionNumber} 題・收錄題目 {position + 1}/{paperQuestions.length}

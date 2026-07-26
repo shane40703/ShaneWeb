@@ -31,7 +31,15 @@
   font-size: 20px;
 }
 
-.groupHeader > strong {
+.groupActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 9px;
+  flex-wrap: wrap;
+}
+
+.groupActions > strong {
   min-height: 34px;
   padding: 0 12px;
   display: inline-flex;
@@ -137,6 +145,7 @@
 
 .actions {
   display: flex;
+  justify-content: flex-end;
   gap: 8px;
   flex-wrap: wrap;
 }
@@ -145,6 +154,11 @@
   .groupHeader,
   .attempt > header {
     flex-direction: column;
+  }
+
+  .groupActions {
+    width: 100%;
+    justify-content: space-between;
   }
 
   .score {

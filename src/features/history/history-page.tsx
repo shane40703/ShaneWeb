@@ -36,6 +36,15 @@ function groupAttempts(attempts: QuizAttempt[]) {
   });
 }
 
+function retryHref(attempt: QuizAttempt) {
+  const baseHref = questionPathFromId(attempt.questionIds[0] ?? '') ?? '/papers';
+  return attempt.mode === 'random' && attempt.questionIds.length
+    ? `${baseHref}?mode=random&questions=${encodeURIComponent(
+        attempt.questionIds.join(','),
+      )}`
+    : baseHref;
+}
+
 export function HistoryPage({ questions }: { questions: Question[] }) {
   const { state, dispatch, hydrated } = useAppState();
   const { notify } = useToast();
@@ -82,7 +91,15 @@ export function HistoryPage({ questions }: { questions: Question[] }) {
                         {first.year ? `・${first.year} 年` : ''}
                       </h2>
                     </div>
-                    <strong>共作答 {entries.length} 次</strong>
+                    <div className={styles.groupActions}>
+                      <strong>共作答 {entries.length} 次</strong>
+                      <Button
+                        variant="primary"
+                        render={<Link href={retryHref(first)} />}
+                      >
+                        再做一次
+                      </Button>
+                    </div>
                   </header>
 
                   <div className={styles.attemptList}>
@@ -93,14 +110,6 @@ export function HistoryPage({ questions }: { questions: Question[] }) {
                         );
                         return question ? [question] : [];
                       });
-                      const baseRetryHref =
-                        questionPathFromId(attempt.questionIds[0] ?? '') ?? '/papers';
-                      const retryHref =
-                        attempt.mode === 'random' && attempt.questionIds.length
-                          ? `${baseRetryHref}?mode=random&questions=${encodeURIComponent(
-                              attempt.questionIds.join(','),
-                            )}`
-                          : baseRetryHref;
                       const ordinal = ordinalById.get(attempt.id) ?? 1;
                       const accuracy = attempt.questionIds.length
                         ? Math.round(
@@ -141,9 +150,6 @@ export function HistoryPage({ questions }: { questions: Question[] }) {
                             </details>
                           ) : null}
                           <footer className={styles.actions}>
-                            <Button variant="primary" render={<Link href={retryHref} />}>
-                              再做一次
-                            </Button>
                             <ConfirmDialog
                               trigger={
                                 <Button variant="danger">

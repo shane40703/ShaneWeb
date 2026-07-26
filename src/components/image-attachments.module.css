@@ -63,7 +63,7 @@
 }
 
 .previews figure,
-.gallery a {
+.gallery > button {
   height: 88px;
   margin: 0;
   position: relative;
@@ -98,11 +98,129 @@
   grid-template-columns: repeat(auto-fill, minmax(130px, 200px));
 }
 
-.gallery a {
+.gallery > button {
+  padding: 0;
+  cursor: zoom-in;
   height: 145px;
 }
 
-.gallery a:focus-visible {
+.gallery > button > span {
+  width: 32px;
+  height: 32px;
+  position: absolute;
+  right: 7px;
+  bottom: 7px;
+  display: grid;
+  place-items: center;
+  border-radius: 9px;
+  background: rgb(20 33 61 / 76%);
+  color: white;
+  opacity: 0;
+  transition: opacity 150ms ease;
+}
+
+.gallery > button:hover > span,
+.gallery > button:focus-visible > span {
+  opacity: 1;
+}
+
+.gallery > button:focus-visible {
   outline: 3px solid var(--focus);
   outline-offset: 2px;
+}
+
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  padding: 24px;
+  display: grid;
+  place-items: center;
+}
+
+.lightboxBackdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgb(8 19 38 / 82%);
+  backdrop-filter: blur(6px);
+  cursor: zoom-out;
+}
+
+.lightboxContent {
+  width: min(1200px, 94vw);
+  max-height: 92vh;
+  padding: 14px;
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 10px;
+  border: 1px solid rgb(255 255 255 / 22%);
+  border-radius: 18px;
+  background: #0f1b31;
+  color: white;
+  box-shadow: var(--shadow-lg);
+}
+
+.lightboxContent > span {
+  padding: 0 4px;
+  overflow: hidden;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lightboxImage {
+  width: 100%;
+  height: min(78vh, 860px);
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+  background: #071020;
+}
+
+.lightboxImage img {
+  object-fit: contain;
+}
+
+.lightboxClose {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  position: absolute;
+  top: 22px;
+  right: 22px;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgb(255 255 255 / 24%);
+  border-radius: 11px;
+  background: rgb(7 16 32 / 78%);
+  color: white;
+  cursor: pointer;
+}
+
+.lightboxClose:focus-visible {
+  outline: 3px solid rgb(255 255 255 / 55%);
+  outline-offset: 2px;
+}
+
+@media (max-width: 600px) {
+  .lightbox {
+    padding: 10px;
+  }
+
+  .lightboxContent {
+    width: 98vw;
+    padding: 9px;
+  }
+
+  .lightboxImage {
+    height: 82vh;
+  }
+
+  .lightboxClose {
+    top: 16px;
+    right: 16px;
+  }
 }

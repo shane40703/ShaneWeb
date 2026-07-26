@@ -123,7 +123,13 @@ test('static question paths preserve state and submit a paper result to history'
   await expect(page.getByText('1 / 2 題答對')).toBeVisible();
   await expect(page.getByText('最佳解').first()).toBeVisible();
   await expect(page.getByRole('link', { name: '詳解與討論' }).last()).toBeVisible();
-  await page.getByText('檢視完整選項').last().click();
+  await expect(
+    page.getByRole('region', { name: '第 49 題使用者筆記' }),
+  ).toBeHidden();
+  await page.getByText('檢視完整選項與筆記').last().click();
+  await expect(
+    page.getByRole('region', { name: '第 49 題使用者筆記' }),
+  ).toBeVisible();
   await expect(page.getByText('查看題目')).toHaveCount(0);
 
   await page.getByRole('button', { name: '查看作答紀錄' }).click();
@@ -134,6 +140,8 @@ test('static question paths preserve state and submit a paper result to history'
   await expect(page.getByRole('heading', { name: '第 1 次' })).toBeVisible();
   await page.getByText('查看完整作答紀錄（2）').click();
   await expect(page.getByRole('region', { name: '完整作答紀錄' })).toBeVisible();
+  await expect(page.getByRole('region', { name: '第 1 題使用者筆記' })).toBeHidden();
+  await page.getByText('檢視完整選項與筆記').first().click();
   await expect(page.getByRole('region', { name: '第 1 題使用者筆記' })).toBeVisible();
   await page.getByLabel('第 1 題筆記內容').fill('由作答檢討直接建立的筆記。');
   await page.getByRole('button', { name: '儲存筆記' }).first().click();
@@ -172,12 +180,26 @@ test('static question files render ordered images and text-only options', async 
   const options = page.getByRole('radiogroup', { name: '請選擇答案' });
   await expect(options.locator('img')).toHaveCount(0);
   await expect(options.getByText('(3)＞(2)＞(1)', { exact: true })).toBeVisible();
-  const [optionBounds, viewport] = await Promise.all([
+  const [optionBounds, promptBounds, promptTextBounds, promptImageBounds, viewport] = await Promise.all([
     options.boundingBox(),
+    firstPrompt.boundingBox(),
+    firstPromptText.boundingBox(),
+    page
+      .getByRole('img', {
+        name: '標示為（1）、（2）、（3）的三個衝擊韌性試片斷口照片',
+      })
+      .boundingBox(),
     Promise.resolve(page.viewportSize()),
   ]);
   expect(optionBounds).not.toBeNull();
+  expect(promptBounds).not.toBeNull();
+  expect(promptTextBounds).not.toBeNull();
+  expect(promptImageBounds).not.toBeNull();
   expect(viewport).not.toBeNull();
+  expect(promptImageBounds!.x).toBeGreaterThan(promptTextBounds!.x);
+  expect(optionBounds!.y).toBeGreaterThanOrEqual(
+    promptBounds!.y + promptBounds!.height,
+  );
   expect(optionBounds!.y + optionBounds!.height).toBeLessThanOrEqual(
     viewport!.height,
   );
@@ -217,6 +239,14 @@ test('analysis only shows exam-content distribution', async ({ page }, testInfo)
   await expect(lawAnalysis).toBeVisible();
   await lawAnalysis.getByRole('button', { name: /建築物公共安全檢查簽證及申報辦法/ }).click();
   await expect(lawAnalysis.getByText(/目前範圍共 2 題/)).toBeVisible();
+  const focusedQuestionLink = lawAnalysis.locator('a').first();
+  await expect(focusedQuestionLink).toHaveAttribute('href', /mode=single/);
+  await focusedQuestionLink.click();
+  await expect(page).toHaveURL(/mode=single/);
+  await expect(
+    page.getByRole('complementary', { name: '題號導覽' }).getByRole('link'),
+  ).toHaveCount(1);
+  await page.goto('/analysis?subject=law&year=all');
   await expect(page.locator('main')).not.toContainText('個人答對率');
   await expect(page.locator('main')).not.toContainText('弱點分析');
 
@@ -272,6 +302,12 @@ test('community selectors and local anonymous interactions work', async ({ page 
   const post = page.locator('article').filter({ hasText: content });
   await expect(post).toBeVisible();
   await expect(post.getByRole('img', { name: 'explanation.png' })).toBeVisible();
+  await expect(post.getByRole('link', { name: /explanation\.png/ })).toHaveCount(0);
+  await post.getByRole('button', { name: '放大圖片 explanation.png' }).click();
+  await expect(
+    page.getByRole('dialog', { name: '放大檢視 explanation.png' }),
+  ).toBeVisible();
+  await page.getByRole('button', { name: '關閉放大圖片' }).last().click();
   await post.getByRole('button', { name: /讚 0/ }).click();
   await expect(post.getByRole('button', { name: /讚 1/ })).toBeVisible();
   await expect(post.getByRole('button', { name: /讚 1/ })).toHaveAttribute(
@@ -285,6 +321,10 @@ test('community selectors and local anonymous interactions work', async ({ page 
   );
   await post.getByRole('button', { name: '加入我的筆記' }).click();
   await post.getByLabel('回覆這則內容').fill('這個記法很清楚。');
+  await expect(post.getByRole('button', { name: '回覆' })).toHaveCSS(
+    'white-space',
+    'nowrap',
+  );
   await post.getByRole('button', { name: '回覆' }).click();
   await expect(post.getByText('這個記法很清楚。')).toBeVisible();
   await post.getByRole('button', { name: '檢舉' }).click();
