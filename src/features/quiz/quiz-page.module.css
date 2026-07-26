@@ -23,6 +23,17 @@
   gap: 20px;
 }
 
+.resultReviewLayout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 210px;
+  align-items: start;
+  gap: 20px;
+}
+
+.resultReviewLayout .questionNavigator {
+  margin-top: 20px;
+}
+
 .questionNavigator {
   position: sticky;
   top: 92px;
@@ -104,6 +115,14 @@
   background: var(--warning);
 }
 
+.navigatorLegend i[data-tone='wrong'] {
+  background: var(--danger);
+}
+
+.navigatorLegend i[data-tone='combined'] {
+  background: linear-gradient(135deg, var(--danger) 0 58%, var(--warning) 58%);
+}
+
 .timer {
   min-width: 145px;
   padding: 12px 16px;
@@ -146,6 +165,8 @@
   padding: 14px clamp(18px, 2.5vw, 30px);
   display: grid;
   grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  align-content: start;
   align-items: start;
   gap: 10px;
   flex: 1;
@@ -184,8 +205,8 @@
 .questionContentColumn > div > p {
   max-width: 920px;
   margin: 0;
-  font-size: clamp(15px, 1.4vw, 19px);
-  line-height: 1.4;
+  font-size: clamp(18px, 1.65vw, 23px);
+  line-height: 1.5;
   letter-spacing: -0.02em;
 }
 
@@ -202,7 +223,7 @@
 }
 
 .questionBody[data-has-image] .questionContentColumn > div {
-  grid-template-columns: minmax(0, 1fr) minmax(240px, 0.72fr);
+  grid-template-columns: minmax(0, 1fr) minmax(330px, 0.95fr);
   align-items: start;
   gap: 14px 24px;
 }
@@ -212,8 +233,8 @@
 }
 
 .questionBody[data-has-image] .questionContentColumn > div > figure {
-  width: min(100%, 330px);
-  height: 170px;
+  width: min(100%, 480px);
+  height: clamp(215px, 27dvh, 260px);
   grid-column: 2;
   grid-row: 1;
   justify-self: end;
@@ -356,7 +377,8 @@
 }
 
 @media (max-width: 1120px) {
-  .quizLayout {
+  .quizLayout,
+  .resultReviewLayout {
     grid-template-columns: 1fr;
   }
 

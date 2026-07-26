@@ -2,7 +2,8 @@
 .loadingPanel { min-height: 420px; border: 1px solid var(--line); border-radius: 20px; background: var(--surface); }
 .layout { display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: 20px; align-items: start; }
 .editor,
-.savedNotes { border: 1px solid var(--line); border-radius: 20px; background: var(--surface); box-shadow: var(--shadow-sm); }
+.savedNotes,
+.numberNavigator { border: 1px solid var(--line); border-radius: 20px; background: var(--surface); box-shadow: var(--shadow-sm); }
 .editor { padding: 24px; display: grid; gap: 18px; }
 .questionMeta { display: flex; gap: 7px; flex-wrap: wrap; }
 .editor h2 { margin: 0; font-size: 20px; line-height: 1.65; }
@@ -11,7 +12,17 @@
 .editorFooter { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .editorFooter span { color: var(--muted); font-size: 11px; }
 .editorFooter > div { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
-.savedNotes { position: sticky; top: 92px; overflow: hidden; }
+.noteSidebar { position: sticky; top: 92px; display: grid; gap: 14px; }
+.numberNavigator { overflow: hidden; }
+.numberNavigator > header { padding: 19px; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; border-bottom: 1px solid var(--line); }
+.numberNavigator > header span { color: var(--primary-strong); font-size: 10px; font-weight: 850; letter-spacing: .12em; }
+.numberNavigator > header h2 { margin: 4px 0 0; font-size: 18px; }
+.numberNavigator > header strong { min-width: 44px; min-height: 31px; padding-inline: 8px; display: grid; place-items: center; border-radius: 10px; background: var(--primary-soft); color: var(--primary-strong); font-size: 11px; }
+.questionNumbers { padding: 17px 19px; max-height: 250px; overflow-y: auto; }
+.noteLegend { padding: 11px 19px; border-top: 1px solid var(--line); color: var(--muted); font-size: 10px; }
+.noteLegend span { display: inline-flex; align-items: center; gap: 6px; }
+.noteLegend i { width: 9px; height: 9px; display: block; border: 2px solid var(--surface); border-radius: 50%; background: var(--purple); box-shadow: 0 0 0 1px color-mix(in srgb, var(--purple) 25%, transparent); }
+.savedNotes { overflow: hidden; }
 .savedNotes > header { padding: 19px; position: relative; border-bottom: 1px solid var(--line); }
 .savedNotes > header span { color: var(--primary-strong); font-size: 10px; font-weight: 850; letter-spacing: .12em; }
 .savedNotes > header h2 { margin: 4px 0 0; font-size: 18px; }
@@ -23,7 +34,7 @@
 .savedNotes button span { color: var(--muted); font-size: 10px; }
 .savedNotes button strong { overflow: hidden; font-size: 12px; line-height: 1.5; text-overflow: ellipsis; white-space: nowrap; }
 .savedNotes > p { margin: 0; padding: 22px; color: var(--muted); font-size: 12px; }
-@media (max-width: 900px) { .layout { grid-template-columns: 1fr; } .savedNotes { position: static; } }
+@media (max-width: 900px) { .layout { grid-template-columns: 1fr; } .noteSidebar { position: static; grid-row: 1; } }
 @media (max-width: 560px) {
   .editorFooter { align-items: stretch; flex-direction: column; }
   .editorFooter > div { justify-content: stretch; }

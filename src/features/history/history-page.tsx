@@ -1,12 +1,13 @@
 import Link from 'next/link';
+import { useState } from 'react';
 import { IconHistory, IconLoader2, IconTrash } from '@tabler/icons-react';
 import { AttemptReview } from '@/components/attempt-review';
 import { EmptyState, PageHeader, Tag } from '@/components/content/content';
 import { Button, ConfirmDialog, useToast } from '@/components/ui/ui';
-import { getSubject } from '@/question-bank/catalog';
+import { getSubject, subjects } from '@/question-bank/catalog';
 import { questionPathFromId } from '@/lib/question-path';
 import { formatDuration, getAttemptScopeKey } from '@/lib/study';
-import type { Question, QuizAttempt } from '@/lib/types';
+import type { Question, QuizAttempt, SubjectId } from '@/lib/types';
 import { useAppState } from '@/state/app-state';
 import styles from './history-page.module.css';
 
@@ -48,7 +49,19 @@ function retryHref(attempt: QuizAttempt) {
 export function HistoryPage({ questions }: { questions: Question[] }) {
   const { state, dispatch, hydrated } = useAppState();
   const { notify } = useToast();
-  const groups = groupAttempts(state.attempts);
+  const [subjectFilter, setSubjectFilter] = useState<
+    'all' | 'mixed' | SubjectId
+  >('all');
+  const filteredAttempts =
+    subjectFilter === 'all'
+      ? state.attempts
+      : state.attempts.filter(
+          (attempt) => attempt.subject === subjectFilter,
+        );
+  const groups = groupAttempts(filteredAttempts);
+  const mixedCount = state.attempts.filter(
+    (attempt) => attempt.subject === 'mixed',
+  ).length;
 
   function deleteAttempt(attemptId: string) {
     dispatch({ type: 'delete-attempt', attemptId });
@@ -62,6 +75,53 @@ export function HistoryPage({ questions }: { questions: Question[] }) {
         title="已作答紀錄"
         description="同一份試卷集中在同一區塊，可展開檢討或清除指定的一次紀錄。"
       />
+      {hydrated && state.attempts.length ? (
+        <section
+          className={styles.subjectFilters}
+          role="group"
+          aria-label="已作答紀錄科目分類"
+        >
+          <header>
+            <span>SUBJECT FILTER</span>
+            <strong>依科目查找</strong>
+          </header>
+          <div>
+            <button
+              type="button"
+              aria-pressed={subjectFilter === 'all'}
+              onClick={() => setSubjectFilter('all')}
+            >
+              全部 <span>{state.attempts.length}</span>
+            </button>
+            {subjects.map((subject) => (
+              <button
+                key={subject.id}
+                type="button"
+                aria-pressed={subjectFilter === subject.id}
+                onClick={() => setSubjectFilter(subject.id)}
+              >
+                {subject.name}
+                <span>
+                  {
+                    state.attempts.filter(
+                      (attempt) => attempt.subject === subject.id,
+                    ).length
+                  }
+                </span>
+              </button>
+            ))}
+            {mixedCount ? (
+              <button
+                type="button"
+                aria-pressed={subjectFilter === 'mixed'}
+                onClick={() => setSubjectFilter('mixed')}
+              >
+                跨科目 <span>{mixedCount}</span>
+              </button>
+            ) : null}
+          </div>
+        </section>
+      ) : null}
       <section className={styles.panel}>
         {!hydrated ? (
           <EmptyState icon={IconLoader2} title="正在讀取紀錄" description="請稍候。" />
@@ -174,12 +234,29 @@ export function HistoryPage({ questions }: { questions: Question[] }) {
         ) : (
           <EmptyState
             icon={IconHistory}
-            title="還沒有作答紀錄"
-            description="完成並交卷後，結果會保存在這裡。"
+            title={
+              state.attempts.length
+                ? '此科目還沒有作答紀錄'
+                : '還沒有作答紀錄'
+            }
+            description={
+              state.attempts.length
+                ? '切換其他科目，或查看全部已作答紀錄。'
+                : '完成並交卷後，結果會保存在這裡。'
+            }
             action={
-              <Button variant="primary" render={<Link href="/papers" />}>
-                開始第一份試卷
-              </Button>
+              state.attempts.length ? (
+                <Button
+                  variant="primary"
+                  onClick={() => setSubjectFilter('all')}
+                >
+                  查看全部紀錄
+                </Button>
+              ) : (
+                <Button variant="primary" render={<Link href="/papers" />}>
+                  開始第一份試卷
+                </Button>
+              )
             }
           />
         )}

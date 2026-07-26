@@ -12,6 +12,8 @@ export function QuestionNumberButton({
   active,
   answered = false,
   difficult = false,
+  wrong = false,
+  noted = false,
   href,
   onClick,
 }: {
@@ -20,16 +22,25 @@ export function QuestionNumberButton({
   active: boolean;
   answered?: boolean;
   difficult?: boolean;
+  wrong?: boolean;
+  noted?: boolean;
   href?: string;
   onClick?: () => void;
 }) {
+  const statusText = [
+    wrong ? '答錯' : null,
+    difficult ? '已標記難題' : null,
+    noted ? '有筆記' : null,
+  ].filter(Boolean);
   const commonProps = {
     className: styles.button,
-    'aria-label': difficult
-      ? `${ariaLabel}（已標記難題）`
+    'aria-label': statusText.length
+      ? `${ariaLabel}（${statusText.join('、')}）`
       : ariaLabel,
     'data-answered': answered || undefined,
     'data-difficult': difficult || undefined,
+    'data-wrong': wrong || undefined,
+    'data-noted': noted || undefined,
   };
 
   if (href) {

@@ -48,6 +48,9 @@ test('paper flow, timer, difficult marker, and draft answers stay ungraded', asy
     'data-compact',
     'true',
   );
+  await expect(
+    page.getByRole('link', { name: /前往詳解與討論/ }),
+  ).toHaveCount(0);
 
   await page.getByRole('button', { name: '標記為難題' }).click();
   await expect(page.getByRole('button', { name: '取消難題標記' })).toBeVisible();
@@ -71,7 +74,16 @@ test('paper flow, timer, difficult marker, and draft answers stay ungraded', asy
     .toBeUndefined();
 
   await page.goto('/difficult');
-  await expect(page.getByText(/依建築法規定，下列敘述何者錯誤/)).toBeVisible();
+  await expect(
+    page.getByText(/依建築法規定，下列敘述何者錯誤/).first(),
+  ).toBeVisible();
+  await page.getByText('查看完整題目與選項').click();
+  await expect(
+    page.getByRole('list', { name: '第 1 題完整選項' }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('list', { name: '第 1 題完整選項' }).getByRole('listitem'),
+  ).toHaveCount(4);
   await page.reload();
   await expect(page.getByRole('button', { name: '取消難題標記' })).toBeVisible();
 
@@ -108,6 +120,7 @@ test('static question paths preserve state and submit a paper result to history'
   await expect(page.getByRole('radio', { checked: true })).toHaveCount(0);
   await expect(page.getByText('答對了', { exact: true })).toHaveCount(0);
 
+  await page.getByRole('button', { name: '標記為難題' }).click();
   await page.getByText('圖 D', { exact: true }).click();
   await navigator.getByRole('link', { name: '前往第 1 題' }).click();
   await expect(page.getByText('答對了', { exact: true })).toHaveCount(0);
@@ -123,6 +136,21 @@ test('static question paths preserve state and submit a paper result to history'
   await expect(page.getByText('1 / 2 題答對')).toBeVisible();
   await expect(page.getByText('最佳解').first()).toBeVisible();
   await expect(page.getByRole('link', { name: '詳解與討論' }).last()).toBeVisible();
+  const resultNavigator = page.getByRole('complementary', {
+    name: '作答結果題號導覽',
+  });
+  await expect(resultNavigator).toBeVisible();
+  await expect(
+    resultNavigator.getByRole('link', {
+      name: '查看第 49 題結果（答錯、已標記難題）',
+    }),
+  ).toHaveAttribute('data-wrong', 'true');
+  await expect(
+    resultNavigator.getByRole('link', {
+      name: '查看第 49 題結果（答錯、已標記難題）',
+    }),
+  ).toHaveAttribute('data-difficult', 'true');
+  await expect(resultNavigator.getByText('答錯＋難題')).toBeVisible();
   await expect(
     page.getByRole('region', { name: '第 49 題使用者筆記' }),
   ).toBeHidden();
@@ -197,6 +225,7 @@ test('static question files render ordered images and text-only options', async 
   expect(promptImageBounds).not.toBeNull();
   expect(viewport).not.toBeNull();
   expect(promptImageBounds!.x).toBeGreaterThan(promptTextBounds!.x);
+  expect(promptImageBounds!.height).toBeGreaterThanOrEqual(200);
   expect(optionBounds!.y).toBeGreaterThanOrEqual(
     promptBounds!.y + promptBounds!.height,
   );
@@ -360,6 +389,10 @@ test('notes save and reload from local storage', async ({ page }, testInfo) => {
   await expect(
     page.getByRole('group', { name: '題號' }).getByRole('button', { name: '第 1 題' }),
   ).toHaveAttribute('aria-pressed', 'true');
+  const noteNavigator = page.getByRole('complementary', {
+    name: '筆記題號導覽',
+  });
+  await expect(noteNavigator).toBeVisible();
   await expect
     .poll(() =>
       page
@@ -368,32 +401,13 @@ test('notes save and reload from local storage', async ({ page }, testInfo) => {
         .evaluate((element) => getComputedStyle(element).width),
     )
     .toBe('38px');
-  const [subjectBounds, yearBounds, questionBounds] = await Promise.all([
-    page
-      .getByRole('group', { name: '科目' })
-      .getByRole('button')
-      .evaluateAll((elements) => ({
-        top: Math.min(...elements.map((element) => element.getBoundingClientRect().top)),
-        bottom: Math.max(...elements.map((element) => element.getBoundingClientRect().bottom)),
-      })),
-    page
-      .getByRole('group', { name: '年度' })
-      .getByRole('button')
-      .evaluateAll((elements) => ({
-        top: Math.min(...elements.map((element) => element.getBoundingClientRect().top)),
-        bottom: Math.max(...elements.map((element) => element.getBoundingClientRect().bottom)),
-      })),
-    page
-      .getByRole('group', { name: '題號' })
-      .getByRole('button')
-      .evaluateAll((elements) => ({
-        top: Math.min(...elements.map((element) => element.getBoundingClientRect().top)),
-        bottom: Math.max(...elements.map((element) => element.getBoundingClientRect().bottom)),
-      })),
+  const [editorBounds, navigatorBounds] = await Promise.all([
+    page.getByLabel('我的筆記').boundingBox(),
+    noteNavigator.boundingBox(),
   ]);
-  const subjectToYear = yearBounds.top - subjectBounds.bottom;
-  const yearToQuestion = questionBounds.top - yearBounds.bottom;
-  expect(Math.abs(subjectToYear - yearToQuestion)).toBeLessThanOrEqual(1);
+  expect(editorBounds).not.toBeNull();
+  expect(navigatorBounds).not.toBeNull();
+  expect(navigatorBounds!.x).toBeGreaterThan(editorBounds!.x);
   await page.getByLabel('我的筆記').fill('法定空地分割辦法由中央主管建築機關定之。');
   await page.getByLabel('上傳筆記圖片').setInputFiles({
     name: 'note.png',
@@ -404,9 +418,17 @@ test('notes save and reload from local storage', async ({ page }, testInfo) => {
     ),
   });
   await page.getByRole('button', { name: '儲存筆記' }).click();
+  await expect(
+    noteNavigator.getByRole('button', { name: '第 1 題（有筆記）' }),
+  ).toHaveAttribute('data-noted', 'true');
   await page.reload();
   await expect(page.getByLabel('我的筆記')).toHaveValue('法定空地分割辦法由中央主管建築機關定之。');
   await expect(page.getByRole('img', { name: 'note.png' })).toBeVisible();
+  await expect(
+    page
+      .getByRole('complementary', { name: '筆記題號導覽' })
+      .getByRole('button', { name: '第 1 題（有筆記）' }),
+  ).toHaveAttribute('data-noted', 'true');
 });
 
 test('all retained routes support direct visits and removed routes return 404', async ({ page }, testInfo) => {

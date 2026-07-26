@@ -197,10 +197,56 @@ export function QuizPage({
             <Button variant="primary" render={<Link href="/history" />}>查看作答紀錄</Button>
           </div>
         </section>
-        <AttemptReview
-          attempt={attempt}
-          questions={paperQuestions}
-        />
+        <div className={styles.resultReviewLayout}>
+          <AttemptReview
+            attempt={attempt}
+            questions={paperQuestions}
+            anchorPrefix="result-question"
+          />
+          <aside
+            className={styles.questionNavigator}
+            aria-label="作答結果題號導覽"
+          >
+            <header>
+              <div>
+                <span>RESULT MAP</span>
+                <h2>題號導覽</h2>
+              </div>
+              <strong>{attempt.correctCount}/{paperQuestions.length}</strong>
+            </header>
+            <div className={styles.questionNumbers}>
+              <QuestionNumberGrid>
+                {paperQuestions.map((item) => {
+                  const itemDifficult =
+                    state.difficultQuestionIds.includes(item.id);
+                  const itemSelected = attempt.answers[item.id];
+                  const itemWrong =
+                    itemSelected !== undefined &&
+                    !isQuestionCorrect(item, itemSelected);
+
+                  return (
+                    <QuestionNumberButton
+                      key={item.id}
+                      href={`#result-question-${item.id}`}
+                      ariaLabel={`查看第 ${item.questionNumber} 題結果`}
+                      active={false}
+                      answered={itemSelected !== undefined}
+                      difficult={itemDifficult}
+                      wrong={itemWrong}
+                    >
+                      {item.questionNumber}
+                    </QuestionNumberButton>
+                  );
+                })}
+              </QuestionNumberGrid>
+            </div>
+            <footer className={styles.navigatorLegend}>
+              <span><i data-tone="wrong" />答錯</span>
+              <span><i data-tone="difficult" />難題</span>
+              <span><i data-tone="combined" />答錯＋難題</span>
+            </footer>
+          </aside>
+        </div>
       </>
     );
   }
@@ -276,12 +322,14 @@ export function QuizPage({
                   })
                 }
               />
-              <Button
-                variant="ghost"
-                render={<Link href={`/community?question=${question.id}`} />}
-              >
-                前往詳解與討論 <IconExternalLink size={17} stroke={2} aria-hidden="true" />
-              </Button>
+              {isRandomQuiz || isSingleQuestion ? (
+                <Button
+                  variant="ghost"
+                  render={<Link href={`/community?question=${question.id}`} />}
+                >
+                  前往詳解與討論 <IconExternalLink size={17} stroke={2} aria-hidden="true" />
+                </Button>
+              ) : null}
             </div>
           </div>
           <footer className={styles.navigation}>

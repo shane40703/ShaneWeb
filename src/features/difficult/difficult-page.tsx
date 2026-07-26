@@ -1,5 +1,11 @@
-import { EmptyState, PageHeader, QuestionCard } from '@/components/content/content';
-import { IconBulb, IconLoader2 } from '@tabler/icons-react';
+import {
+  EmptyState,
+  PageHeader,
+  QuestionCard,
+  QuestionPrompt,
+  QuestionSourceLine,
+} from '@/components/content/content';
+import { IconBulb, IconChevronDown, IconLoader2 } from '@tabler/icons-react';
 import type { Question } from '@/lib/types';
 import { useAppState } from '@/state/app-state';
 import styles from './difficult-page.module.css';
@@ -23,14 +29,33 @@ export function DifficultPage({ questions }: { questions: Question[] }) {
         ) : difficultQuestions.length ? (
           <div className={styles.list}>
             {difficultQuestions.map((question) => (
-              <QuestionCard
-                key={question.id}
-                question={question}
-                difficult
-                onToggleDifficult={() =>
-                  dispatch({ type: 'toggle-difficult', questionId: question.id })
-                }
-              />
+              <article className={styles.difficultItem} key={question.id}>
+                <QuestionCard
+                  question={question}
+                  difficult
+                  onToggleDifficult={() =>
+                    dispatch({ type: 'toggle-difficult', questionId: question.id })
+                  }
+                />
+                <details className={styles.fullQuestion}>
+                  <summary>
+                    <span>查看完整題目與選項</span>
+                    <IconChevronDown size={18} stroke={2} aria-hidden="true" />
+                  </summary>
+                  <div>
+                    <QuestionPrompt question={question} />
+                    <QuestionSourceLine question={question} />
+                    <ol aria-label={`第 ${question.questionNumber} 題完整選項`}>
+                      {question.options.map((option, index) => (
+                        <li key={`${question.id}-${index}`}>
+                          <b>{String.fromCharCode(65 + index)}</b>
+                          <span>{option}</span>
+                        </li>
+                      ))}
+                    </ol>
+                  </div>
+                </details>
+              </article>
             ))}
           </div>
         ) : (

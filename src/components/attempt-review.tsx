@@ -42,10 +42,12 @@ export function AttemptReview({
   attempt,
   questions,
   embedded = false,
+  anchorPrefix,
 }: {
   attempt: QuizAttempt;
   questions: readonly ReviewQuestion[];
   embedded?: boolean;
+  anchorPrefix?: string;
 }) {
   return (
     <section
@@ -75,7 +77,11 @@ export function AttemptReview({
                 ? 'correct'
                 : 'wrong';
           return (
-            <article key={question.id} data-result={result}>
+            <article
+              key={question.id}
+              id={anchorPrefix ? `${anchorPrefix}-${question.id}` : undefined}
+              data-result={result}
+            >
               <span
                 className={styles.reviewStatus}
                 aria-label={

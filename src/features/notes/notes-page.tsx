@@ -10,10 +10,13 @@ import {
 } from '@/components/content/content';
 import { QuestionAnswerPanel } from '@/components/question-answer-panel';
 import {
-  QuestionNumberPicker,
   QuestionSelector,
   type SelectorYear,
 } from '@/components/question-selector';
+import {
+  QuestionNumberButton,
+  QuestionNumberGrid,
+} from '@/components/question-number-button';
 import { Button, useToast } from '@/components/ui/ui';
 import { getSubject, years } from '@/question-bank/catalog';
 import type { ImageAttachment, Question, SubjectId } from '@/lib/types';
@@ -104,13 +107,6 @@ export function NotesPage({ questions }: { questions: Question[] }) {
       onSubjectChange={selectSubject}
       onYearChange={selectYear}
       ariaLabel="筆記題目選擇"
-      questionPicker={
-        <QuestionNumberPicker
-          questions={paperQuestions}
-          value={currentQuestion.id}
-          onValueChange={navigateTo}
-        />
-      }
       summary={
         <>
           已選 <strong>{getSubject(currentQuestion.subject)?.name} · {currentQuestion.year} 年 · 第 {currentQuestion.questionNumber} 題</strong>
@@ -141,20 +137,65 @@ export function NotesPage({ questions }: { questions: Question[] }) {
           initialValue={state.notes[currentQuestion.id] ?? ''}
           initialImages={state.noteImages[currentQuestion.id] ?? []}
         />
-        <aside className={styles.savedNotes}>
-          <header><span>SAVED</span><h2>已儲存筆記</h2><strong>{noteEntries.length}</strong></header>
-          {noteEntries.length ? (
-            <div>
-              {noteEntries.map(({ question, content, imageCount }) => (
-                <button key={question.id} onClick={() => navigateTo(question.id)} aria-current={question.id === currentQuestion.id}>
-                  <span>{question.year}・{getSubject(question.subject)?.shortName}・第 {question.questionNumber} 題</span>
-                  <strong>{content || `圖片筆記 ${imageCount} 張`}</strong>
-                </button>
-              ))}
+        <aside className={styles.noteSidebar} aria-label="筆記題號導覽">
+          <section className={styles.numberNavigator}>
+            <header>
+              <div>
+                <span>QUESTION MAP</span>
+                <h2>題號導覽</h2>
+              </div>
+              <strong>
+                {paperQuestions.findIndex(
+                  (item) => item.id === currentQuestion.id,
+                ) + 1}
+                /{paperQuestions.length}
+              </strong>
+            </header>
+            <div
+              className={styles.questionNumbers}
+              role="group"
+              aria-label="題號"
+            >
+              <QuestionNumberGrid>
+                {paperQuestions.map((item) => {
+                  const hasNote = Boolean(
+                    state.notes[item.id]?.trim() ||
+                    state.noteImages[item.id]?.length,
+                  );
+
+                  return (
+                    <QuestionNumberButton
+                      key={item.id}
+                      ariaLabel={`第 ${item.questionNumber} 題`}
+                      active={item.id === currentQuestion.id}
+                      noted={hasNote}
+                      onClick={() => navigateTo(item.id)}
+                    >
+                      {item.questionNumber}
+                    </QuestionNumberButton>
+                  );
+                })}
+              </QuestionNumberGrid>
             </div>
-          ) : (
-            <p>尚未儲存任何筆記。</p>
-          )}
+            <footer className={styles.noteLegend}>
+              <span><i />有筆記</span>
+            </footer>
+          </section>
+          <section className={styles.savedNotes}>
+            <header><span>SAVED</span><h2>已儲存筆記</h2><strong>{noteEntries.length}</strong></header>
+            {noteEntries.length ? (
+              <div>
+                {noteEntries.map(({ question, content, imageCount }) => (
+                  <button key={question.id} onClick={() => navigateTo(question.id)} aria-current={question.id === currentQuestion.id}>
+                    <span>{question.year}・{getSubject(question.subject)?.shortName}・第 {question.questionNumber} 題</span>
+                    <strong>{content || `圖片筆記 ${imageCount} 張`}</strong>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <p>尚未儲存任何筆記。</p>
+            )}
+          </section>
         </aside>
       </div>
     </>

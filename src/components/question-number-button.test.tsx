@@ -16,6 +16,8 @@ describe('QuestionNumberButton', () => {
           ariaLabel="前往第 2 題"
           active={false}
           difficult
+          wrong
+          noted
           href="/questions/law/114/02"
         >
           2
@@ -25,11 +27,13 @@ describe('QuestionNumberButton', () => {
 
     const button = screen.getByRole('button', { name: '第 1 題' });
     const link = screen.getByRole('link', {
-      name: '前往第 2 題（已標記難題）',
+      name: '前往第 2 題（答錯、已標記難題、有筆記）',
     });
     expect(button.className).toBe(link.className);
     expect(button).toHaveAttribute('aria-pressed', 'true');
     expect(link).not.toHaveAttribute('aria-current');
     expect(link).toHaveAttribute('data-difficult', 'true');
+    expect(link).toHaveAttribute('data-wrong', 'true');
+    expect(link).toHaveAttribute('data-noted', 'true');
   });
 });

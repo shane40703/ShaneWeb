@@ -1,3 +1,14 @@
 .panel { min-height: 420px; padding: 18px; border: 1px solid var(--line); border-radius: 20px; background: var(--surface); box-shadow: var(--shadow-sm); }
 .list { display: grid; gap: 12px; }
+.difficultItem { overflow: hidden; border: 1px solid var(--line); border-radius: 16px; background: var(--surface); box-shadow: var(--shadow-sm); }
+.difficultItem > article { border: 0; border-radius: 0; box-shadow: none; }
+.fullQuestion { border-top: 1px solid var(--line); background: var(--surface-2); }
+.fullQuestion > summary { min-height: 48px; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; gap: 12px; color: var(--primary-strong); font-size: 13px; font-weight: 850; list-style: none; cursor: pointer; }
+.fullQuestion > summary::-webkit-details-marker { display: none; }
+.fullQuestion > summary svg { transition: transform 150ms ease; }
+.fullQuestion[open] > summary svg { transform: rotate(180deg); }
+.fullQuestion > div { padding: 24px; display: grid; gap: 16px; border-top: 1px solid var(--line); background: var(--surface); }
+.fullQuestion ol { margin: 2px 0 0; padding: 0; display: grid; gap: 10px; list-style: none; }
+.fullQuestion li { min-height: 48px; padding: 11px 13px; display: grid; grid-template-columns: 30px minmax(0, 1fr); align-items: center; gap: 10px; border: 1px solid var(--line); border-radius: 11px; background: var(--surface-2); color: var(--text-soft); font-size: 14px; line-height: 1.6; }
+.fullQuestion li b { width: 28px; height: 28px; display: grid; place-items: center; border-radius: 8px; background: var(--primary-soft); color: var(--primary-strong); font-size: 12px; }
 @media (max-width: 600px) { .panel { padding: 10px; } }

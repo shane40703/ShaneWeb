@@ -46,6 +46,7 @@
 }
 
 .reviewList article {
+  scroll-margin-top: 104px;
   padding: 16px 18px;
   display: grid;
   grid-template-columns: 22px minmax(0, 1fr);

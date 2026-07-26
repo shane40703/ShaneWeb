@@ -14,6 +14,9 @@ const questions = await loadAllQuestions();
 const paperQuestions = questions
   .filter((question) => question.subject === 'law' && question.year === 114)
   .slice(0, 2);
+const environmentQuestions = questions
+  .filter((question) => question.subject === 'env')
+  .slice(0, 1);
 
 function acceptedAnswer(question: (typeof paperQuestions)[number]) {
   return question.answerKey.kind === 'accepted'
@@ -40,9 +43,22 @@ describe('HistoryPage', () => {
       elapsedSeconds: 60,
     });
     const state = createDefaultState();
+    const environmentAttempt = createAttempt({
+      mode: 'paper',
+      source: environmentQuestions,
+      answers: Object.fromEntries(
+        environmentQuestions.map((question) => [
+          question.id,
+          acceptedAnswer(question),
+        ]),
+      ),
+      startedAt: '2026-07-24T00:00:00.000Z',
+      elapsedSeconds: 30,
+    });
     state.attempts = [
       { ...attempt, id: 'attempt-second' },
       attempt,
+      environmentAttempt,
     ];
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 
@@ -54,16 +70,47 @@ describe('HistoryPage', () => {
       </ToastProvider>,
     );
 
+    const subjectFilters = await screen.findByRole('group', {
+      name: '已作答紀錄科目分類',
+    });
+    expect(
+      within(subjectFilters).getByRole('button', { name: '全部 3' }),
+    ).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(
+      within(subjectFilters).getByRole('button', {
+        name: '建築環境控制 1',
+      }),
+    );
+    expect(
+      screen.getByRole('heading', { name: /建築環境控制/ }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole('heading', { name: /建築法規與實務・114 年/ }),
+    ).not.toBeInTheDocument();
+    fireEvent.click(
+      within(subjectFilters).getByRole('button', { name: '全部 3' }),
+    );
+
     const summaries = await screen.findAllByText('查看完整作答紀錄（2）');
     fireEvent.click(summaries[0]);
 
+    const lawGroup = screen
+      .getByRole('heading', { name: '建築法規與實務・114 年' })
+      .closest('article');
+    expect(lawGroup).not.toBeNull();
     expect(screen.getByText('共作答 2 次')).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: '第 1 次' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: '第 2 次' })).toBeInTheDocument();
     expect(
-      screen.getByRole('button', { name: '清除第 2 次紀錄' }),
+      within(lawGroup!).getByRole('heading', { name: '第 1 次' }),
     ).toBeInTheDocument();
-    expect(screen.getAllByRole('button', { name: '再做一次' })).toHaveLength(1);
+    expect(
+      within(lawGroup!).getByRole('heading', { name: '第 2 次' }),
+    ).toBeInTheDocument();
+    expect(
+      within(lawGroup!).getByRole('button', { name: '清除第 2 次紀錄' }),
+    ).toBeInTheDocument();
+    expect(
+      within(lawGroup!).getAllByRole('button', { name: '再做一次' }),
+    ).toHaveLength(1);
     const openedAttempt = summaries[0].parentElement;
     expect(openedAttempt).not.toBeNull();
     const review = within(openedAttempt!).getByRole('region', {

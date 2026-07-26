@@ -2,6 +2,81 @@
   min-height: 430px;
 }
 
+.subjectFilters {
+  margin-bottom: 18px;
+  padding: 18px 20px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 20px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.subjectFilters > header {
+  display: grid;
+  gap: 4px;
+}
+
+.subjectFilters > header span {
+  color: var(--primary-strong);
+  font-size: 9px;
+  font-weight: 850;
+  letter-spacing: .12em;
+}
+
+.subjectFilters > header strong {
+  font-size: 16px;
+}
+
+.subjectFilters > div {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.subjectFilters button {
+  min-height: 38px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: var(--surface-2);
+  color: var(--text-soft);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.subjectFilters button:hover {
+  border-color: var(--primary);
+  color: var(--primary-strong);
+}
+
+.subjectFilters button[aria-pressed='true'] {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: white;
+}
+
+.subjectFilters button span {
+  min-width: 21px;
+  height: 21px;
+  padding-inline: 5px;
+  display: grid;
+  place-items: center;
+  border-radius: 7px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 10px;
+}
+
 .list,
 .attemptList {
   display: grid;
@@ -151,6 +226,14 @@
 }
 
 @media (max-width: 560px) {
+  .subjectFilters {
+    grid-template-columns: 1fr;
+  }
+
+  .subjectFilters > div {
+    justify-content: flex-start;
+  }
+
   .groupHeader,
   .attempt > header {
     flex-direction: column;
