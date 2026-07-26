@@ -1,8 +1,8 @@
 {
-  "primaryCategory": "耐震",
-  "topic": "耐震設計",
+  "primaryCategory": "力學",
+  "topic": "結構力學",
   "tags": [
-    "耐震設計"
+    "結構力學"
   ],
   "answerKey": {
     "kind": "accepted",
@@ -11,6 +11,12 @@
     ]
   },
   "provenance": {
-    "kind": "sample"
+    "kind": "official",
+    "page": 2
+  },
+  "images": {
+    "question-02.png": {
+      "alt": "第 1 題題幹引用圖示、PDF 題目區含嵌入圖片附圖"
+    }
   }
 }

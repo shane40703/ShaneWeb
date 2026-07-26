@@ -420,10 +420,10 @@ test('analysis only shows exam-content distribution', async ({ page }, testInfo)
   await expect(
     page.getByRole('heading', { name: '選擇分析範圍' }),
   ).toHaveCount(0);
-  await expect(page.getByText('總題數 84 題')).toBeVisible();
+  await expect(page.getByText('總題數 163 題')).toBeVisible();
   const lawAnalysis = page.getByRole('region', { name: '命題分類與對應考古題' });
   await expect(lawAnalysis.getByText('相關法規占比')).toBeVisible();
-  await expect(lawAnalysis.getByText(/86 筆法規標註/)).toBeVisible();
+  await expect(lawAnalysis.getByText(/167 筆法規標註/)).toBeVisible();
   const pieChart = page.getByRole('region', { name: '圓形命題占比圖' });
   await expect(pieChart).toBeVisible();
   await expect(pieChart.getByRole('img')).toHaveCSS(

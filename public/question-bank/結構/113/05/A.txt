@@ -1,0 +1,1 @@
+單曲率（single-curvature）結構的穩定性會優於雙曲率（double-curvature）結構

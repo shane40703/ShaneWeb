@@ -1,0 +1,22 @@
+{
+  "primaryCategory": "結構系統",
+  "topic": "結構系統",
+  "tags": [
+    "結構系統"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "A"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 6
+  },
+  "images": {
+    "question-02.png": {
+      "alt": "第 27 題題幹引用圖示、PDF 題目區含嵌入圖片附圖"
+    }
+  }
+}

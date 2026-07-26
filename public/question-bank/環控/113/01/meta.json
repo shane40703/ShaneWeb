@@ -1,8 +1,8 @@
 {
-  "primaryCategory": "光",
-  "topic": "照明",
+  "primaryCategory": "設備",
+  "topic": "垂直運輸",
   "tags": [
-    "照明"
+    "垂直運輸"
   ],
   "answerKey": {
     "kind": "accepted",
@@ -11,6 +11,7 @@
     ]
   },
   "provenance": {
-    "kind": "sample"
+    "kind": "official",
+    "page": 1
   }
 }

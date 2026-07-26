@@ -1,0 +1,17 @@
+{
+  "primaryCategory": "工程管理",
+  "topic": "進度與成本",
+  "tags": [
+    "進度與成本"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "C"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 12
+  }
+}

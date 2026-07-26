@@ -92,3 +92,12 @@ public/question-bank/
 ## 新增題目
 
 在對應科目與年度下建立兩位數題號資料夾，加入 `meta.json`、題幹和四個選項即可。Loader 會自動發現新目錄，下一次開發載入或 build 時就會產生 `/questions/[subject]/[year]/[number]` 靜態頁面，不需要修改其他清單檔案。
+
+113 年完整題庫可由已校對的 `QuestionInfo/113` 與 `AnswersInfo/*/113.txt`
+重新產生：
+
+```bash
+npm run import:113
+```
+
+匯入器會重建四科的 113 年目錄、複製題目附圖，並寫入正式試卷來源與答案資料。

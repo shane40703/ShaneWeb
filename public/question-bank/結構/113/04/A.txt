@@ -1,0 +1,1 @@
+材料楊氏係數（Young’s modulus）為材料應力－應變曲線圖中座標原點至極限點（Ultimate point）之斜率

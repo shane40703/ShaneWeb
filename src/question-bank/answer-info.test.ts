@@ -107,8 +107,8 @@ describe('AnswersInfo contract', () => {
       comparedOfficial += 1;
     }
 
-    expect(questions).toHaveLength(256);
-    expect(comparedOfficial).toBe(240);
-    expect(skippedSamples).toBe(16);
+    expect(questions).toHaveLength(492);
+    expect(comparedOfficial).toBe(480);
+    expect(skippedSamples).toBe(12);
   });
 });

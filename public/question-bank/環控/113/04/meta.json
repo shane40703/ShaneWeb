@@ -1,0 +1,17 @@
+{
+  "primaryCategory": "熱",
+  "topic": "熱環境",
+  "tags": [
+    "熱環境"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "D"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 2
+  }
+}

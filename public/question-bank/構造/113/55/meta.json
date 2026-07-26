@@ -1,0 +1,22 @@
+{
+  "primaryCategory": "構法",
+  "topic": "鋼構與複合構造",
+  "tags": [
+    "鋼構與複合構造"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "A"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 9
+  },
+  "images": {
+    "question-02.png": {
+      "alt": "第 55 題選項疑似為圖片、PDF 題目區含嵌入圖片附圖"
+    }
+  }
+}

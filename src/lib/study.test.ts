@@ -40,7 +40,25 @@ describe('question data', () => {
       }
       expect(question.primaryCategory.length).toBeGreaterThan(0);
     });
-    expect(questions).toHaveLength(256);
+    expect(questions).toHaveLength(492);
+  });
+
+  it('contains every official 113 question in all four subjects', () => {
+    const expectedCounts = {
+      law: 80,
+      env: 40,
+      construction: 80,
+      structure: 40,
+    } as const;
+
+    Object.entries(expectedCounts).forEach(([subject, count]) => {
+      const subjectQuestions = questions.filter(
+        (question) => question.subject === subject && question.year === 113,
+      );
+      expect(subjectQuestions).toHaveLength(count);
+      expect(subjectQuestions.every((question) => question.source.kind === 'official'))
+        .toBe(true);
+    });
   });
 
   it('uses the precise related law as the displayed question category', () => {
@@ -191,6 +209,36 @@ describe('result helpers', () => {
 });
 
 describe('analysis', () => {
+  it('keeps cross-year category totals aligned after importing 113', () => {
+    const expectedCounts = {
+      law: 160,
+      env: 80,
+      construction: 160,
+      structure: 80,
+    } as const;
+
+    Object.entries(expectedCounts).forEach(([subject, expectedCount]) => {
+      const source = questions.filter(
+        (question) =>
+          question.subject === subject &&
+          (question.year === 113 || question.year === 114),
+      );
+      expect(source).toHaveLength(expectedCount);
+      expect(
+        getAnalysis(source).reduce((total, item) => total + item.count, 0),
+      ).toBe(expectedCount);
+    });
+
+    const lawSource = questions.filter(
+      (question) =>
+        question.subject === 'law' &&
+        (question.year === 113 || question.year === 114),
+    );
+    expect(
+      getLawAnalysis(lawSource).reduce((total, item) => total + item.count, 0),
+    ).toBeGreaterThanOrEqual(lawSource.length);
+  });
+
   it('counts each question once through its primary category', () => {
     const source = questions.filter((question) => question.subject === 'law');
     const analysis = getAnalysis(source);
