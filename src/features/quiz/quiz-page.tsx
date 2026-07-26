@@ -11,9 +11,11 @@ import {
 import {
   IconArrowLeft,
   IconArrowRight,
+  IconCircleCheck,
   IconExternalLink,
   IconLoader2,
   IconPlugConnectedX,
+  IconX,
 } from '@tabler/icons-react';
 import { AttemptReview } from '@/components/attempt-review';
 import {
@@ -32,6 +34,7 @@ import { useSubjectQuestions } from '@/lib/question-bank-client';
 import {
   calculateScore,
   createAttempt,
+  formatCorrectAnswer,
   formatDuration,
   getQuestionDisplayCategory,
   getSubjectScoreConfig,
@@ -73,6 +76,8 @@ export function QuizPage({ question, paper }: StaticQuestionPageProps) {
     progress: EMPTY_PROGRESS,
   });
   const [attempt, setAttempt] = useState<QuizAttempt | null>(null);
+  const [checkedSingleQuestionId, setCheckedSingleQuestionId] =
+    useState<string | null>(null);
   const routeHydrated = useClientReady();
   const pendingRandomSessionId = useRef<string | null>(null);
   const subject = getSubject(question.subject);
@@ -80,6 +85,8 @@ export function QuizPage({ question, paper }: StaticQuestionPageProps) {
   const difficult = state.difficultQuestionIds.includes(question.id);
   const isSingleQuestion =
     routeHydrated && router.isReady && router.query.mode === 'single';
+  const singleAnswerChecked =
+    isSingleQuestion && checkedSingleQuestionId === question.id;
 
   const randomQuestionIds = useMemo(() => {
     if (
@@ -267,7 +274,7 @@ export function QuizPage({ question, paper }: StaticQuestionPageProps) {
   }, [progressState, reportPersistence]);
 
   useEffect(() => {
-    if (attempt || !quizProgressScope) return;
+    if (attempt || singleAnswerChecked || !quizProgressScope) return;
     const questionId = question.id;
     const startedAt = new Date().toISOString();
     progressDispatch({
@@ -283,7 +290,7 @@ export function QuizPage({ question, paper }: StaticQuestionPageProps) {
       });
     }, 1000);
     return () => window.clearInterval(timer);
-  }, [attempt, question.id, quizProgressScope]);
+  }, [attempt, question.id, quizProgressScope, singleAnswerChecked]);
 
   function updateQuizProgress(action: QuizProgressAction) {
     if (!quizProgressScope) return;
@@ -336,6 +343,19 @@ export function QuizPage({ question, paper }: StaticQuestionPageProps) {
     });
     setAttempt(nextAttempt);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function checkSingleAnswer() {
+    if (!isSingleQuestion || selected === undefined) return;
+    const answeredAt = new Date().toISOString();
+    dispatch({
+      type: 'save-answer',
+      questionId: question.id,
+      selected,
+      correct: isQuestionCorrect(question, selected),
+      answeredAt,
+    });
+    setCheckedSingleQuestionId(question.id);
   }
 
   if (attempt) {
@@ -512,7 +532,7 @@ export function QuizPage({ question, paper }: StaticQuestionPageProps) {
                 label="請選擇答案"
                 options={question.options}
                 value={selected}
-                disabled={!quizProgressScope}
+                disabled={!quizProgressScope || singleAnswerChecked}
                 onValueChange={(value) =>
                   updateQuizProgress({
                     type: 'select-answer',
@@ -522,6 +542,45 @@ export function QuizPage({ question, paper }: StaticQuestionPageProps) {
                   })
                 }
               />
+              {singleAnswerChecked && selected !== undefined ? (
+                <section
+                  className={styles.singleFeedback}
+                  data-result={
+                    isQuestionCorrect(question, selected) ? 'correct' : 'wrong'
+                  }
+                  role="status"
+                >
+                  <header>
+                    {isQuestionCorrect(question, selected) ? (
+                      <IconCircleCheck
+                        size={21}
+                        stroke={2.3}
+                        aria-hidden="true"
+                      />
+                    ) : (
+                      <IconX size={21} stroke={2.3} aria-hidden="true" />
+                    )}
+                    <strong>
+                      {isQuestionCorrect(question, selected)
+                        ? '答對了'
+                        : '答錯了'}
+                    </strong>
+                  </header>
+                  <p>
+                    你的答案：{String.fromCharCode(65 + selected)}
+                    <b>標準答案：{formatCorrectAnswer(question)}</b>
+                  </p>
+                  <div>
+                    <span>詳解</span>
+                    <p>
+                      {question.explanation?.trim() ||
+                        (question.answerKey.kind === 'all-credit'
+                          ? '本題一律給分。'
+                          : '目前尚無詳解。')}
+                    </p>
+                  </div>
+                </section>
+              ) : null}
               {isRandomQuiz || isSingleQuestion ? (
                 <Button
                   variant="ghost"
@@ -550,6 +609,18 @@ export function QuizPage({ question, paper }: StaticQuestionPageProps) {
               <Button variant="primary" disabled>
                 <IconLoader2 size={17} stroke={2} aria-hidden="true" />{' '}
                 {isRandomQuiz ? '載入題組中' : '準備作答中'}
+              </Button>
+            ) : isSingleQuestion ? (
+              <Button
+                variant="primary"
+                disabled={!singleAnswerChecked && selected === undefined}
+                onClick={() =>
+                  singleAnswerChecked
+                    ? setCheckedSingleQuestionId(null)
+                    : checkSingleAnswer()
+                }
+              >
+                {singleAnswerChecked ? '重新作答' : '對答案'}
               </Button>
             ) : next ? (
               <Button variant="primary" render={<Link href={questionHref(next)} />}>

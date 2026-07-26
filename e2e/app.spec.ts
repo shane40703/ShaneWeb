@@ -441,6 +441,16 @@ test('analysis only shows exam-content distribution', async ({ page }, testInfo)
   await expect(
     page.getByRole('complementary', { name: '題號導覽' }).getByRole('link'),
   ).toHaveCount(1);
+  await page.getByRole('radio').first().check();
+  await page.getByRole('button', { name: '對答案' }).click();
+  const singleFeedback = page.getByRole('status').filter({
+    hasText: /答對了|答錯了/,
+  });
+  await expect(singleFeedback).toBeVisible();
+  await expect(singleFeedback).toContainText('標準答案');
+  await expect(page).toHaveURL(/mode=single/);
+  await expect(page.getByRole('progressbar', { name: /本次得分|答對 .* 題/ })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: '重新作答' })).toBeVisible();
   await page.goto('/analysis?subject=law&year=all');
   await expect(page.locator('main')).not.toContainText('個人答對率');
   await expect(page.locator('main')).not.toContainText('弱點分析');
