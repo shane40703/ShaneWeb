@@ -172,12 +172,23 @@ export function getAttemptScopeKey(
   return `random:${[...attempt.questionIds].sort().join(',')}`;
 }
 
-export function calculateScore(
-  correctCount: number,
-  totalQuestions: number,
-  maximumScore = 60,
-) {
-  return totalQuestions ? (correctCount / totalQuestions) * maximumScore : 0;
+const subjectScoreConfigs: Record<
+  SubjectId,
+  { maximumScore: number; pointsPerQuestion: number }
+> = {
+  law: { maximumScore: 100, pointsPerQuestion: 1.25 },
+  env: { maximumScore: 60, pointsPerQuestion: 1.5 },
+  construction: { maximumScore: 100, pointsPerQuestion: 1.25 },
+  structure: { maximumScore: 60, pointsPerQuestion: 1.5 },
+};
+
+export function getSubjectScoreConfig(subject: SubjectId) {
+  return subjectScoreConfigs[subject];
+}
+
+export function calculateScore(correctCount: number, subject: SubjectId) {
+  const { maximumScore, pointsPerQuestion } = getSubjectScoreConfig(subject);
+  return Math.min(Math.max(0, correctCount) * pointsPerQuestion, maximumScore);
 }
 
 export function pickRandomItems<T>(
@@ -287,6 +298,10 @@ export function createAttempt({
   };
 }
 
+function compareText(left: string, right: string) {
+  return left < right ? -1 : left > right ? 1 : 0;
+}
+
 export function getAnalysis(source: readonly { primaryCategory: string }[]) {
   const counts = new Map<string, number>();
   source.forEach((question) => {
@@ -298,7 +313,10 @@ export function getAnalysis(source: readonly { primaryCategory: string }[]) {
       count,
       percentage: source.length ? (count / source.length) * 100 : 0,
     }))
-    .sort((left, right) => right.count - left.count || left.category.localeCompare(right.category));
+    .sort(
+      (left, right) =>
+        right.count - left.count || compareText(left.category, right.category),
+    );
 }
 
 export function getLawAnalysis(
@@ -320,5 +338,8 @@ export function getLawAnalysis(
       count,
       percentage: totalReferences ? (count / totalReferences) * 100 : 0,
     }))
-    .sort((left, right) => right.count - left.count || left.law.localeCompare(right.law));
+    .sort(
+      (left, right) =>
+        right.count - left.count || compareText(left.law, right.law),
+    );
 }

@@ -13,6 +13,7 @@ import {
   getAttemptScopeKey,
   getLawAnalysis,
   getQuestionDisplayCategory,
+  getSubjectScoreConfig,
   isQuestionCorrect,
   pickRandomItems,
   parseStoredState,
@@ -86,9 +87,14 @@ describe('result helpers', () => {
     expect(formatCorrectAnswer(question!)).toBe('D');
   });
 
-  it('calculates a 60-point score from the number of correct answers', () => {
-    expect(calculateScore(33, 40)).toBe(49.5);
-    expect(calculateScore(0, 0)).toBe(0);
+  it('calculates fixed per-question scores and subject maximums', () => {
+    expect(calculateScore(1, 'law')).toBe(1.25);
+    expect(calculateScore(80, 'construction')).toBe(100);
+    expect(calculateScore(1, 'env')).toBe(1.5);
+    expect(calculateScore(40, 'structure')).toBe(60);
+    expect(calculateScore(0, 'law')).toBe(0);
+    expect(getSubjectScoreConfig('law').maximumScore).toBe(100);
+    expect(getSubjectScoreConfig('env').maximumScore).toBe(60);
   });
 
   it('draws the requested number of unique random items without exceeding the source', () => {
@@ -177,6 +183,17 @@ describe('analysis', () => {
     ]);
     expect(analysis[0].percentage).toBeCloseTo(200 / 3);
     expect(analysis[1].percentage).toBeCloseTo(100 / 3);
+  });
+
+  it('uses a locale-independent order when analysis counts are tied', () => {
+    const analysis = getLawAnalysis([
+      { relatedLaws: ['都市更新條例', '營造業法'] },
+    ]);
+
+    expect(analysis.map((item) => item.law)).toEqual([
+      '營造業法',
+      '都市更新條例',
+    ]);
   });
 
   it('keeps the law chart total aligned with every related-law reference', () => {

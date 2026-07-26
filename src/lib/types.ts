@@ -59,7 +59,6 @@ export interface QuestionSummary {
   subject: SubjectId;
   year: number;
   questionNumber: number;
-  answerKey: AnswerKey;
   primaryCategory: string;
   topic: string;
   tags: readonly string[];

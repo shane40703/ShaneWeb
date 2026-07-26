@@ -389,7 +389,6 @@ async function discoverQuestionSummaries(): Promise<QuestionSummary[]> {
         subject: question.subject,
         year: question.year,
         questionNumber: question.questionNumber,
-        answerKey: question.answerKey,
         primaryCategory: question.primaryCategory,
         topic: question.topic,
         tags: question.tags,

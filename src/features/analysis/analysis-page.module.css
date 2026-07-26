@@ -195,6 +195,16 @@
 .chartCard,
 .yearCard { padding: 22px; }
 
+.pieOverview {
+  margin-bottom: 20px;
+}
+
+.pieOverview .legend {
+  max-height: 290px;
+  padding-right: 4px;
+  overflow-y: auto;
+}
+
 .chartCard header,
 .yearCard header {
   display: grid;

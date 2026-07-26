@@ -139,7 +139,8 @@ test('static question paths preserve state and submit a paper result to history'
 
   await expect(page.getByRole('heading', { name: '本回作答結果' })).toBeVisible();
   await expect(page.getByRole('heading', { name: '本次作答結果' })).toHaveCount(0);
-  await expect(page.getByLabel('本次得分 30.00 分')).toBeVisible();
+  await expect(page.getByLabel('本次得分 1.25 分')).toBeVisible();
+  await expect(page.getByText('/ 100.00 分')).toBeVisible();
   await expect(page.getByRole('heading', { name: '逐題作答結果' })).toBeVisible();
   await expect(page.getByText('1 / 2 題答對')).toBeVisible();
   await expect(page.getByText('最佳解').first()).toBeVisible();
@@ -276,23 +277,31 @@ test('static question files render ordered images and text-only options', async 
   await expect(options.getByText('圖 D', { exact: true })).toBeVisible();
 });
 
-test('all-credit questions are excluded from every quiz paper', async ({ page }, testInfo) => {
+test('all-credit questions stay concealed until review and count toward the score', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop');
 
   await page.goto('/questions/construction/114/01');
   const navigator = page.getByRole('complementary', { name: '題號導覽' });
-  await expect(navigator.getByRole('link')).toHaveCount(78);
+  await expect(navigator.getByRole('link')).toHaveCount(80);
   await expect(
     navigator.getByRole('link', { name: '前往第 17 題' }),
-  ).toHaveCount(0);
+  ).toBeVisible();
   await expect(
     navigator.getByRole('link', { name: '前往第 20 題' }),
-  ).toHaveCount(0);
-  await expect(page.getByText('收錄題目 1/78')).toBeVisible();
+  ).toBeVisible();
+  await expect(page.getByText('收錄題目 1/80')).toBeVisible();
 
-  await page.goto('/questions/construction/114/17');
-  await expect(page).toHaveURL(/\/questions\/construction\/114\/18$/);
-  await expect(page.getByText('收錄題目 17/78')).toBeVisible();
+  await page.goto(
+    '/questions/construction/114/17?mode=random&questions=construction-114-17',
+  );
+  await expect(page).toHaveURL(/\/questions\/construction\/114\/17/);
+  await expect(page.getByText('收錄題目 1/1')).toBeVisible();
+  await expect(page.locator('main')).not.toContainText('一律給分');
+  await page.getByRole('radio').first().check();
+  await page.getByRole('button', { name: '對答案' }).click();
+  await expect(page.getByText('1 / 1 題答對')).toBeVisible();
+  await expect(page.getByLabel('本次得分 1.25 分')).toBeVisible();
+  await expect(page.getByText('本題一律給分。')).toBeVisible();
 });
 
 test('official corrected answer accepts every published answer', async ({ page }, testInfo) => {
@@ -314,10 +323,16 @@ test('analysis only shows exam-content distribution', async ({ page }, testInfo)
   await page.goto('/analysis?subject=law&year=all');
   await expect(page.getByRole('heading', { name: '選擇分析範圍' })).toBeVisible();
   await expect(page.getByText('總題數 84 題')).toBeVisible();
-  await expect(page.getByText('相關法規占比')).toBeVisible();
-  await expect(page.getByText(/86 筆法規標註/)).toBeVisible();
-  await expect(page.getByRole('table')).toHaveCount(0);
   const lawAnalysis = page.getByRole('region', { name: '命題分類與對應考古題' });
+  await expect(lawAnalysis.getByText('相關法規占比')).toBeVisible();
+  await expect(lawAnalysis.getByText(/86 筆法規標註/)).toBeVisible();
+  const pieChart = page.getByRole('region', { name: '圓形命題占比圖' });
+  await expect(pieChart).toBeVisible();
+  await expect(pieChart.getByRole('img')).toHaveCSS(
+    'background-image',
+    /conic-gradient/,
+  );
+  await expect(page.getByRole('table')).toHaveCount(0);
   await expect(lawAnalysis).toBeVisible();
   await lawAnalysis.getByRole('button', { name: /建築物公共安全檢查簽證及申報辦法/ }).click();
   await expect(lawAnalysis.getByText(/目前範圍共 2 題/)).toBeVisible();

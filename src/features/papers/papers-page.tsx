@@ -30,8 +30,7 @@ export function PapersPage({ questions }: { questions: QuestionSummary[] }) {
     .filter(
       (question) =>
         question.subject === subjectId &&
-        question.year === year &&
-        question.answerKey.kind !== 'all-credit',
+        question.year === year,
     )
     .sort((left, right) => left.questionNumber - right.questionNumber);
 

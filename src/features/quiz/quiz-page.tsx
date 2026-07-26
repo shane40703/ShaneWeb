@@ -24,6 +24,7 @@ import {
   calculateScore,
   formatDuration,
   getQuestionDisplayCategory,
+  getSubjectScoreConfig,
   isQuestionCorrect,
 } from '@/lib/study';
 import type { Question, QuizAttempt, QuizQuestion } from '@/lib/types';
@@ -56,11 +57,8 @@ export function QuizPage({
     router.query.mode === 'random' && typeof router.query.questions === 'string'
       ? router.query.questions.split(',').filter(Boolean)
       : [];
-  const eligibleQuestionBank = questionBank.filter(
-    (item) => item.answerKey.kind !== 'all-credit',
-  );
   const questionById = new Map(
-    eligibleQuestionBank.map((item) => [item.id, item]),
+    questionBank.map((item) => [item.id, item]),
   );
   const currentQuizQuestion = questionById.get(question.id);
   const isSingleQuestion = router.query.mode === 'single';
@@ -79,7 +77,7 @@ export function QuizPage({
       ? currentQuizQuestion
         ? [currentQuizQuestion]
         : []
-      : eligibleQuestionBank.filter((item) => item.year === question.year);
+      : questionBank.filter((item) => item.year === question.year);
   const position = paperQuestions.findIndex((item) => item.id === question.id);
   const questionSearch = isRandomQuiz
     ? `?mode=random&questions=${encodeURIComponent(randomQuestions.map((item) => item.id).join(','))}`
@@ -126,7 +124,9 @@ export function QuizPage({
       isQuestionCorrect(item, progressByQuestion[item.id]?.selected),
     ).length;
     const unansweredCount = paperQuestions.filter(
-      (item) => progressByQuestion[item.id]?.selected === undefined,
+      (item) =>
+        item.answerKey.kind !== 'all-credit' &&
+        progressByQuestion[item.id]?.selected === undefined,
     ).length;
     const visitedProgress = paperQuestions.flatMap((item) =>
       progressByQuestion[item.id] ? [progressByQuestion[item.id]!] : [],
@@ -163,7 +163,8 @@ export function QuizPage({
   }
 
   if (attempt) {
-    const score = calculateScore(attempt.correctCount, paperQuestions.length);
+    const { maximumScore } = getSubjectScoreConfig(question.subject);
+    const score = calculateScore(attempt.correctCount, question.subject);
 
     return (
       <>
@@ -175,7 +176,7 @@ export function QuizPage({
           </header>
           <div className={styles.scoreRing} aria-label={`本次得分 ${score.toFixed(2)} 分`}>
             <strong>{score.toFixed(2)}</strong>
-            <span>/ 60.00 分</span>
+            <span>/ {maximumScore.toFixed(2)} 分</span>
           </div>
           <div className={styles.resultSummary}>
             <h2>{attempt.correctCount} / {paperQuestions.length} 題答對</h2>

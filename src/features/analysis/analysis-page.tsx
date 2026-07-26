@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { useState } from 'react';
+import { type CSSProperties, useState } from 'react';
 import { IconChartPie, IconExternalLink } from '@tabler/icons-react';
 import { EmptyState } from '@/components/content/content';
 import {
@@ -18,6 +18,8 @@ import {
 } from '@/lib/study';
 import type { QuestionSummary, SubjectId } from '@/lib/types';
 import styles from './analysis-page.module.css';
+
+const colors = ['#2563eb', '#0d9488', '#d97706', '#7c3aed', '#dc4c64', '#64748b'];
 
 function valueOf(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;
@@ -85,6 +87,16 @@ export function AnalysisPage({ questions }: { questions: QuestionSummary[] }) {
             ) === selectedCategory,
       )
     : [];
+  const pieSegments = analysis.reduce(
+    (result, item, index) => {
+      const start = result.total;
+      const end = start + item.percentage;
+      result.parts.push(`${colors[index % colors.length]} ${start}% ${end}%`);
+      result.total = end;
+      return result;
+    },
+    { total: 0, parts: [] as string[] },
+  );
 
   function updateQuery(next: { subject?: SubjectId; year?: number | 'all' }) {
     void router.replace(
@@ -208,6 +220,48 @@ export function AnalysisPage({ questions }: { questions: QuestionSummary[] }) {
               </div>
             </section>
           ) : null}
+
+          <section
+            className={`${styles.chartCard} ${styles.pieOverview}`}
+            aria-label="圓形命題占比圖"
+          >
+            <header>
+              <span>比例分布</span>
+              <strong>{categoryLabel}占比</strong>
+            </header>
+            <div className={styles.pieLayout}>
+              <div
+                className={styles.pie}
+                style={{
+                  '--pie': `conic-gradient(${pieSegments.parts.join(',')})`,
+                } as CSSProperties}
+                role="img"
+                aria-label={analysis
+                  .map(
+                    (item) =>
+                      `${item.category} ${item.percentage.toFixed(1)}%`,
+                  )
+                  .join('、')}
+              >
+                <span>
+                  <strong>{analysisTotal}</strong>
+                  <span>{subjectId === 'law' ? '筆法規標註' : '題'}</span>
+                </span>
+              </div>
+              <div className={styles.legend}>
+                {analysis.map((item, index) => (
+                  <div key={item.category}>
+                    <i
+                      style={{ background: colors[index % colors.length] }}
+                      aria-hidden="true"
+                    />
+                    <span>{item.category}</span>
+                    <strong>{item.percentage.toFixed(1)}%</strong>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
 
           {year === 'all' ? (
             <section className={styles.yearCard}>

@@ -39,8 +39,7 @@ export function RandomPage({ questions }: { questions: QuestionSummary[] }) {
     (question) =>
       question.subject === subjectId &&
       question.year >= rangeStart &&
-      question.year <= rangeEnd &&
-      question.answerKey.kind !== 'all-credit',
+      question.year <= rangeEnd,
   );
   const countOptions = [5, 10, 15, 20, 30].filter(
     (count) => count <= candidates.length,
