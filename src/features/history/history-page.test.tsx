@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { HistoryPage } from '@/features/history/history-page';
+import { ToastProvider } from '@/components/ui/ui';
 import {
   createAttempt,
   createDefaultState,
@@ -46,19 +47,22 @@ describe('HistoryPage', () => {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 
     render(
-      <AppStateProvider>
-        <HistoryPage questions={questions} />
-      </AppStateProvider>,
+      <ToastProvider>
+        <AppStateProvider>
+          <HistoryPage questions={questions} />
+        </AppStateProvider>
+      </ToastProvider>,
     );
 
     const summaries = await screen.findAllByText('查看完整作答紀錄（2）');
     fireEvent.click(summaries[0]);
 
+    expect(screen.getByText('共作答 2 次')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: '第 1 次' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: '第 2 次' })).toBeInTheDocument();
     expect(
-      screen.getAllByText((_, element) =>
-        element?.textContent === '此試卷已作答2次',
-      ),
-    ).toHaveLength(2);
+      screen.getByRole('button', { name: '清除第 2 次紀錄' }),
+    ).toBeInTheDocument();
     const openedAttempt = summaries[0].parentElement;
     expect(openedAttempt).not.toBeNull();
     const review = within(openedAttempt!).getByRole('region', {

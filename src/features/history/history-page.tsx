@@ -1,12 +1,12 @@
 import Link from 'next/link';
-import { IconHistory, IconLoader2 } from '@tabler/icons-react';
+import { IconHistory, IconLoader2, IconTrash } from '@tabler/icons-react';
 import { AttemptReview } from '@/components/attempt-review';
 import { EmptyState, PageHeader, Tag } from '@/components/content/content';
-import { Button } from '@/components/ui/ui';
+import { Button, ConfirmDialog, useToast } from '@/components/ui/ui';
 import { getSubject } from '@/question-bank/catalog';
 import { questionPathFromId } from '@/lib/question-path';
 import { formatDuration, getAttemptScopeKey } from '@/lib/study';
-import type { Question } from '@/lib/types';
+import type { Question, QuizAttempt } from '@/lib/types';
 import { useAppState } from '@/state/app-state';
 import styles from './history-page.module.css';
 
@@ -16,78 +16,166 @@ function formatDate(iso: string) {
   return `${date.replaceAll('-', '/')} ${time}`;
 }
 
-export function HistoryPage({ questions }: { questions: Question[] }) {
-  const { state, hydrated } = useAppState();
-  const attemptCounts = state.attempts.reduce((counts, attempt) => {
+function groupAttempts(attempts: QuizAttempt[]) {
+  const groups = new Map<string, QuizAttempt[]>();
+  attempts.forEach((attempt) => {
     const key = getAttemptScopeKey(attempt);
-    counts.set(key, (counts.get(key) ?? 0) + 1);
-    return counts;
-  }, new Map<string, number>());
+    groups.set(key, [...(groups.get(key) ?? []), attempt]);
+  });
+  return [...groups.entries()].map(([key, entries]) => {
+    const ordinalById = new Map(
+      [...entries]
+        .sort(
+          (left, right) =>
+            new Date(left.submittedAt).getTime() -
+            new Date(right.submittedAt).getTime(),
+        )
+        .map((attempt, index) => [attempt.id, index + 1]),
+    );
+    return { key, entries, ordinalById };
+  });
+}
+
+export function HistoryPage({ questions }: { questions: Question[] }) {
+  const { state, dispatch, hydrated } = useAppState();
+  const { notify } = useToast();
+  const groups = groupAttempts(state.attempts);
+
+  function deleteAttempt(attemptId: string) {
+    dispatch({ type: 'delete-attempt', attemptId });
+    notify('已清除這次作答紀錄');
+  }
 
   return (
     <>
       <PageHeader
         eyebrow="ATTEMPT HISTORY"
         title="已作答紀錄"
-        description="每次交卷才會新增一筆紀錄；所有資料只保存在目前瀏覽器。"
+        description="同一份試卷集中在同一區塊，可展開檢討或清除指定的一次紀錄。"
       />
       <section className={styles.panel}>
         {!hydrated ? (
           <EmptyState icon={IconLoader2} title="正在讀取紀錄" description="請稍候。" />
-        ) : state.attempts.length ? (
+        ) : groups.length ? (
           <div className={styles.list}>
-            {state.attempts.map((attempt) => {
-              const subject = attempt.subject === 'mixed' ? null : getSubject(attempt.subject);
-              const attemptQuestions = attempt.questionIds.flatMap((id) => {
-                const question = questions.find((candidate) => candidate.id === id);
-                return question ? [question] : [];
-              });
-              const retryHref = questionPathFromId(attempt.questionIds[0] ?? '') ?? '/papers';
-              const attemptCount =
-                attemptCounts.get(getAttemptScopeKey(attempt)) ?? 1;
+            {groups.map(({ key, entries, ordinalById }) => {
+              const first = entries[0];
+              const subject =
+                first.subject === 'mixed' ? null : getSubject(first.subject);
               return (
-                <article className={styles.attempt} key={attempt.id}>
-                  <header>
+                <article className={styles.attemptGroup} key={key}>
+                  <header className={styles.groupHeader}>
                     <div>
                       <div className={styles.tags}>
-                        <Tag tone={attempt.mode === 'paper' ? 'blue' : 'purple'}>{attempt.mode === 'paper' ? '歷屆試題' : '隨機題組'}</Tag>
-                        {subject ? <Tag tone="green">{subject.name}</Tag> : <Tag tone="green">跨科目</Tag>}
-                        {attempt.year ? <Tag>{attempt.year} 年</Tag> : null}
+                        <Tag tone={first.mode === 'paper' ? 'blue' : 'purple'}>
+                          {first.mode === 'paper' ? '歷屆試題' : '隨機題組'}
+                        </Tag>
+                        {subject ? (
+                          <Tag tone="green">{subject.name}</Tag>
+                        ) : (
+                          <Tag tone="green">跨科目</Tag>
+                        )}
+                        {first.year ? <Tag>{first.year} 年</Tag> : null}
                       </div>
-                      <h2>{subject?.name ?? '跨科目練習'}{attempt.year ? `・${attempt.year} 年` : ''}</h2>
-                      <time dateTime={attempt.submittedAt}>{formatDate(attempt.submittedAt)}</time>
+                      <h2>
+                        {subject?.name ?? '跨科目練習'}
+                        {first.year ? `・${first.year} 年` : ''}
+                      </h2>
                     </div>
-                    <div className={styles.score}><strong>{attempt.questionIds.length ? Math.round((attempt.correctCount / attempt.questionIds.length) * 100) : 0}%</strong><span>正確率</span></div>
+                    <strong>共作答 {entries.length} 次</strong>
                   </header>
-                  <div className={styles.stats}>
-                    <span>答對 <strong>{attempt.correctCount}</strong></span>
-                    <span>答錯 <strong>{attempt.wrongCount}</strong></span>
-                    <span>未答 <strong>{attempt.unansweredCount}</strong></span>
-                    <span>時間 <strong>{formatDuration(attempt.elapsedSeconds)}</strong></span>
-                    <span>
-                      {attempt.mode === 'paper' ? '此試卷' : '此題組'}已作答
-                      <strong>{attemptCount}</strong>次
-                    </span>
+
+                  <div className={styles.attemptList}>
+                    {entries.map((attempt) => {
+                      const attemptQuestions = attempt.questionIds.flatMap((id) => {
+                        const question = questions.find(
+                          (candidate) => candidate.id === id,
+                        );
+                        return question ? [question] : [];
+                      });
+                      const baseRetryHref =
+                        questionPathFromId(attempt.questionIds[0] ?? '') ?? '/papers';
+                      const retryHref =
+                        attempt.mode === 'random' && attempt.questionIds.length
+                          ? `${baseRetryHref}?mode=random&questions=${encodeURIComponent(
+                              attempt.questionIds.join(','),
+                            )}`
+                          : baseRetryHref;
+                      const ordinal = ordinalById.get(attempt.id) ?? 1;
+                      const accuracy = attempt.questionIds.length
+                        ? Math.round(
+                            (attempt.correctCount / attempt.questionIds.length) * 100,
+                          )
+                        : 0;
+
+                      return (
+                        <section className={styles.attempt} key={attempt.id}>
+                          <header>
+                            <div>
+                              <h3>第 {ordinal} 次</h3>
+                              <time dateTime={attempt.submittedAt}>
+                                {formatDate(attempt.submittedAt)}
+                              </time>
+                            </div>
+                            <div className={styles.score}>
+                              <strong>{accuracy}%</strong>
+                              <span>正確率</span>
+                            </div>
+                          </header>
+                          <div className={styles.stats}>
+                            <span>答對 <strong>{attempt.correctCount}</strong></span>
+                            <span>答錯 <strong>{attempt.wrongCount}</strong></span>
+                            <span>未答 <strong>{attempt.unansweredCount}</strong></span>
+                            <span>時間 <strong>{formatDuration(attempt.elapsedSeconds)}</strong></span>
+                          </div>
+                          {attemptQuestions.length ? (
+                            <details className={styles.attemptReview}>
+                              <summary>
+                                查看完整作答紀錄（{attemptQuestions.length}）
+                              </summary>
+                              <AttemptReview
+                                attempt={attempt}
+                                questions={attemptQuestions}
+                                embedded
+                              />
+                            </details>
+                          ) : null}
+                          <footer className={styles.actions}>
+                            <Button variant="primary" render={<Link href={retryHref} />}>
+                              再做一次
+                            </Button>
+                            <ConfirmDialog
+                              trigger={
+                                <Button variant="danger">
+                                  <IconTrash size={16} stroke={2} aria-hidden="true" />
+                                  清除第 {ordinal} 次紀錄
+                                </Button>
+                              }
+                              title={`清除第 ${ordinal} 次作答紀錄？`}
+                              description="只會刪除這一次的作答結果，其他紀錄與筆記不受影響。"
+                              confirmLabel="確認清除"
+                              onConfirm={() => deleteAttempt(attempt.id)}
+                            />
+                          </footer>
+                        </section>
+                      );
+                    })}
                   </div>
-                  {attemptQuestions.length ? (
-                    <details className={styles.attemptReview}>
-                      <summary>
-                        查看完整作答紀錄（{attemptQuestions.length}）
-                      </summary>
-                      <AttemptReview
-                        attempt={attempt}
-                        questions={attemptQuestions}
-                        embedded
-                      />
-                    </details>
-                  ) : null}
-                  <Button variant="primary" render={<Link href={retryHref} />}>再做一次</Button>
                 </article>
               );
             })}
           </div>
         ) : (
-          <EmptyState icon={IconHistory} title="還沒有作答紀錄" description="完成並交卷後，結果會保存在這裡。" action={<Button variant="primary" render={<Link href="/papers" />}>開始第一份試卷</Button>} />
+          <EmptyState
+            icon={IconHistory}
+            title="還沒有作答紀錄"
+            description="完成並交卷後，結果會保存在這裡。"
+            action={
+              <Button variant="primary" render={<Link href="/papers" />}>
+                開始第一份試卷
+              </Button>
+            }
+          />
         )}
       </section>
     </>

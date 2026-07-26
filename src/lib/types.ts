@@ -115,11 +115,19 @@ export interface DiscussionReply {
   createdAt: string;
 }
 
+export interface ImageAttachment {
+  id: string;
+  name: string;
+  type: string;
+  dataUrl: string;
+}
+
 export interface DiscussionPost {
   id: string;
   questionId: QuestionId;
   type: DiscussionPostType;
   content: string;
+  images: ImageAttachment[];
   createdAt: string;
   likes: number;
   replies: DiscussionReply[];
@@ -131,5 +139,7 @@ export interface AppState {
   difficultQuestionIds: QuestionId[];
   attempts: QuizAttempt[];
   notes: Record<QuestionId, string>;
+  noteImages: Record<QuestionId, ImageAttachment[]>;
   discussionPosts: DiscussionPost[];
+  likedDiscussionPostIds: string[];
 }

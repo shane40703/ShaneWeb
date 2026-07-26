@@ -1,6 +1,7 @@
 import { useRouter } from 'next/router';
 import { useState } from 'react';
 import { IconLoader2, IconNotebook } from '@tabler/icons-react';
+import { ImageAttachments } from '@/components/image-attachments';
 import {
   EmptyState,
   QuestionPrompt,
@@ -15,7 +16,7 @@ import {
 } from '@/components/question-selector';
 import { Button, useToast } from '@/components/ui/ui';
 import { getSubject, years } from '@/question-bank/catalog';
-import type { Question, SubjectId } from '@/lib/types';
+import type { ImageAttachment, Question, SubjectId } from '@/lib/types';
 import { useAppState } from '@/state/app-state';
 import styles from './notes-page.module.css';
 
@@ -45,9 +46,24 @@ export function NotesPage({ questions }: { questions: Question[] }) {
         question.year === currentQuestion.year,
     )
     .sort((left, right) => left.questionNumber - right.questionNumber);
-  const noteEntries = Object.entries(state.notes)
-    .map(([id, content]) => ({ question: questions.find((question) => question.id === id), content }))
-    .filter((entry): entry is { question: Question; content: string } => Boolean(entry.question));
+  const noteIds = [
+    ...new Set([...Object.keys(state.notes), ...Object.keys(state.noteImages)]),
+  ];
+  const noteEntries = noteIds
+    .map((id) => ({
+      question: questions.find((question) => question.id === id),
+      content: state.notes[id] ?? '',
+      imageCount: state.noteImages[id]?.length ?? 0,
+    }))
+    .filter(
+      (
+        entry,
+      ): entry is {
+        question: Question;
+        content: string;
+        imageCount: number;
+      } => Boolean(entry.question),
+    );
 
   function navigateTo(questionId: string) {
     void router.replace({ pathname: '/notes', query: { question: questionId } }, undefined, {
@@ -119,15 +135,20 @@ export function NotesPage({ questions }: { questions: Question[] }) {
     <>
       {questionSelector}
       <div className={styles.layout}>
-        <NoteEditor key={currentQuestion.id} question={currentQuestion} initialValue={state.notes[currentQuestion.id] ?? ''} />
+        <NoteEditor
+          key={currentQuestion.id}
+          question={currentQuestion}
+          initialValue={state.notes[currentQuestion.id] ?? ''}
+          initialImages={state.noteImages[currentQuestion.id] ?? []}
+        />
         <aside className={styles.savedNotes}>
           <header><span>SAVED</span><h2>已儲存筆記</h2><strong>{noteEntries.length}</strong></header>
           {noteEntries.length ? (
             <div>
-              {noteEntries.map(({ question, content }) => (
+              {noteEntries.map(({ question, content, imageCount }) => (
                 <button key={question.id} onClick={() => navigateTo(question.id)} aria-current={question.id === currentQuestion.id}>
                   <span>{question.year}・{getSubject(question.subject)?.shortName}・第 {question.questionNumber} 題</span>
-                  <strong>{content}</strong>
+                  <strong>{content || `圖片筆記 ${imageCount} 張`}</strong>
                 </button>
               ))}
             </div>
@@ -140,14 +161,48 @@ export function NotesPage({ questions }: { questions: Question[] }) {
   );
 }
 
-function NoteEditor({ question, initialValue }: { question: Question; initialValue: string }) {
+function NoteEditor({
+  question,
+  initialValue,
+  initialImages,
+}: {
+  question: Question;
+  initialValue: string;
+  initialImages: ImageAttachment[];
+}) {
   const { dispatch } = useAppState();
   const { notify } = useToast();
   const [content, setContent] = useState(initialValue);
+  const [images, setImages] = useState(initialImages);
 
   function saveNote() {
-    dispatch({ type: 'save-note', questionId: question.id, content });
-    notify(content.trim() ? '筆記已儲存' : '筆記已刪除');
+    dispatch({ type: 'save-note', questionId: question.id, content, images });
+    notify(content.trim() || images.length ? '筆記已儲存' : '筆記已刪除');
+  }
+
+  function shareNote() {
+    const trimmed = content.trim();
+    if (!trimmed && !images.length) {
+      notify('尚無可分享的筆記');
+      return;
+    }
+    const now = new Date().toISOString();
+    dispatch({
+      type: 'add-discussion-post',
+      post: {
+        id: `post-note-${now}`,
+        questionId: question.id,
+        type: 'explanation',
+        content: trimmed,
+        images,
+        createdAt: now,
+        likes: 0,
+        replies: [],
+        reported: false,
+      },
+    });
+    dispatch({ type: 'save-note', questionId: question.id, content, images });
+    notify('已分享至詳解與討論');
   }
 
   return (
@@ -171,9 +226,17 @@ function NoteEditor({ question, initialValue }: { question: Question; initialVal
         rows={12}
         placeholder="記下法條、公式、易錯觀念或解題步驟…"
       />
+      <ImageAttachments
+        images={images}
+        onChange={setImages}
+        label="上傳筆記圖片"
+      />
       <div className={styles.editorFooter}>
         <span>{content.length} 字</span>
-        <Button variant="primary" onClick={saveNote}>儲存筆記</Button>
+        <div>
+          <Button onClick={shareNote}>分享至詳解與討論</Button>
+          <Button variant="primary" onClick={saveNote}>儲存筆記</Button>
+        </div>
       </div>
     </section>
   );

@@ -8,7 +8,9 @@
 
 .card {
   min-width: 0;
-  min-height: 610px;
+  height: calc(100dvh - 174px);
+  min-height: 590px;
+  max-height: 760px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -66,6 +68,8 @@
 
 .questionNumbers {
   padding: 16px;
+  max-height: calc(100dvh - 260px);
+  overflow-y: auto;
 }
 
 .navigatorLegend {
@@ -138,9 +142,36 @@
 }
 
 .questionBody {
-  padding: 38px clamp(20px, 5vw, 62px);
+  min-height: 0;
+  padding: 22px clamp(18px, 3vw, 36px);
   display: grid;
-  gap: 21px;
+  grid-template-columns: minmax(0, 1.08fr) minmax(330px, 0.92fr);
+  align-items: start;
+  gap: 28px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.questionContentColumn,
+.answerColumn {
+  min-width: 0;
+  display: grid;
+  align-content: start;
+  gap: 14px;
+}
+
+.answerColumn {
+  padding: 15px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface-2);
+}
+
+.answerHeading {
+  color: var(--primary-strong);
+  font-size: 11px;
+  font-weight: 850;
+  letter-spacing: 0.08em;
 }
 
 .questionNumber {
@@ -150,16 +181,38 @@
   letter-spacing: 0.05em;
 }
 
-.questionBody h2 {
+.questionContentColumn > div > p {
   max-width: 920px;
   margin: 0;
-  font-size: clamp(20px, 2.4vw, 30px);
-  line-height: 1.55;
+  font-size: clamp(16px, 1.55vw, 21px);
+  line-height: 1.5;
   letter-spacing: -0.02em;
 }
 
-.questionBody > a,
-.questionBody > button {
+.questionContentColumn > div > figure {
+  max-width: 100%;
+  padding: 7px;
+}
+
+.questionContentColumn > div > figure img {
+  width: auto;
+  max-width: 100%;
+  max-height: 300px;
+  object-fit: contain;
+}
+
+.answerColumn :global([role='radiogroup']) {
+  gap: 8px;
+}
+
+.answerColumn :global([role='radiogroup']) > label {
+  min-height: 49px;
+  padding: 9px 11px;
+  font-size: 13px;
+}
+
+.answerColumn > a,
+.answerColumn > button {
   justify-self: start;
 }
 
@@ -286,6 +339,18 @@
 
   .card {
     grid-row: 2;
+    height: auto;
+    max-height: none;
+  }
+
+  .questionBody {
+    grid-template-columns: 1fr;
+    overflow: visible;
+  }
+
+  .questionNumbers {
+    max-height: none;
+    overflow: visible;
   }
 }
 

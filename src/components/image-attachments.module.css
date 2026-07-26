@@ -1,0 +1,108 @@
+.attachments {
+  min-width: 0;
+  display: grid;
+  gap: 9px;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.controls label {
+  min-height: 38px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--primary);
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.controls label:hover {
+  border-color: var(--primary);
+}
+
+.controls label:focus-within {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.controls input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+}
+
+.controls span,
+.attachments > p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.attachments > p {
+  color: var(--danger);
+}
+
+.previews,
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(92px, 120px));
+  gap: 9px;
+}
+
+.previews figure,
+.gallery a {
+  height: 88px;
+  margin: 0;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: white;
+}
+
+.previews img,
+.gallery img {
+  object-fit: cover;
+}
+
+.previews button {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 8px;
+  background: rgb(20 33 61 / 82%);
+  color: white;
+  cursor: pointer;
+}
+
+.gallery {
+  grid-template-columns: repeat(auto-fill, minmax(130px, 200px));
+}
+
+.gallery a {
+  height: 145px;
+}
+
+.gallery a:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}

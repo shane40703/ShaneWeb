@@ -50,6 +50,37 @@ export const categoryCatalog = {
 
 export type SubjectId = keyof typeof categoryCatalog;
 
+export const analysisCategoryCatalog: Record<
+  SubjectId,
+  Readonly<Record<string, readonly string[]>>
+> = {
+  law: categoryCatalog.law,
+  env: {
+    熱: ['熱環境'],
+    空氣: ['通風'],
+    光: ['照明'],
+    音: ['音環境'],
+    綠建築: ['綠建築與能源'],
+    規範: [],
+    水: ['給排水'],
+    設備: ['空調', '消防設備', '電氣設備', '垂直運輸'],
+  },
+  construction: {
+    混凝土工程: ['混凝土施工', '混凝土材料'],
+    鋼構工程: ['鋼構施工', '鋼構與複合構造', '金屬材料'],
+    木構工程: ['木構造', '木質材料'],
+    砌體工程: ['砌體與隔間'],
+    基礎工程: ['基礎工程'],
+    外牆工程: ['帷幕牆與外牆'],
+    裝修工程: ['裝修施工', '防火與隔音'],
+    防水工程: ['防水工程', '屋頂防水'],
+    建築材料: ['材料', '綠建材'],
+    工程管理: ['工地施工', '品質與安全', '進度與成本', 'BIM'],
+    永續建築: ['低碳與綠建築', '基地與景觀'],
+  },
+  structure: categoryCatalog.structure,
+};
+
 type CategoryMap<S extends SubjectId> = (typeof categoryCatalog)[S];
 
 export type PrimaryCategory<S extends SubjectId> = keyof CategoryMap<S> & string;

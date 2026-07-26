@@ -88,12 +88,25 @@ describe('appReducer', () => {
     expect(state.notes['law-114-01']).toBeUndefined();
   });
 
+  it('deletes only the selected attempt', () => {
+    const first = { ...attempt(), id: 'attempt-first' };
+    const second = { ...attempt(), id: 'attempt-second' };
+    let state = createDefaultState();
+    state.attempts = [second, first];
+    state = appReducer(state, {
+      type: 'delete-attempt',
+      attemptId: first.id,
+    });
+    expect(state.attempts.map((entry) => entry.id)).toEqual([second.id]);
+  });
+
   it('supports discussion likes, replies, and reports', () => {
     const post = {
       id: 'post-test',
       questionId: 'env-114-01',
       type: 'explanation' as const,
       content: '測試內容',
+      images: [],
       createdAt: '2026-01-01T00:00:00.000Z',
       likes: 0,
       replies: [],
@@ -112,7 +125,15 @@ describe('appReducer', () => {
     state = appReducer(state, { type: 'report-discussion-post', postId: post.id });
     const updated = state.discussionPosts.find((candidate) => candidate.id === post.id);
     expect(updated?.likes).toBe(post.likes + 1);
+    expect(state.likedDiscussionPostIds).toContain(post.id);
     expect(updated?.replies.at(-1)?.content).toBe('補充內容');
     expect(updated?.reported).toBe(true);
+
+    state = appReducer(state, {
+      type: 'like-discussion-post',
+      postId: post.id,
+    });
+    expect(state.discussionPosts[0].likes).toBe(post.likes);
+    expect(state.likedDiscussionPostIds).not.toContain(post.id);
   });
 });

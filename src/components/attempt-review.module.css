@@ -138,12 +138,81 @@
   font-size: 12px;
 }
 
+.bestAnswer header > div {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.bestAnswer a {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--primary);
+  font-size: 11px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.bestAnswer a:hover {
+  text-decoration: underline;
+}
+
 .bestAnswer p {
   margin: 0;
   color: var(--text-soft);
   font-size: 12px;
   line-height: 1.7;
   white-space: pre-line;
+}
+
+.reviewNote {
+  padding: 13px 14px;
+  display: grid;
+  grid-column: 2 / -1;
+  gap: 10px;
+  border: 1px solid color-mix(in srgb, var(--primary) 30%, var(--line));
+  border-radius: 11px;
+  background: color-mix(in srgb, var(--primary-soft) 58%, var(--surface));
+}
+
+.reviewNote > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.reviewNote > header span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--primary-strong);
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.reviewNote > header small {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.reviewNote textarea {
+  width: 100%;
+  padding: 11px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text);
+  line-height: 1.6;
+  resize: vertical;
+}
+
+.reviewNote > footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .reviewOptions {
@@ -231,27 +300,6 @@
   font-weight: 800;
 }
 
-.reviewOptions footer {
-  padding-top: 12px;
-  display: flex;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-
-.reviewOptions footer a {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--primary);
-  font-size: 12px;
-  font-weight: 800;
-  text-decoration: none;
-}
-
-.reviewOptions footer a:hover {
-  text-decoration: underline;
-}
-
 @media (max-width: 600px) {
   .reviewList article {
     padding: 14px;
@@ -272,5 +320,19 @@
 
   .reviewOptionList small {
     grid-column: 2;
+  }
+
+  .reviewNote > header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .bestAnswer header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .reviewNote > footer > * {
+    flex: 1;
   }
 }

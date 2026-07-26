@@ -11,6 +11,7 @@ import {
   IconHome,
   IconMessages,
   IconNotebook,
+  IconSparkles,
 } from '@tabler/icons-react';
 import { SideDrawer } from '@/components/ui/ui';
 import styles from './app-shell.module.css';
@@ -18,6 +19,7 @@ import styles from './app-shell.module.css';
 const navigation = [
   { href: '/', label: '首頁', icon: IconHome },
   { href: '/papers', label: '歷屆試題', icon: IconFileText },
+  { href: '/random', label: '隨機出題', icon: IconSparkles },
   { href: '/analysis', label: '考題分析', icon: IconChartPie },
   { href: '/community', label: '詳解與討論', icon: IconMessages },
   { href: '/notes', label: '使用者筆記', icon: IconNotebook },

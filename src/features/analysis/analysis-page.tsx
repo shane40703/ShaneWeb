@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { type CSSProperties, useState } from 'react';
+import { useState } from 'react';
 import { IconChartPie, IconExternalLink } from '@tabler/icons-react';
 import { EmptyState } from '@/components/content/content';
 import {
@@ -8,11 +8,16 @@ import {
   type SelectorYear,
 } from '@/components/question-selector';
 import { subjects, years } from '@/question-bank/catalog';
-import { getAnalysis, getLawAnalysis, isSubjectId, parseYear } from '@/lib/study';
+import { analysisCategoryCatalog } from '@/question-bank/schema';
+import {
+  getAnalysis,
+  getAnalysisCategory,
+  getLawAnalysis,
+  isSubjectId,
+  parseYear,
+} from '@/lib/study';
 import type { QuestionSummary, SubjectId } from '@/lib/types';
 import styles from './analysis-page.module.css';
-
-const colors = ['#2563eb', '#0d9488', '#d97706', '#7c3aed', '#dc4c64', '#64748b'];
 
 function valueOf(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;
@@ -35,7 +40,23 @@ export function AnalysisPage({ questions }: { questions: QuestionSummary[] }) {
     (question) =>
       question.subject === subjectId && (year === 'all' || question.year === year),
   );
-  const primaryAnalysis = getAnalysis(source);
+  const countedPrimaryAnalysis = getAnalysis(
+    source.map((question) => ({
+      primaryCategory: getAnalysisCategory(
+        question.subject,
+        question.topic,
+        question.primaryCategory,
+      ),
+    })),
+  );
+  const primaryAnalysis = Object.keys(analysisCategoryCatalog[subjectId]).map(
+    (category) =>
+      countedPrimaryAnalysis.find((item) => item.category === category) ?? {
+        category,
+        count: 0,
+        percentage: 0,
+      },
+  );
   const lawAnalysis = getLawAnalysis(source);
   const analysis =
     subjectId === 'law'
@@ -46,14 +67,23 @@ export function AnalysisPage({ questions }: { questions: QuestionSummary[] }) {
         }))
       : primaryAnalysis;
   const analysisTotal = analysis.reduce((total, item) => total + item.count, 0);
-  const categoryLabel = subjectId === 'law' ? '相關法規' : '主要分類';
-  const totalLabel = subjectId === 'law' ? '筆法規標註' : '題';
-  const [selectedLawValue, setSelectedLawValue] = useState<string>();
-  const selectedLaw = lawAnalysis.some((item) => item.law === selectedLawValue)
-    ? selectedLawValue
-    : lawAnalysis[0]?.law;
-  const selectedLawQuestions = selectedLaw
-    ? source.filter((question) => question.relatedLaws?.includes(selectedLaw))
+  const categoryLabel = subjectId === 'law' ? '相關法規' : '命題分類';
+  const [selectedCategoryValue, setSelectedCategoryValue] = useState<string>();
+  const selectedCategory = analysis.some(
+    (item) => item.category === selectedCategoryValue,
+  )
+    ? selectedCategoryValue
+    : analysis[0]?.category;
+  const selectedCategoryQuestions = selectedCategory
+    ? source.filter((question) =>
+        subjectId === 'law'
+          ? question.relatedLaws?.includes(selectedCategory)
+          : getAnalysisCategory(
+              question.subject,
+              question.topic,
+              question.primaryCategory,
+            ) === selectedCategory,
+      )
     : [];
 
   function updateQuery(next: { subject?: SubjectId; year?: number | 'all' }) {
@@ -91,17 +121,6 @@ export function AnalysisPage({ questions }: { questions: QuestionSummary[] }) {
     updateQuery({ year: nextYear });
   }
 
-  const cursor = analysis.reduce(
-    (result, item, index) => {
-      const start = result.total;
-      const end = start + item.percentage;
-      result.parts.push(`${colors[index % colors.length]} ${start}% ${end}%`);
-      result.total = end;
-      return result;
-    },
-    { total: 0, parts: [] as string[] },
-  );
-
   return (
     <>
       <QuestionSelector
@@ -131,29 +150,34 @@ export function AnalysisPage({ questions }: { questions: QuestionSummary[] }) {
         action={<span className={styles.scopeCount}>總題數 <strong>{source.length}</strong> 題</span>}
       />
 
-      {analysis.length ? (
+      {source.length && analysis.length ? (
         <>
-          {subjectId === 'law' && lawAnalysis.length && selectedLaw ? (
-            <section className={styles.lawAnalysis} aria-label="法規命題占比">
+          {selectedCategory ? (
+            <section className={styles.lawAnalysis} aria-label="命題分類與對應考古題">
               <div className={styles.lawDistribution}>
                 <header>
-                  <span>法規占比</span>
-                  <strong>{year === 'all' ? '跨年度命題來源' : `${year} 年命題來源`}</strong>
+                  <span>{categoryLabel}占比</span>
+                  <strong>
+                    {year === 'all' ? '跨年度命題分布' : `${year} 年命題分布`}
+                  </strong>
                   <p>
-                    依題目標註的相關法規統計，共 {source.length} 題、
-                    {analysisTotal} 筆法規標註。
+                    共 {source.length} 題
+                    {subjectId === 'law'
+                      ? `、${analysisTotal} 筆法規標註`
+                      : ''}
+                    ；選擇分類即可查看對應考古題。
                   </p>
                 </header>
                 <div className={styles.lawList}>
-                  {lawAnalysis.map((item) => (
+                  {analysis.map((item) => (
                     <button
                       type="button"
-                      key={item.law}
-                      aria-pressed={item.law === selectedLaw}
-                      onClick={() => setSelectedLawValue(item.law)}
+                      key={item.category}
+                      aria-pressed={item.category === selectedCategory}
+                      onClick={() => setSelectedCategoryValue(item.category)}
                     >
                       <span>
-                        <strong>{item.law}</strong>
+                        <strong>{item.category}</strong>
                         <small>{item.count} 題</small>
                       </span>
                       <i aria-hidden="true">
@@ -167,13 +191,13 @@ export function AnalysisPage({ questions }: { questions: QuestionSummary[] }) {
               <div className={styles.lawQuestions}>
                 <header>
                   <span>對應考古題</span>
-                  <strong>{selectedLaw}</strong>
+                  <strong>{selectedCategory}</strong>
                   <p>
-                    目前範圍共 {selectedLawQuestions.length} 題，點選即可前往作答。
+                    目前範圍共 {selectedCategoryQuestions.length} 題，點選即可前往作答。
                   </p>
                 </header>
                 <div>
-                  {selectedLawQuestions.map((question) => (
+                  {selectedCategoryQuestions.map((question) => (
                     <Link href={question.path} key={question.id}>
                       <span>{question.year} 年・{question.questionNumber} 題</span>
                       <strong>{question.text || `${question.topic}題目`}</strong>
@@ -184,52 +208,6 @@ export function AnalysisPage({ questions }: { questions: QuestionSummary[] }) {
               </div>
             </section>
           ) : null}
-
-          <div className={styles.chartGrid}>
-            <section className={styles.chartCard}>
-              <header>
-                <span>比例分布</span>
-                <strong>{categoryLabel}占比</strong>
-              </header>
-              <div className={styles.pieLayout}>
-                <div
-                  className={styles.pie}
-                  style={{ '--pie': `conic-gradient(${cursor.parts.join(',')})` } as CSSProperties}
-                  role="img"
-                  aria-label={analysis.map((item) => `${item.category} ${item.percentage.toFixed(1)}%`).join('、')}
-                >
-                  <span>
-                    <strong>{analysisTotal}</strong>
-                    {totalLabel}
-                  </span>
-                </div>
-                <div className={styles.legend}>
-                  {analysis.map((item, index) => (
-                    <div key={item.category}>
-                      <i style={{ background: colors[index % colors.length] }} />
-                      <span>{item.category}</span>
-                      <strong>{item.percentage.toFixed(1)}%</strong>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </section>
-            <section className={styles.chartCard}>
-              <header>
-                <span>{subjectId === 'law' ? '標註比較' : '題數比較'}</span>
-                <strong>各{categoryLabel}{subjectId === 'law' ? '命題數' : '出題數'}</strong>
-              </header>
-              <div className={styles.bars}>
-                {analysis.map((item, index) => (
-                  <div className={styles.barRow} key={item.category}>
-                    <span>{item.category}</span>
-                    <div><i style={{ width: `${item.percentage}%`, background: colors[index % colors.length] }} /></div>
-                    <strong>{item.count} 題</strong>
-                  </div>
-                ))}
-              </div>
-            </section>
-          </div>
 
           {year === 'all' ? (
             <section className={styles.yearCard}>
@@ -250,35 +228,6 @@ export function AnalysisPage({ questions }: { questions: QuestionSummary[] }) {
             </section>
           ) : null}
 
-          <section className={styles.tableCard}>
-            <table>
-              <caption>
-                {year === 'all' ? '跨年度' : `${year} 年`}
-                {categoryLabel}統計
-              </caption>
-              <thead>
-                <tr>
-                  <th>{categoryLabel}</th>
-                  <th>題數</th>
-                  <th>占比</th>
-                </tr>
-              </thead>
-              <tbody>
-                {analysis.map((item) => (
-                  <tr key={item.category}><th>{item.category}</th><td>{item.count} 題</td><td>{item.percentage.toFixed(1)}%</td></tr>
-                ))}
-              </tbody>
-              <tfoot>
-                <tr>
-                  <th>合計</th>
-                  <td>
-                    {analysisTotal} {totalLabel}
-                  </td>
-                  <td>100%</td>
-                </tr>
-              </tfoot>
-            </table>
-          </section>
         </>
       ) : (
         <section className={styles.tableCard}>

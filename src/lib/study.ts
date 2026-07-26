@@ -1,8 +1,10 @@
 import { subjects } from '@/question-bank/catalog';
+import { analysisCategoryCatalog } from '@/question-bank/schema';
 import type {
   AnswerRecord,
   AppState,
   DiscussionPost,
+  ImageAttachment,
   Question,
   QuizAttempt,
   SubjectId,
@@ -16,7 +18,9 @@ export function createDefaultState(): AppState {
     difficultQuestionIds: [],
     attempts: [],
     notes: {},
+    noteImages: {},
     discussionPosts: [],
+    likedDiscussionPostIds: [],
   };
 }
 
@@ -56,6 +60,8 @@ function isDiscussionPost(value: unknown): value is DiscussionPost {
     typeof post.questionId === 'string' &&
     ['explanation', 'supplement', 'question', 'correction'].includes(post.type ?? '') &&
     typeof post.content === 'string' &&
+    (post.images === undefined ||
+      (Array.isArray(post.images) && post.images.every(isImageAttachment))) &&
     typeof post.createdAt === 'string' &&
     Number.isInteger(post.likes) &&
     Array.isArray(post.replies) &&
@@ -70,7 +76,20 @@ function isDiscussionPost(value: unknown): value is DiscussionPost {
   );
 }
 
-export function isAppState(value: unknown): value is AppState {
+function isImageAttachment(value: unknown): value is ImageAttachment {
+  if (!value || typeof value !== 'object') return false;
+  const image = value as Partial<ImageAttachment>;
+  return (
+    typeof image.id === 'string' &&
+    typeof image.name === 'string' &&
+    typeof image.type === 'string' &&
+    image.type.startsWith('image/') &&
+    typeof image.dataUrl === 'string' &&
+    image.dataUrl.startsWith('data:image/')
+  );
+}
+
+function isStoredState(value: unknown) {
   if (!value || typeof value !== 'object') return false;
   const state = value as Partial<AppState>;
   return (
@@ -84,8 +103,17 @@ export function isAppState(value: unknown): value is AppState {
     Boolean(state.notes) &&
     typeof state.notes === 'object' &&
     Object.values(state.notes ?? {}).every((note) => typeof note === 'string') &&
+    (state.noteImages === undefined ||
+      (Boolean(state.noteImages) &&
+        typeof state.noteImages === 'object' &&
+        Object.values(state.noteImages ?? {}).every(
+          (images) => Array.isArray(images) && images.every(isImageAttachment),
+        ))) &&
     Array.isArray(state.discussionPosts) &&
-    state.discussionPosts.every(isDiscussionPost)
+    state.discussionPosts.every(isDiscussionPost) &&
+    (state.likedDiscussionPostIds === undefined ||
+      (Array.isArray(state.likedDiscussionPostIds) &&
+        state.likedDiscussionPostIds.every((id) => typeof id === 'string')))
   );
 }
 
@@ -93,7 +121,18 @@ export function parseStoredState(raw: string | null): AppState {
   if (!raw) return createDefaultState();
   try {
     const parsed: unknown = JSON.parse(raw);
-    return isAppState(parsed) ? parsed : createDefaultState();
+    if (!isStoredState(parsed)) return createDefaultState();
+    const state = parsed as Omit<AppState, 'noteImages' | 'likedDiscussionPostIds'> &
+      Partial<Pick<AppState, 'noteImages' | 'likedDiscussionPostIds'>>;
+    return {
+      ...state,
+      noteImages: state.noteImages ?? {},
+      likedDiscussionPostIds: state.likedDiscussionPostIds ?? [],
+      discussionPosts: state.discussionPosts.map((post) => ({
+        ...post,
+        images: post.images ?? [],
+      })),
+    };
   } catch {
     return createDefaultState();
   }
@@ -173,9 +212,31 @@ export function formatCorrectAnswer(
 }
 
 export function getQuestionDisplayCategory(
-  question: Pick<Question, 'primaryCategory' | 'relatedLaws'>,
+  question: Pick<
+    Question,
+    'subject' | 'topic' | 'primaryCategory' | 'relatedLaws'
+  >,
 ) {
-  return question.relatedLaws?.[0] ?? question.primaryCategory;
+  return (
+    question.relatedLaws?.[0] ??
+    getAnalysisCategory(
+      question.subject,
+      question.topic,
+      question.primaryCategory,
+    )
+  );
+}
+
+export function getAnalysisCategory(
+  subject: SubjectId,
+  topic: string,
+  fallback: string,
+) {
+  const categories = analysisCategoryCatalog[subject];
+  return (
+    Object.entries(categories).find(([, topics]) => topics.includes(topic))?.[0] ??
+    fallback
+  );
 }
 
 export function isQuestionCorrect(

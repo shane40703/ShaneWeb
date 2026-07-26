@@ -7,7 +7,12 @@ import {
   IconHeart,
   IconHelpCircle,
   IconMessageCircle,
+  IconNotebook,
 } from '@tabler/icons-react';
+import {
+  AttachmentGallery,
+  ImageAttachments,
+} from '@/components/image-attachments';
 import {
   DifficultButton,
   EmptyState,
@@ -22,7 +27,13 @@ import {
 } from '@/components/question-selector';
 import { Button, SimpleSelect, useToast } from '@/components/ui/ui';
 import { getSubject, years } from '@/question-bank/catalog';
-import type { DiscussionPostType, Question, SubjectId } from '@/lib/types';
+import type {
+  DiscussionPost,
+  DiscussionPostType,
+  ImageAttachment,
+  Question,
+  SubjectId,
+} from '@/lib/types';
 import { questionPath } from '@/lib/question-path';
 import { formatCorrectAnswer, getAcceptedAnswerIndexes } from '@/lib/study';
 import { useAppState } from '@/state/app-state';
@@ -60,6 +71,7 @@ export function CommunityPage({ questions }: { questions: Question[] }) {
   const currentQuestion = requestedQuestion ?? questions[0];
   const [postType, setPostType] = useState<DiscussionPostType>('explanation');
   const [postContent, setPostContent] = useState('');
+  const [postImages, setPostImages] = useState<ImageAttachment[]>([]);
   const [replyDrafts, setReplyDrafts] = useState<Record<string, string>>({});
 
   if (!currentQuestion) {
@@ -114,7 +126,7 @@ export function CommunityPage({ questions }: { questions: Question[] }) {
   function addPost(event: FormEvent) {
     event.preventDefault();
     const content = postContent.trim();
-    if (!content) return;
+    if (!content && !postImages.length) return;
     const now = new Date().toISOString();
     dispatch({
       type: 'add-discussion-post',
@@ -123,6 +135,7 @@ export function CommunityPage({ questions }: { questions: Question[] }) {
         questionId: currentQuestion.id,
         type: postType,
         content,
+        images: postImages,
         createdAt: now,
         likes: 0,
         replies: [],
@@ -130,7 +143,29 @@ export function CommunityPage({ questions }: { questions: Question[] }) {
       },
     });
     setPostContent('');
+    setPostImages([]);
     notify('已匿名投稿', '內容已保存在目前瀏覽器。');
+  }
+
+  function savePostToNote(post: DiscussionPost) {
+    const currentContent = state.notes[currentQuestion.id] ?? '';
+    const importedContent = post.content.trim();
+    const content = [currentContent, importedContent]
+      .filter(Boolean)
+      .join('\n\n');
+    const existingImages = state.noteImages[currentQuestion.id] ?? [];
+    const imageIds = new Set(existingImages.map((image) => image.id));
+    const images = [
+      ...existingImages,
+      ...post.images.filter((image) => !imageIds.has(image.id)),
+    ];
+    dispatch({
+      type: 'save-note',
+      questionId: currentQuestion.id,
+      content,
+      images,
+    });
+    notify('已加入我的筆記', '文字與圖片已保存到這一題。');
   }
 
   function addReply(postId: string, event: FormEvent) {
@@ -251,7 +286,8 @@ export function CommunityPage({ questions }: { questions: Question[] }) {
                     <Tag tone={post.type === 'correction' ? 'orange' : 'purple'}>{postTypeLabels[post.type]}</Tag>
                     <time dateTime={post.createdAt}>{formatDate(post.createdAt)}</time>
                   </header>
-                  <p>{post.content}</p>
+                  {post.content ? <p>{post.content}</p> : null}
+                  <AttachmentGallery images={post.images} />
                   {post.replies.length ? (
                     <div className={styles.replies}>
                       {post.replies.map((reply) => (
@@ -260,8 +296,18 @@ export function CommunityPage({ questions }: { questions: Question[] }) {
                     </div>
                   ) : null}
                   <div className={styles.postActions}>
-                    <Button variant="ghost" onClick={() => dispatch({ type: 'like-discussion-post', postId: post.id })}>
+                    <Button
+                      variant="ghost"
+                      aria-pressed={state.likedDiscussionPostIds.includes(post.id)}
+                      onClick={() =>
+                        dispatch({ type: 'like-discussion-post', postId: post.id })
+                      }
+                    >
                       <IconHeart size={17} stroke={2} aria-hidden="true" /> 讚 {post.likes}
+                    </Button>
+                    <Button variant="ghost" onClick={() => savePostToNote(post)}>
+                      <IconNotebook size={17} stroke={2} aria-hidden="true" />
+                      加入我的筆記
                     </Button>
                     <Button
                       variant="ghost"
@@ -302,6 +348,11 @@ export function CommunityPage({ questions }: { questions: Question[] }) {
             onChange={(event) => setPostContent(event.target.value)}
             rows={8}
             placeholder="請清楚描述你的詳解、補充、提問或勘誤…"
+          />
+          <ImageAttachments
+            images={postImages}
+            onChange={setPostImages}
+            label="上傳詳解圖片"
           />
           <Button type="submit" variant="primary" fullWidth>匿名送出</Button>
           <p>目前沒有帳號系統，投稿內容僅儲存在這台裝置，不會同步給其他使用者。</p>

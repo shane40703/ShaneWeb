@@ -1,7 +1,9 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { AttemptReview } from '@/components/attempt-review';
+import { ToastProvider } from '@/components/ui/ui';
 import type { QuizAttempt } from '@/lib/types';
+import { AppStateProvider } from '@/state/app-state';
 
 const questions = [
   {
@@ -46,10 +48,14 @@ const attempt: QuizAttempt = {
 describe('AttemptReview', () => {
   it('renders every answer and its complete options', () => {
     render(
-      <AttemptReview
-        attempt={attempt}
-        questions={questions}
-      />,
+      <ToastProvider>
+        <AppStateProvider>
+          <AttemptReview
+            attempt={attempt}
+            questions={questions}
+          />
+        </AppStateProvider>
+      </ToastProvider>,
     );
 
     expect(
@@ -70,5 +76,8 @@ describe('AttemptReview', () => {
     expect(
       screen.getAllByRole('link', { name: '詳解與討論' })[0],
     ).toHaveAttribute('href', '/community?question=law-114-01');
+    expect(
+      screen.getByRole('region', { name: '第 1 題使用者筆記' }),
+    ).toBeInTheDocument();
   });
 });

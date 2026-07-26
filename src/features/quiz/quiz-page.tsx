@@ -180,7 +180,9 @@ export function QuizPage({
             </div>
           </div>
           <div className={styles.resultActions}>
-            <Button render={<Link href="/papers" />}>選擇其他試卷</Button>
+            <Button render={<Link href={attempt.mode === 'random' ? '/random' : '/papers'} />}>
+              {attempt.mode === 'random' ? '建立其他題組' : '選擇其他試卷'}
+            </Button>
             <Button variant="primary" render={<Link href="/history" />}>查看作答紀錄</Button>
           </div>
         </section>
@@ -226,30 +228,35 @@ export function QuizPage({
             label="試卷進度"
           />
           <div className={styles.questionBody}>
-            <span className={styles.questionNumber}>
-              第 {question.questionNumber} 題・收錄題目 {position + 1}/{paperQuestions.length}
-            </span>
-            <QuestionPrompt question={question} />
-            <QuestionSourceLine question={question} />
-            <OptionGroup
-              label="請選擇答案"
-              options={question.options}
-              value={selected}
-              onValueChange={(value) =>
-                progressDispatch({
-                  type: 'select-answer',
-                  questionId: question.id,
-                  selected: value,
-                  startedAt: new Date().toISOString(),
-                })
-              }
-            />
-            <Button
-              variant="ghost"
-              render={<Link href={`/community?question=${question.id}`} />}
-            >
-              前往詳解與討論 <IconExternalLink size={17} stroke={2} aria-hidden="true" />
-            </Button>
+            <div className={styles.questionContentColumn}>
+              <span className={styles.questionNumber}>
+                第 {question.questionNumber} 題・收錄題目 {position + 1}/{paperQuestions.length}
+              </span>
+              <QuestionPrompt question={question} />
+              <QuestionSourceLine question={question} />
+            </div>
+            <div className={styles.answerColumn}>
+              <span className={styles.answerHeading}>選擇答案</span>
+              <OptionGroup
+                label="請選擇答案"
+                options={question.options}
+                value={selected}
+                onValueChange={(value) =>
+                  progressDispatch({
+                    type: 'select-answer',
+                    questionId: question.id,
+                    selected: value,
+                    startedAt: new Date().toISOString(),
+                  })
+                }
+              />
+              <Button
+                variant="ghost"
+                render={<Link href={`/community?question=${question.id}`} />}
+              >
+                前往詳解與討論 <IconExternalLink size={17} stroke={2} aria-hidden="true" />
+              </Button>
+            </div>
           </div>
           <footer className={styles.navigation}>
             {previous ? (

@@ -1,18 +1,23 @@
 import Link from 'next/link';
+import { useState } from 'react';
 import {
   IconChevronDown,
   IconCircleCheck,
   IconMessages,
   IconMinus,
+  IconNotebook,
   IconX,
 } from '@tabler/icons-react';
 import { QuestionPrompt } from '@/components/content/content';
+import { ImageAttachments } from '@/components/image-attachments';
+import { Button, useToast } from '@/components/ui/ui';
 import {
   formatCorrectAnswer,
   getAcceptedAnswerIndexes,
   isQuestionCorrect,
 } from '@/lib/study';
-import type { Question, QuizAttempt } from '@/lib/types';
+import type { ImageAttachment, Question, QuizAttempt } from '@/lib/types';
+import { useAppState } from '@/state/app-state';
 import styles from './attempt-review.module.css';
 
 type ReviewQuestion = Pick<
@@ -111,10 +116,17 @@ export function AttemptReview({
               <div className={styles.bestAnswer}>
                 <header>
                   <span>最佳解</span>
-                  <strong>答案 {formatCorrectAnswer(question)}</strong>
+                  <div>
+                    <strong>答案 {formatCorrectAnswer(question)}</strong>
+                    <Link href={`/community?question=${question.id}`}>
+                      詳解與討論
+                      <IconMessages size={15} stroke={2} aria-hidden="true" />
+                    </Link>
+                  </div>
                 </header>
                 <p>{bestAnswerText(question)}</p>
               </div>
+              <ReviewNoteEditor question={question} />
               <details className={styles.reviewOptions}>
                 <summary>
                   <span>檢視完整選項</span>
@@ -148,17 +160,91 @@ export function AttemptReview({
                     );
                   })}
                 </div>
-                <footer>
-                  <Link href={`/community?question=${question.id}`}>
-                    詳解與討論
-                    <IconMessages size={16} stroke={2} aria-hidden="true" />
-                  </Link>
-                </footer>
               </details>
             </article>
           );
         })}
       </div>
+    </section>
+  );
+}
+
+function ReviewNoteEditor({ question }: { question: ReviewQuestion }) {
+  const { state, dispatch } = useAppState();
+  const { notify } = useToast();
+  const [content, setContent] = useState(state.notes[question.id] ?? '');
+  const [images, setImages] = useState<ImageAttachment[]>(
+    state.noteImages[question.id] ?? [],
+  );
+
+  function saveNote() {
+    dispatch({
+      type: 'save-note',
+      questionId: question.id,
+      content,
+      images,
+    });
+    notify(content.trim() || images.length ? '筆記已儲存' : '筆記已刪除');
+  }
+
+  function shareNote() {
+    const trimmed = content.trim();
+    if (!trimmed && !images.length) {
+      notify('尚無可分享的筆記');
+      return;
+    }
+    const now = new Date().toISOString();
+    dispatch({
+      type: 'add-discussion-post',
+      post: {
+        id: `post-review-${question.id}-${now}`,
+        questionId: question.id,
+        type: 'explanation',
+        content: trimmed,
+        images,
+        createdAt: now,
+        likes: 0,
+        replies: [],
+        reported: false,
+      },
+    });
+    dispatch({
+      type: 'save-note',
+      questionId: question.id,
+      content,
+      images,
+    });
+    notify('筆記已分享至詳解與討論');
+  }
+
+  return (
+    <section className={styles.reviewNote} aria-label={`第 ${question.questionNumber} 題使用者筆記`}>
+      <header>
+        <span>
+          <IconNotebook size={16} stroke={2} aria-hidden="true" />
+          使用者筆記
+        </span>
+        <small>僅保存在目前瀏覽器</small>
+      </header>
+      <textarea
+        aria-label={`第 ${question.questionNumber} 題筆記內容`}
+        value={content}
+        onChange={(event) => setContent(event.target.value)}
+        rows={3}
+        placeholder="在檢討答案時記下法條、公式或易錯觀念…"
+      />
+      <ImageAttachments
+        images={images}
+        onChange={setImages}
+        label="上傳筆記圖片"
+      />
+      <footer>
+        <Button onClick={shareNote}>
+          <IconMessages size={16} stroke={2} aria-hidden="true" />
+          分享至詳解與討論
+        </Button>
+        <Button variant="primary" onClick={saveNote}>儲存筆記</Button>
+      </footer>
     </section>
   );
 }
