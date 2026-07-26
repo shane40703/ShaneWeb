@@ -1,8 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  loadAllQuestions,
-  loadQuizQuestions,
-} from '@/server/question-bank.server';
+import { loadAllQuestions, loadQuizQuestions } from '@/server/question-bank.server';
 import {
   createAttempt,
   createDefaultState,
@@ -70,7 +67,9 @@ describe('local state validation', () => {
   it('returns defaults for missing, malformed, or incompatible data', () => {
     expect(parseStoredState(null)).toEqual(createDefaultState());
     expect(parseStoredState('{bad json')).toEqual(createDefaultState());
-    expect(parseStoredState(JSON.stringify({ version: 2 }))).toEqual(createDefaultState());
+    expect(parseStoredState(JSON.stringify({ version: 2 }))).toEqual(
+      createDefaultState(),
+    );
   });
 
   it('accepts a valid current state', () => {
@@ -79,10 +78,9 @@ describe('local state validation', () => {
     expect(parseStoredState(JSON.stringify(state))).toEqual(state);
   });
 
-  it('rejects a stored attempt with an invalid subject', () => {
+  it('drops only the corrupt records and keeps the rest of the user data', () => {
     const question = questions.find((item) => item.id === 'law-114-01');
     expect(question).toBeDefined();
-    const state = createDefaultState();
     const attempt = createAttempt({
       mode: 'paper',
       source: [question!],
@@ -90,14 +88,18 @@ describe('local state validation', () => {
       startedAt: '2026-01-01T00:00:00.000Z',
       elapsedSeconds: 1,
     });
-    const invalidState = {
-      ...state,
-      attempts: [{ ...attempt, subject: 'invalid-subject' }],
+    const partiallyCorruptState = {
+      ...createDefaultState(),
+      attempts: [{ ...attempt, subject: 'invalid-subject' }, attempt],
+      difficultQuestionIds: ['law-114-01', 42],
+      notes: { 'law-114-01': '保留這則筆記', 'law-114-02': { bad: true } },
     };
 
-    expect(parseStoredState(JSON.stringify(invalidState))).toEqual(
-      createDefaultState(),
-    );
+    const restored = parseStoredState(JSON.stringify(partiallyCorruptState));
+
+    expect(restored.attempts).toEqual([attempt]);
+    expect(restored.difficultQuestionIds).toEqual(['law-114-01']);
+    expect(restored.notes).toEqual({ 'law-114-01': '保留這則筆記' });
   });
 });
 
@@ -170,7 +172,11 @@ describe('result helpers', () => {
     expect(isQuestionCorrect(corrected!, 1)).toBe(true);
     expect(isQuestionCorrect(corrected!, 2)).toBe(false);
 
-    const allCredit = { ...corrected!, id: 'all-credit', answerKey: { kind: 'all-credit' as const } };
+    const allCredit = {
+      ...corrected!,
+      id: 'all-credit',
+      answerKey: { kind: 'all-credit' as const },
+    };
     const attempt = createAttempt({
       mode: 'paper',
       source: [allCredit],
@@ -207,14 +213,9 @@ describe('analysis', () => {
   });
 
   it('uses a locale-independent order when analysis counts are tied', () => {
-    const analysis = getLawAnalysis([
-      { relatedLaws: ['都市更新條例', '營造業法'] },
-    ]);
+    const analysis = getLawAnalysis([{ relatedLaws: ['都市更新條例', '營造業法'] }]);
 
-    expect(analysis.map((item) => item.law)).toEqual([
-      '營造業法',
-      '都市更新條例',
-    ]);
+    expect(analysis.map((item) => item.law)).toEqual(['營造業法', '都市更新條例']);
   });
 
   it('keeps the law chart total aligned with every related-law reference', () => {
@@ -226,8 +227,6 @@ describe('analysis', () => {
 
     expect(primaryAnalysis.reduce((sum, item) => sum + item.count, 0)).toBe(80);
     expect(lawAnalysis.reduce((sum, item) => sum + item.count, 0)).toBe(86);
-    expect(
-      lawAnalysis.reduce((sum, item) => sum + item.percentage, 0),
-    ).toBeCloseTo(100);
+    expect(lawAnalysis.reduce((sum, item) => sum + item.percentage, 0)).toBeCloseTo(100);
   });
 });

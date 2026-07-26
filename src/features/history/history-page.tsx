@@ -1,13 +1,19 @@
 import Link from 'next/link';
 import { useState } from 'react';
-import { IconHistory, IconLoader2, IconTrash } from '@tabler/icons-react';
+import {
+  IconHistory,
+  IconLoader2,
+  IconTrash,
+} from '@tabler/icons-react';
 import { AttemptReview } from '@/components/attempt-review';
 import { EmptyState, Tag } from '@/components/content/content';
 import { Button, ConfirmDialog, useToast } from '@/components/ui/ui';
 import { getSubject, subjects } from '@/question-bank/catalog';
-import { questionPathFromId } from '@/lib/question-path';
+import type { QuestionBankStatus } from '@/lib/question-bank-client';
+import { parseQuestionId, questionPathFromId } from '@/lib/question-path';
 import {
   calculateScore,
+  formatDateTime,
   formatDuration,
   getAttemptScopeKey,
   getSubjectScoreConfig,
@@ -16,12 +22,6 @@ import {
 import type { Question, QuizAttempt, SubjectId } from '@/lib/types';
 import { useAppState } from '@/state/app-state';
 import styles from './history-page.module.css';
-
-function formatDate(iso: string) {
-  const taipeiTime = new Date(new Date(iso).getTime() + 8 * 60 * 60 * 1000);
-  const [date, time] = taipeiTime.toISOString().slice(0, 16).split('T');
-  return `${date.replaceAll('-', '/')} ${time}`;
-}
 
 function groupAttempts(attempts: QuizAttempt[]) {
   const groups = new Map<string, QuizAttempt[]>();
@@ -34,8 +34,7 @@ function groupAttempts(attempts: QuizAttempt[]) {
       [...entries]
         .sort(
           (left, right) =>
-            new Date(left.submittedAt).getTime() -
-            new Date(right.submittedAt).getTime(),
+            new Date(left.submittedAt).getTime() - new Date(right.submittedAt).getTime(),
         )
         .map((attempt, index) => [attempt.id, index + 1]),
     );
@@ -52,18 +51,67 @@ function retryHref(attempt: QuizAttempt) {
     : baseHref;
 }
 
-export function HistoryPage({ questions }: { questions: Question[] }) {
+function getMixedScoreDetails(attempt: QuizAttempt, questions: Question[]) {
+  const questionById = new Map(questions.map((question) => [question.id, question]));
+  const missingPointValues: number[] = [];
+  let score = 0;
+  let maximumScore = 0;
+  let loadedCorrectCount = 0;
+
+  for (const questionId of attempt.questionIds) {
+    const question = questionById.get(questionId);
+    const subject = question?.subject ?? parseQuestionId(questionId)?.subject;
+    if (!subject) return { score: null, maximumScore: 0 };
+
+    const { pointsPerQuestion } = getSubjectScoreConfig(subject);
+    maximumScore += pointsPerQuestion;
+    if (!question) {
+      missingPointValues.push(pointsPerQuestion);
+    } else if (isQuestionCorrect(question, attempt.answers[question.id])) {
+      loadedCorrectCount += 1;
+      score += pointsPerQuestion;
+    }
+  }
+
+  const missingCorrectCount = attempt.correctCount - loadedCorrectCount;
+  if (
+    missingCorrectCount < 0 ||
+    missingCorrectCount > missingPointValues.length
+  ) {
+    return { score: null, maximumScore };
+  }
+  if (missingCorrectCount === missingPointValues.length) {
+    score += missingPointValues.reduce((total, points) => total + points, 0);
+  } else if (missingCorrectCount > 0) {
+    const firstMissingPointValue = missingPointValues[0];
+    if (
+      firstMissingPointValue === undefined ||
+      !missingPointValues.every((points) => points === firstMissingPointValue)
+    ) {
+      return { score: null, maximumScore };
+    }
+    score += missingCorrectCount * firstMissingPointValue;
+  }
+
+  return { score, maximumScore };
+}
+
+export function HistoryPage({
+  questions,
+  questionBankStatuses = {},
+  onRetryQuestionBank,
+}: {
+  questions: Question[];
+  questionBankStatuses?: Partial<Record<SubjectId, QuestionBankStatus>>;
+  onRetryQuestionBank?: (subject: SubjectId) => void;
+}) {
   const { state, dispatch, hydrated } = useAppState();
   const { notify } = useToast();
-  const [subjectFilter, setSubjectFilter] = useState<
-    'all' | 'mixed' | SubjectId
-  >('all');
+  const [subjectFilter, setSubjectFilter] = useState<'all' | 'mixed' | SubjectId>('all');
   const filteredAttempts =
     subjectFilter === 'all'
       ? state.attempts
-      : state.attempts.filter(
-          (attempt) => attempt.subject === subjectFilter,
-        );
+      : state.attempts.filter((attempt) => attempt.subject === subjectFilter);
   const groups = groupAttempts(filteredAttempts);
   const mixedCount = state.attempts.filter(
     (attempt) => attempt.subject === 'mixed',
@@ -100,9 +148,8 @@ export function HistoryPage({ questions }: { questions: Question[] }) {
                 {subject.name}
                 <span>
                   {
-                    state.attempts.filter(
-                      (attempt) => attempt.subject === subject.id,
-                    ).length
+                    state.attempts.filter((attempt) => attempt.subject === subject.id)
+                      .length
                   }
                 </span>
               </button>
@@ -150,10 +197,7 @@ export function HistoryPage({ questions }: { questions: Question[] }) {
                     </div>
                     <div className={styles.groupActions}>
                       <strong>共作答 {entries.length} 次</strong>
-                      <Button
-                        variant="primary"
-                        render={<Link href={retryHref(first)} />}
-                      >
+                      <Button variant="primary" render={<Link href={retryHref(first)} />}>
                         再做一次
                       </Button>
                     </div>
@@ -167,36 +211,54 @@ export function HistoryPage({ questions }: { questions: Question[] }) {
                         );
                         return question ? [question] : [];
                       });
+                      const loadedQuestionIds = new Set(
+                        attemptQuestions.map((item) => item.id),
+                      );
+                      const missingQuestionIds = attempt.questionIds.filter(
+                        (id) => !loadedQuestionIds.has(id),
+                      );
+                      const missingQuestionCount = missingQuestionIds.length;
+                      const missingSubjects = [
+                        ...new Set(
+                          missingQuestionIds.flatMap((id) => {
+                            const parsed = parseQuestionId(id);
+                            return parsed ? [parsed.subject] : [];
+                          }),
+                        ),
+                      ];
+                      const loadingQuestionCount = missingQuestionIds.filter(
+                        (id) => {
+                          const parsed = parseQuestionId(id);
+                          return (
+                            parsed &&
+                            questionBankStatuses[parsed.subject] === 'loading'
+                          );
+                        },
+                      ).length;
+                      const failedQuestionCount = missingQuestionIds.filter(
+                        (id) => {
+                          const parsed = parseQuestionId(id);
+                          return (
+                            parsed &&
+                            questionBankStatuses[parsed.subject] === 'error'
+                          );
+                        },
+                      ).length;
+                      const failedSubjects = missingSubjects.filter(
+                        (subjectId) =>
+                          questionBankStatuses[subjectId] === 'error',
+                      );
                       const ordinal = ordinalById.get(attempt.id) ?? 1;
                       const scoreDetails =
                         attempt.subject === 'mixed'
-                          ? attemptQuestions.reduce(
-                              (result, question) => {
-                                const { pointsPerQuestion } =
-                                  getSubjectScoreConfig(question.subject);
-                                return {
-                                  score:
-                                    result.score +
-                                    (isQuestionCorrect(
-                                      question,
-                                      attempt.answers[question.id],
-                                    )
-                                      ? pointsPerQuestion
-                                      : 0),
-                                  maximumScore:
-                                    result.maximumScore + pointsPerQuestion,
-                                };
-                              },
-                              { score: 0, maximumScore: 0 },
-                            )
+                          ? getMixedScoreDetails(attempt, attemptQuestions)
                           : {
                               score: calculateScore(
                                 attempt.correctCount,
                                 attempt.subject,
                               ),
-                              maximumScore: getSubjectScoreConfig(
-                                attempt.subject,
-                              ).maximumScore,
+                              maximumScore: getSubjectScoreConfig(attempt.subject)
+                                .maximumScore,
                             };
 
                       return (
@@ -205,27 +267,38 @@ export function HistoryPage({ questions }: { questions: Question[] }) {
                             <div>
                               <h3>第 {ordinal} 次</h3>
                               <time dateTime={attempt.submittedAt}>
-                                {formatDate(attempt.submittedAt)}
+                                {formatDateTime(attempt.submittedAt)}
                               </time>
                             </div>
                             <div className={styles.score}>
                               <strong>
-                                {scoreDetails.maximumScore
+                                {scoreDetails.score !== null &&
+                                scoreDetails.maximumScore
                                   ? `${scoreDetails.score.toFixed(2)} 分`
                                   : '—'}
                               </strong>
                               <span>
-                                {scoreDetails.maximumScore
+                                {scoreDetails.score !== null &&
+                                scoreDetails.maximumScore
                                   ? `/ ${scoreDetails.maximumScore.toFixed(2)} 分`
                                   : '無法計算分數'}
                               </span>
                             </div>
                           </header>
                           <div className={styles.stats}>
-                            <span>答對 <strong>{attempt.correctCount}</strong></span>
-                            <span>答錯 <strong>{attempt.wrongCount}</strong></span>
-                            <span>未答 <strong>{attempt.unansweredCount}</strong></span>
-                            <span>時間 <strong>{formatDuration(attempt.elapsedSeconds)}</strong></span>
+                            <span>
+                              答對 <strong>{attempt.correctCount}</strong>
+                            </span>
+                            <span>
+                              答錯 <strong>{attempt.wrongCount}</strong>
+                            </span>
+                            <span>
+                              未答 <strong>{attempt.unansweredCount}</strong>
+                            </span>
+                            <span>
+                              時間{' '}
+                              <strong>{formatDuration(attempt.elapsedSeconds)}</strong>
+                            </span>
                           </div>
                           {attemptQuestions.length ? (
                             <details className={styles.attemptReview}>
@@ -238,6 +311,35 @@ export function HistoryPage({ questions }: { questions: Question[] }) {
                                 embedded
                               />
                             </details>
+                          ) : null}
+                          {missingQuestionCount ? (
+                            <div className={styles.attemptReview} role="status">
+                              <strong>
+                                {loadingQuestionCount === missingQuestionCount
+                                  ? `尚有 ${missingQuestionCount} 題內容載入中`
+                                  : failedQuestionCount === missingQuestionCount
+                                    ? `尚有 ${missingQuestionCount} 題內容暫時無法顯示`
+                                    : `尚有 ${missingQuestionCount} 題內容未能完整顯示`}
+                              </strong>
+                              <p>
+                                {failedQuestionCount
+                                  ? '這次紀錄的分數、作答統計與操作仍可使用；請確認連線後重新載入題目。'
+                                  : '這次紀錄的分數、作答統計與操作仍可使用。'}
+                              </p>
+                              {failedSubjects.length &&
+                              onRetryQuestionBank ? (
+                                <Button
+                                  variant="primary"
+                                  onClick={() =>
+                                    failedSubjects.forEach((subjectId) =>
+                                      onRetryQuestionBank(subjectId),
+                                    )
+                                  }
+                                >
+                                  重新載入題目
+                                </Button>
+                              ) : null}
+                            </div>
                           ) : null}
                           <footer className={styles.actions}>
                             <ConfirmDialog
@@ -264,11 +366,7 @@ export function HistoryPage({ questions }: { questions: Question[] }) {
         ) : (
           <EmptyState
             icon={IconHistory}
-            title={
-              state.attempts.length
-                ? '此科目還沒有作答紀錄'
-                : '還沒有作答紀錄'
-            }
+            title={state.attempts.length ? '此科目還沒有作答紀錄' : '還沒有作答紀錄'}
             description={
               state.attempts.length
                 ? '切換其他科目，或查看全部已作答紀錄。'
@@ -276,10 +374,7 @@ export function HistoryPage({ questions }: { questions: Question[] }) {
             }
             action={
               state.attempts.length ? (
-                <Button
-                  variant="primary"
-                  onClick={() => setSubjectFilter('all')}
-                >
+                <Button variant="primary" onClick={() => setSubjectFilter('all')}>
                   查看全部紀錄
                 </Button>
               ) : (

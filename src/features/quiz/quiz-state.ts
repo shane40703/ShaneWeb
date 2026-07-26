@@ -1,4 +1,8 @@
+import { readStoredValue, writeStoredValue } from '@/lib/storage';
 import type { QuestionId } from '@/lib/types';
+
+export const QUIZ_PROGRESS_STORAGE_KEY = 'shaneweb:quiz-progress';
+const QUIZ_PROGRESS_STORAGE_VERSION = 2;
 
 export interface QuizQuestionProgress {
   selected?: number;
@@ -7,6 +11,7 @@ export interface QuizQuestionProgress {
 }
 
 export type QuizProgressByQuestion = Partial<Record<QuestionId, QuizQuestionProgress>>;
+export type QuizProgressByScope = Record<string, QuizProgressByQuestion>;
 
 export type QuizProgressAction =
   | { type: 'visit-question'; questionId: QuestionId; startedAt: string }
@@ -16,7 +21,8 @@ export type QuizProgressAction =
       selected: number;
       startedAt: string;
     }
-  | { type: 'tick-question'; questionId: QuestionId; startedAt: string };
+  | { type: 'tick-question'; questionId: QuestionId; startedAt: string }
+  | { type: 'clear-questions'; questionIds: readonly QuestionId[] };
 
 function createQuestionProgress(startedAt: string): QuizQuestionProgress {
   return {
@@ -37,6 +43,13 @@ export function quizProgressReducer(
   state: QuizProgressByQuestion,
   action: QuizProgressAction,
 ): QuizProgressByQuestion {
+  if (action.type === 'clear-questions') {
+    const cleared = new Set(action.questionIds);
+    return Object.fromEntries(
+      Object.entries(state).filter(([questionId]) => !cleared.has(questionId)),
+    );
+  }
+
   const current = getQuestionProgress(state, action.questionId, action.startedAt);
 
   switch (action.type) {
@@ -59,4 +72,153 @@ export function quizProgressReducer(
         },
       };
   }
+}
+
+export interface ScopedQuizProgressState {
+  scope: string | null;
+  progress: QuizProgressByQuestion;
+}
+
+export type ScopedQuizProgressAction =
+  | {
+      type: 'restore-scope';
+      scope: string;
+      progress: QuizProgressByQuestion;
+    }
+  | {
+      type: 'update-scope';
+      scope: string;
+      action: QuizProgressAction;
+    };
+
+/**
+ * Ignores work from a page whose scope is no longer active. This matters when
+ * a route change and the old question's final timer tick land in the same
+ * React batch.
+ */
+export function scopedQuizProgressReducer(
+  state: ScopedQuizProgressState,
+  action: ScopedQuizProgressAction,
+): ScopedQuizProgressState {
+  if (action.type === 'restore-scope') {
+    return { scope: action.scope, progress: action.progress };
+  }
+  if (state.scope !== action.scope) return state;
+
+  const progress = quizProgressReducer(state.progress, action.action);
+  return progress === state.progress ? state : { ...state, progress };
+}
+
+export type QuizProgressScopeInput =
+  | {
+      mode: 'paper';
+      subject: string;
+      year: number;
+    }
+  | {
+      mode: 'single';
+      questionId: QuestionId;
+    }
+  | {
+      mode: 'random';
+      questionIds: readonly QuestionId[];
+      sessionId: string | null;
+    };
+
+/**
+ * A question can appear in several kinds of quiz. The scope keeps those
+ * drafts independent while remaining deterministic across a reload.
+ */
+export function createQuizProgressScope(input: QuizProgressScopeInput): string | null {
+  if (input.mode === 'paper') return `paper:${input.subject}:${input.year}`;
+  if (input.mode === 'single') return `single:${input.questionId}`;
+  if (!input.sessionId || !input.questionIds.length) return null;
+  return `random:${encodeURIComponent(input.sessionId)}:${input.questionIds
+    .map(encodeURIComponent)
+    .join(',')}`;
+}
+
+export function createQuizQuestionSearch(input: QuizProgressScopeInput): string {
+  if (input.mode === 'paper') return '';
+  if (input.mode === 'single') return '?mode=single';
+  if (!input.questionIds.length) return '';
+
+  const sessionSearch = input.sessionId
+    ? `&quizSession=${encodeURIComponent(input.sessionId)}`
+    : '';
+  return `?mode=random&questions=${encodeURIComponent(
+    input.questionIds.join(','),
+  )}${sessionSearch}`;
+}
+
+function isQuestionProgress(value: unknown): value is QuizQuestionProgress {
+  if (!value || typeof value !== 'object') return false;
+  const progress = value as Partial<QuizQuestionProgress>;
+  return (
+    (progress.selected === undefined || Number.isInteger(progress.selected)) &&
+    Number.isInteger(progress.elapsedSeconds) &&
+    typeof progress.startedAt === 'string'
+  );
+}
+
+function parseQuestionProgress(value: unknown): QuizProgressByQuestion {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
+  return Object.fromEntries(
+    Object.entries(value).filter((entry): entry is [string, QuizQuestionProgress] =>
+      isQuestionProgress(entry[1]),
+    ),
+  );
+}
+
+/** Restores scoped in-flight answers, dropping any entry that no longer parses. */
+export function parseStoredQuizProgress(raw: string | null): QuizProgressByScope {
+  if (!raw) return {};
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    return {};
+  }
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return {};
+  const stored = parsed as {
+    version?: unknown;
+    scopes?: unknown;
+  };
+  if (
+    stored.version !== QUIZ_PROGRESS_STORAGE_VERSION ||
+    !stored.scopes ||
+    typeof stored.scopes !== 'object' ||
+    Array.isArray(stored.scopes)
+  ) {
+    return {};
+  }
+
+  return Object.fromEntries(
+    Object.entries(stored.scopes).flatMap(([scope, value]) => {
+      const progress = parseQuestionProgress(value);
+      return Object.keys(progress).length ? [[scope, progress] as const] : [];
+    }),
+  );
+}
+
+export function readQuizProgress(scope: string) {
+  return parseStoredQuizProgress(readStoredValue(QUIZ_PROGRESS_STORAGE_KEY))[scope] ?? {};
+}
+
+export function writeQuizProgress(scope: string, progress: QuizProgressByQuestion) {
+  const progressByScope = parseStoredQuizProgress(
+    readStoredValue(QUIZ_PROGRESS_STORAGE_KEY),
+  );
+  if (Object.keys(progress).length) {
+    progressByScope[scope] = progress;
+  } else {
+    delete progressByScope[scope];
+  }
+  return writeStoredValue(
+    QUIZ_PROGRESS_STORAGE_KEY,
+    JSON.stringify({
+      version: QUIZ_PROGRESS_STORAGE_VERSION,
+      scopes: progressByScope,
+    }),
+  );
 }

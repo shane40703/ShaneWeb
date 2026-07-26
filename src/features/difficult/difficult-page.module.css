@@ -1,4 +1,9 @@
 .panel { min-height: 420px; padding: 18px; border: 1px solid var(--line); border-radius: 20px; background: var(--surface); box-shadow: var(--shadow-sm); }
+.loadedContent { display: grid; gap: 16px; }
+.bankNotice { padding: 14px 16px; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 12px; border: 1px solid color-mix(in srgb, var(--warning) 42%, var(--line)); border-radius: 14px; background: var(--warning-soft); color: var(--text-soft); }
+.bankNotice svg { color: var(--warning); }
+.bankNotice strong { display: block; color: var(--text); font-size: 14px; }
+.bankNotice p { margin: 3px 0 0; font-size: 13px; line-height: 1.5; }
 .subjectList,
 .yearList,
 .questionList { display: grid; }
@@ -33,6 +38,8 @@
 .explanationPanel p { margin: 0; color: var(--text-soft); font-size: 14px; line-height: 1.75; white-space: pre-line; }
 @media (max-width: 600px) {
   .panel { padding: 10px; }
+  .bankNotice { grid-template-columns: auto minmax(0, 1fr); }
+  .bankNotice button { grid-column: 1 / -1; width: 100%; }
   .subjectList { gap: 14px; }
   .subjectHeader { min-height: 60px; padding: 14px 16px; }
   .subjectHeader h2 { font-size: 18px; }

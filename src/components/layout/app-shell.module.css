@@ -198,3 +198,23 @@
     transition-duration: 0.01ms;
   }
 }
+
+.persistenceWarning {
+  margin: 0 0 18px;
+  padding: 12px 15px;
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  border: 1px solid var(--warning);
+  border-radius: 11px;
+  background: var(--warning-soft);
+  color: #8a4d00;
+  font-size: 13px;
+  font-weight: 650;
+  line-height: 1.6;
+}
+
+.persistenceWarning svg {
+  flex: none;
+  margin-top: 2px;
+}

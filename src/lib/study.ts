@@ -1,4 +1,5 @@
-import { subjects } from '@/question-bank/catalog';
+import { subjects, years } from '@/question-bank/catalog';
+import { questionPath } from '@/lib/question-path';
 import { analysisCategoryCatalog } from '@/question-bank/schema';
 import type {
   AnswerRecord,
@@ -7,6 +8,7 @@ import type {
   ImageAttachment,
   Question,
   QuizAttempt,
+  QuizQuestion,
   SubjectId,
 } from '@/lib/types';
 
@@ -91,53 +93,61 @@ function isImageAttachment(value: unknown): value is ImageAttachment {
   );
 }
 
-function isStoredState(value: unknown) {
-  if (!value || typeof value !== 'object') return false;
-  const state = value as Partial<AppState>;
-  return (
-    Boolean(state.answers) &&
-    typeof state.answers === 'object' &&
-    Object.values(state.answers ?? {}).every(isAnswerRecord) &&
-    Array.isArray(state.difficultQuestionIds) &&
-    state.difficultQuestionIds.every((id) => typeof id === 'string') &&
-    Array.isArray(state.attempts) &&
-    state.attempts.every(isQuizAttempt) &&
-    Boolean(state.notes) &&
-    typeof state.notes === 'object' &&
-    Object.values(state.notes ?? {}).every((note) => typeof note === 'string') &&
-    (state.noteImages === undefined ||
-      (Boolean(state.noteImages) &&
-        typeof state.noteImages === 'object' &&
-        Object.values(state.noteImages ?? {}).every(
-          (images) => Array.isArray(images) && images.every(isImageAttachment),
-        ))) &&
-    Array.isArray(state.discussionPosts) &&
-    state.discussionPosts.every(isDiscussionPost) &&
-    (state.likedDiscussionPostIds === undefined ||
-      (Array.isArray(state.likedDiscussionPostIds) &&
-        state.likedDiscussionPostIds.every((id) => typeof id === 'string')))
+function keepValidEntries<T>(
+  value: unknown,
+  isValid: (entry: unknown) => entry is T,
+): Record<string, T> {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
+  return Object.fromEntries(
+    Object.entries(value).filter((entry): entry is [string, T] => isValid(entry[1])),
   );
 }
 
+function keepValidItems<T>(value: unknown, isValid: (entry: unknown) => entry is T): T[] {
+  return Array.isArray(value) ? value.filter(isValid) : [];
+}
+
+function isQuestionId(value: unknown): value is string {
+  return typeof value === 'string';
+}
+
+function isNoteContent(value: unknown): value is string {
+  return typeof value === 'string';
+}
+
+function isImageAttachmentList(value: unknown): value is ImageAttachment[] {
+  return Array.isArray(value) && value.every(isImageAttachment);
+}
+
+/**
+ * Rebuilds the stored state entry by entry so a single corrupt record — an
+ * attempt from an older schema, a truncated write — costs the user only that
+ * record instead of their entire history.
+ */
 export function parseStoredState(raw: string | null): AppState {
   if (!raw) return createDefaultState();
+  let parsed: unknown;
   try {
-    const parsed: unknown = JSON.parse(raw);
-    if (!isStoredState(parsed)) return createDefaultState();
-    const state = parsed as Omit<AppState, 'noteImages' | 'likedDiscussionPostIds'> &
-      Partial<Pick<AppState, 'noteImages' | 'likedDiscussionPostIds'>>;
-    return {
-      ...state,
-      noteImages: state.noteImages ?? {},
-      likedDiscussionPostIds: state.likedDiscussionPostIds ?? [],
-      discussionPosts: state.discussionPosts.map((post) => ({
-        ...post,
-        images: post.images ?? [],
-      })),
-    };
+    parsed = JSON.parse(raw);
   } catch {
     return createDefaultState();
   }
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    return createDefaultState();
+  }
+
+  const state = parsed as Record<string, unknown>;
+  return {
+    answers: keepValidEntries(state.answers, isAnswerRecord),
+    difficultQuestionIds: keepValidItems(state.difficultQuestionIds, isQuestionId),
+    attempts: keepValidItems(state.attempts, isQuizAttempt),
+    notes: keepValidEntries(state.notes, isNoteContent),
+    noteImages: keepValidEntries(state.noteImages, isImageAttachmentList),
+    discussionPosts: keepValidItems(state.discussionPosts, isDiscussionPost).map(
+      (post) => ({ ...post, images: post.images ?? [] }),
+    ),
+    likedDiscussionPostIds: keepValidItems(state.likedDiscussionPostIds, isQuestionId),
+  };
 }
 
 export function isSubjectId(value: unknown): value is SubjectId {
@@ -147,27 +157,38 @@ export function isSubjectId(value: unknown): value is SubjectId {
 export function parseYear(value: unknown): number | null {
   const normalized = Array.isArray(value) ? value[0] : value;
   const year = Number(normalized);
-  return Number.isInteger(year) && year >= 102 && year <= 114 ? year : null;
+  return years.includes(year) ? year : null;
+}
+
+const taipeiDateTime = new Intl.DateTimeFormat('zh-TW', {
+  timeZone: 'Asia/Taipei',
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+  hour: '2-digit',
+  minute: '2-digit',
+  hour12: false,
+});
+
+/** Formats an ISO timestamp as `YYYY/MM/DD HH:mm` in the exam board's timezone. */
+export function formatDateTime(iso: string) {
+  const date = new Date(iso);
+  return Number.isNaN(date.getTime()) ? '—' : taipeiDateTime.format(date);
 }
 
 export function formatDuration(totalSeconds: number) {
   const hours = Math.floor(totalSeconds / 3600);
   const minutes = Math.floor((totalSeconds % 3600) / 60);
   const seconds = Math.max(0, totalSeconds % 60);
-  return [hours, minutes, seconds].map((value) => String(value).padStart(2, '0')).join(':');
+  return [hours, minutes, seconds]
+    .map((value) => String(value).padStart(2, '0'))
+    .join(':');
 }
 
 export function getAttemptScopeKey(
-  attempt: Pick<
-    QuizAttempt,
-    'mode' | 'subject' | 'year' | 'questionIds'
-  >,
+  attempt: Pick<QuizAttempt, 'mode' | 'subject' | 'year' | 'questionIds'>,
 ) {
-  if (
-    attempt.mode === 'paper' &&
-    attempt.subject !== 'mixed' &&
-    attempt.year !== null
-  ) {
+  if (attempt.mode === 'paper' && attempt.subject !== 'mixed' && attempt.year !== null) {
     return `paper:${attempt.subject}:${attempt.year}`;
   }
 
@@ -214,9 +235,7 @@ export function getAcceptedAnswerIndexes(
     : question.answerKey.options;
 }
 
-export function formatCorrectAnswer(
-  question: Pick<Question, 'answerKey'>,
-) {
+export function formatCorrectAnswer(question: Pick<Question, 'answerKey'>) {
   return question.answerKey.kind === 'all-credit'
     ? '本題一律給分'
     : question.answerKey.options
@@ -225,26 +244,15 @@ export function formatCorrectAnswer(
 }
 
 export function getQuestionDisplayCategory(
-  question: Pick<
-    Question,
-    'subject' | 'topic' | 'primaryCategory' | 'relatedLaws'
-  >,
+  question: Pick<Question, 'subject' | 'topic' | 'primaryCategory' | 'relatedLaws'>,
 ) {
   return (
     question.relatedLaws?.[0] ??
-    getAnalysisCategory(
-      question.subject,
-      question.topic,
-      question.primaryCategory,
-    )
+    getAnalysisCategory(question.subject, question.topic, question.primaryCategory)
   );
 }
 
-export function getAnalysisCategory(
-  subject: SubjectId,
-  topic: string,
-  fallback: string,
-) {
+export function getAnalysisCategory(subject: SubjectId, topic: string, fallback: string) {
   const categories = analysisCategoryCatalog[subject];
   return (
     Object.entries(categories).find(([, topics]) => topics.includes(topic))?.[0] ??
@@ -260,6 +268,23 @@ export function isQuestionCorrect(
   return selected !== undefined && question.answerKey.options.includes(selected);
 }
 
+type AttemptSource = Pick<Question, 'id' | 'subject' | 'year' | 'answerKey'>;
+
+export function toQuizQuestion(question: Question): QuizQuestion {
+  return {
+    id: question.id,
+    subject: question.subject,
+    year: question.year,
+    questionNumber: question.questionNumber,
+    text: question.text,
+    content: question.content,
+    options: question.options,
+    answerKey: question.answerKey,
+    ...(question.explanation ? { explanation: question.explanation } : {}),
+    path: questionPath(question.subject, question.year, question.questionNumber),
+  };
+}
+
 export function createAttempt({
   mode,
   source,
@@ -268,7 +293,7 @@ export function createAttempt({
   elapsedSeconds,
 }: {
   mode: QuizAttempt['mode'];
-  source: readonly Question[];
+  source: readonly AttemptSource[];
   answers: Record<string, number>;
   startedAt: string;
   elapsedSeconds: number;
@@ -321,9 +346,7 @@ export function getAnalysis(source: readonly { primaryCategory: string }[]) {
     );
 }
 
-export function getLawAnalysis(
-  source: readonly { relatedLaws?: readonly string[] }[],
-) {
+export function getLawAnalysis(source: readonly { relatedLaws?: readonly string[] }[]) {
   const counts = new Map<string, number>();
   let totalReferences = 0;
 
@@ -340,8 +363,5 @@ export function getLawAnalysis(
       count,
       percentage: totalReferences ? (count / totalReferences) * 100 : 0,
     }))
-    .sort(
-      (left, right) =>
-        right.count - left.count || compareText(left.law, right.law),
-    );
+    .sort((left, right) => right.count - left.count || compareText(left.law, right.law));
 }

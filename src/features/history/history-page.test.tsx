@@ -1,5 +1,11 @@
-import { fireEvent, render, screen, within } from '@testing-library/react';
-import { beforeEach, describe, expect, it } from 'vitest';
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  within,
+} from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { HistoryPage } from '@/features/history/history-page';
 import { ToastProvider } from '@/components/ui/ui';
 import {
@@ -28,6 +34,8 @@ describe('HistoryPage', () => {
   beforeEach(() => {
     window.localStorage.clear();
   });
+
+  afterEach(cleanup);
 
   it('opens a complete answer record for a saved attempt', async () => {
     const attempt = createAttempt({
@@ -139,5 +147,154 @@ describe('HistoryPage', () => {
     expect(review).toBeInTheDocument();
     expect(within(review).getByText(paperQuestions[0].text)).toBeInTheDocument();
     expect(within(review).getByText(paperQuestions[1].text)).toBeInTheDocument();
+  });
+
+  it('keeps local history usable when one subject bank fails to load', async () => {
+    const lawAttempt = createAttempt({
+      mode: 'paper',
+      source: paperQuestions,
+      answers: Object.fromEntries(
+        paperQuestions.map((question) => [
+          question.id,
+          acceptedAnswer(question),
+        ]),
+      ),
+      startedAt: '2026-07-25T00:00:00.000Z',
+      elapsedSeconds: 60,
+    });
+    const environmentAttempt = createAttempt({
+      mode: 'paper',
+      source: environmentQuestions,
+      answers: Object.fromEntries(
+        environmentQuestions.map((question) => [
+          question.id,
+          acceptedAnswer(question),
+        ]),
+      ),
+      startedAt: '2026-07-24T00:00:00.000Z',
+      elapsedSeconds: 30,
+    });
+    const mixedAttempt = createAttempt({
+      mode: 'random',
+      source: [...paperQuestions, ...environmentQuestions],
+      answers: Object.fromEntries(
+        [...paperQuestions, ...environmentQuestions].map((question) => [
+          question.id,
+          acceptedAnswer(question),
+        ]),
+      ),
+      startedAt: '2026-07-23T00:00:00.000Z',
+      elapsedSeconds: 90,
+    });
+    const state = createDefaultState();
+    state.attempts = [lawAttempt, environmentAttempt, mixedAttempt];
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    const retry = vi.fn();
+
+    render(
+      <ToastProvider>
+        <AppStateProvider>
+          <HistoryPage
+            questions={paperQuestions}
+            questionBankStatuses={{ env: 'error' }}
+            onRetryQuestionBank={retry}
+          />
+        </AppStateProvider>
+      </ToastProvider>,
+    );
+
+    const lawGroup = (
+      await screen.findByRole('heading', {
+        name: '建築法規與實務・114 年',
+      })
+    ).closest('article');
+    const environmentGroup = screen
+      .getByRole('heading', {
+        name: `建築環境控制・${environmentQuestions[0].year} 年`,
+      })
+      .closest('article');
+    const mixedGroup = screen
+      .getByRole('heading', { name: /跨科目練習/ })
+      .closest('article');
+
+    expect(lawGroup).not.toBeNull();
+    expect(environmentGroup).not.toBeNull();
+    expect(mixedGroup).not.toBeNull();
+    expect(
+      within(lawGroup!).getByText('查看完整作答紀錄（2）'),
+    ).toBeInTheDocument();
+    expect(within(lawGroup!).getByText('2.50 分')).toBeInTheDocument();
+    expect(within(environmentGroup!).getByText('1.50 分')).toBeInTheDocument();
+    expect(within(environmentGroup!).getByText('00:00:30')).toBeInTheDocument();
+    expect(within(mixedGroup!).getByText('4.00 分')).toBeInTheDocument();
+    expect(within(mixedGroup!).getByText('/ 4.00 分')).toBeInTheDocument();
+    expect(
+      within(environmentGroup!).getByText('尚有 1 題內容暫時無法顯示'),
+    ).toBeInTheDocument();
+    expect(
+      within(environmentGroup!).getByRole('button', {
+        name: '清除第 1 次紀錄',
+      }),
+    ).toBeInTheDocument();
+    expect(
+      within(environmentGroup!).getByRole('button', { name: '再做一次' }),
+    ).toBeInTheDocument();
+
+    fireEvent.click(
+      within(environmentGroup!).getByRole('button', {
+        name: '重新載入題目',
+      }),
+    );
+    expect(retry).toHaveBeenCalledTimes(1);
+    expect(retry).toHaveBeenCalledWith('env');
+  });
+
+  it('shows each missing subject bank own loading or error state', async () => {
+    const lawAttempt = createAttempt({
+      mode: 'paper',
+      source: paperQuestions,
+      answers: {},
+      startedAt: '2026-07-25T00:00:00.000Z',
+      elapsedSeconds: 10,
+    });
+    const environmentAttempt = createAttempt({
+      mode: 'paper',
+      source: environmentQuestions,
+      answers: {},
+      startedAt: '2026-07-24T00:00:00.000Z',
+      elapsedSeconds: 10,
+    });
+    const state = createDefaultState();
+    state.attempts = [lawAttempt, environmentAttempt];
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+
+    render(
+      <ToastProvider>
+        <AppStateProvider>
+          <HistoryPage
+            questions={[]}
+            questionBankStatuses={{ law: 'loading', env: 'error' }}
+          />
+        </AppStateProvider>
+      </ToastProvider>,
+    );
+
+    const lawGroup = (
+      await screen.findByRole('heading', {
+        name: '建築法規與實務・114 年',
+      })
+    ).closest('article');
+    const environmentGroup = screen
+      .getByRole('heading', {
+        name: `建築環境控制・${environmentQuestions[0].year} 年`,
+      })
+      .closest('article');
+
+    expect(
+      within(lawGroup!).getByText('尚有 2 題內容載入中'),
+    ).toBeInTheDocument();
+    expect(
+      within(environmentGroup!).getByText('尚有 1 題內容暫時無法顯示'),
+    ).toBeInTheDocument();
   });
 });

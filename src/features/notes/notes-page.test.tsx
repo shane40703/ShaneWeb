@@ -1,0 +1,148 @@
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+} from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { ToastProvider } from '@/components/ui/ui';
+import { NotesPage } from '@/features/notes/notes-page';
+import type { Question, SubjectId } from '@/lib/types';
+import { AppStateProvider } from '@/state/app-state';
+
+const router = vi.hoisted(() => ({
+  isReady: true,
+  query: {} as Record<string, string | string[] | undefined>,
+  replace: vi.fn(),
+}));
+
+vi.mock('next/router', () => ({
+  useRouter: () => router,
+}));
+
+function question(id: string, subject: SubjectId): Question {
+  return {
+    id,
+    subject,
+    year: 114,
+    questionNumber: 1,
+    topic: '測試主題',
+    primaryCategory: '測試分類',
+    tags: [],
+    text: `${id} 題幹`,
+    content: [{ kind: 'text', text: `${id} 題幹` }],
+    options: [`${id} A`, `${id} B`, `${id} C`, `${id} D`],
+    answerKey: { kind: 'accepted', options: [0] },
+    source: { kind: 'sample' },
+  };
+}
+
+const lawQuestion = question('law-114-01', 'law');
+const environmentQuestion = question('env-114-01', 'env');
+
+function page(
+  props: Partial<React.ComponentProps<typeof NotesPage>> = {},
+) {
+  return (
+    <ToastProvider>
+      <AppStateProvider>
+        <NotesPage questions={[lawQuestion]} {...props} />
+      </AppStateProvider>
+    </ToastProvider>
+  );
+}
+
+afterEach(cleanup);
+
+describe('NotesPage question loading', () => {
+  beforeEach(() => {
+    window.localStorage.clear();
+    router.isReady = true;
+    router.query = {};
+    router.replace.mockReset();
+  });
+
+  it('does not open the wrong editor while a deep link is loading', () => {
+    router.query = { question: environmentQuestion.id };
+
+    render(page({ questionBankStatus: 'loading' }));
+
+    expect(
+      screen.getByRole('heading', { name: '正在載入題目' }),
+    ).toBeInTheDocument();
+    expect(screen.queryByLabelText('我的筆記')).not.toBeInTheDocument();
+    expect(screen.queryByText('law-114-01 題幹')).not.toBeInTheDocument();
+  });
+
+  it('shows a retry action instead of the wrong editor after a load error', () => {
+    const retry = vi.fn();
+    router.query = { question: environmentQuestion.id };
+
+    render(
+      page({
+        questionBankStatus: 'error',
+        onRetryQuestionBank: retry,
+      }),
+    );
+
+    expect(
+      screen.getByRole('heading', { name: '題庫載入失敗' }),
+    ).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: '重新載入' }));
+    expect(retry).toHaveBeenCalledOnce();
+    expect(screen.queryByLabelText('我的筆記')).not.toBeInTheDocument();
+  });
+
+  it('does not hide unavailable-subject notes behind the default law editor', () => {
+    render(page({ questionBankStatus: 'error' }));
+
+    expect(
+      screen.getByRole('heading', { name: '題庫載入失敗' }),
+    ).toBeInTheDocument();
+    expect(screen.queryByLabelText('我的筆記')).not.toBeInTheDocument();
+  });
+
+  it('keeps an unsaved default-question draft when the full bank becomes ready', async () => {
+    const view = render(page({ questionBankStatus: 'loading' }));
+    const editor = await screen.findByLabelText('我的筆記');
+    fireEvent.change(editor, { target: { value: '尚未儲存的草稿' } });
+
+    view.rerender(
+      page({
+        questions: [lawQuestion, environmentQuestion],
+        questionBankStatus: 'ready',
+      }),
+    );
+
+    expect(screen.getByText('law-114-01 題幹')).toBeInTheDocument();
+    expect(screen.queryByText('env-114-01 題幹')).not.toBeInTheDocument();
+    expect(screen.getByLabelText('我的筆記')).toHaveValue('尚未儲存的草稿');
+  });
+
+  it('keeps an unsaved draft through a bank error and retry', async () => {
+    const retry = vi.fn();
+    const view = render(page({ questionBankStatus: 'loading' }));
+    fireEvent.change(await screen.findByLabelText('我的筆記'), {
+      target: { value: '等待重試的草稿' },
+    });
+
+    view.rerender(
+      page({
+        questionBankStatus: 'error',
+        onRetryQuestionBank: retry,
+      }),
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: '重新載入' }));
+    expect(retry).toHaveBeenCalledOnce();
+
+    view.rerender(
+      page({
+        questions: [lawQuestion, environmentQuestion],
+        questionBankStatus: 'ready',
+      }),
+    );
+
+    expect(screen.getByLabelText('我的筆記')).toHaveValue('等待重試的草稿');
+  });
+});

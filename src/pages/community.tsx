@@ -1,13 +1,40 @@
 import type { GetStaticProps, InferGetStaticPropsType } from 'next';
 import Head from 'next/head';
 import { CommunityPage } from '@/features/community/community-page';
-import { loadAllQuestions } from '@/server/question-bank.server';
+import { loadSubjectQuestions } from '@/server/question-bank.server';
+import { useSubjectQuestions } from '@/lib/question-bank-client';
+import { subjects } from '@/question-bank/catalog';
 import type { Question } from '@/lib/types';
 
-export const getStaticProps: GetStaticProps<{ questions: Question[] }> = async () => ({
-  props: { questions: await loadAllQuestions() },
+const allSubjectIds = subjects.map((subject) => subject.id);
+
+/**
+ * Only the first subject is prerendered — enough for the initial paint and for
+ * crawlers — and the remaining subjects arrive from /api/questions so the page
+ * payload no longer grows with the whole bank.
+ */
+export const getStaticProps: GetStaticProps<{
+  initialQuestions: Question[];
+}> = async () => ({
+  props: { initialQuestions: await loadSubjectQuestions(allSubjectIds[0]) },
 });
 
-export default function CommunityRoute({ questions }: InferGetStaticPropsType<typeof getStaticProps>) {
-  return <><Head><title>詳解與討論｜建築師考試</title></Head><CommunityPage questions={questions} /></>;
+export default function CommunityRoute({
+  initialQuestions,
+}: InferGetStaticPropsType<typeof getStaticProps>) {
+  const bank = useSubjectQuestions(allSubjectIds);
+  const questions = bank.status === 'ready' ? bank.questions : initialQuestions;
+
+  return (
+    <>
+      <Head>
+        <title>詳解與討論｜建築師考試</title>
+      </Head>
+      <CommunityPage
+        questions={questions}
+        questionBankStatus={bank.status}
+        onRetryQuestionBank={bank.retry}
+      />
+    </>
+  );
 }

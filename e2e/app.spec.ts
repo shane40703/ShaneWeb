@@ -270,11 +270,28 @@ test('static question paths preserve state and submit a paper result to history'
 test('question content is present in build-time static HTML', async ({ request }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop');
 
-  const response = await request.get('/questions/law/114/01');
-  expect(response.ok()).toBe(true);
-  const html = await response.text();
-  expect(html).toContain('依建築法規定，下列敘述何者錯誤？');
-  expect(html).toContain('建築基地，為供建築物本身所占之地面及其所應留設之法定空地');
+  const [questionResponse, communityResponse, notesResponse] =
+    await Promise.all([
+      request.get('/questions/law/114/01'),
+      request.get('/community'),
+      request.get('/notes'),
+    ]);
+  expect(questionResponse.ok()).toBe(true);
+  expect(communityResponse.ok()).toBe(true);
+  expect(notesResponse.ok()).toBe(true);
+
+  const [questionHtml, communityHtml, notesHtml] = await Promise.all([
+    questionResponse.text(),
+    communityResponse.text(),
+    notesResponse.text(),
+  ]);
+  const prompt = '依建築法規定，下列敘述何者錯誤？';
+  expect(questionHtml).toContain(prompt);
+  expect(questionHtml).toContain(
+    '建築基地，為供建築物本身所占之地面及其所應留設之法定空地',
+  );
+  expect(communityHtml).toContain(prompt);
+  expect(notesHtml).toContain(prompt);
 });
 
 test('static question files render ordered images and text-only options', async ({ page }, testInfo) => {
@@ -518,6 +535,68 @@ test('community selectors and local anonymous interactions work', async ({ page 
   await expect(page.getByText(content)).toBeVisible();
 });
 
+test('question-bank failures never expose an unrelated editable question', async ({
+  page,
+}, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop');
+
+  await page.route('**/api/questions/**', async (route) => {
+    await route.abort();
+  });
+
+  await page.goto('/community?question=env-114-01');
+  await expect(
+    page.getByRole('heading', { name: '題庫載入失敗' }),
+  ).toBeVisible();
+  await expect(page.getByRole('button', { name: '匿名送出' })).toHaveCount(0);
+  await expect(
+    page.getByRole('button', { name: '標記為難題' }),
+  ).toHaveCount(0);
+
+  await page.goto('/notes?question=env-114-01');
+  await expect(
+    page.getByRole('heading', { name: '題庫載入失敗' }),
+  ).toBeVisible();
+  await expect(page.getByLabel('我的筆記')).toHaveCount(0);
+});
+
+test('one failed subject does not hide difficult questions from other subjects', async ({
+  page,
+}, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop');
+
+  await page.addInitScript(() => {
+    localStorage.setItem(
+      'shaneweb:state',
+      JSON.stringify({
+        answers: {},
+        difficultQuestionIds: ['law-114-01', 'env-114-01'],
+        attempts: [],
+        notes: {},
+        noteImages: {},
+        discussionPosts: [],
+        likedDiscussionPostIds: [],
+      }),
+    );
+  });
+  await page.route('**/api/questions/env', async (route) => {
+    await route.abort();
+  });
+
+  await page.goto('/difficult');
+
+  await expect(
+    page.getByRole('heading', { name: '建築法規與實務' }),
+  ).toBeVisible();
+  await expect(
+    page.getByText(/依建築法規定，下列敘述何者錯誤/).first(),
+  ).toBeVisible();
+  await expect(
+    page.getByText('建築環境控制的難題載入失敗'),
+  ).toBeVisible();
+  await expect(page.getByRole('button', { name: '重新載入' })).toBeVisible();
+});
+
 test('random quiz draws the requested number of unique questions', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop');
 
@@ -539,6 +618,112 @@ test('random quiz draws the requested number of unique questions', async ({ page
     page.getByRole('heading', { name: /隨機練習/ }),
   ).toHaveCount(0);
   await expect(page.getByRole('complementary', { name: '題號導覽' }).getByRole('link')).toHaveCount(5);
+});
+
+test('a random set spanning several years loads and grades every question', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop');
+
+  // These three questions live in three different papers, so the page cannot
+  // carry them all and must load the rest of the subject on demand.
+  await page.goto(
+    '/questions/law/114/01?mode=random&questions=law-114-01,law-113-01,law-112-01',
+  );
+  const navigator = page.getByRole('complementary', { name: '題號導覽' });
+  await expect(navigator.getByRole('link')).toHaveCount(3);
+  await expect(page.getByText('已作答 0 / 3')).toBeVisible();
+
+  await page.getByRole('radio').first().check();
+  await page.getByRole('button', { name: /下一題/ }).click();
+  await expect(page).toHaveURL(/\/questions\/law\/113\/01/);
+  await expect(page.getByText('已作答 1 / 3')).toBeVisible();
+
+  await page.getByRole('button', { name: /下一題/ }).click();
+  await expect(page).toHaveURL(/\/questions\/law\/112\/01/);
+  await page.getByRole('button', { name: '對答案' }).click();
+  await expect(page.getByRole('heading', { name: /\/ 3 題答對/ })).toBeVisible();
+});
+
+test('a partial random bank cannot create links that truncate the set', async ({
+  page,
+}, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop');
+
+  let releaseQuestionBank!: () => void;
+  const questionBankReady = new Promise<void>((resolve) => {
+    releaseQuestionBank = resolve;
+  });
+  await page.route('**/api/questions/law', async (route) => {
+    await questionBankReady;
+    await route.continue();
+  });
+
+  const questionIds = 'law-114-01,law-114-02,law-113-01';
+  await page.goto(
+    `/questions/law/114/01?mode=random&questions=${questionIds}`,
+  );
+  const navigator = page.getByRole('complementary', { name: '題號導覽' });
+  await expect(navigator.getByRole('link')).toHaveCount(0);
+  await expect(navigator.getByText('正在載入這次抽出的題目…')).toBeVisible();
+
+  releaseQuestionBank();
+
+  await expect(navigator.getByRole('link')).toHaveCount(3);
+  const href = await navigator.getByRole('link').nth(1).getAttribute('href');
+  expect(href).not.toBeNull();
+  const target = new URL(href!, 'http://127.0.0.1:3000');
+  expect(target.searchParams.get('questions')).toBe(questionIds);
+  expect(target.searchParams.get('quizSession')).toBeTruthy();
+});
+
+test('a new random session does not inherit answers from the same set', async ({
+  page,
+}, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop');
+
+  const sessionlessUrl =
+    '/questions/law/114/01?mode=random&questions=law-114-01,law-114-02';
+  await page.goto(sessionlessUrl);
+  await expect(page).toHaveURL(/quizSession=/);
+  const firstSession = new URL(page.url()).searchParams.get('quizSession');
+  expect(firstSession).toBeTruthy();
+  await page.getByRole('radio').first().check();
+  await expect(page.getByText('已作答 1 / 2')).toBeVisible();
+  await expect
+    .poll(() =>
+      page.evaluate((sessionId) => {
+        const stored = JSON.parse(
+          localStorage.getItem('shaneweb:quiz-progress') ?? '{}',
+        );
+        const scope = Object.keys(stored.scopes ?? {}).find((key) =>
+          key.includes(encodeURIComponent(sessionId ?? '')),
+        );
+        return scope
+          ? stored.scopes[scope]?.['law-114-01']?.selected
+          : undefined;
+      }, firstSession),
+    )
+    .toBe(0);
+
+  await page.goto(sessionlessUrl);
+  await expect(page).toHaveURL(/quizSession=/);
+  const secondSession = new URL(page.url()).searchParams.get('quizSession');
+
+  expect(secondSession).toBeTruthy();
+  expect(secondSession).not.toBe(firstSession);
+  await expect(page.getByRole('radio', { checked: true })).toHaveCount(0);
+  await expect(page.getByText('已作答 0 / 2')).toBeVisible();
+});
+
+test('draft answers survive a reload in the middle of a paper', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop');
+
+  await page.goto('/questions/law/114/01');
+  await page.getByRole('radio').first().check();
+  await expect(page.getByText('已作答 1 / 80')).toBeVisible();
+
+  await page.reload();
+  await expect(page.getByRole('radio', { checked: true })).toHaveCount(1);
+  await expect(page.getByText('已作答 1 / 80')).toBeVisible();
 });
 
 test('notes save and reload from local storage', async ({ page }, testInfo) => {

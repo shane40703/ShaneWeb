@@ -1,6 +1,11 @@
 import { useRouter } from 'next/router';
 import { useState } from 'react';
-import { IconLoader2, IconNotebook } from '@tabler/icons-react';
+import {
+  IconAlertCircle,
+  IconHelpCircle,
+  IconLoader2,
+  IconNotebook,
+} from '@tabler/icons-react';
 import { ImageAttachments } from '@/components/image-attachments';
 import {
   EmptyState,
@@ -18,8 +23,10 @@ import {
   QuestionNumberGrid,
 } from '@/components/question-number-button';
 import { Button, useToast } from '@/components/ui/ui';
+import type { QuestionBankStatus } from '@/lib/question-bank-client';
 import { getSubject, years } from '@/question-bank/catalog';
 import type { ImageAttachment, Question, SubjectId } from '@/lib/types';
+import { useClientReady } from '@/lib/use-client-ready';
 import { useAppState } from '@/state/app-state';
 import styles from './notes-page.module.css';
 
@@ -27,17 +34,80 @@ function valueOf(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;
 }
 
-export function NotesPage({ questions }: { questions: Question[] }) {
+interface NoteDraft {
+  content: string;
+  images: ImageAttachment[];
+}
+
+export function NotesPage({
+  questions,
+  questionBankStatus = 'ready',
+  onRetryQuestionBank,
+}: {
+  questions: Question[];
+  questionBankStatus?: QuestionBankStatus;
+  onRetryQuestionBank?: () => void;
+}) {
   const router = useRouter();
   const { state, hydrated } = useAppState();
-  const currentQuestion =
-    questions.find((question) => question.id === (valueOf(router.query.question) ?? '')) ??
-    questions[0];
+  const routeHydrated = useClientReady();
+  const [drafts, setDrafts] = useState<Record<string, NoteDraft>>({});
+  const requestedQuestionId =
+    routeHydrated && router.isReady !== false
+      ? valueOf(router.query.question)
+      : undefined;
+  const requestedQuestion = requestedQuestionId
+    ? questions.find((question) => question.id === requestedQuestionId)
+    : undefined;
+  const currentQuestion = requestedQuestionId
+    ? requestedQuestion
+    : questions[0];
 
-  if (!currentQuestion) {
-    return <EmptyState icon={IconNotebook} title="題庫尚無資料" description="加入題目後即可建立筆記。" />;
+  if (
+    routeHydrated &&
+    (router.isReady === false ||
+      (!currentQuestion && questionBankStatus === 'loading'))
+  ) {
+    return (
+      <EmptyState
+        icon={IconLoader2}
+        title="正在載入題目"
+        description="正在取得指定題目的筆記資料，請稍候。"
+      />
+    );
   }
 
+  if (questionBankStatus === 'error') {
+    return (
+      <EmptyState
+        icon={IconAlertCircle}
+        title="題庫載入失敗"
+        description="目前無法取得完整題庫，請重新載入後再試。"
+        action={
+          onRetryQuestionBank ? (
+            <Button onClick={onRetryQuestionBank}>重新載入</Button>
+          ) : undefined
+        }
+      />
+    );
+  }
+
+  if (!currentQuestion) {
+    return (
+      <EmptyState
+        icon={requestedQuestionId ? IconHelpCircle : IconNotebook}
+        title={requestedQuestionId ? '找不到指定題目' : '題庫尚無資料'}
+        description={
+          requestedQuestionId
+            ? '這個題目可能已移除，請從題庫重新選擇。'
+            : '加入題目後即可建立筆記。'
+        }
+      />
+    );
+  }
+
+  const activeQuestion = currentQuestion;
+  const activeDraft = drafts[currentQuestion.id];
   const subjectQuestions = questions.filter(
     (question) => question.subject === currentQuestion.subject,
   );
@@ -89,7 +159,7 @@ export function NotesPage({ questions }: { questions: Question[] }) {
     if (typeof value !== 'number') return;
     const first = questions.find(
       (question) =>
-        question.subject === currentQuestion.subject && question.year === value,
+        question.subject === activeQuestion.subject && question.year === value,
     );
     if (first) navigateTo(first.id);
   }
@@ -114,26 +184,24 @@ export function NotesPage({ questions }: { questions: Question[] }) {
     />
   );
 
-  if (!hydrated) {
-    return (
-      <>
-        {questionSelector}
-        <section className={styles.loadingPanel}>
-          <EmptyState icon={IconLoader2} title="正在讀取筆記" description="請稍候。" />
-        </section>
-      </>
-    );
-  }
-
   return (
-    <>
+    <div
+      className={styles.interactionGuard}
+      inert={!routeHydrated || !hydrated}
+    >
       {questionSelector}
       <div className={styles.layout}>
         <NoteEditor
           key={currentQuestion.id}
           question={currentQuestion}
-          initialValue={state.notes[currentQuestion.id] ?? ''}
-          initialImages={state.noteImages[currentQuestion.id] ?? []}
+          content={activeDraft?.content ?? state.notes[currentQuestion.id] ?? ''}
+          images={activeDraft?.images ?? state.noteImages[currentQuestion.id] ?? []}
+          onChange={(draft) =>
+            setDrafts((current) => ({
+              ...current,
+              [currentQuestion.id]: draft,
+            }))
+          }
         />
         <aside className={styles.noteSidebar} aria-label="筆記題號導覽">
           <section className={styles.numberNavigator}>
@@ -196,23 +264,23 @@ export function NotesPage({ questions }: { questions: Question[] }) {
           </section>
         </aside>
       </div>
-    </>
+    </div>
   );
 }
 
 function NoteEditor({
   question,
-  initialValue,
-  initialImages,
+  content,
+  images,
+  onChange,
 }: {
   question: Question;
-  initialValue: string;
-  initialImages: ImageAttachment[];
+  content: string;
+  images: ImageAttachment[];
+  onChange: (draft: NoteDraft) => void;
 }) {
   const { dispatch } = useAppState();
   const { notify } = useToast();
-  const [content, setContent] = useState(initialValue);
-  const [images, setImages] = useState(initialImages);
 
   function saveNote() {
     dispatch({ type: 'save-note', questionId: question.id, content, images });
@@ -261,13 +329,15 @@ function NoteEditor({
       <textarea
         id="question-note"
         value={content}
-        onChange={(event) => setContent(event.target.value)}
+        onChange={(event) =>
+          onChange({ content: event.target.value, images })
+        }
         rows={12}
         placeholder="記下法條、公式、易錯觀念或解題步驟…"
       />
       <ImageAttachments
         images={images}
-        onChange={setImages}
+        onChange={(nextImages) => onChange({ content, images: nextImages })}
         label="上傳筆記圖片"
       />
       <div className={styles.editorFooter}>

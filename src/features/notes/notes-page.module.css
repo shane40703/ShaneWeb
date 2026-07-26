@@ -1,5 +1,5 @@
+.interactionGuard { display: contents; }
 .selectorHint { color: #98a1ad; font-size: 12px; }
-.loadingPanel { min-height: 420px; border: 1px solid var(--line); border-radius: 20px; background: var(--surface); }
 .layout { display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: 20px; align-items: start; }
 .editor,
 .savedNotes,

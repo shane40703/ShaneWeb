@@ -31,24 +31,23 @@ export const getStaticProps: GetStaticProps<
   if (!entry) return { notFound: true };
 
   const question = await loadQuestion(entry);
-  const questionBank = await loadQuizQuestions(entry.subject);
+  // Only this paper travels with the page; a random set loads its questions
+  // from /api/questions so page data stays proportional to one paper.
+  const paper = await loadQuizQuestions(entry.subject, entry.year);
 
-  return { props: { question, questionBank } };
+  return { props: { question, paper } };
 };
 
 export default function StaticQuestionRoute({
   question,
-  questionBank,
+  paper,
 }: InferGetStaticPropsType<typeof getStaticProps>) {
   return (
     <>
       <Head>
         <title>{`${question.year} 年第 ${question.questionNumber} 題｜建築師考試`}</title>
       </Head>
-      <QuizPage
-        question={question}
-        questionBank={questionBank}
-      />
+      <QuizPage question={question} paper={paper} />
     </>
   );
 }

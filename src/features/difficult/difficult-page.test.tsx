@@ -5,7 +5,7 @@ import {
   screen,
   within,
 } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DifficultPage } from '@/features/difficult/difficult-page';
 import { createDefaultState, STORAGE_KEY } from '@/lib/study';
 import type { Question, SubjectId } from '@/lib/types';
@@ -77,14 +77,17 @@ const questions = [
   }),
 ];
 
-function renderPage(difficultQuestionIds: string[]) {
+function renderPage(
+  difficultQuestionIds: string[],
+  props: Partial<React.ComponentProps<typeof DifficultPage>> = {},
+) {
   const state = createDefaultState();
   state.difficultQuestionIds = difficultQuestionIds;
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 
   return render(
     <AppStateProvider>
-      <DifficultPage questions={questions} />
+      <DifficultPage questions={questions} {...props} />
     </AppStateProvider>,
   );
 }
@@ -167,5 +170,39 @@ describe('DifficultPage', () => {
       await screen.findByRole('heading', { name: '還沒有標記難題' }),
     ).toBeInTheDocument();
     expect(screen.queryByText('law-114-01 題幹')).not.toBeInTheDocument();
+  });
+
+  it('keeps loaded subjects usable when another subject bank fails', async () => {
+    const retry = vi.fn();
+    renderPage(['law-114-01', 'env-112-01'], {
+      questions: questions.filter((item) => item.subject === 'law'),
+      questionBankStatuses: { law: 'ready', env: 'error' },
+      onRetryQuestionBank: retry,
+    });
+
+    expect(
+      await screen.findByRole('heading', { name: '建築法規與實務' }),
+    ).toBeInTheDocument();
+    expect(screen.getAllByText('law-114-01 題幹').length).toBeGreaterThan(0);
+    expect(
+      screen.getByText('建築環境控制的難題載入失敗'),
+    ).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: '重新載入' }));
+    expect(retry).toHaveBeenCalledOnce();
+    expect(retry).toHaveBeenCalledWith('env');
+  });
+
+  it('shows a fallback when a stored difficult question no longer exists', async () => {
+    renderPage(['law-114-99'], {
+      questions: [],
+      questionBankStatuses: { law: 'ready' },
+    });
+
+    expect(
+      await screen.findByRole('heading', {
+        name: '難題內容暫時無法顯示',
+      }),
+    ).toBeInTheDocument();
   });
 });

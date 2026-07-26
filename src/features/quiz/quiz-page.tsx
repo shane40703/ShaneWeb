@@ -1,10 +1,19 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { type CSSProperties, useEffect, useReducer, useState } from 'react';
+import {
+  type CSSProperties,
+  useEffect,
+  useMemo,
+  useReducer,
+  useRef,
+  useState,
+} from 'react';
 import {
   IconArrowLeft,
   IconArrowRight,
   IconExternalLink,
+  IconLoader2,
+  IconPlugConnectedX,
 } from '@tabler/icons-react';
 import { AttemptReview } from '@/components/attempt-review';
 import {
@@ -19,92 +28,275 @@ import {
 } from '@/components/question-number-button';
 import { Button, OptionGroup, ProgressBar } from '@/components/ui/ui';
 import { getSubject } from '@/question-bank/catalog';
+import { useSubjectQuestions } from '@/lib/question-bank-client';
 import {
   calculateScore,
+  createAttempt,
   formatDuration,
   getQuestionDisplayCategory,
   getSubjectScoreConfig,
   isQuestionCorrect,
+  toQuizQuestion,
 } from '@/lib/study';
 import type { Question, QuizAttempt, QuizQuestion } from '@/lib/types';
+import { useClientReady } from '@/lib/use-client-ready';
 import { useAppState } from '@/state/app-state';
-import { quizProgressReducer } from './quiz-state';
+import {
+  createQuizProgressScope,
+  createQuizQuestionSearch,
+  readQuizProgress,
+  scopedQuizProgressReducer,
+  writeQuizProgress,
+  type QuizProgressAction,
+  type ScopedQuizProgressState,
+} from './quiz-state';
 import styles from './quiz-page.module.css';
 
 export interface StaticQuestionPageProps {
   question: Question;
-  questionBank: QuizQuestion[];
+  /** Only the current paper — the rest of the subject is fetched on demand. */
+  paper: QuizQuestion[];
 }
 
-export function QuizPage({
-  question,
-  questionBank,
-}: StaticQuestionPageProps) {
+const EMPTY_PROGRESS: ScopedQuizProgressState['progress'] = {};
+
+function createRandomQuizSessionId() {
+  return globalThis.crypto?.randomUUID?.() ??
+    `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+}
+
+export function QuizPage({ question, paper }: StaticQuestionPageProps) {
   const router = useRouter();
-  const { state, dispatch } = useAppState();
-  const [progressByQuestion, progressDispatch] = useReducer(quizProgressReducer, {});
-  const [attempt, setAttempt] = useState<QuizAttempt | null>(null);
-  const progress = progressByQuestion[question.id];
-  const selected = progress?.selected;
-  const elapsedSeconds = progress?.elapsedSeconds ?? 0;
-  const subject = getSubject(question.subject);
-  const questionHasImage = question.content.some(
-    (block) => block.kind === 'image',
-  );
-  const difficult = state.difficultQuestionIds.includes(question.id);
-  const randomQuestionIds =
-    router.query.mode === 'random' && typeof router.query.questions === 'string'
-      ? router.query.questions.split(',').filter(Boolean)
-      : [];
-  const questionById = new Map(
-    questionBank.map((item) => [item.id, item]),
-  );
-  const currentQuizQuestion = questionById.get(question.id);
-  const isSingleQuestion = router.query.mode === 'single';
-  const randomQuestions = [
-    ...new Set(randomQuestionIds),
-  ].flatMap((questionId) => {
-    const item = questionById.get(questionId);
-    return item ? [item] : [];
+  const { state, dispatch, reportPersistence } = useAppState();
+  const [progressState, progressDispatch] = useReducer(scopedQuizProgressReducer, {
+    scope: null,
+    progress: EMPTY_PROGRESS,
   });
+  const [attempt, setAttempt] = useState<QuizAttempt | null>(null);
+  const routeHydrated = useClientReady();
+  const pendingRandomSessionId = useRef<string | null>(null);
+  const subject = getSubject(question.subject);
+  const questionHasImage = question.content.some((block) => block.kind === 'image');
+  const difficult = state.difficultQuestionIds.includes(question.id);
+  const isSingleQuestion =
+    routeHydrated && router.isReady && router.query.mode === 'single';
+
+  const randomQuestionIds = useMemo(() => {
+    if (
+      !routeHydrated ||
+      !router.isReady ||
+      router.query.mode !== 'random' ||
+      typeof router.query.questions !== 'string'
+    ) {
+      return [];
+    }
+    return [...new Set(router.query.questions.split(',').filter(Boolean))];
+  }, [
+    routeHydrated,
+    router.isReady,
+    router.query.mode,
+    router.query.questions,
+  ]);
+  const isRandomMode = randomQuestionIds.length > 0;
+  const queryRandomSessionId =
+    typeof router.query.quizSession === 'string' && router.query.quizSession
+      ? router.query.quizSession
+      : null;
+
+  const paperById = useMemo(() => new Map(paper.map((item) => [item.id, item])), [paper]);
+  // A random set may reach into other years, which this page cannot carry at
+  // build time. Only those extras are fetched — a set drawn from this paper
+  // alone needs no request at all.
+  const missingRandomIds = useMemo(
+    () => randomQuestionIds.filter((questionId) => !paperById.has(questionId)),
+    [randomQuestionIds, paperById],
+  );
+  const randomBank = useSubjectQuestions(
+    missingRandomIds.length ? [question.subject] : [],
+  );
+  const randomPending = missingRandomIds.length > 0 && randomBank.status !== 'ready';
+
+  const questionById = useMemo(
+    () =>
+      new Map<string, QuizQuestion>([
+        ...randomBank.questions.map((item) => [item.id, toQuizQuestion(item)] as const),
+        ...paper.map((item) => [item.id, item] as const),
+      ]),
+    [paper, randomBank.questions],
+  );
+
+  const randomQuestions = useMemo(
+    () =>
+      randomQuestionIds.flatMap((questionId) => {
+        const item = questionById.get(questionId);
+        return item ? [item] : [];
+      }),
+    [randomQuestionIds, questionById],
+  );
+
   const isRandomQuiz =
-    randomQuestions.length > 0 &&
-    randomQuestions.some((item) => item.id === question.id);
+    isRandomMode && randomQuestions.some((item) => item.id === question.id);
+  const currentQuizQuestion = questionById.get(question.id);
+  const currentQuestionPath = currentQuizQuestion?.path;
   const paperQuestions = isRandomQuiz
     ? randomQuestions
     : isSingleQuestion
       ? currentQuizQuestion
         ? [currentQuizQuestion]
         : []
-      : questionBank.filter((item) => item.year === question.year);
+      : paper;
+  const quizProgressScope = useMemo(() => {
+    if (!routeHydrated || !router.isReady) return null;
+    if (isRandomQuiz) {
+      return createQuizProgressScope({
+        mode: 'random',
+        questionIds: randomQuestionIds,
+        sessionId: queryRandomSessionId,
+      });
+    }
+    return isSingleQuestion
+      ? createQuizProgressScope({ mode: 'single', questionId: question.id })
+      : createQuizProgressScope({
+          mode: 'paper',
+          subject: question.subject,
+          year: question.year,
+        });
+  }, [
+    isRandomQuiz,
+    isSingleQuestion,
+    question.id,
+    question.subject,
+    question.year,
+    queryRandomSessionId,
+    randomQuestionIds,
+    routeHydrated,
+    router.isReady,
+  ]);
+  const progressByQuestion =
+    progressState.scope === quizProgressScope ? progressState.progress : EMPTY_PROGRESS;
+  const progress = progressByQuestion[question.id];
+  const selected = progress?.selected;
+  const elapsedSeconds = progress?.elapsedSeconds ?? 0;
   const position = paperQuestions.findIndex((item) => item.id === question.id);
   const questionSearch = isRandomQuiz
-    ? `?mode=random&questions=${encodeURIComponent(randomQuestions.map((item) => item.id).join(','))}`
+    ? createQuizQuestionSearch({
+        mode: 'random',
+        questionIds: randomQuestionIds,
+        sessionId: queryRandomSessionId,
+      })
     : isSingleQuestion
-      ? '?mode=single'
-      : '';
+      ? createQuizQuestionSearch({ mode: 'single', questionId: question.id })
+      : createQuizQuestionSearch({
+          mode: 'paper',
+          subject: question.subject,
+          year: question.year,
+        });
   const questionHref = (item: QuizQuestion) => `${item.path}${questionSearch}`;
   const previous = paperQuestions[position - 1];
   const next = paperQuestions[position + 1];
   const answeredCount = paperQuestions.filter(
     (item) => progressByQuestion[item.id]?.selected !== undefined,
   ).length;
+  const navigationPending =
+    !routeHydrated ||
+    !router.isReady ||
+    (isRandomQuiz && (randomPending || !queryRandomSessionId));
+
+  // A random URL created by /random intentionally has no session yet. Adding
+  // one here makes every newly-created set independent, including the rare
+  // case where two draws contain exactly the same question ids.
+  useEffect(() => {
+    if (
+      !router.isReady ||
+      !routeHydrated ||
+      !isRandomMode ||
+      queryRandomSessionId ||
+      !currentQuestionPath
+    ) {
+      if (!isRandomMode || queryRandomSessionId) {
+        pendingRandomSessionId.current = null;
+      }
+      return;
+    }
+    const sessionId =
+      pendingRandomSessionId.current ?? createRandomQuizSessionId();
+    pendingRandomSessionId.current = sessionId;
+    void router.replace(
+      {
+        pathname: currentQuestionPath,
+        query: {
+          mode: 'random',
+          questions: randomQuestionIds.join(','),
+          quizSession: sessionId,
+        },
+      },
+      undefined,
+      { shallow: true, scroll: false },
+    );
+  }, [
+    currentQuestionPath,
+    isRandomMode,
+    queryRandomSessionId,
+    randomQuestionIds,
+    routeHydrated,
+    router,
+    router.isReady,
+  ]);
+
+  // Drafts survive a refresh or an accidental back-navigation within this
+  // scope. The scoped reducer ignores timer work left over from another quiz.
+  useEffect(() => {
+    if (!quizProgressScope) return;
+    progressDispatch({
+      type: 'restore-scope',
+      scope: quizProgressScope,
+      progress: readQuizProgress(quizProgressScope),
+    });
+  }, [quizProgressScope]);
+
+  // Holds the last persisted map; on the first render it is the reducer's own
+  // initial value, which keeps an empty map from overwriting stored drafts.
+  const persistedProgress = useRef<ScopedQuizProgressState | null>(null);
+  useEffect(() => {
+    if (!progressState.scope || persistedProgress.current === progressState) return;
+    persistedProgress.current = progressState;
+    reportPersistence(
+      'quiz-progress',
+      writeQuizProgress(progressState.scope, progressState.progress),
+    );
+  }, [progressState, reportPersistence]);
 
   useEffect(() => {
+    if (attempt || !quizProgressScope) return;
     const questionId = question.id;
     const startedAt = new Date().toISOString();
-    progressDispatch({ type: 'visit-question', questionId, startedAt });
-    if (attempt) return;
+    progressDispatch({
+      type: 'update-scope',
+      scope: quizProgressScope,
+      action: { type: 'visit-question', questionId, startedAt },
+    });
     const timer = window.setInterval(() => {
-      progressDispatch({ type: 'tick-question', questionId, startedAt });
+      progressDispatch({
+        type: 'update-scope',
+        scope: quizProgressScope,
+        action: { type: 'tick-question', questionId, startedAt },
+      });
     }, 1000);
     return () => window.clearInterval(timer);
-  }, [attempt, question.id]);
+  }, [attempt, question.id, quizProgressScope]);
+
+  function updateQuizProgress(action: QuizProgressAction) {
+    if (!quizProgressScope) return;
+    progressDispatch({
+      type: 'update-scope',
+      scope: quizProgressScope,
+      action,
+    });
+  }
 
   function submitQuiz() {
     if (attempt) return;
 
-    const submittedAt = new Date().toISOString();
     const answers = Object.fromEntries(
       paperQuestions.flatMap((item) => {
         const itemProgress = progressByQuestion[item.id];
@@ -119,44 +311,29 @@ export function QuizPage({
         isQuestionCorrect(item, progressByQuestion[item.id]?.selected),
       ]),
     );
-    const correctCount = paperQuestions.filter((item) =>
-      isQuestionCorrect(item, progressByQuestion[item.id]?.selected),
-    ).length;
-    const unansweredCount = paperQuestions.filter(
-      (item) =>
-        item.answerKey.kind !== 'all-credit' &&
-        progressByQuestion[item.id]?.selected === undefined,
-    ).length;
-    const visitedProgress = paperQuestions.flatMap((item) =>
-      progressByQuestion[item.id] ? [progressByQuestion[item.id]!] : [],
-    );
-    const elapsedSeconds = visitedProgress.reduce(
-      (total, item) => total + item.elapsedSeconds,
-      0,
-    );
-    const startedAt = visitedProgress.reduce(
-      (earliest, item) =>
-        item.startedAt < earliest ? item.startedAt : earliest,
-      submittedAt,
-    );
-    const nextAttempt: QuizAttempt = {
-      id: `attempt-${submittedAt}-${question.id}`,
+    const visitedProgress = paperQuestions.flatMap((item) => {
+      const itemProgress = progressByQuestion[item.id];
+      return itemProgress ? [itemProgress] : [];
+    });
+    const nextAttempt = createAttempt({
       mode: isRandomQuiz ? 'random' : 'paper',
-      subject: question.subject,
-      year: paperQuestions.every((item) => item.year === question.year)
-        ? question.year
-        : null,
-      questionIds: paperQuestions.map((item) => item.id),
+      source: paperQuestions,
       answers,
-      startedAt,
-      submittedAt,
-      elapsedSeconds,
-      correctCount,
-      wrongCount: paperQuestions.length - correctCount - unansweredCount,
-      unansweredCount,
-    };
+      startedAt: visitedProgress.reduce(
+        (earliest, item) => (item.startedAt < earliest ? item.startedAt : earliest),
+        new Date().toISOString(),
+      ),
+      elapsedSeconds: visitedProgress.reduce(
+        (total, item) => total + item.elapsedSeconds,
+        0,
+      ),
+    });
 
     dispatch({ type: 'save-attempt', attempt: nextAttempt, results });
+    updateQuizProgress({
+      type: 'clear-questions',
+      questionIds: paperQuestions.map((item) => item.id),
+    });
     setAttempt(nextAttempt);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -164,10 +341,7 @@ export function QuizPage({
   if (attempt) {
     const { maximumScore } = getSubjectScoreConfig(question.subject);
     const score = calculateScore(attempt.correctCount, question.subject);
-    const scorePercentage = Math.min(
-      100,
-      Math.max(0, (score / maximumScore) * 100),
-    );
+    const scorePercentage = Math.min(100, Math.max(0, (score / maximumScore) * 100));
 
     return (
       <>
@@ -189,16 +363,30 @@ export function QuizPage({
             <span>/ {maximumScore.toFixed(2)} 分</span>
           </div>
           <div className={styles.resultSummary}>
-            <h2>{attempt.correctCount} / {paperQuestions.length} 題答對</h2>
+            <h2>
+              {attempt.correctCount} / {paperQuestions.length} 題答對
+            </h2>
             <p>
-              已作答 {paperQuestions.length - attempt.unansweredCount} 題・
-              未作答 {attempt.unansweredCount} 題
+              已作答 {paperQuestions.length - attempt.unansweredCount} 題・ 未作答{' '}
+              {attempt.unansweredCount} 題
             </p>
             <div className={styles.resultStats}>
-              <div data-tone="success"><strong>{attempt.correctCount}</strong><span>答對</span></div>
-              <div data-tone="danger"><strong>{attempt.wrongCount}</strong><span>答錯</span></div>
-              <div><strong>{attempt.unansweredCount}</strong><span>未作答</span></div>
-              <div><strong>{formatDuration(attempt.elapsedSeconds)}</strong><span>總時間</span></div>
+              <div data-tone="success">
+                <strong>{attempt.correctCount}</strong>
+                <span>答對</span>
+              </div>
+              <div data-tone="danger">
+                <strong>{attempt.wrongCount}</strong>
+                <span>答錯</span>
+              </div>
+              <div>
+                <strong>{attempt.unansweredCount}</strong>
+                <span>未作答</span>
+              </div>
+              <div>
+                <strong>{formatDuration(attempt.elapsedSeconds)}</strong>
+                <span>總時間</span>
+              </div>
             </div>
           </div>
         </section>
@@ -208,26 +396,23 @@ export function QuizPage({
             questions={paperQuestions}
             anchorPrefix="result-question"
           />
-          <aside
-            className={styles.questionNavigator}
-            aria-label="作答結果題號導覽"
-          >
+          <aside className={styles.questionNavigator} aria-label="作答結果題號導覽">
             <header>
               <div>
                 <span>RESULT MAP</span>
                 <h2>題號導覽</h2>
               </div>
-              <strong>{attempt.correctCount}/{paperQuestions.length}</strong>
+              <strong>
+                {attempt.correctCount}/{paperQuestions.length}
+              </strong>
             </header>
             <div className={styles.questionNumbers}>
               <QuestionNumberGrid>
                 {paperQuestions.map((item) => {
-                  const itemDifficult =
-                    state.difficultQuestionIds.includes(item.id);
+                  const itemDifficult = state.difficultQuestionIds.includes(item.id);
                   const itemSelected = attempt.answers[item.id];
                   const itemWrong =
-                    itemSelected !== undefined &&
-                    !isQuestionCorrect(item, itemSelected);
+                    itemSelected !== undefined && !isQuestionCorrect(item, itemSelected);
 
                   return (
                     <QuestionNumberButton
@@ -246,9 +431,18 @@ export function QuizPage({
               </QuestionNumberGrid>
             </div>
             <footer className={styles.navigatorLegend}>
-              <span><i data-tone="wrong" />答錯</span>
-              <span><i data-tone="difficult" />難題</span>
-              <span><i data-tone="combined" />答錯＋難題</span>
+              <span>
+                <i data-tone="wrong" />
+                答錯
+              </span>
+              <span>
+                <i data-tone="difficult" />
+                難題
+              </span>
+              <span>
+                <i data-tone="combined" />
+                答錯＋難題
+              </span>
             </footer>
           </aside>
         </div>
@@ -265,9 +459,7 @@ export function QuizPage({
               <Tag tone="green">{subject?.shortName}</Tag>
               <Tag>{question.year} 年</Tag>
               <Tag tone="orange">{getQuestionDisplayCategory(question)}</Tag>
-              {question.source.kind === 'sample' ? (
-                <Tag tone="purple">示範題</Tag>
-              ) : null}
+              {question.source.kind === 'sample' ? <Tag tone="purple">示範題</Tag> : null}
             </div>
             <div className={styles.quizActions}>
               <div className={styles.timer}>
@@ -295,7 +487,8 @@ export function QuizPage({
           >
             <div className={styles.questionContentColumn}>
               <span className={styles.questionNumber}>
-                第 {question.questionNumber} 題・收錄題目 {position + 1}/{paperQuestions.length}
+                第 {question.questionNumber} 題・收錄題目 {position + 1}/
+                {paperQuestions.length}
               </span>
               <QuestionPrompt question={question} />
               <QuestionSourceLine question={question} />
@@ -305,8 +498,9 @@ export function QuizPage({
                 label="請選擇答案"
                 options={question.options}
                 value={selected}
+                disabled={!quizProgressScope}
                 onValueChange={(value) =>
-                  progressDispatch({
+                  updateQuizProgress({
                     type: 'select-answer',
                     questionId: question.id,
                     selected: value,
@@ -319,13 +513,14 @@ export function QuizPage({
                   variant="ghost"
                   render={<Link href={`/community?question=${question.id}`} />}
                 >
-                  前往詳解與討論 <IconExternalLink size={17} stroke={2} aria-hidden="true" />
+                  前往詳解與討論{' '}
+                  <IconExternalLink size={17} stroke={2} aria-hidden="true" />
                 </Button>
               ) : null}
             </div>
           </div>
           <footer className={styles.navigation}>
-            {previous ? (
+            {previous && !navigationPending ? (
               <Button render={<Link href={questionHref(previous)} />}>
                 <IconArrowLeft size={17} stroke={2} aria-hidden="true" /> 上一題
               </Button>
@@ -334,13 +529,22 @@ export function QuizPage({
                 <IconArrowLeft size={17} stroke={2} aria-hidden="true" /> 上一題
               </Button>
             )}
-            <span>已作答 {answeredCount} / {paperQuestions.length}</span>
-            {next ? (
+            <span>
+              已作答 {answeredCount} / {paperQuestions.length}
+            </span>
+            {navigationPending ? (
+              <Button variant="primary" disabled>
+                <IconLoader2 size={17} stroke={2} aria-hidden="true" />{' '}
+                {isRandomQuiz ? '載入題組中' : '準備作答中'}
+              </Button>
+            ) : next ? (
               <Button variant="primary" render={<Link href={questionHref(next)} />}>
                 下一題 <IconArrowRight size={17} stroke={2} aria-hidden="true" />
               </Button>
             ) : (
-              <Button variant="primary" onClick={submitQuiz}>對答案</Button>
+              <Button variant="primary" onClick={submitQuiz}>
+                對答案
+              </Button>
             )}
           </footer>
         </section>
@@ -351,35 +555,62 @@ export function QuizPage({
               <span>STATIC PATHS</span>
               <h2>題號導覽</h2>
             </div>
-            <strong>{position + 1}/{paperQuestions.length}</strong>
+            <strong>
+              {position + 1}/{paperQuestions.length}
+            </strong>
           </header>
           <div className={styles.questionNumbers}>
-            <QuestionNumberGrid>
-              {paperQuestions.map((item, index) => {
-                const itemDifficult =
-                  state.difficultQuestionIds.includes(item.id);
+            {randomBank.status === 'error' ? (
+              <p className={styles.navigatorNotice} role="alert">
+                <IconPlugConnectedX size={16} stroke={2} aria-hidden="true" />
+                題組載入失敗
+                <Button onClick={randomBank.retry}>重新載入</Button>
+              </p>
+            ) : randomPending ? (
+              <p className={styles.navigatorNotice}>
+                <IconLoader2 size={16} stroke={2} aria-hidden="true" />
+                正在載入這次抽出的題目…
+              </p>
+            ) : isRandomQuiz && !queryRandomSessionId ? (
+              <p className={styles.navigatorNotice}>
+                <IconLoader2 size={16} stroke={2} aria-hidden="true" />
+                正在建立這次作答…
+              </p>
+            ) : null}
+            {!navigationPending ? (
+              <QuestionNumberGrid>
+                {paperQuestions.map((item, index) => {
+                  const itemDifficult = state.difficultQuestionIds.includes(item.id);
 
-                return (
-                  <QuestionNumberButton
-                    key={item.id}
-                    href={questionHref(item)}
-                    ariaLabel={`前往第 ${item.questionNumber} 題`}
-                    active={index === position}
-                    answered={
-                      progressByQuestion[item.id]?.selected !== undefined
-                    }
-                    difficult={itemDifficult}
-                  >
-                    {item.questionNumber}
-                  </QuestionNumberButton>
-                );
-              })}
-            </QuestionNumberGrid>
+                  return (
+                    <QuestionNumberButton
+                      key={item.id}
+                      href={questionHref(item)}
+                      ariaLabel={`前往第 ${item.questionNumber} 題`}
+                      active={index === position}
+                      answered={progressByQuestion[item.id]?.selected !== undefined}
+                      difficult={itemDifficult}
+                    >
+                      {item.questionNumber}
+                    </QuestionNumberButton>
+                  );
+                })}
+              </QuestionNumberGrid>
+            ) : null}
           </div>
           <footer className={styles.navigatorLegend}>
-            <span><i data-tone="current" />目前題目</span>
-            <span><i data-tone="answered" />已作答</span>
-            <span><i data-tone="difficult" />難題</span>
+            <span>
+              <i data-tone="current" />
+              目前題目
+            </span>
+            <span>
+              <i data-tone="answered" />
+              已作答
+            </span>
+            <span>
+              <i data-tone="difficult" />
+              難題
+            </span>
           </footer>
         </aside>
       </div>

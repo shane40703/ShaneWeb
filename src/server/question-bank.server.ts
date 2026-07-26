@@ -1,4 +1,5 @@
-import { readdir, readFile } from 'node:fs/promises';
+import { readdir, readFile, stat } from 'node:fs/promises';
+import type { Dirent } from 'node:fs';
 import path from 'node:path';
 import sharp from 'sharp';
 import { subjects } from '@/question-bank/catalog';
@@ -12,6 +13,7 @@ import {
   type SubjectId,
 } from '@/question-bank/schema';
 import { questionPath } from '@/lib/question-path';
+import { toQuizQuestion } from '@/lib/study';
 import type { Question, QuestionSummary, QuizQuestion } from '@/lib/types';
 
 const bankRoot = path.join(process.cwd(), 'public/question-bank');
@@ -20,6 +22,13 @@ const questionDirectoryPattern = /^\d{2}$/;
 const questionFilePattern = /^question-(\d{2})\.(txt|png|jpe?g|webp)$/;
 const questionImageFilePattern = /^question-\d{2}\.(png|jpe?g|webp)$/;
 const subjectOrder = new Map(subjects.map((subject, index) => [subject.id, index]));
+
+/** Filesystem noise that must never be mistaken for question bank content. */
+const ignoredEntryNames = new Set(['.DS_Store', 'Thumbs.db']);
+
+function bankEntries(entries: readonly Dirent[]) {
+  return entries.filter((entry) => !ignoredEntryNames.has(entry.name));
+}
 
 interface RuntimeQuestionMeta {
   primaryCategory: string;
@@ -99,7 +108,8 @@ function parseAnswerKey(filePath: string, value: unknown): SourceAnswerKey {
     validateKeys(filePath, answerKey, ['kind'], ['kind']);
     return { kind };
   }
-  if (kind !== 'accepted') fail(filePath, 'answerKey.kind must be accepted or all-credit');
+  if (kind !== 'accepted')
+    fail(filePath, 'answerKey.kind must be accepted or all-credit');
   validateKeys(filePath, answerKey, ['kind', 'options'], ['kind', 'options']);
   const options = stringArray(filePath, answerKey.options, 'answerKey.options');
   if (!options.length) fail(filePath, 'answerKey.options must not be empty');
@@ -134,7 +144,9 @@ function parseImages(filePath: string, value: unknown) {
     }
     const image = objectValue(filePath, imageValue, `images.${fileName}`);
     validateKeys(filePath, image, ['alt'], ['alt']);
-    images[fileName] = { alt: stringValue(filePath, image.alt, `images.${fileName}.alt`) };
+    images[fileName] = {
+      alt: stringValue(filePath, image.alt, `images.${fileName}.alt`),
+    };
   }
   return images;
 }
@@ -148,7 +160,15 @@ function parseQuestionMeta(
   validateKeys(
     filePath,
     meta,
-    ['primaryCategory', 'topic', 'tags', 'relatedLaws', 'answerKey', 'provenance', 'images'],
+    [
+      'primaryCategory',
+      'topic',
+      'tags',
+      'relatedLaws',
+      'answerKey',
+      'provenance',
+      'images',
+    ],
     ['primaryCategory', 'topic', 'tags', 'answerKey', 'provenance'],
   );
 
@@ -262,9 +282,11 @@ async function discoverYear(
   const year = Number(yearEntryName);
   const yearDirectory = path.join(bankRoot, subjectDirectory, yearEntryName);
   if (year <= 0) fail(yearDirectory, 'year directory must be greater than zero');
-  const entries = await readdir(yearDirectory, { withFileTypes: true });
+  const entries = bankEntries(await readdir(yearDirectory, { withFileTypes: true }));
   let paper: PaperMeta | undefined;
-  const paperEntry = entries.find((entry) => entry.isFile() && entry.name === 'paper.json');
+  const paperEntry = entries.find(
+    (entry) => entry.isFile() && entry.name === 'paper.json',
+  );
   if (paperEntry) {
     const paperPath = path.join(yearDirectory, paperEntry.name);
     paper = parsePaperMeta(paperPath, await readJson(paperPath));
@@ -272,7 +294,7 @@ async function discoverYear(
 
   const questionDirectoryNames: string[] = [];
   for (const entry of entries) {
-    if (entry.name === '.DS_Store' || (entry.isFile() && entry.name === 'paper.json')) continue;
+    if (entry.isFile() && entry.name === 'paper.json') continue;
     if (entry.isDirectory() && entry.name === 'source') continue;
     if (entry.isDirectory() && questionDirectoryPattern.test(entry.name)) {
       questionDirectoryNames.push(entry.name);
@@ -290,9 +312,13 @@ async function discoverYear(
         fail(metaPath, 'official questions require paper.json in the year directory');
       }
       const questionNumber = Number(questionEntryName);
-      if (questionNumber <= 0) fail(directory, 'question number must be greater than zero');
+      if (questionNumber <= 0)
+        fail(directory, 'question number must be greater than zero');
       if (paper && questionNumber > paper.totalQuestions) {
-        fail(metaPath, `question number exceeds paper totalQuestions ${paper.totalQuestions}`);
+        fail(
+          metaPath,
+          `question number exceeds paper totalQuestions ${paper.totalQuestions}`,
+        );
       }
       return {
         subject,
@@ -306,7 +332,10 @@ async function discoverYear(
     }),
   );
 
-  if (paper?.status === 'official-complete' && questions.length !== paper.totalQuestions) {
+  if (
+    paper?.status === 'official-complete' &&
+    questions.length !== paper.totalQuestions
+  ) {
     fail(
       path.join(yearDirectory, 'paper.json'),
       `official-complete paper declares ${paper.totalQuestions} questions but found ${questions.length}`,
@@ -316,10 +345,11 @@ async function discoverYear(
 }
 
 async function discoverQuestionEntries() {
-  const rootEntries = await readdir(bankRoot, { withFileTypes: true });
-  const expectedDirectories = new Set<string>(subjects.map((subject) => subject.directory));
+  const rootEntries = bankEntries(await readdir(bankRoot, { withFileTypes: true }));
+  const expectedDirectories = new Set<string>(
+    subjects.map((subject) => subject.directory),
+  );
   for (const entry of rootEntries) {
-    if (entry.name === '.DS_Store') continue;
     if (!entry.isDirectory() || !expectedDirectories.has(entry.name)) {
       fail(path.join(bankRoot, entry.name), 'unexpected entry in question bank root');
     }
@@ -329,12 +359,16 @@ async function discoverQuestionEntries() {
     await Promise.all(
       subjects.map(async (subject) => {
         const subjectDirectory = path.join(bankRoot, subject.directory);
-        const entries = await readdir(subjectDirectory, { withFileTypes: true });
+        const entries = bankEntries(
+          await readdir(subjectDirectory, { withFileTypes: true }),
+        );
         const years: string[] = [];
         for (const entry of entries) {
-          if (entry.name === '.DS_Store') continue;
           if (!entry.isDirectory() || !yearDirectoryPattern.test(entry.name)) {
-            fail(path.join(subjectDirectory, entry.name), 'expected a three-digit year directory');
+            fail(
+              path.join(subjectDirectory, entry.name),
+              'expected a three-digit year directory',
+            );
           }
           years.push(entry.name);
         }
@@ -355,13 +389,48 @@ async function discoverQuestionEntries() {
   );
 }
 
-let cachedQuestionEntries: Promise<QuestionEntry[]> | undefined;
-let cachedQuestionSummaries: Promise<QuestionSummary[]> | undefined;
+/**
+ * Stats every bank file so `next dev` can reuse a parsed bank until something on
+ * disk actually changes. Statting is orders of magnitude cheaper than re-reading
+ * every option file and re-probing every image with sharp on each request.
+ */
+async function bankFingerprint() {
+  const entries = bankEntries(
+    await readdir(bankRoot, { recursive: true, withFileTypes: true }),
+  ).filter((entry) => entry.isFile());
+  const stamps = await Promise.all(
+    entries.map(async (entry) => {
+      const filePath = path.join(entry.parentPath, entry.name);
+      const { mtimeMs, size } = await stat(filePath);
+      return `${filePath}:${mtimeMs}:${size}`;
+    }),
+  );
+  return stamps.sort().join('|');
+}
 
-function getQuestionEntries() {
-  if (process.env.NODE_ENV === 'development') return discoverQuestionEntries();
-  cachedQuestionEntries ??= discoverQuestionEntries();
-  return cachedQuestionEntries;
+interface BankCache {
+  fingerprint: string;
+  entries: Promise<QuestionEntry[]>;
+  summaries?: Promise<QuestionSummary[]>;
+}
+
+const watchesQuestionBank = process.env.NODE_ENV === 'development';
+let bankCache: BankCache | undefined;
+
+async function getBankCache(): Promise<BankCache> {
+  if (!watchesQuestionBank) {
+    bankCache ??= { fingerprint: '', entries: discoverQuestionEntries() };
+    return bankCache;
+  }
+  const fingerprint = await bankFingerprint();
+  if (bankCache?.fingerprint !== fingerprint) {
+    bankCache = { fingerprint, entries: discoverQuestionEntries() };
+  }
+  return bankCache;
+}
+
+async function getQuestionEntries() {
+  return (await getBankCache()).entries;
 }
 
 function questionId(entry: QuestionEntry) {
@@ -380,9 +449,11 @@ function runtimeAnswerKey(answerKey: SourceAnswerKey) {
   };
 }
 
-async function discoverQuestionSummaries(): Promise<QuestionSummary[]> {
+async function discoverQuestionSummaries(
+  entries: readonly QuestionEntry[],
+): Promise<QuestionSummary[]> {
   return Promise.all(
-    (await getQuestionEntries()).map(async (entry) => {
+    entries.map(async (entry) => {
       const question = await loadQuestion(entry);
       return {
         id: question.id,
@@ -401,9 +472,9 @@ async function discoverQuestionSummaries(): Promise<QuestionSummary[]> {
 }
 
 export async function getQuestionSummaries(): Promise<QuestionSummary[]> {
-  if (process.env.NODE_ENV === 'development') return discoverQuestionSummaries();
-  cachedQuestionSummaries ??= discoverQuestionSummaries();
-  return cachedQuestionSummaries;
+  const cache = await getBankCache();
+  cache.summaries ??= cache.entries.then(discoverQuestionSummaries);
+  return cache.summaries;
 }
 
 export async function getQuestionStaticPaths() {
@@ -434,7 +505,12 @@ async function readImageDimensions(filePath: string) {
     fail(filePath, `unable to read image metadata: ${message}`);
   }
   const { width, height } = metadata.autoOrient;
-  if (!Number.isInteger(width) || width <= 0 || !Number.isInteger(height) || height <= 0) {
+  if (
+    !Number.isInteger(width) ||
+    width <= 0 ||
+    !Number.isInteger(height) ||
+    height <= 0
+  ) {
     fail(filePath, 'image must have valid intrinsic dimensions');
   }
   return { width, height };
@@ -443,8 +519,8 @@ async function readImageDimensions(filePath: string) {
 export async function loadQuestion(entry: QuestionEntry): Promise<Question> {
   const { directory, meta } = entry;
   const metaPath = path.join(directory, 'meta.json');
-  const entries = (await readdir(directory, { withFileTypes: true })).sort((left, right) =>
-    left.name.localeCompare(right.name),
+  const entries = bankEntries(await readdir(directory, { withFileTypes: true })).sort(
+    (left, right) => left.name.localeCompare(right.name),
   );
   const contentFiles = entries
     .filter((file) => file.isFile())
@@ -455,9 +531,12 @@ export async function loadQuestion(entry: QuestionEntry): Promise<Question> {
         : null;
     })
     .filter((file): file is NonNullable<typeof file> => Boolean(file))
-    .sort((left, right) => left.order - right.order || left.name.localeCompare(right.name));
+    .sort(
+      (left, right) => left.order - right.order || left.name.localeCompare(right.name),
+    );
 
-  if (!contentFiles.length) fail(directory, 'at least one question-NN.* file is required');
+  if (!contentFiles.length)
+    fail(directory, 'at least one question-NN.* file is required');
   for (let index = 1; index < contentFiles.length; index += 1) {
     if (contentFiles[index - 1].order === contentFiles[index].order) {
       fail(directory, `question order ${contentFiles[index].order} is duplicated`);
@@ -471,7 +550,6 @@ export async function loadQuestion(entry: QuestionEntry): Promise<Question> {
     ...contentFiles.map((file) => file.name),
   ]);
   for (const file of entries) {
-    if (file.name === '.DS_Store') continue;
     if (!file.isFile() || !allowedNames.has(file.name)) {
       fail(path.join(directory, file.name), 'unexpected entry in question directory');
     }
@@ -506,12 +584,15 @@ export async function loadQuestion(entry: QuestionEntry): Promise<Question> {
   }
 
   for (const declaredImage of Object.keys(meta.images ?? {})) {
-    if (!usedImages.has(declaredImage)) fail(metaPath, `images references missing ${declaredImage}`);
+    if (!usedImages.has(declaredImage))
+      fail(metaPath, `images references missing ${declaredImage}`);
   }
 
   let explanation: string | undefined;
   try {
-    explanation = (await readFile(path.join(directory, 'explanation.txt'), 'utf8')).trim();
+    explanation = (
+      await readFile(path.join(directory, 'explanation.txt'), 'utf8')
+    ).trim();
     if (!explanation) fail(directory, 'explanation.txt must not be empty when present');
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
@@ -525,7 +606,9 @@ export async function loadQuestion(entry: QuestionEntry): Promise<Question> {
           page: meta.provenance.page,
           questionUrl: entry.paper.questionUrl,
           answerUrl: entry.paper.answerUrl,
-          ...(entry.paper.correctionUrl ? { correctionUrl: entry.paper.correctionUrl } : {}),
+          ...(entry.paper.correctionUrl
+            ? { correctionUrl: entry.paper.correctionUrl }
+            : {}),
         }
       : { kind: 'sample' };
 
@@ -551,6 +634,13 @@ export async function loadAllQuestions() {
   return Promise.all((await getQuestionEntries()).map((entry) => loadQuestion(entry)));
 }
 
+export async function loadSubjectQuestions(subject: SubjectId): Promise<Question[]> {
+  const entries = (await getQuestionEntries()).filter(
+    (entry) => entry.subject === subject,
+  );
+  return Promise.all(entries.map((entry) => loadQuestion(entry)));
+}
+
 export async function loadQuizQuestions(
   subject: SubjectId,
   year?: number,
@@ -559,18 +649,5 @@ export async function loadQuizQuestions(
     (entry) => entry.subject === subject && (year === undefined || entry.year === year),
   );
   const questions = await Promise.all(entries.map((entry) => loadQuestion(entry)));
-  return questions.map((question) => ({
-    id: question.id,
-    subject: question.subject,
-    year: question.year,
-    questionNumber: question.questionNumber,
-    text: question.text,
-    content: question.content,
-    options: question.options,
-    answerKey: question.answerKey,
-    ...(question.explanation
-      ? { explanation: question.explanation }
-      : {}),
-    path: questionPath(question.subject, question.year, question.questionNumber),
-  }));
+  return questions.map(toQuizQuestion);
 }

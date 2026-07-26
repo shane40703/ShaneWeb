@@ -1,28 +1,18 @@
-import {
-  type ComponentProps,
-  type ReactNode,
-  createContext,
-  useContext,
-  useId,
-} from 'react';
+import { type ComponentProps, type ReactNode, createContext, useContext } from 'react';
 import { AlertDialog } from '@base-ui/react/alert-dialog';
 import { Button as BaseButton } from '@base-ui/react/button';
 import { Drawer } from '@base-ui/react/drawer';
 import { Field } from '@base-ui/react/field';
-import { NumberField } from '@base-ui/react/number-field';
 import { Progress } from '@base-ui/react/progress';
 import { Radio } from '@base-ui/react/radio';
 import { RadioGroup } from '@base-ui/react/radio-group';
 import { Select } from '@base-ui/react/select';
-import { Switch } from '@base-ui/react/switch';
 import { Toast } from '@base-ui/react/toast';
 import {
   IconAlertTriangle,
   IconCheck,
   IconChevronDown,
   IconMenu2,
-  IconMinus,
-  IconPlus,
   IconX,
 } from '@tabler/icons-react';
 import styles from './ui.module.css';
@@ -31,7 +21,10 @@ function cx(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(' ');
 }
 
-export interface ButtonProps extends Omit<ComponentProps<typeof BaseButton>, 'className'> {
+export interface ButtonProps extends Omit<
+  ComponentProps<typeof BaseButton>,
+  'className'
+> {
   className?: string;
   variant?: 'primary' | 'secondary' | 'ghost' | 'danger' | 'icon';
   fullWidth?: boolean;
@@ -46,7 +39,12 @@ export function Button({
   const nativeButton = props.nativeButton ?? !props.render;
   return (
     <BaseButton
-      className={cx(styles.button, styles[variant], fullWidth && styles.fullWidth, className)}
+      className={cx(
+        styles.button,
+        styles[variant],
+        fullWidth && styles.fullWidth,
+        className,
+      )}
       nativeButton={nativeButton}
       {...props}
     />
@@ -93,7 +91,11 @@ export function SimpleSelect<T extends string>({
           <Select.Popup className={styles.selectPopup}>
             <Select.List className={styles.selectList}>
               {options.map((option) => (
-                <Select.Item key={option.value} value={option.value} className={styles.selectItem}>
+                <Select.Item
+                  key={option.value}
+                  value={option.value}
+                  className={styles.selectItem}
+                >
                   <Select.ItemIndicator className={styles.selectIndicator}>
                     <IconCheck size={16} stroke={2.5} aria-hidden="true" />
                   </Select.ItemIndicator>
@@ -105,76 +107,6 @@ export function SimpleSelect<T extends string>({
         </Select.Positioner>
       </Select.Portal>
     </Select.Root>
-  );
-}
-
-export function ToggleSwitch({
-  label,
-  description,
-  checked,
-  onCheckedChange,
-}: {
-  label: string;
-  description?: string;
-  checked: boolean;
-  onCheckedChange: (checked: boolean) => void;
-}) {
-  const id = useId();
-  return (
-    <div className={styles.switchRow}>
-      <label htmlFor={id} className={styles.switchCopy}>
-        <strong>{label}</strong>
-        {description ? <span>{description}</span> : null}
-      </label>
-      <Switch.Root
-        id={id}
-        aria-label={label}
-        checked={checked}
-        onCheckedChange={onCheckedChange}
-        className={styles.switch}
-      >
-        <Switch.Thumb className={styles.switchThumb} />
-      </Switch.Root>
-    </div>
-  );
-}
-
-export function QuantityField({
-  label,
-  value,
-  min,
-  max,
-  onValueChange,
-}: {
-  label: string;
-  value: number;
-  min: number;
-  max: number;
-  onValueChange: (value: number) => void;
-}) {
-  const id = useId();
-  return (
-    <NumberField.Root
-      id={id}
-      value={value}
-      min={min}
-      max={max}
-      onValueChange={(nextValue) => nextValue !== null && onValueChange(nextValue)}
-      className={styles.fieldStack}
-    >
-      <label htmlFor={id} className={styles.label}>
-        {label}
-      </label>
-      <NumberField.Group className={styles.numberGroup}>
-        <NumberField.Decrement aria-label="減少" className={styles.numberButton}>
-          <IconMinus size={18} stroke={2} aria-hidden="true" />
-        </NumberField.Decrement>
-        <NumberField.Input className={styles.numberInput} />
-        <NumberField.Increment aria-label="增加" className={styles.numberButton}>
-          <IconPlus size={18} stroke={2} aria-hidden="true" />
-        </NumberField.Increment>
-      </NumberField.Group>
-    </NumberField.Root>
   );
 }
 
@@ -202,7 +134,7 @@ export function OptionGroup({
         className={styles.options}
       >
         {options.map((option, index) => (
-          <label className={styles.option} key={option}>
+          <label className={styles.option} key={index}>
             <Radio.Root value={String(index)} className={styles.radio}>
               <Radio.Indicator className={styles.radioIndicator} />
             </Radio.Root>
@@ -236,7 +168,8 @@ function ToastBridge({ children }: { children: ReactNode }) {
   return (
     <ToastContext.Provider
       value={{
-        notify: (title, description) => manager.add({ title, description, timeout: 2600 }),
+        notify: (title, description) =>
+          manager.add({ title, description, timeout: 2600 }),
       }}
     >
       {children}

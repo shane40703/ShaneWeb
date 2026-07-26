@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useState } from 'react';
 import {
+  IconAlertTriangle,
   IconBuildingSkyscraper,
   IconBulb,
   IconChartPie,
@@ -14,7 +15,25 @@ import {
   IconSparkles,
 } from '@tabler/icons-react';
 import { SideDrawer } from '@/components/ui/ui';
+import { useAppState } from '@/state/app-state';
 import styles from './app-shell.module.css';
+
+const persistenceMessages = {
+  'quota-exceeded':
+    '瀏覽器儲存空間已滿，最新的作答與筆記沒有存檔。請刪除部分筆記圖片後再試一次。',
+  unavailable: '這個瀏覽器不允許本機儲存，離開頁面後作答紀錄與筆記不會保留。',
+} as const;
+
+function PersistenceWarning() {
+  const { persistence } = useAppState();
+  if (persistence === 'saved') return null;
+  return (
+    <p className={styles.persistenceWarning} role="alert">
+      <IconAlertTriangle size={17} stroke={2} aria-hidden="true" />
+      {persistenceMessages[persistence]}
+    </p>
+  );
+}
 
 const navigation = [
   { href: '/', label: '首頁', icon: IconHome },
@@ -45,7 +64,13 @@ function Brand() {
   );
 }
 
-function Navigation({ pathname, onNavigate }: { pathname: string; onNavigate?: () => void }) {
+function Navigation({
+  pathname,
+  onNavigate,
+}: {
+  pathname: string;
+  onNavigate?: () => void;
+}) {
   return (
     <nav className={styles.navigation} aria-label="主要功能">
       {navigation.map((item) => (
@@ -66,7 +91,13 @@ function Navigation({ pathname, onNavigate }: { pathname: string; onNavigate?: (
   );
 }
 
-function SidebarContent({ pathname, onNavigate }: { pathname: string; onNavigate?: () => void }) {
+function SidebarContent({
+  pathname,
+  onNavigate,
+}: {
+  pathname: string;
+  onNavigate?: () => void;
+}) {
   return (
     <div className={styles.sidebarInner}>
       <Brand />
@@ -82,7 +113,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const currentPage = navigation.find((item) => isActive(pathname, item.href));
   const pageTitle = pathname.startsWith('/questions/')
     ? '作答頁'
-    : currentPage?.label ?? '建築師考試';
+    : (currentPage?.label ?? '建築師考試');
 
   return (
     <div className={styles.shell}>
@@ -98,7 +129,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               triggerLabel="開啟選單"
               title="主要功能"
             >
-              <SidebarContent pathname={pathname} onNavigate={() => setDrawerOpen(false)} />
+              <SidebarContent
+                pathname={pathname}
+                onNavigate={() => setDrawerOpen(false)}
+              />
             </SideDrawer>
             <h1 className={styles.pageTitle}>{pageTitle}</h1>
           </div>
@@ -107,7 +141,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             免登入・本機保存
           </span>
         </header>
-        <main className={styles.main}>{children}</main>
+        <main className={styles.main}>
+          <PersistenceWarning />
+          {children}
+        </main>
       </div>
     </div>
   );

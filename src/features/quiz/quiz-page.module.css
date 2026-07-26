@@ -465,3 +465,13 @@
     justify-self: start;
   }
 }
+
+.navigatorNotice {
+  margin: 0 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 650;
+}
