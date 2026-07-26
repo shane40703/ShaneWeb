@@ -3,6 +3,7 @@ import Image from 'next/image';
 import type { ReactNode } from 'react';
 import { IconBulb, IconExternalLink, type TablerIcon } from '@tabler/icons-react';
 import { Button } from '@/components/ui/ui';
+import { ImageLightbox } from '@/components/image-lightbox';
 import { getSubject } from '@/question-bank/catalog';
 import { getQuestionDisplayCategory } from '@/lib/study';
 import type { Question } from '@/lib/types';
@@ -112,6 +113,12 @@ export function QuestionPrompt({
               height={block.height}
               loading={compact ? 'lazy' : 'eager'}
               sizes={compact ? '(max-width: 720px) 100vw, 560px' : '(max-width: 900px) 100vw, 820px'}
+            />
+            <ImageLightbox
+              src={block.src}
+              alt={block.alt}
+              triggerClassName={styles.questionImageZoom}
+              triggerLabel={`放大題目圖片 ${block.alt}`}
             />
           </figure>
         ),

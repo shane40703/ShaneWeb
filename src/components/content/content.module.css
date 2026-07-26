@@ -146,6 +146,7 @@
   max-width: min(100%, 820px);
   margin: 0;
   padding: 12px;
+  position: relative;
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 14px;
@@ -157,6 +158,14 @@
   height: auto;
   display: block;
   object-fit: contain;
+}
+
+.questionImageZoom {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: end;
+  padding: 12px;
 }
 
 .questionPrompt[data-compact='true'] {

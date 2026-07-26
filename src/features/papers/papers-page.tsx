@@ -27,7 +27,12 @@ export function PapersPage({ questions }: { questions: QuestionSummary[] }) {
     : availableYears[0] ?? years[0];
   const subject = subjects.find((item) => item.id === subjectId) ?? subjects[0];
   const paperQuestions = questions
-    .filter((question) => question.subject === subjectId && question.year === year)
+    .filter(
+      (question) =>
+        question.subject === subjectId &&
+        question.year === year &&
+        question.answerKey.kind !== 'all-credit',
+    )
     .sort((left, right) => left.questionNumber - right.questionNumber);
 
   function updateSelection(nextSubject: SubjectId, nextYear: number) {

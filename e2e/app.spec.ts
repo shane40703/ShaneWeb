@@ -84,6 +84,13 @@ test('paper flow, timer, difficult marker, and draft answers stay ungraded', asy
   await expect(
     page.getByRole('list', { name: '第 1 題完整選項' }).getByRole('listitem'),
   ).toHaveCount(4);
+  const difficultAnswer = page.getByRole('region', {
+    name: '第 1 題答案與最佳解',
+  });
+  await expect(difficultAnswer).toBeVisible();
+  await expect(difficultAnswer.getByText('正確答案')).toBeVisible();
+  await expect(difficultAnswer.getByText('D', { exact: true })).toBeVisible();
+  await expect(difficultAnswer.getByText('最佳解')).toBeVisible();
   await page.reload();
   await expect(page.getByRole('button', { name: '取消難題標記' })).toBeVisible();
 
@@ -130,7 +137,8 @@ test('static question paths preserve state and submit a paper result to history'
   await expect(page.getByText('圖 D', { exact: true }).locator('..').getByRole('radio')).toBeChecked();
   await page.getByRole('button', { name: '對答案' }).click();
 
-  await expect(page.getByRole('heading', { name: '本次作答結果' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '本回作答結果' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '本次作答結果' })).toHaveCount(0);
   await expect(page.getByLabel('本次得分 30.00 分')).toBeVisible();
   await expect(page.getByRole('heading', { name: '逐題作答結果' })).toBeVisible();
   await expect(page.getByText('1 / 2 題答對')).toBeVisible();
@@ -152,6 +160,12 @@ test('static question paths preserve state and submit a paper result to history'
   ).toHaveAttribute('data-difficult', 'true');
   await expect(resultNavigator.getByText('答錯＋難題')).toBeVisible();
   await expect(
+    page.getByRole('button', { name: /選擇其他試卷|建立其他題組/ }),
+  ).toHaveCount(0);
+  await expect(
+    page.getByRole('button', { name: '查看作答紀錄' }),
+  ).toHaveCount(0);
+  await expect(
     page.getByRole('region', { name: '第 49 題使用者筆記' }),
   ).toBeHidden();
   await page.getByText('檢視完整選項與筆記').last().click();
@@ -160,7 +174,7 @@ test('static question paths preserve state and submit a paper result to history'
   ).toBeVisible();
   await expect(page.getByText('查看題目')).toHaveCount(0);
 
-  await page.getByRole('button', { name: '查看作答紀錄' }).click();
+  await page.goto('/history');
   await expect(page.getByText('50%', { exact: true })).toBeVisible();
   await expect(page.getByText(/^答對/)).toContainText('1');
   await expect(page.getByText(/^答錯/)).toContainText('1');
@@ -205,6 +219,18 @@ test('static question files render ordered images and text-only options', async 
     'FIGURE',
   ]);
   await expect(page.getByRole('img', { name: '標示為（1）、（2）、（3）的三個衝擊韌性試片斷口照片' })).toBeVisible();
+  await page
+    .getByRole('button', {
+      name: '放大題目圖片 標示為（1）、（2）、（3）的三個衝擊韌性試片斷口照片',
+    })
+    .click();
+  await expect(
+    page.getByRole('dialog', {
+      name: '放大檢視 標示為（1）、（2）、（3）的三個衝擊韌性試片斷口照片',
+    }),
+  ).toBeVisible();
+  await page.getByRole('button', { name: '關閉放大圖片' }).last().click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
   const options = page.getByRole('radiogroup', { name: '請選擇答案' });
   await expect(options.locator('img')).toHaveCount(0);
   await expect(options.getByText('(3)＞(2)＞(1)', { exact: true })).toBeVisible();
@@ -226,6 +252,14 @@ test('static question files render ordered images and text-only options', async 
   expect(viewport).not.toBeNull();
   expect(promptImageBounds!.x).toBeGreaterThan(promptTextBounds!.x);
   expect(promptImageBounds!.height).toBeGreaterThanOrEqual(200);
+  expect(
+    Number.parseFloat(
+      await options
+        .locator('label')
+        .first()
+        .evaluate((element) => getComputedStyle(element).fontSize),
+    ),
+  ).toBeGreaterThanOrEqual(15);
   expect(optionBounds!.y).toBeGreaterThanOrEqual(
     promptBounds!.y + promptBounds!.height,
   );
@@ -240,6 +274,25 @@ test('static question files render ordered images and text-only options', async 
   await expect(options.locator('img')).toHaveCount(0);
   await expect(options.getByText('圖 A', { exact: true })).toBeVisible();
   await expect(options.getByText('圖 D', { exact: true })).toBeVisible();
+});
+
+test('all-credit questions are excluded from every quiz paper', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop');
+
+  await page.goto('/questions/construction/114/01');
+  const navigator = page.getByRole('complementary', { name: '題號導覽' });
+  await expect(navigator.getByRole('link')).toHaveCount(78);
+  await expect(
+    navigator.getByRole('link', { name: '前往第 17 題' }),
+  ).toHaveCount(0);
+  await expect(
+    navigator.getByRole('link', { name: '前往第 20 題' }),
+  ).toHaveCount(0);
+  await expect(page.getByText('收錄題目 1/78')).toBeVisible();
+
+  await page.goto('/questions/construction/114/17');
+  await expect(page).toHaveURL(/\/questions\/construction\/114\/18$/);
+  await expect(page.getByText('收錄題目 17/78')).toBeVisible();
 });
 
 test('official corrected answer accepts every published answer', async ({ page }, testInfo) => {

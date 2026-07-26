@@ -255,9 +255,10 @@
 }
 
 .answerColumn :global([role='radiogroup']) > label {
-  min-height: 42px;
-  padding: 7px 10px;
-  font-size: 13px;
+  min-height: 48px;
+  padding: 9px 12px;
+  font-size: clamp(15px, 1.25vw, 17px);
+  line-height: 1.5;
 }
 
 .answerColumn > a,
@@ -287,11 +288,43 @@
 }
 
 .resultCard {
+  margin-top: 8px;
   padding: 30px;
   display: grid;
   grid-template-columns: 150px minmax(0, 1fr);
   gap: 28px;
   align-items: center;
+}
+
+.resultHeading {
+  padding-bottom: 20px;
+  display: grid;
+  grid-column: 1 / -1;
+  gap: 5px;
+  border-bottom: 1px solid var(--line);
+}
+
+.resultHeading > span {
+  color: var(--primary-strong);
+  font-size: 10px;
+  font-weight: 850;
+  letter-spacing: .14em;
+}
+
+.resultHeading h1,
+.resultHeading p {
+  margin: 0;
+}
+
+.resultHeading h1 {
+  font-size: clamp(30px, 3.4vw, 46px);
+  line-height: 1.12;
+  letter-spacing: -.035em;
+}
+
+.resultHeading p {
+  color: var(--muted);
+  font-size: 13px;
 }
 
 .scoreRing {
@@ -323,14 +356,6 @@
   min-width: 0;
   display: grid;
   gap: 5px;
-}
-
-.resultSummary > span,
-.reviewHeader span {
-  color: var(--primary-strong);
-  font-size: 11px;
-  font-weight: 850;
-  letter-spacing: 0.08em;
 }
 
 .resultSummary h2,
@@ -368,13 +393,6 @@
 
 .resultStats [data-tone='success'] strong { color: var(--success); }
 .resultStats [data-tone='danger'] strong { color: var(--danger); }
-
-.resultActions {
-  grid-column: 2;
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
 
 @media (max-width: 1120px) {
   .quizLayout,
@@ -435,10 +453,6 @@
   .scoreRing {
     width: 130px;
     justify-self: center;
-  }
-
-  .resultActions {
-    grid-column: auto;
   }
 
   .questionBody[data-has-image] .questionContentColumn > div,

@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import {
   PageHeader,
@@ -30,6 +30,21 @@ describe('question content renderer', () => {
     expect(container.querySelectorAll('img')).toHaveLength(1);
     expect(image).toHaveAttribute('width', '480');
     expect(image).toHaveAttribute('height', '444');
+
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: /放大題目圖片.*三個衝擊韌性試片斷口照片/,
+      }),
+    );
+    expect(
+      screen.getByRole('dialog', {
+        name: /放大檢視.*三個衝擊韌性試片斷口照片/,
+      }),
+    ).toBeInTheDocument();
+    fireEvent.click(
+      screen.getAllByRole('button', { name: '關閉放大圖片' })[1],
+    );
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
   it('links official questions back to their source paper', () => {

@@ -56,7 +56,12 @@ export function QuizPage({
     router.query.mode === 'random' && typeof router.query.questions === 'string'
       ? router.query.questions.split(',').filter(Boolean)
       : [];
-  const questionById = new Map(questionBank.map((item) => [item.id, item]));
+  const eligibleQuestionBank = questionBank.filter(
+    (item) => item.answerKey.kind !== 'all-credit',
+  );
+  const questionById = new Map(
+    eligibleQuestionBank.map((item) => [item.id, item]),
+  );
   const currentQuizQuestion = questionById.get(question.id);
   const isSingleQuestion = router.query.mode === 'single';
   const randomQuestions = [
@@ -74,7 +79,7 @@ export function QuizPage({
       ? currentQuizQuestion
         ? [currentQuizQuestion]
         : []
-      : questionBank.filter((item) => item.year === question.year);
+      : eligibleQuestionBank.filter((item) => item.year === question.year);
   const position = paperQuestions.findIndex((item) => item.id === question.id);
   const questionSearch = isRandomQuiz
     ? `?mode=random&questions=${encodeURIComponent(randomQuestions.map((item) => item.id).join(','))}`
@@ -85,9 +90,7 @@ export function QuizPage({
   const previous = paperQuestions[position - 1];
   const next = paperQuestions[position + 1];
   const answeredCount = paperQuestions.filter(
-    (item) =>
-      progressByQuestion[item.id]?.selected !== undefined ||
-      item.answerKey.kind === 'all-credit',
+    (item) => progressByQuestion[item.id]?.selected !== undefined,
   ).length;
 
   useEffect(() => {
@@ -123,9 +126,7 @@ export function QuizPage({
       isQuestionCorrect(item, progressByQuestion[item.id]?.selected),
     ).length;
     const unansweredCount = paperQuestions.filter(
-      (item) =>
-        progressByQuestion[item.id]?.selected === undefined &&
-        item.answerKey.kind !== 'all-credit',
+      (item) => progressByQuestion[item.id]?.selected === undefined,
     ).length;
     const visitedProgress = paperQuestions.flatMap((item) =>
       progressByQuestion[item.id] ? [progressByQuestion[item.id]!] : [],
@@ -166,18 +167,17 @@ export function QuizPage({
 
     return (
       <>
-        <PageHeader
-          eyebrow="RESULT"
-          title="本次作答結果"
-          description={`總作答時間 ${formatDuration(attempt.elapsedSeconds)}`}
-        />
         <section className={styles.resultCard}>
+          <header className={styles.resultHeading}>
+            <span>RESULT</span>
+            <h1>本回作答結果</h1>
+            <p>總作答時間 {formatDuration(attempt.elapsedSeconds)}</p>
+          </header>
           <div className={styles.scoreRing} aria-label={`本次得分 ${score.toFixed(2)} 分`}>
             <strong>{score.toFixed(2)}</strong>
             <span>/ 60.00 分</span>
           </div>
           <div className={styles.resultSummary}>
-            <span>本回作答結果</span>
             <h2>{attempt.correctCount} / {paperQuestions.length} 題答對</h2>
             <p>
               已作答 {paperQuestions.length - attempt.unansweredCount} 題・
@@ -189,12 +189,6 @@ export function QuizPage({
               <div><strong>{attempt.unansweredCount}</strong><span>未作答</span></div>
               <div><strong>{formatDuration(attempt.elapsedSeconds)}</strong><span>總時間</span></div>
             </div>
-          </div>
-          <div className={styles.resultActions}>
-            <Button render={<Link href={attempt.mode === 'random' ? '/random' : '/papers'} />}>
-              {attempt.mode === 'random' ? '建立其他題組' : '選擇其他試卷'}
-            </Button>
-            <Button variant="primary" render={<Link href="/history" />}>查看作答紀錄</Button>
           </div>
         </section>
         <div className={styles.resultReviewLayout}>
@@ -374,8 +368,7 @@ export function QuizPage({
                     ariaLabel={`前往第 ${item.questionNumber} 題`}
                     active={index === position}
                     answered={
-                      progressByQuestion[item.id]?.selected !== undefined ||
-                      item.answerKey.kind === 'all-credit'
+                      progressByQuestion[item.id]?.selected !== undefined
                     }
                     difficult={itemDifficult}
                   >

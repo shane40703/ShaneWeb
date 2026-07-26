@@ -6,9 +6,21 @@ import {
   QuestionSourceLine,
 } from '@/components/content/content';
 import { IconBulb, IconChevronDown, IconLoader2 } from '@tabler/icons-react';
+import { formatCorrectAnswer } from '@/lib/study';
 import type { Question } from '@/lib/types';
 import { useAppState } from '@/state/app-state';
 import styles from './difficult-page.module.css';
+
+function bestAnswerText(question: Question) {
+  if (question.explanation) return question.explanation;
+  if (question.answerKey.kind === 'all-credit') return '本題一律給分。';
+  return question.answerKey.options
+    .map(
+      (index) =>
+        `${String.fromCharCode(65 + index)}．${question.options[index]}`,
+    )
+    .join('\n');
+}
 
 export function DifficultPage({ questions }: { questions: Question[] }) {
   const { state, dispatch, hydrated } = useAppState();
@@ -53,6 +65,19 @@ export function DifficultPage({ questions }: { questions: Question[] }) {
                         </li>
                       ))}
                     </ol>
+                    <section
+                      className={styles.answerPanel}
+                      aria-label={`第 ${question.questionNumber} 題答案與最佳解`}
+                    >
+                      <div>
+                        <span>正確答案</span>
+                        <strong>{formatCorrectAnswer(question)}</strong>
+                      </div>
+                      <div>
+                        <span>最佳解</span>
+                        <p>{bestAnswerText(question)}</p>
+                      </div>
+                    </section>
                   </div>
                 </details>
               </article>
