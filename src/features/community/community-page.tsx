@@ -151,6 +151,10 @@ export function CommunityPage({
   const posts = state.discussionPosts.filter(
     (post) => post.questionId === currentQuestion.id,
   );
+  const discussionQuestionIds = new Set(
+    state.discussionPosts.map((post) => post.questionId),
+  );
+  const difficultQuestionIds = new Set(state.difficultQuestionIds);
   const difficult = state.difficultQuestionIds.includes(currentQuestion.id);
   const acceptedAnswers = getAcceptedAnswerIndexes(currentQuestion);
 
@@ -257,9 +261,17 @@ export function CommunityPage({
         ariaLabel="題目選擇"
         questionPicker={
           <QuestionNumberPicker
-            questions={paperQuestions}
+            questions={paperQuestions.map((question) => ({
+              id: question.id,
+              questionNumber: question.questionNumber,
+              difficult: difficultQuestionIds.has(question.id),
+              hasContent:
+                Boolean(question.explanation?.trim()) ||
+                discussionQuestionIds.has(question.id),
+            }))}
             value={currentQuestion.id}
             onValueChange={navigateTo}
+            showStatusLegend
           />
         }
         summary={

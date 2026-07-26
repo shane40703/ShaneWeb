@@ -482,7 +482,25 @@ test('community selectors and local anonymous interactions work', async ({ page 
   await expectCompactTopbarHeading(page, '詳解與討論');
   await expect(page.getByRole('group', { name: '科目' })).toBeVisible();
   await expect(page.getByRole('group', { name: '年度' })).toBeVisible();
-  await expect(page.getByRole('group', { name: '題號' })).toBeVisible();
+  const questionPicker = page.getByRole('group', { name: '題號' });
+  await expect(questionPicker).toBeVisible();
+  const firstQuestionNumber = questionPicker.getByRole('button').first();
+  await expect(firstQuestionNumber).not.toHaveAttribute('data-content', 'true');
+  await page.getByRole('button', { name: '標記為難題' }).click();
+  await expect(firstQuestionNumber).toHaveAttribute('data-difficult', 'true');
+  await page
+    .getByRole('group', { name: '年度' })
+    .getByRole('button', { name: '112 年' })
+    .click();
+  await expect(firstQuestionNumber).toHaveAttribute('data-content', 'true');
+  await page
+    .getByRole('group', { name: '年度' })
+    .getByRole('button', { name: '114 年' })
+    .click();
+  await expect(firstQuestionNumber).toHaveAttribute('data-difficult', 'true');
+  await expect(
+    page.getByRole('note', { name: '題號標記說明' }),
+  ).toContainText('我的難題');
   const correctOption = page.getByRole('listitem', {
     name: /正確選項 D：法定空地之分割要件/,
   });
@@ -513,6 +531,10 @@ test('community selectors and local anonymous interactions work', async ({ page 
     ),
   });
   await page.getByRole('button', { name: '匿名送出' }).click();
+  await expect(firstQuestionNumber).toHaveAttribute('data-content', 'true');
+  await expect(firstQuestionNumber).toHaveAccessibleName(
+    '第 1 題（已標記難題、有詳解或討論）',
+  );
   const post = page.locator('article').filter({ hasText: content });
   await expect(post).toBeVisible();
   await expect(post.getByRole('img', { name: 'explanation.png' })).toBeVisible();

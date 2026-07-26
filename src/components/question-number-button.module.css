@@ -75,6 +75,24 @@
   box-shadow: 0 2px 5px color-mix(in srgb, var(--purple) 25%, transparent);
 }
 
+.button[data-content='true']::before {
+  content: '';
+  width: 9px;
+  height: 9px;
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  border: 2px solid var(--surface);
+  border-radius: 50%;
+  background: var(--purple);
+  box-shadow: 0 2px 5px color-mix(in srgb, var(--purple) 25%, transparent);
+}
+
+.button[data-content='true'][data-noted='true']::before {
+  right: auto;
+  left: -4px;
+}
+
 .button[aria-current='step'],
 .button[aria-pressed='true'] {
   border-color: var(--primary);

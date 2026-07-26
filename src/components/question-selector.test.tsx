@@ -47,14 +47,28 @@ describe('QuestionSelector', () => {
     render(
       <QuestionNumberPicker
         questions={[
-          { id: 'law-114-01', questionNumber: 1 },
+          {
+            id: 'law-114-01',
+            questionNumber: 1,
+            difficult: true,
+            hasContent: true,
+          },
           { id: 'law-114-02', questionNumber: 2 },
         ]}
         value="law-114-01"
         onValueChange={onValueChange}
+        showStatusLegend
       />,
     );
 
+    expect(
+      screen.getByRole('button', {
+        name: '第 1 題（已標記難題、有詳解或討論）',
+      }),
+    ).toHaveAttribute('data-content', 'true');
+    expect(
+      screen.getByRole('note', { name: '題號標記說明' }),
+    ).toHaveTextContent('有詳解或討論');
     await user.click(screen.getByRole('button', { name: '第 2 題' }));
     expect(onValueChange).toHaveBeenCalledWith('law-114-02');
   });

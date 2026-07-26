@@ -14,6 +14,7 @@ export function QuestionNumberButton({
   difficult = false,
   wrong = false,
   noted = false,
+  hasContent = false,
   href,
   onClick,
 }: {
@@ -24,6 +25,7 @@ export function QuestionNumberButton({
   difficult?: boolean;
   wrong?: boolean;
   noted?: boolean;
+  hasContent?: boolean;
   href?: string;
   onClick?: () => void;
 }) {
@@ -31,6 +33,7 @@ export function QuestionNumberButton({
     wrong ? '答錯' : null,
     difficult ? '已標記難題' : null,
     noted ? '有筆記' : null,
+    hasContent ? '有詳解或討論' : null,
   ].filter(Boolean);
   const commonProps = {
     className: styles.button,
@@ -41,6 +44,7 @@ export function QuestionNumberButton({
     'data-difficult': difficult || undefined,
     'data-wrong': wrong || undefined,
     'data-noted': noted || undefined,
+    'data-content': hasContent || undefined,
   };
 
   if (href) {

@@ -115,10 +115,17 @@ export function QuestionNumberPicker({
   questions,
   value,
   onValueChange,
+  showStatusLegend = false,
 }: {
-  questions: readonly { id: string; questionNumber: number }[];
+  questions: readonly {
+    id: string;
+    questionNumber: number;
+    difficult?: boolean;
+    hasContent?: boolean;
+  }[];
   value: string;
   onValueChange: (questionId: string) => void;
+  showStatusLegend?: boolean;
 }) {
   return (
     <fieldset className={styles.fieldset}>
@@ -129,12 +136,30 @@ export function QuestionNumberPicker({
             key={question.id}
             ariaLabel={`第 ${question.questionNumber} 題`}
             active={question.id === value}
+            difficult={question.difficult}
+            hasContent={question.hasContent}
             onClick={() => onValueChange(question.id)}
           >
             {question.questionNumber}
           </QuestionNumberButton>
         ))}
       </QuestionNumberGrid>
+      {showStatusLegend ? (
+        <div
+          className={styles.questionStatusLegend}
+          role="note"
+          aria-label="題號標記說明"
+        >
+          <span>
+            <i data-status="content" aria-hidden="true" />
+            有詳解或討論
+          </span>
+          <span>
+            <i data-status="difficult" aria-hidden="true" />
+            我的難題
+          </span>
+        </div>
+      ) : null}
     </fieldset>
   );
 }

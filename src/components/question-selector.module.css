@@ -108,6 +108,37 @@
   border-top: 1px solid #eef0f3;
 }
 
+.questionStatusLegend {
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  color: #6b7480;
+  font-size: 11px;
+}
+
+.questionStatusLegend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.questionStatusLegend i {
+  width: 9px;
+  height: 9px;
+  display: inline-block;
+  border-radius: 50%;
+}
+
+.questionStatusLegend i[data-status='content'] {
+  background: var(--purple);
+}
+
+.questionStatusLegend i[data-status='difficult'] {
+  border-radius: 2px;
+  background: var(--warning);
+}
+
 .yearList {
   display: flex;
   flex-wrap: wrap;
