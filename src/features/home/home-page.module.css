@@ -2,24 +2,6 @@
   min-height: calc(100vh - 145px);
   display: grid;
   align-content: center;
-  gap: 36px;
-}
-
-.intro {
-  text-align: center;
-}
-
-.intro span {
-  color: var(--primary-strong);
-  font-size: 11px;
-  font-weight: 850;
-  letter-spacing: 0.16em;
-}
-
-.intro h1 {
-  margin: 10px 0 0;
-  font-size: clamp(34px, 5vw, 58px);
-  letter-spacing: -0.04em;
 }
 
 .subjectGrid {
@@ -108,7 +90,6 @@
 @media (max-width: 560px) {
   .home {
     align-content: start;
-    gap: 24px;
   }
 
   .subjectGrid {

@@ -78,6 +78,27 @@ describe('local state validation', () => {
     state.difficultQuestionIds = ['law-114-01'];
     expect(parseStoredState(JSON.stringify(state))).toEqual(state);
   });
+
+  it('rejects a stored attempt with an invalid subject', () => {
+    const question = questions.find((item) => item.id === 'law-114-01');
+    expect(question).toBeDefined();
+    const state = createDefaultState();
+    const attempt = createAttempt({
+      mode: 'paper',
+      source: [question!],
+      answers: { [question!.id]: firstAcceptedAnswer(question!) },
+      startedAt: '2026-01-01T00:00:00.000Z',
+      elapsedSeconds: 1,
+    });
+    const invalidState = {
+      ...state,
+      attempts: [{ ...attempt, subject: 'invalid-subject' }],
+    };
+
+    expect(parseStoredState(JSON.stringify(invalidState))).toEqual(
+      createDefaultState(),
+    );
+  });
 });
 
 describe('result helpers', () => {

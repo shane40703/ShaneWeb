@@ -98,12 +98,32 @@ describe('HistoryPage', () => {
       .getByRole('heading', { name: '建築法規與實務・114 年' })
       .closest('article');
     expect(lawGroup).not.toBeNull();
+    const environmentGroup = screen
+      .getByRole('heading', {
+        name: `建築環境控制・${environmentQuestions[0].year} 年`,
+      })
+      .closest('article');
+    expect(environmentGroup).not.toBeNull();
     expect(screen.getByText('共作答 2 次')).toBeInTheDocument();
+    ['第 1 次', '第 2 次'].forEach((ordinal) => {
+      const attemptSection = within(lawGroup!)
+        .getByRole('heading', { name: ordinal })
+        .closest('section');
+      expect(attemptSection).not.toBeNull();
+      expect(within(attemptSection!).getByText('2.50 分')).toBeInTheDocument();
+      expect(
+        within(attemptSection!).getByText('/ 100.00 分'),
+      ).toBeInTheDocument();
+    });
+    const environmentAttemptSection = within(environmentGroup!)
+      .getByRole('heading', { name: '第 1 次' })
+      .closest('section');
+    expect(environmentAttemptSection).not.toBeNull();
     expect(
-      within(lawGroup!).getByRole('heading', { name: '第 1 次' }),
+      within(environmentAttemptSection!).getByText('1.50 分'),
     ).toBeInTheDocument();
     expect(
-      within(lawGroup!).getByRole('heading', { name: '第 2 次' }),
+      within(environmentAttemptSection!).getByText('/ 60.00 分'),
     ).toBeInTheDocument();
     expect(
       within(lawGroup!).getByRole('button', { name: '清除第 2 次紀錄' }),

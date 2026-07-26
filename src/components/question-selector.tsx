@@ -18,8 +18,6 @@ export interface SelectorYearOption {
 }
 
 export function QuestionSelector({
-  heading,
-  description,
   subjectId,
   year,
   yearOptions,
@@ -30,8 +28,6 @@ export function QuestionSelector({
   action,
   ariaLabel,
 }: {
-  heading: string;
-  description: string;
   subjectId: SubjectId;
   year: SelectorYear;
   yearOptions: readonly SelectorYearOption[];
@@ -45,11 +41,6 @@ export function QuestionSelector({
   return (
     <section className={styles.panel} aria-label={ariaLabel}>
       <div className={styles.body}>
-        <header className={styles.heading}>
-          <h1>{heading}</h1>
-          <p>{description}</p>
-        </header>
-
         <fieldset className={styles.fieldset}>
           <legend className={styles.visuallyHidden}>科目</legend>
           <div className={styles.subjectGrid}>

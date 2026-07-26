@@ -14,8 +14,6 @@ describe('QuestionSelector', () => {
 
     render(
       <QuestionSelector
-        heading="選擇科目與年度"
-        description="選好後即可開始作答。"
         subjectId="law"
         year={114}
         yearOptions={[

@@ -100,7 +100,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             >
               <SidebarContent pathname={pathname} onNavigate={() => setDrawerOpen(false)} />
             </SideDrawer>
-            <span className={styles.pageTitle}>{pageTitle}</span>
+            <h1 className={styles.pageTitle}>{pageTitle}</h1>
           </div>
           <span className={styles.anonymousBadge}>
             <IconDeviceFloppy size={15} stroke={2} aria-hidden="true" />

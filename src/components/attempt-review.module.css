@@ -134,17 +134,6 @@
   font-weight: 850;
 }
 
-.bestAnswer strong {
-  color: var(--primary-strong);
-  font-size: 12px;
-}
-
-.bestAnswer header > div {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
 .bestAnswer a {
   display: inline-flex;
   align-items: center;

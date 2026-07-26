@@ -6,11 +6,7 @@ import styles from './home-page.module.css';
 
 export function HomePage() {
   return (
-    <section className={styles.home} aria-labelledby="home-title">
-      <header className={styles.intro}>
-        <span>ARCHITECT EXAM PRACTICE</span>
-        <h1 id="home-title">選擇練習科目</h1>
-      </header>
+    <section className={styles.home} aria-label="選擇練習科目">
       <div className={styles.subjectGrid}>
         {subjects.map((subject, index) => (
           <Link

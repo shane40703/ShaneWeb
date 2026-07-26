@@ -35,7 +35,7 @@ import type {
   SubjectId,
 } from '@/lib/types';
 import { questionPath } from '@/lib/question-path';
-import { formatCorrectAnswer, getAcceptedAnswerIndexes } from '@/lib/study';
+import { getAcceptedAnswerIndexes } from '@/lib/study';
 import { useAppState } from '@/state/app-state';
 import styles from './community-page.module.css';
 
@@ -187,8 +187,6 @@ export function CommunityPage({ questions }: { questions: Question[] }) {
   return (
     <>
       <QuestionSelector
-        heading="選擇科目、年度與題號"
-        description="選好題號後，詳解與本裝置上的匿名內容會顯示於下方。"
         subjectId={currentQuestion.subject}
         year={currentQuestion.year}
         yearOptions={years.map((year) => ({
@@ -231,17 +229,29 @@ export function CommunityPage({ questions }: { questions: Question[] }) {
         <QuestionPrompt question={currentQuestion} />
         <QuestionSourceLine question={currentQuestion} />
         <ol className={styles.options}>
-          {currentQuestion.options.map((option, index) => (
-            <li key={option} data-correct={acceptedAnswers.includes(index)}>
-              <span>{String.fromCharCode(65 + index)}</span>{option}
-            </li>
-          ))}
+          {currentQuestion.options.map((option, index) => {
+            const correct = acceptedAnswers.includes(index);
+            const optionLabel = String.fromCharCode(65 + index);
+            return (
+              <li
+                key={option}
+                data-correct={correct}
+                aria-label={
+                  correct
+                    ? `正確選項 ${optionLabel}：${option}`
+                    : undefined
+                }
+              >
+                <span>{optionLabel}</span>
+                {option}
+              </li>
+            );
+          })}
         </ol>
-        <div className={styles.explanation}>
-          <span>正確答案</span>
-          <strong>{formatCorrectAnswer(currentQuestion)}</strong>
+        <section className={styles.explanation} aria-label="題目詳解">
+          <span>詳解</span>
           <p>{currentQuestion.explanation ?? '目前尚無詳解。'}</p>
-        </div>
+        </section>
         <footer className={styles.questionNavigation}>
           <Button
             disabled={currentIndex <= 0}

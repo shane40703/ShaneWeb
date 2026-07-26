@@ -136,12 +136,6 @@ export function AnalysisPage({ questions }: { questions: QuestionSummary[] }) {
   return (
     <>
       <QuestionSelector
-        heading="選擇分析範圍"
-        description={
-          subjectId === 'law'
-            ? '依題目標註的相關法規統計命題分布；同一題可能對應多筆法規標註。'
-            : '依題庫的主要分類統計命題分布；每題只計入一個主要分類。'
-        }
         subjectId={subjectId}
         year={year}
         yearOptions={[

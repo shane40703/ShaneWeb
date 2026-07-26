@@ -96,8 +96,6 @@ export function NotesPage({ questions }: { questions: Question[] }) {
 
   const questionSelector = (
     <QuestionSelector
-      heading="選擇筆記題目"
-      description="筆記會自動跟題目對應，並只保存在目前瀏覽器。"
       subjectId={currentQuestion.subject}
       year={currentQuestion.year}
       yearOptions={years.map((year) => ({

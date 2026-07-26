@@ -61,34 +61,32 @@ export function PapersPage({ questions }: { questions: QuestionSummary[] }) {
 
   return (
     <QuestionSelector
-        heading="選擇科目與年度"
-        description="選好後即可開始作答。"
-        subjectId={subjectId}
-        year={year}
-        yearOptions={years.map((candidateYear) => ({
-          value: candidateYear,
-          disabled: !availableYears.includes(candidateYear),
-        }))}
-        onSubjectChange={changeSubject}
-        onYearChange={changeYear}
-        ariaLabel="試卷選擇"
-        summary={
-          <>
-            已選 <strong>{subject.name} · {year} 年</strong>
-          </>
-        }
-        action={
-          paperQuestions[0] ? (
-            <Link className={styles.startButton} href={paperQuestions[0].path}>
-              開始作答
-              <IconArrowRight size={16} stroke={2} aria-hidden="true" />
-            </Link>
-          ) : (
-            <span className={styles.disabledAction} aria-disabled="true">
-              尚未收錄
-            </span>
-          )
-        }
-      />
+      subjectId={subjectId}
+      year={year}
+      yearOptions={years.map((candidateYear) => ({
+        value: candidateYear,
+        disabled: !availableYears.includes(candidateYear),
+      }))}
+      onSubjectChange={changeSubject}
+      onYearChange={changeYear}
+      ariaLabel="試卷選擇"
+      summary={
+        <>
+          已選 <strong>{subject.name} · {year} 年</strong>
+        </>
+      }
+      action={
+        paperQuestions[0] ? (
+          <Link className={styles.startButton} href={paperQuestions[0].path}>
+            開始作答
+            <IconArrowRight size={16} stroke={2} aria-hidden="true" />
+          </Link>
+        ) : (
+          <span className={styles.disabledAction} aria-disabled="true">
+            尚未收錄
+          </span>
+        )
+      }
+    />
   );
 }

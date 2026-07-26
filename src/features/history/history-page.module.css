@@ -4,36 +4,19 @@
 
 .subjectFilters {
   margin-bottom: 18px;
-  padding: 18px 20px;
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
+  padding: 14px 16px;
+  display: flex;
   align-items: center;
-  gap: 20px;
   border: 1px solid var(--line);
   border-radius: 18px;
   background: var(--surface);
   box-shadow: var(--shadow-sm);
 }
 
-.subjectFilters > header {
-  display: grid;
-  gap: 4px;
-}
-
-.subjectFilters > header span {
-  color: var(--primary-strong);
-  font-size: 9px;
-  font-weight: 850;
-  letter-spacing: .12em;
-}
-
-.subjectFilters > header strong {
-  font-size: 16px;
-}
-
 .subjectFilters > div {
+  width: 100%;
   display: flex;
-  justify-content: flex-end;
+  justify-content: flex-start;
   gap: 8px;
   flex-wrap: wrap;
 }
@@ -161,14 +144,15 @@
 }
 
 .score {
-  min-width: 86px;
+  min-width: 175px;
   display: grid;
   justify-items: end;
+  gap: 2px;
 }
 
 .score strong {
   color: var(--primary-strong);
-  font-size: 25px;
+  font-size: 22px;
 }
 
 .score span {
@@ -226,14 +210,6 @@
 }
 
 @media (max-width: 560px) {
-  .subjectFilters {
-    grid-template-columns: 1fr;
-  }
-
-  .subjectFilters > div {
-    justify-content: flex-start;
-  }
-
   .groupHeader,
   .attempt > header {
     flex-direction: column;

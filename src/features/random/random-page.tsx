@@ -1,7 +1,6 @@
 import { useRouter } from 'next/router';
 import { useState } from 'react';
 import { IconSparkles } from '@tabler/icons-react';
-import { PageHeader } from '@/components/content/content';
 import { subjects, years } from '@/question-bank/catalog';
 import { isSubjectId, pickRandomItems } from '@/lib/study';
 import type { QuestionSummary, SubjectId } from '@/lib/types';
@@ -75,26 +74,9 @@ export function RandomPage({ questions }: { questions: QuestionSummary[] }) {
   }
 
   return (
-    <>
-      <PageHeader
-        eyebrow="RANDOM QUIZ"
-        title="隨機出題"
-        description="自訂科目、年度範圍與題數，從考古題中抽出不重複的練習題組。"
-      />
-      <section className={styles.randomPanel} aria-labelledby="random-quiz-title">
-        <header>
-          <span className={styles.randomIcon}>
-            <IconSparkles size={22} stroke={2} aria-hidden="true" />
-          </span>
-          <div>
-            <span>RANDOM QUIZ</span>
-            <h2 id="random-quiz-title">建立隨機題組</h2>
-            <p>三個步驟完成設定，送出後立即開始作答。</p>
-          </div>
-        </header>
-
-        <div className={styles.randomSteps}>
-          <section>
+    <section className={styles.randomPanel} aria-label="建立隨機題組">
+      <div className={styles.randomSteps}>
+        <section>
             <span className={styles.stepNumber}>1</span>
             <div>
               <h3>選擇科目</h3>
@@ -112,9 +94,9 @@ export function RandomPage({ questions }: { questions: QuestionSummary[] }) {
                 ))}
               </div>
             </div>
-          </section>
+        </section>
 
-          <section>
+        <section>
             <span className={styles.stepNumber}>2</span>
             <div>
               <h3>選擇年度範圍</h3>
@@ -156,9 +138,9 @@ export function RandomPage({ questions }: { questions: QuestionSummary[] }) {
                 <strong><b>{candidates.length}</b> 題符合條件</strong>
               </div>
             </div>
-          </section>
+        </section>
 
-          <section>
+        <section>
             <span className={styles.stepNumber}>3</span>
             <div>
               <h3>選擇題數</h3>
@@ -179,10 +161,10 @@ export function RandomPage({ questions }: { questions: QuestionSummary[] }) {
                 ))}
               </div>
             </div>
-          </section>
-        </div>
+        </section>
+      </div>
 
-        <footer>
+      <footer>
           <span>
             <strong>{subject.name}・{rangeStart}–{rangeEnd} 年</strong>
             從 {candidates.length} 題中抽出 {count} 題
@@ -196,8 +178,7 @@ export function RandomPage({ questions }: { questions: QuestionSummary[] }) {
             抽出題組
             <IconSparkles size={17} stroke={2} aria-hidden="true" />
           </button>
-        </footer>
-      </section>
-    </>
+      </footer>
+    </section>
   );
 }

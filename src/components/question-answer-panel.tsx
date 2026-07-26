@@ -1,8 +1,5 @@
 import { useId } from 'react';
-import {
-  formatCorrectAnswer,
-  getAcceptedAnswerIndexes,
-} from '@/lib/study';
+import { getAcceptedAnswerIndexes } from '@/lib/study';
 import type { Question } from '@/lib/types';
 import styles from './question-answer-panel.module.css';
 
@@ -22,18 +19,21 @@ export function QuestionAnswerPanel({
           const accepted = acceptedAnswers.includes(index);
 
           return (
-            <li key={`${index}-${option}`} data-accepted={accepted || undefined}>
+            <li
+              key={`${index}-${option}`}
+              data-accepted={accepted || undefined}
+              aria-label={
+                accepted
+                  ? `正確選項 ${String.fromCharCode(65 + index)}：${option}`
+                  : undefined
+              }
+            >
               <b>{String.fromCharCode(65 + index)}</b>
               <span>{option}</span>
-              {accepted ? <small>正確選項</small> : null}
             </li>
           );
         })}
       </ol>
-      <footer>
-        <span>正確答案</span>
-        <strong>{formatCorrectAnswer(question)}</strong>
-      </footer>
     </section>
   );
 }

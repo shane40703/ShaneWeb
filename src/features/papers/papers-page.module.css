@@ -43,45 +43,9 @@
   box-shadow: var(--shadow-sm);
 }
 
-.randomPanel > header {
-  padding: 22px 26px;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  border-bottom: 1px solid var(--line);
-}
-
-.randomIcon {
-  width: 46px;
-  height: 46px;
-  flex: 0 0 auto;
-  display: grid;
-  place-items: center;
-  border-radius: 14px;
-  background: var(--primary-soft);
-  color: var(--primary);
-}
-
-.randomPanel > header > div {
-  display: grid;
-  gap: 3px;
-}
-
-.randomPanel > header > div > span {
-  color: var(--primary-strong);
-  font-size: 10px;
-  font-weight: 850;
-  letter-spacing: 0.1em;
-}
-
-.randomPanel h2,
 .randomPanel h3,
 .randomPanel p {
   margin: 0;
-}
-
-.randomPanel h2 {
-  font-size: 22px;
 }
 
 .randomPanel p {
@@ -301,7 +265,6 @@
 }
 
 @media (max-width: 520px) {
-  .randomPanel > header,
   .randomSteps,
   .randomPanel > footer {
     padding-inline: 16px;

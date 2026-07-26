@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { useEffect, useReducer, useState } from 'react';
+import { type CSSProperties, useEffect, useReducer, useState } from 'react';
 import {
   IconArrowLeft,
   IconArrowRight,
@@ -9,7 +9,6 @@ import {
 import { AttemptReview } from '@/components/attempt-review';
 import {
   DifficultButton,
-  PageHeader,
   QuestionPrompt,
   QuestionSourceLine,
   Tag,
@@ -165,16 +164,27 @@ export function QuizPage({
   if (attempt) {
     const { maximumScore } = getSubjectScoreConfig(question.subject);
     const score = calculateScore(attempt.correctCount, question.subject);
+    const scorePercentage = Math.min(
+      100,
+      Math.max(0, (score / maximumScore) * 100),
+    );
 
     return (
       <>
         <section className={styles.resultCard}>
-          <header className={styles.resultHeading}>
-            <span>RESULT</span>
-            <h1>本回作答結果</h1>
-            <p>總作答時間 {formatDuration(attempt.elapsedSeconds)}</p>
-          </header>
-          <div className={styles.scoreRing} aria-label={`本次得分 ${score.toFixed(2)} 分`}>
+          <div
+            className={styles.scoreRing}
+            style={
+              {
+                '--score-percentage': `${scorePercentage}%`,
+              } as CSSProperties
+            }
+            role="progressbar"
+            aria-valuemin={0}
+            aria-valuenow={score}
+            aria-valuemax={maximumScore}
+            aria-label={`本次得分 ${score.toFixed(2)} 分，滿分 ${maximumScore.toFixed(2)} 分`}
+          >
             <strong>{score.toFixed(2)}</strong>
             <span>/ {maximumScore.toFixed(2)} 分</span>
           </div>
@@ -248,29 +258,6 @@ export function QuizPage({
 
   return (
     <>
-      <PageHeader
-        eyebrow={
-          isRandomQuiz
-            ? 'RANDOM QUIZ'
-            : isSingleQuestion
-              ? 'SINGLE QUESTION'
-              : 'PAPER QUIZ'
-        }
-        title={
-          isRandomQuiz
-            ? `${subject?.name}・隨機練習`
-            : isSingleQuestion
-              ? `${question.year} 年・${subject?.name}・第 ${question.questionNumber} 題`
-              : `${question.year} 年・${subject?.name}`
-        }
-        compact
-        action={
-          <div className={styles.timer}>
-            <span>作答時間</span>
-            <strong>{formatDuration(elapsedSeconds)}</strong>
-          </div>
-        }
-      />
       <div className={styles.quizLayout}>
         <section className={styles.card}>
           <header className={styles.quizHeader}>
@@ -282,10 +269,21 @@ export function QuizPage({
                 <Tag tone="purple">示範題</Tag>
               ) : null}
             </div>
-            <DifficultButton
-              active={difficult}
-              onClick={() => dispatch({ type: 'toggle-difficult', questionId: question.id })}
-            />
+            <div className={styles.quizActions}>
+              <div className={styles.timer}>
+                <span>作答時間</span>
+                <strong>{formatDuration(elapsedSeconds)}</strong>
+              </div>
+              <DifficultButton
+                active={difficult}
+                onClick={() =>
+                  dispatch({
+                    type: 'toggle-difficult',
+                    questionId: question.id,
+                  })
+                }
+              />
+            </div>
           </header>
           <ProgressBar
             value={((position + 1) / paperQuestions.length) * 100}
@@ -303,7 +301,6 @@ export function QuizPage({
               <QuestionSourceLine question={question} />
             </div>
             <div className={styles.answerColumn}>
-              <span className={styles.answerHeading}>選擇答案</span>
               <OptionGroup
                 label="請選擇答案"
                 options={question.options}

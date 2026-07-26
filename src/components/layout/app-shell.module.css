@@ -138,6 +138,8 @@
 }
 
 .pageTitle {
+  margin: 0;
+  font-size: inherit;
   font-weight: 800;
 }
 

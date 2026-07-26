@@ -1,10 +1,21 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
+
+async function expectCompactTopbarHeading(page: Page, name: string) {
+  const pageHeading = page.getByRole('heading', { level: 1 });
+
+  await expect(pageHeading).toHaveCount(1);
+  await expect(pageHeading).toHaveText(name);
+  await expect(pageHeading).toHaveCSS('font-size', '16px');
+  await expect(page.locator('header h1')).toHaveCount(1);
+  await expect(page.locator('main h1')).toHaveCount(0);
+}
 
 test('paper flow, timer, difficult marker, and draft answers stay ungraded', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop');
 
   await page.goto('/');
-  await expect(page.getByRole('heading', { name: '選擇練習科目' })).toBeVisible();
+  await expectCompactTopbarHeading(page, '首頁');
+  await expect(page.getByRole('region', { name: '選擇練習科目' })).toBeVisible();
   await expect(page.locator('main h2')).toHaveCount(4);
   const homeSubjectIcons = page.locator('[data-size="large"]');
   await expect(homeSubjectIcons).toHaveCount(4);
@@ -38,16 +49,13 @@ test('paper flow, timer, difficult marker, and draft answers stay ungraded', asy
 
   await page.getByRole('link', { name: /開始作答/ }).click();
   await expect(page).toHaveURL(/\/questions\/law\/114\/01/);
+  await expectCompactTopbarHeading(page, '作答頁');
   await expect(page.getByText('作答時間')).toBeVisible();
   await expect(page.getByText(/00:00:0\d/)).toBeVisible();
-  const quizHeading = page.getByRole('heading', {
+  await expect(page.getByRole('heading', {
     level: 1,
     name: '114 年・建築法規與實務',
-  });
-  await expect(quizHeading.locator('..').locator('..')).toHaveAttribute(
-    'data-compact',
-    'true',
-  );
+  })).toHaveCount(0);
   await expect(
     page.getByRole('link', { name: /前往詳解與討論/ }),
   ).toHaveCount(0);
@@ -73,26 +81,73 @@ test('paper flow, timer, difficult marker, and draft answers stay ungraded', asy
     )
     .toBeUndefined();
 
-  await page.goto('/difficult');
-  await expect(
-    page.getByText(/依建築法規定，下列敘述何者錯誤/).first(),
-  ).toBeVisible();
-  await page.getByText('查看完整題目與選項').click();
-  await expect(
-    page.getByRole('list', { name: '第 1 題完整選項' }),
-  ).toBeVisible();
-  await expect(
-    page.getByRole('list', { name: '第 1 題完整選項' }).getByRole('listitem'),
-  ).toHaveCount(4);
-  const difficultAnswer = page.getByRole('region', {
-    name: '第 1 題答案與最佳解',
+  await page.evaluate(() => {
+    const state = JSON.parse(
+      localStorage.getItem('shaneweb:state') ?? '{}',
+    );
+    state.difficultQuestionIds = [
+      'law-114-01',
+      'law-113-01',
+      'env-114-01',
+    ];
+    localStorage.setItem('shaneweb:state', JSON.stringify(state));
   });
-  await expect(difficultAnswer).toBeVisible();
-  await expect(difficultAnswer.getByText('正確答案')).toBeVisible();
-  await expect(difficultAnswer.getByText('D', { exact: true })).toBeVisible();
-  await expect(difficultAnswer.getByText('最佳解')).toBeVisible();
+  await page.goto('/difficult');
+  await expectCompactTopbarHeading(page, '難題標記');
+  await expect(
+    page.locator('main').getByRole('heading', { level: 2 }),
+  ).toHaveText(['建築法規與實務', '建築環境控制']);
+  const difficultSubject = page.getByRole('region', {
+    name: '建築法規與實務',
+  });
+  await expect(difficultSubject).toBeVisible();
+  await expect(
+    difficultSubject.getByRole('heading', {
+      level: 2,
+      name: '建築法規與實務',
+    }),
+  ).toBeVisible();
+  await expect(difficultSubject.getByText('2 題難題')).toBeVisible();
+  await expect(
+    difficultSubject.getByRole('heading', { level: 3 }),
+  ).toHaveText(['114 年', '113 年']);
+  const difficultYear = difficultSubject.getByRole('region', {
+    name: '114 年',
+  });
+  await expect(difficultYear).toBeVisible();
+  await expect(
+    difficultYear.getByRole('heading', { level: 3, name: '114 年' }),
+  ).toBeVisible();
+  await expect(difficultYear.getByText('1 題', { exact: true })).toBeVisible();
+  await expect(
+    difficultYear.getByText(/依建築法規定，下列敘述何者錯誤/).first(),
+  ).toBeVisible();
+  await difficultYear.getByText('查看完整題目與選項').click();
+  const difficultOptions = difficultYear.getByRole('list', {
+    name: '第 1 題完整選項',
+  });
+  await expect(difficultOptions).toBeVisible();
+  await expect(difficultOptions.getByRole('listitem')).toHaveCount(4);
+  const difficultCorrectOption = difficultOptions.getByRole('listitem', {
+    name: /正確選項 D：法定空地之分割要件/,
+  });
+  await expect(difficultCorrectOption).toHaveAttribute('data-accepted', 'true');
+  await expect(difficultCorrectOption).toHaveCSS(
+    'background-color',
+    'rgb(230, 248, 240)',
+  );
+  const difficultExplanation = difficultYear.getByRole('region', {
+    name: '第 1 題詳解',
+  });
+  await expect(difficultExplanation).toBeVisible();
+  await expect(
+    difficultExplanation.getByText('詳解', { exact: true }),
+  ).toBeVisible();
+  await expect(difficultExplanation).not.toContainText('正確答案');
   await page.reload();
-  await expect(page.getByRole('button', { name: '取消難題標記' })).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: '取消難題標記' }).first(),
+  ).toBeVisible();
 
   await page.goto('/history');
   await expect(page.getByRole('heading', { name: '還沒有作答紀錄' })).toBeVisible();
@@ -137,13 +192,27 @@ test('static question paths preserve state and submit a paper result to history'
   await expect(page.getByText('圖 D', { exact: true }).locator('..').getByRole('radio')).toBeChecked();
   await page.getByRole('button', { name: '對答案' }).click();
 
-  await expect(page.getByRole('heading', { name: '本回作答結果' })).toBeVisible();
-  await expect(page.getByRole('heading', { name: '本次作答結果' })).toHaveCount(0);
-  await expect(page.getByLabel('本次得分 1.25 分')).toBeVisible();
+  await expectCompactTopbarHeading(page, '作答頁');
+  await expect(page.getByText('本回作答結果', { exact: true })).toHaveCount(0);
+  const scoreRing = page.getByRole('progressbar', {
+    name: '本次得分 1.25 分，滿分 100.00 分',
+  });
+  await expect(scoreRing).toBeVisible();
+  await expect(scoreRing).toHaveAttribute('aria-valuemin', '0');
+  await expect(scoreRing).toHaveAttribute('aria-valuenow', '1.25');
+  await expect(scoreRing).toHaveAttribute('aria-valuemax', '100');
+  await expect(scoreRing).toHaveCSS('background-image', /conic-gradient/);
+  expect(
+    await scoreRing.evaluate((element) =>
+      getComputedStyle(element)
+        .getPropertyValue('--score-percentage')
+        .trim(),
+    ),
+  ).toBe('1.25%');
   await expect(page.getByText('/ 100.00 分')).toBeVisible();
   await expect(page.getByRole('heading', { name: '逐題作答結果' })).toBeVisible();
   await expect(page.getByText('1 / 2 題答對')).toBeVisible();
-  await expect(page.getByText('最佳解').first()).toBeVisible();
+  await expect(page.getByText('詳解', { exact: true }).first()).toBeVisible();
   await expect(page.getByRole('link', { name: '詳解與討論' }).last()).toBeVisible();
   const resultNavigator = page.getByRole('complementary', {
     name: '作答結果題號導覽',
@@ -176,7 +245,10 @@ test('static question paths preserve state and submit a paper result to history'
   await expect(page.getByText('查看題目')).toHaveCount(0);
 
   await page.goto('/history');
-  await expect(page.getByText('50%', { exact: true })).toBeVisible();
+  await expectCompactTopbarHeading(page, '已作答紀錄');
+  await expect(page.getByText('1.25 分', { exact: true })).toBeVisible();
+  await expect(page.getByText('/ 100.00 分', { exact: true })).toBeVisible();
+  await expect(page.getByText('50%', { exact: true })).toHaveCount(0);
   await expect(page.getByText(/^答對/)).toContainText('1');
   await expect(page.getByText(/^答錯/)).toContainText('1');
   await expect(page.getByText('共作答 1 次')).toBeVisible();
@@ -300,7 +372,11 @@ test('all-credit questions stay concealed until review and count toward the scor
   await page.getByRole('radio').first().check();
   await page.getByRole('button', { name: '對答案' }).click();
   await expect(page.getByText('1 / 1 題答對')).toBeVisible();
-  await expect(page.getByLabel('本次得分 1.25 分')).toBeVisible();
+  await expect(
+    page.getByRole('progressbar', {
+      name: '本次得分 1.25 分，滿分 100.00 分',
+    }),
+  ).toBeVisible();
   await expect(page.getByText('本題一律給分。')).toBeVisible();
 });
 
@@ -321,7 +397,10 @@ test('analysis only shows exam-content distribution', async ({ page }, testInfo)
   test.skip(testInfo.project.name !== 'desktop');
 
   await page.goto('/analysis?subject=law&year=all');
-  await expect(page.getByRole('heading', { name: '選擇分析範圍' })).toBeVisible();
+  await expectCompactTopbarHeading(page, '考題分析');
+  await expect(
+    page.getByRole('heading', { name: '選擇分析範圍' }),
+  ).toHaveCount(0);
   await expect(page.getByText('總題數 84 題')).toBeVisible();
   const lawAnalysis = page.getByRole('region', { name: '命題分類與對應考古題' });
   await expect(lawAnalysis.getByText('相關法規占比')).toBeVisible();
@@ -371,14 +450,23 @@ test('community selectors and local anonymous interactions work', async ({ page 
   test.skip(testInfo.project.name !== 'desktop');
 
   await page.goto('/community?question=law-114-01');
+  await expectCompactTopbarHeading(page, '詳解與討論');
   await expect(page.getByRole('group', { name: '科目' })).toBeVisible();
   await expect(page.getByRole('group', { name: '年度' })).toBeVisible();
   await expect(page.getByRole('group', { name: '題號' })).toBeVisible();
-  await expect(page.getByText('正確答案')).toBeVisible();
-  await expect(
-    page.getByText('正確答案').locator('..').getByText('D', { exact: true }),
-  ).toBeVisible();
-  await expect(page.getByText(/D・/)).toHaveCount(0);
+  const correctOption = page.getByRole('listitem', {
+    name: /正確選項 D：法定空地之分割要件/,
+  });
+  await expect(correctOption).toHaveAttribute('data-correct', 'true');
+  await expect(correctOption).toHaveCSS(
+    'background-color',
+    'rgb(230, 248, 240)',
+  );
+  const explanation = page.getByRole('region', { name: '題目詳解' });
+  await expect(explanation).toBeVisible();
+  await expect(explanation.getByText('詳解', { exact: true })).toBeVisible();
+  await expect(explanation).not.toContainText('正確答案');
+  await expect(page.getByText('正確答案', { exact: true })).toHaveCount(0);
 
   await page.getByRole('button', { name: '下一題' }).click();
   await expect(page).toHaveURL(/question=law-114-02/);
@@ -436,13 +524,20 @@ test('random quiz draws the requested number of unique questions', async ({ page
   await page.goto('/papers?subject=law&year=114');
   await expect(page.getByRole('region', { name: /建立隨機題組/ })).toHaveCount(0);
   await page.goto('/random?subject=law');
+  await expectCompactTopbarHeading(page, '隨機出題');
   const randomQuiz = page.getByRole('region', { name: /建立隨機題組/ });
   await expect(randomQuiz).toBeVisible();
+  await expect(
+    randomQuiz.getByRole('heading', { name: '建立隨機題組' }),
+  ).toHaveCount(0);
   await randomQuiz.getByRole('button').filter({ hasText: /^5 題/ }).click();
   await randomQuiz.getByRole('button', { name: '抽出題組' }).click();
   await expect(page).toHaveURL(/mode=random/);
   await expect(page).toHaveURL(/questions=/);
-  await expect(page.getByRole('heading', { name: /隨機練習/ })).toBeVisible();
+  await expectCompactTopbarHeading(page, '作答頁');
+  await expect(
+    page.getByRole('heading', { name: /隨機練習/ }),
+  ).toHaveCount(0);
   await expect(page.getByRole('complementary', { name: '題號導覽' }).getByRole('link')).toHaveCount(5);
 });
 
@@ -502,23 +597,25 @@ test('notes save and reload from local storage', async ({ page }, testInfo) => {
 test('all retained routes support direct visits and removed routes return 404', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop');
   const routes = [
-    '/',
-    '/papers?subject=law',
-    '/random?subject=law',
-    '/questions/law/114/01',
-    '/analysis',
-    '/community',
-    '/notes',
-    '/difficult',
-    '/history',
-  ];
+    { path: '/', title: '首頁' },
+    { path: '/papers?subject=law', title: '歷屆試題' },
+    { path: '/random?subject=law', title: '隨機出題' },
+    { path: '/questions/law/114/01', title: '作答頁' },
+    { path: '/analysis', title: '考題分析' },
+    { path: '/community', title: '詳解與討論' },
+    { path: '/notes', title: '使用者筆記' },
+    { path: '/difficult', title: '難題標記' },
+    { path: '/history', title: '已作答紀錄' },
+  ] as const;
 
   for (const route of routes) {
-    const response = await page.goto(route);
+    const response = await page.goto(route.path);
     expect(response?.ok()).toBe(true);
     await expect(page.locator('main')).toBeVisible();
+    await expectCompactTopbarHeading(page, route.title);
     await page.reload();
     await expect(page.locator('main')).toBeVisible();
+    await expectCompactTopbarHeading(page, route.title);
   }
 
   const settingsResponse = await page.goto('/settings');
@@ -539,11 +636,14 @@ test('mobile drawer links to separate paper and random quiz pages', async ({ pag
   await expect(page.getByRole('link', { name: '隨機出題' })).toBeVisible();
   await page.getByRole('link', { name: '隨機出題' }).click();
   await expect(page).toHaveURL(/\/random$/);
-  await expect(page.getByRole('heading', { name: '隨機出題' })).toBeVisible();
+  await expectCompactTopbarHeading(page, '隨機出題');
   await page.getByRole('button', { name: '開啟選單' }).click();
   await page.getByRole('link', { name: '歷屆試題' }).click();
   await expect(page).toHaveURL(/\/papers$/);
-  await expect(page.getByRole('heading', { name: '選擇科目與年度' })).toBeVisible();
+  await expectCompactTopbarHeading(page, '歷屆試題');
+  await expect(
+    page.getByRole('heading', { name: '選擇科目與年度' }),
+  ).toHaveCount(0);
   const hasHorizontalOverflow = await page.evaluate(
     () => document.documentElement.scrollWidth > window.innerWidth,
   );
@@ -555,7 +655,21 @@ test('question images remain responsive on mobile', async ({ page }, testInfo) =
 
   await page.goto('/questions/construction/114/49');
   await expect(page.getByRole('img', { name: '圖 A 至圖 D 四種屋頂設備基礎防水收頭細部剖面圖' })).toBeVisible();
-  await expect(page.getByRole('radiogroup', { name: '請選擇答案' }).locator('img')).toHaveCount(0);
+  const answerOptions = page.getByRole('radiogroup', { name: '請選擇答案' });
+  await expect(answerOptions.locator('img')).toHaveCount(0);
+  const answerCard = answerOptions.locator('xpath=ancestor::section[1]');
+  const questionNavigator = page.getByRole('complementary', {
+    name: '題號導覽',
+  });
+  const [answerCardBounds, questionNavigatorBounds] = await Promise.all([
+    answerCard.boundingBox(),
+    questionNavigator.boundingBox(),
+  ]);
+  expect(answerCardBounds).not.toBeNull();
+  expect(questionNavigatorBounds).not.toBeNull();
+  expect(answerCardBounds!.y + answerCardBounds!.height).toBeLessThanOrEqual(
+    questionNavigatorBounds!.y,
+  );
   const hasHorizontalOverflow = await page.evaluate(
     () => document.documentElement.scrollWidth > window.innerWidth,
   );

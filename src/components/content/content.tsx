@@ -9,34 +9,6 @@ import { getQuestionDisplayCategory } from '@/lib/study';
 import type { Question } from '@/lib/types';
 import styles from './content.module.css';
 
-export function PageHeader({
-  eyebrow,
-  title,
-  description,
-  action,
-  compact = false,
-}: {
-  eyebrow: string;
-  title: string;
-  description?: string;
-  action?: ReactNode;
-  compact?: boolean;
-}) {
-  return (
-    <header
-      className={styles.pageHeader}
-      data-compact={compact || undefined}
-    >
-      <div>
-        <span className={styles.eyebrow}>{eyebrow}</span>
-        <h1>{title}</h1>
-        {description ? <p>{description}</p> : null}
-      </div>
-      {action ? <div>{action}</div> : null}
-    </header>
-  );
-}
-
 export function Tag({ children, tone = 'blue' }: { children: ReactNode; tone?: string }) {
   return (
     <span className={styles.tag} data-tone={tone}>

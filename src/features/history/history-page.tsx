@@ -2,11 +2,17 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { IconHistory, IconLoader2, IconTrash } from '@tabler/icons-react';
 import { AttemptReview } from '@/components/attempt-review';
-import { EmptyState, PageHeader, Tag } from '@/components/content/content';
+import { EmptyState, Tag } from '@/components/content/content';
 import { Button, ConfirmDialog, useToast } from '@/components/ui/ui';
 import { getSubject, subjects } from '@/question-bank/catalog';
 import { questionPathFromId } from '@/lib/question-path';
-import { formatDuration, getAttemptScopeKey } from '@/lib/study';
+import {
+  calculateScore,
+  formatDuration,
+  getAttemptScopeKey,
+  getSubjectScoreConfig,
+  isQuestionCorrect,
+} from '@/lib/study';
 import type { Question, QuizAttempt, SubjectId } from '@/lib/types';
 import { useAppState } from '@/state/app-state';
 import styles from './history-page.module.css';
@@ -70,21 +76,12 @@ export function HistoryPage({ questions }: { questions: Question[] }) {
 
   return (
     <>
-      <PageHeader
-        eyebrow="ATTEMPT HISTORY"
-        title="已作答紀錄"
-        description="同一份試卷集中在同一區塊，可展開檢討或清除指定的一次紀錄。"
-      />
       {hydrated && state.attempts.length ? (
         <section
           className={styles.subjectFilters}
           role="group"
           aria-label="已作答紀錄科目分類"
         >
-          <header>
-            <span>SUBJECT FILTER</span>
-            <strong>依科目查找</strong>
-          </header>
           <div>
             <button
               type="button"
@@ -171,11 +168,36 @@ export function HistoryPage({ questions }: { questions: Question[] }) {
                         return question ? [question] : [];
                       });
                       const ordinal = ordinalById.get(attempt.id) ?? 1;
-                      const accuracy = attempt.questionIds.length
-                        ? Math.round(
-                            (attempt.correctCount / attempt.questionIds.length) * 100,
-                          )
-                        : 0;
+                      const scoreDetails =
+                        attempt.subject === 'mixed'
+                          ? attemptQuestions.reduce(
+                              (result, question) => {
+                                const { pointsPerQuestion } =
+                                  getSubjectScoreConfig(question.subject);
+                                return {
+                                  score:
+                                    result.score +
+                                    (isQuestionCorrect(
+                                      question,
+                                      attempt.answers[question.id],
+                                    )
+                                      ? pointsPerQuestion
+                                      : 0),
+                                  maximumScore:
+                                    result.maximumScore + pointsPerQuestion,
+                                };
+                              },
+                              { score: 0, maximumScore: 0 },
+                            )
+                          : {
+                              score: calculateScore(
+                                attempt.correctCount,
+                                attempt.subject,
+                              ),
+                              maximumScore: getSubjectScoreConfig(
+                                attempt.subject,
+                              ).maximumScore,
+                            };
 
                       return (
                         <section className={styles.attempt} key={attempt.id}>
@@ -187,8 +209,16 @@ export function HistoryPage({ questions }: { questions: Question[] }) {
                               </time>
                             </div>
                             <div className={styles.score}>
-                              <strong>{accuracy}%</strong>
-                              <span>正確率</span>
+                              <strong>
+                                {scoreDetails.maximumScore
+                                  ? `${scoreDetails.score.toFixed(2)} 分`
+                                  : '—'}
+                              </strong>
+                              <span>
+                                {scoreDetails.maximumScore
+                                  ? `/ ${scoreDetails.maximumScore.toFixed(2)} 分`
+                                  : '無法計算分數'}
+                              </span>
                             </div>
                           </header>
                           <div className={styles.stats}>

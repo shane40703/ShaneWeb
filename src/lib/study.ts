@@ -40,6 +40,8 @@ function isQuizAttempt(value: unknown): value is QuizAttempt {
   return (
     typeof attempt.id === 'string' &&
     (attempt.mode === 'paper' || attempt.mode === 'random') &&
+    (attempt.subject === 'mixed' || isSubjectId(attempt.subject)) &&
+    (attempt.year === null || Number.isInteger(attempt.year)) &&
     typeof attempt.startedAt === 'string' &&
     typeof attempt.submittedAt === 'string' &&
     Number.isInteger(attempt.elapsedSeconds) &&

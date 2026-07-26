@@ -5,7 +5,7 @@ import { QuestionAnswerPanel } from '@/components/question-answer-panel';
 afterEach(cleanup);
 
 describe('QuestionAnswerPanel', () => {
-  it('shows every option and all accepted answers', () => {
+  it('marks accepted options with accessible names without repeating the answer below', () => {
     const { container } = render(
       <QuestionAnswerPanel
         question={{
@@ -19,13 +19,24 @@ describe('QuestionAnswerPanel', () => {
       screen.getByRole('region', { name: '題目選項' }),
     ).toBeInTheDocument();
     expect(screen.getAllByRole('listitem')).toHaveLength(4);
-    expect(screen.getByText('A、C')).toBeInTheDocument();
+    expect(
+      screen.getByRole('listitem', {
+        name: '正確選項 A：選項 A',
+      }),
+    ).toHaveAttribute('data-accepted', 'true');
+    expect(
+      screen.getByRole('listitem', {
+        name: '正確選項 C：選項 C',
+      }),
+    ).toHaveAttribute('data-accepted', 'true');
     expect(container.querySelectorAll('[data-accepted="true"]')).toHaveLength(
       2,
     );
+    expect(screen.queryByText('正確答案')).not.toBeInTheDocument();
+    expect(screen.queryByText('A、C')).not.toBeInTheDocument();
   });
 
-  it('labels all-credit questions directly', () => {
+  it('gives every option an accessible correct-option name for all-credit questions', () => {
     render(
       <QuestionAnswerPanel
         question={{
@@ -35,7 +46,12 @@ describe('QuestionAnswerPanel', () => {
       />,
     );
 
-    expect(screen.getByText('本題一律給分')).toBeInTheDocument();
-    expect(screen.getAllByText('正確選項')).toHaveLength(4);
+    expect(
+      screen.getAllByRole('listitem', {
+        name: /^正確選項 [A-D]：選項 [A-D]$/,
+      }),
+    ).toHaveLength(4);
+    expect(screen.queryByText('本題一律給分')).not.toBeInTheDocument();
+    expect(screen.queryByText('正確答案')).not.toBeInTheDocument();
   });
 });
