@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
   EmptyState,
   QuestionCard,
@@ -49,10 +50,17 @@ export function DifficultPage({
   onRetryQuestionBank?: (subject: SubjectId) => void;
 }) {
   const { state, dispatch, hydrated } = useAppState();
+  const [subjectFilter, setSubjectFilter] = useState<'all' | SubjectId>('all');
   const difficultQuestions = questions.filter((question) =>
     state.difficultQuestionIds.includes(question.id),
   );
-  const subjectGroups = groupDifficultQuestions(difficultQuestions);
+  const filteredDifficultQuestions =
+    subjectFilter === 'all'
+      ? difficultQuestions
+      : difficultQuestions.filter(
+          (question) => question.subject === subjectFilter,
+        );
+  const subjectGroups = groupDifficultQuestions(filteredDifficultQuestions);
   const difficultSubjects = subjectsOfQuestionIds(state.difficultQuestionIds);
   const loadingSubjects = difficultSubjects.filter(
     (subjectId) => questionBankStatuses[subjectId] === 'loading',
@@ -109,6 +117,38 @@ export function DifficultPage({
                 <strong>尚有難題正在載入</strong>
                 <p>已完成的科目會先顯示在下方。</p>
               </div>
+            </section>
+          ) : null}
+          {difficultQuestions.length ? (
+            <section
+              className={styles.subjectFilters}
+              role="group"
+              aria-label="難題科目分類"
+            >
+              <button
+                type="button"
+                aria-pressed={subjectFilter === 'all'}
+                onClick={() => setSubjectFilter('all')}
+              >
+                全部 <span>{difficultQuestions.length}</span>
+              </button>
+              {subjects.map((subject) => {
+                const count = difficultQuestions.filter(
+                  (question) => question.subject === subject.id,
+                ).length;
+
+                return (
+                  <button
+                    key={subject.id}
+                    type="button"
+                    aria-pressed={subjectFilter === subject.id}
+                    disabled={!count}
+                    onClick={() => setSubjectFilter(subject.id)}
+                  >
+                    {subject.name} <span>{count}</span>
+                  </button>
+                );
+              })}
             </section>
           ) : null}
           {subjectGroups.length ? (
@@ -218,6 +258,12 @@ export function DifficultPage({
                 ),
               )}
             </div>
+          ) : difficultQuestions.length ? (
+            <EmptyState
+              icon={IconBulb}
+              title="這個科目沒有難題"
+              description="可切換到其他科目查看已標記的題目。"
+            />
           ) : !failedSubjects.length && !loadingSubjects.length ? (
             <EmptyState
               icon={IconPlugConnectedX}

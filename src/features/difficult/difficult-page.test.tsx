@@ -126,6 +126,21 @@ describe('DifficultPage', () => {
       'law-114-01 題幹',
       'law-114-02 題幹',
     ]);
+
+    const filters = screen.getByRole('group', { name: '難題科目分類' });
+    expect(within(filters).getByRole('button', { name: '全部 5' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    fireEvent.click(
+      within(filters).getByRole('button', { name: '建築環境控制 1' }),
+    );
+    expect(
+      screen.getByRole('heading', { name: '建築環境控制' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole('heading', { name: '建築法規與實務' }),
+    ).not.toBeInTheDocument();
   });
 
   it('marks correct options accessibly and shows only the explanation panel', async () => {
