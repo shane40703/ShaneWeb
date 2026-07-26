@@ -17,7 +17,6 @@ import {
   formatDuration,
   getAttemptScopeKey,
   getSubjectScoreConfig,
-  isQuestionCorrect,
 } from '@/lib/study';
 import type { Question, QuizAttempt, SubjectId } from '@/lib/types';
 import { useAppState } from '@/state/app-state';
@@ -49,51 +48,6 @@ function retryHref(attempt: QuizAttempt) {
         attempt.questionIds.join(','),
       )}`
     : baseHref;
-}
-
-function getMixedScoreDetails(attempt: QuizAttempt, questions: Question[]) {
-  const questionById = new Map(questions.map((question) => [question.id, question]));
-  const missingPointValues: number[] = [];
-  let score = 0;
-  let maximumScore = 0;
-  let loadedCorrectCount = 0;
-
-  for (const questionId of attempt.questionIds) {
-    const question = questionById.get(questionId);
-    const subject = question?.subject ?? parseQuestionId(questionId)?.subject;
-    if (!subject) return { score: null, maximumScore: 0 };
-
-    const { pointsPerQuestion } = getSubjectScoreConfig(subject);
-    maximumScore += pointsPerQuestion;
-    if (!question) {
-      missingPointValues.push(pointsPerQuestion);
-    } else if (isQuestionCorrect(question, attempt.answers[question.id])) {
-      loadedCorrectCount += 1;
-      score += pointsPerQuestion;
-    }
-  }
-
-  const missingCorrectCount = attempt.correctCount - loadedCorrectCount;
-  if (
-    missingCorrectCount < 0 ||
-    missingCorrectCount > missingPointValues.length
-  ) {
-    return { score: null, maximumScore };
-  }
-  if (missingCorrectCount === missingPointValues.length) {
-    score += missingPointValues.reduce((total, points) => total + points, 0);
-  } else if (missingCorrectCount > 0) {
-    const firstMissingPointValue = missingPointValues[0];
-    if (
-      firstMissingPointValue === undefined ||
-      !missingPointValues.every((points) => points === firstMissingPointValue)
-    ) {
-      return { score: null, maximumScore };
-    }
-    score += missingCorrectCount * firstMissingPointValue;
-  }
-
-  return { score, maximumScore };
 }
 
 export function HistoryPage({
@@ -250,16 +204,16 @@ export function HistoryPage({
                       );
                       const ordinal = ordinalById.get(attempt.id) ?? 1;
                       const scoreDetails =
-                        attempt.subject === 'mixed'
-                          ? getMixedScoreDetails(attempt, attemptQuestions)
-                          : {
+                        attempt.mode === 'paper' && attempt.subject !== 'mixed'
+                          ? {
                               score: calculateScore(
                                 attempt.correctCount,
                                 attempt.subject,
                               ),
                               maximumScore: getSubjectScoreConfig(attempt.subject)
                                 .maximumScore,
-                            };
+                            }
+                          : null;
 
                       return (
                         <section className={styles.attempt} key={attempt.id}>
@@ -271,18 +225,28 @@ export function HistoryPage({
                               </time>
                             </div>
                             <div className={styles.score}>
-                              <strong>
-                                {scoreDetails.score !== null &&
-                                scoreDetails.maximumScore
-                                  ? `${scoreDetails.score.toFixed(2)} 分`
-                                  : '—'}
-                              </strong>
-                              <span>
-                                {scoreDetails.score !== null &&
-                                scoreDetails.maximumScore
-                                  ? `/ ${scoreDetails.maximumScore.toFixed(2)} 分`
-                                  : '無法計算分數'}
-                              </span>
+                              {attempt.mode === 'random' ? (
+                                <>
+                                  <strong>
+                                    {attempt.correctCount} /{' '}
+                                    {attempt.questionIds.length} 題
+                                  </strong>
+                                  <span>答對題數</span>
+                                </>
+                              ) : (
+                                <>
+                                  <strong>
+                                    {scoreDetails
+                                      ? `${scoreDetails.score.toFixed(2)} 分`
+                                      : '—'}
+                                  </strong>
+                                  <span>
+                                    {scoreDetails
+                                      ? `/ ${scoreDetails.maximumScore.toFixed(2)} 分`
+                                      : '無法計算分數'}
+                                  </span>
+                                </>
+                              )}
                             </div>
                           </header>
                           <div className={styles.stats}>
@@ -323,8 +287,8 @@ export function HistoryPage({
                               </strong>
                               <p>
                                 {failedQuestionCount
-                                  ? '這次紀錄的分數、作答統計與操作仍可使用；請確認連線後重新載入題目。'
-                                  : '這次紀錄的分數、作答統計與操作仍可使用。'}
+                                  ? '這次紀錄的答題統計與操作仍可使用；請確認連線後重新載入題目。'
+                                  : '這次紀錄的答題統計與操作仍可使用。'}
                               </p>
                               {failedSubjects.length &&
                               onRetryQuestionBank ? (

@@ -195,12 +195,12 @@ test('static question paths preserve state and submit a paper result to history'
   await expectCompactTopbarHeading(page, '作答頁');
   await expect(page.getByText('本回作答結果', { exact: true })).toHaveCount(0);
   const scoreRing = page.getByRole('progressbar', {
-    name: '本次得分 1.25 分，滿分 100.00 分',
+    name: '答對 1 題，共 2 題',
   });
   await expect(scoreRing).toBeVisible();
   await expect(scoreRing).toHaveAttribute('aria-valuemin', '0');
-  await expect(scoreRing).toHaveAttribute('aria-valuenow', '1.25');
-  await expect(scoreRing).toHaveAttribute('aria-valuemax', '100');
+  await expect(scoreRing).toHaveAttribute('aria-valuenow', '1');
+  await expect(scoreRing).toHaveAttribute('aria-valuemax', '2');
   await expect(scoreRing).toHaveCSS('background-image', /conic-gradient/);
   expect(
     await scoreRing.evaluate((element) =>
@@ -208,8 +208,10 @@ test('static question paths preserve state and submit a paper result to history'
         .getPropertyValue('--score-percentage')
         .trim(),
     ),
-  ).toBe('1.25%');
-  await expect(page.getByText('/ 100.00 分')).toBeVisible();
+  ).toBe('50%');
+  await expect(scoreRing).toContainText('1 / 2');
+  await expect(scoreRing).toContainText('題答對');
+  await expect(page.getByText(/100\\.00 分/)).toHaveCount(0);
   await expect(page.getByRole('heading', { name: '逐題作答結果' })).toBeVisible();
   await expect(page.getByText('1 / 2 題答對')).toBeVisible();
   await expect(page.getByText('詳解', { exact: true }).first()).toBeVisible();
@@ -246,10 +248,10 @@ test('static question paths preserve state and submit a paper result to history'
 
   await page.goto('/history');
   await expectCompactTopbarHeading(page, '已作答紀錄');
-  await expect(page.getByText('1.25 分', { exact: true })).toBeVisible();
-  await expect(page.getByText('/ 100.00 分', { exact: true })).toBeVisible();
-  await expect(page.getByText('50%', { exact: true })).toHaveCount(0);
-  await expect(page.getByText(/^答對/)).toContainText('1');
+  await expect(page.getByText('1 / 2 題', { exact: true })).toBeVisible();
+  await expect(page.getByText('答對題數', { exact: true })).toBeVisible();
+  await expect(page.getByText(/100\\.00 分/)).toHaveCount(0);
+  await expect(page.getByText(/^答對 /)).toContainText('1');
   await expect(page.getByText(/^答錯/)).toContainText('1');
   await expect(page.getByText('共作答 1 次')).toBeVisible();
   await expect(page.getByRole('heading', { name: '第 1 次' })).toBeVisible();
@@ -391,7 +393,7 @@ test('all-credit questions stay concealed until review and count toward the scor
   await expect(page.getByText('1 / 1 題答對')).toBeVisible();
   await expect(
     page.getByRole('progressbar', {
-      name: '本次得分 1.25 分，滿分 100.00 分',
+      name: '答對 1 題，共 1 題',
     }),
   ).toBeVisible();
   await expect(page.getByText('本題一律給分。')).toBeVisible();

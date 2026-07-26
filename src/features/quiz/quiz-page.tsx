@@ -341,7 +341,11 @@ export function QuizPage({ question, paper }: StaticQuestionPageProps) {
   if (attempt) {
     const { maximumScore } = getSubjectScoreConfig(question.subject);
     const score = calculateScore(attempt.correctCount, question.subject);
-    const scorePercentage = Math.min(100, Math.max(0, (score / maximumScore) * 100));
+    const resultValue = isRandomQuiz ? attempt.correctCount : score;
+    const resultMaximum = isRandomQuiz ? paperQuestions.length : maximumScore;
+    const resultPercentage = resultMaximum
+      ? Math.min(100, Math.max(0, (resultValue / resultMaximum) * 100))
+      : 0;
 
     return (
       <>
@@ -350,17 +354,27 @@ export function QuizPage({ question, paper }: StaticQuestionPageProps) {
             className={styles.scoreRing}
             style={
               {
-                '--score-percentage': `${scorePercentage}%`,
+                '--score-percentage': `${resultPercentage}%`,
               } as CSSProperties
             }
             role="progressbar"
             aria-valuemin={0}
-            aria-valuenow={score}
-            aria-valuemax={maximumScore}
-            aria-label={`本次得分 ${score.toFixed(2)} 分，滿分 ${maximumScore.toFixed(2)} 分`}
+            aria-valuenow={resultValue}
+            aria-valuemax={resultMaximum}
+            aria-label={
+              isRandomQuiz
+                ? `答對 ${attempt.correctCount} 題，共 ${paperQuestions.length} 題`
+                : `本次得分 ${score.toFixed(2)} 分，滿分 ${maximumScore.toFixed(2)} 分`
+            }
           >
-            <strong>{score.toFixed(2)}</strong>
-            <span>/ {maximumScore.toFixed(2)} 分</span>
+            <strong>
+              {isRandomQuiz
+                ? `${attempt.correctCount} / ${paperQuestions.length}`
+                : score.toFixed(2)}
+            </strong>
+            <span>
+              {isRandomQuiz ? '題答對' : `/ ${maximumScore.toFixed(2)} 分`}
+            </span>
           </div>
           <div className={styles.resultSummary}>
             <h2>
