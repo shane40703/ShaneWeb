@@ -643,6 +643,10 @@ test('random quiz draws the requested number of unique questions', async ({ page
   await expect(
     randomQuiz.getByRole('heading', { name: '建立隨機題組' }),
   ).toHaveCount(0);
+  await randomQuiz
+    .getByRole('button', { name: /^建築技術規則 \d+ 題$/ })
+    .click();
+  await expect(randomQuiz.getByText(/建築技術規則/).last()).toBeVisible();
   await randomQuiz.getByRole('button').filter({ hasText: /^5 題/ }).click();
   await randomQuiz.getByRole('button', { name: '抽出題組' }).click();
   await expect(page).toHaveURL(/mode=random/);

@@ -2,7 +2,12 @@ import { useRouter } from 'next/router';
 import { useState } from 'react';
 import { IconSparkles } from '@tabler/icons-react';
 import { subjects, years } from '@/question-bank/catalog';
-import { isSubjectId, pickRandomItems } from '@/lib/study';
+import { analysisCategoryCatalog } from '@/question-bank/schema';
+import {
+  getAnalysisCategory,
+  isSubjectId,
+  pickRandomItems,
+} from '@/lib/study';
 import type { QuestionSummary, SubjectId } from '@/lib/types';
 import styles from './random-page.module.css';
 
@@ -17,6 +22,7 @@ export function RandomPage({ questions }: { questions: QuestionSummary[] }) {
   const [subjectId, setSubjectId] = useState<SubjectId>(initialSubject);
   const [fromYearValue, setFromYearValue] = useState<number>();
   const [toYearValue, setToYearValue] = useState<number>();
+  const [categoryValue, setCategoryValue] = useState('all');
   const [countValue, setCountValue] = useState(10);
   const subject = subjects.find((item) => item.id === subjectId) ?? subjects[0];
   const availableYears = years.filter((year) =>
@@ -32,12 +38,43 @@ export function RandomPage({ questions }: { questions: QuestionSummary[] }) {
     : (availableYears[0] ?? years[0]);
   const rangeStart = Math.min(fromYear, toYear);
   const rangeEnd = Math.max(fromYear, toYear);
-  const candidates = questions.filter(
+  const rangeCandidates = questions.filter(
     (question) =>
       question.subject === subjectId &&
       question.year >= rangeStart &&
       question.year <= rangeEnd,
   );
+  const categoryCounts = new Map<string, number>();
+  rangeCandidates.forEach((question) => {
+    const category = getAnalysisCategory(
+      question.subject,
+      question.topic,
+      question.primaryCategory,
+    );
+    categoryCounts.set(category, (categoryCounts.get(category) ?? 0) + 1);
+  });
+  const availableCategories = [
+    ...Object.keys(analysisCategoryCatalog[subjectId]).filter((category) =>
+      categoryCounts.has(category),
+    ),
+    ...[...categoryCounts.keys()]
+      .filter((category) => !(category in analysisCategoryCatalog[subjectId]))
+      .sort((left, right) => left.localeCompare(right, 'zh-Hant')),
+  ];
+  const category = availableCategories.includes(categoryValue)
+    ? categoryValue
+    : 'all';
+  const candidates =
+    category === 'all'
+      ? rangeCandidates
+      : rangeCandidates.filter(
+          (question) =>
+            getAnalysisCategory(
+              question.subject,
+              question.topic,
+              question.primaryCategory,
+            ) === category,
+        );
   const countOptions = [5, 10, 15, 20, 30].filter((count) => count <= candidates.length);
   if (candidates.length && !countOptions.length) {
     countOptions.push(candidates.length);
@@ -50,6 +87,7 @@ export function RandomPage({ questions }: { questions: QuestionSummary[] }) {
     setSubjectId(nextSubject);
     setFromYearValue(undefined);
     setToYearValue(undefined);
+    setCategoryValue('all');
     void router.replace(
       { pathname: '/random', query: { subject: nextSubject } },
       undefined,
@@ -103,7 +141,10 @@ export function RandomPage({ questions }: { questions: QuestionSummary[] }) {
                 <select
                   aria-label="隨機出題起始年度"
                   value={fromYear}
-                  onChange={(event) => setFromYearValue(Number(event.target.value))}
+                  onChange={(event) => {
+                    setFromYearValue(Number(event.target.value));
+                    setCategoryValue('all');
+                  }}
                 >
                   {[...availableYears].reverse().map((candidateYear) => (
                     <option key={candidateYear} value={candidateYear}>
@@ -118,7 +159,10 @@ export function RandomPage({ questions }: { questions: QuestionSummary[] }) {
                 <select
                   aria-label="隨機出題結束年度"
                   value={toYear}
-                  onChange={(event) => setToYearValue(Number(event.target.value))}
+                  onChange={(event) => {
+                    setToYearValue(Number(event.target.value));
+                    setCategoryValue('all');
+                  }}
                 >
                   {availableYears.map((candidateYear) => (
                     <option key={candidateYear} value={candidateYear}>
@@ -128,7 +172,7 @@ export function RandomPage({ questions }: { questions: QuestionSummary[] }) {
                 </select>
               </label>
               <strong>
-                <b>{candidates.length}</b> 題符合條件
+                <b>{rangeCandidates.length}</b> 題符合年度
               </strong>
             </div>
           </div>
@@ -137,8 +181,39 @@ export function RandomPage({ questions }: { questions: QuestionSummary[] }) {
         <section>
           <span className={styles.stepNumber}>3</span>
           <div>
+            <h3>選擇題目類別</h3>
+            <p>可從跨年度的相同類別集中抽題。</p>
+            <div className={styles.categoryChoices}>
+              <button
+                type="button"
+                aria-label={`全部類別 ${rangeCandidates.length} 題`}
+                aria-pressed={category === 'all'}
+                onClick={() => setCategoryValue('all')}
+              >
+                <strong>全部類別</strong>
+                <small>{rangeCandidates.length} 題</small>
+              </button>
+              {availableCategories.map((candidateCategory) => (
+                <button
+                  type="button"
+                  key={candidateCategory}
+                  aria-label={`${candidateCategory} ${categoryCounts.get(candidateCategory)} 題`}
+                  aria-pressed={candidateCategory === category}
+                  onClick={() => setCategoryValue(candidateCategory)}
+                >
+                  <strong>{candidateCategory}</strong>
+                  <small>{categoryCounts.get(candidateCategory)} 題</small>
+                </button>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <span className={styles.stepNumber}>4</span>
+          <div>
             <h3>選擇題數</h3>
-            <p>從符合條件的考古題中隨機抽取。</p>
+            <p>從符合科目、年度與類別的考古題中隨機抽取。</p>
             <div className={styles.countChoices}>
               {countOptions.map((candidateCount) => (
                 <button
@@ -160,6 +235,7 @@ export function RandomPage({ questions }: { questions: QuestionSummary[] }) {
         <span>
           <strong>
             {subject.name}・{rangeStart}–{rangeEnd} 年
+            {category === 'all' ? '' : `・${category}`}
           </strong>
           從 {candidates.length} 題中抽出 {count} 題
         </span>
