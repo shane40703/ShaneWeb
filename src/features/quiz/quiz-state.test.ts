@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   createQuizProgressScope,
   createQuizQuestionSearch,
+  getQuizElapsedSeconds,
   parseStoredQuizProgress,
   QUIZ_PROGRESS_STORAGE_KEY,
   readQuizProgress,
@@ -132,6 +133,30 @@ describe('quizProgressReducer', () => {
       startedAt: '2026-07-23T00:00:03.000Z',
     });
     expect(state['question-1']?.eliminatedOptions).toBeUndefined();
+  });
+
+  it('keeps one cumulative timer when moving between paper questions', () => {
+    let state: QuizProgressByQuestion = {};
+    state = quizProgressReducer(state, {
+      type: 'tick-question',
+      questionId: 'question-1',
+      startedAt: '2026-07-23T00:00:00.000Z',
+    });
+    state = quizProgressReducer(state, {
+      type: 'tick-question',
+      questionId: 'question-1',
+      startedAt: '2026-07-23T00:00:00.000Z',
+    });
+    state = quizProgressReducer(state, {
+      type: 'tick-question',
+      questionId: 'question-2',
+      startedAt: '2026-07-23T00:00:02.000Z',
+    });
+
+    expect(
+      getQuizElapsedSeconds(state, ['question-1', 'question-2']),
+    ).toBe(3);
+    expect(getQuizElapsedSeconds(state, ['question-2'])).toBe(1);
   });
 });
 

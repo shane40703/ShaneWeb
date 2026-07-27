@@ -14,6 +14,17 @@ export interface QuizQuestionProgress {
 export type QuizProgressByQuestion = Partial<Record<QuestionId, QuizQuestionProgress>>;
 export type QuizProgressByScope = Record<string, QuizProgressByQuestion>;
 
+export function getQuizElapsedSeconds(
+  progress: QuizProgressByQuestion,
+  questionIds: readonly QuestionId[],
+) {
+  return questionIds.reduce(
+    (total, questionId) =>
+      total + Math.max(0, progress[questionId]?.elapsedSeconds ?? 0),
+    0,
+  );
+}
+
 export type QuizProgressAction =
   | { type: 'visit-question'; questionId: QuestionId; startedAt: string }
   | {

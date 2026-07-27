@@ -47,6 +47,7 @@ import { useAppState } from '@/state/app-state';
 import {
   createQuizProgressScope,
   createQuizQuestionSearch,
+  getQuizElapsedSeconds,
   readQuizProgress,
   scopedQuizProgressReducer,
   writeQuizProgress,
@@ -184,7 +185,10 @@ export function QuizPage({ question, paper }: StaticQuestionPageProps) {
   const progress = progressByQuestion[question.id];
   const selected = progress?.selected;
   const eliminatedOptions = progress?.eliminatedOptions ?? [];
-  const elapsedSeconds = progress?.elapsedSeconds ?? 0;
+  const elapsedSeconds = getQuizElapsedSeconds(
+    progressByQuestion,
+    paperQuestions.map((item) => item.id),
+  );
   const position = paperQuestions.findIndex((item) => item.id === question.id);
   const questionSearch = isRandomQuiz
     ? createQuizQuestionSearch({
