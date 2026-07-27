@@ -170,9 +170,15 @@
   gap: 10px;
 }
 
+.optionRow {
+  min-width: 0;
+  position: relative;
+}
+
 .option {
+  width: 100%;
   min-height: 58px;
-  padding: 13px 14px;
+  padding: 13px 52px 13px 14px;
   display: grid;
   grid-template-columns: 20px 28px 1fr;
   gap: 10px;
@@ -196,6 +202,53 @@
 
 .option:has(.radio[data-disabled]) {
   cursor: default;
+}
+
+.option[data-eliminated] {
+  border-color: var(--line);
+  background: var(--surface-3);
+  color: var(--muted);
+  opacity: 0.58;
+}
+
+.option[data-eliminated] > :last-child {
+  text-decoration: line-through;
+  text-decoration-thickness: 1.5px;
+}
+
+.eliminateOption {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  position: absolute;
+  top: 50%;
+  right: 11px;
+  display: grid;
+  place-items: center;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transform: translateY(-50%);
+  transition: border-color 150ms ease, background 150ms ease, color 150ms ease;
+}
+
+.eliminateOption:hover:not(:disabled),
+.eliminateOption[aria-pressed='true'] {
+  border-color: var(--line-strong);
+  background: var(--surface);
+  color: var(--primary-strong);
+}
+
+.eliminateOption:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.eliminateOption:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
 }
 
 .radio {

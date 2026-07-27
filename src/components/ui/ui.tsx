@@ -12,6 +12,8 @@ import {
   IconAlertTriangle,
   IconCheck,
   IconChevronDown,
+  IconEye,
+  IconEyeOff,
   IconMenu2,
   IconX,
 } from '@tabler/icons-react';
@@ -115,14 +117,20 @@ export function OptionGroup({
   options,
   value,
   disabled,
+  eliminatedValues = [],
   onValueChange,
+  onToggleEliminated,
 }: {
   label: string;
   options: readonly string[];
   value?: number;
   disabled?: boolean;
+  eliminatedValues?: readonly number[];
   onValueChange: (value: number) => void;
+  onToggleEliminated?: (value: number) => void;
 }) {
+  const eliminated = new Set(eliminatedValues);
+
   return (
     <Field.Root className={styles.optionField}>
       <Field.Label className={styles.visuallyHidden}>{label}</Field.Label>
@@ -133,15 +141,53 @@ export function OptionGroup({
         onValueChange={(nextValue) => onValueChange(Number(nextValue))}
         className={styles.options}
       >
-        {options.map((option, index) => (
-          <label className={styles.option} key={index}>
-            <Radio.Root value={String(index)} className={styles.radio}>
-              <Radio.Indicator className={styles.radioIndicator} />
-            </Radio.Root>
-            <span className={styles.optionLetter}>{String.fromCharCode(65 + index)}</span>
-            <span>{option}</span>
-          </label>
-        ))}
+        {options.map((option, index) => {
+          const optionLetter = String.fromCharCode(65 + index);
+          const optionEliminated = eliminated.has(index);
+
+          return (
+            <div
+              className={styles.optionRow}
+              data-eliminated={optionEliminated || undefined}
+              key={index}
+            >
+              <label
+                className={styles.option}
+                data-eliminated={optionEliminated || undefined}
+              >
+                <Radio.Root
+                  value={String(index)}
+                  className={styles.radio}
+                  disabled={optionEliminated}
+                >
+                  <Radio.Indicator className={styles.radioIndicator} />
+                </Radio.Root>
+                <span className={styles.optionLetter}>{optionLetter}</span>
+                <span>{option}</span>
+              </label>
+              {onToggleEliminated ? (
+                <button
+                  type="button"
+                  className={styles.eliminateOption}
+                  aria-label={
+                    optionEliminated
+                      ? `恢復選項 ${optionLetter}`
+                      : `刪去選項 ${optionLetter}`
+                  }
+                  aria-pressed={optionEliminated}
+                  disabled={disabled || value === index}
+                  onClick={() => onToggleEliminated(index)}
+                >
+                  {optionEliminated ? (
+                    <IconEye size={18} stroke={2} aria-hidden="true" />
+                  ) : (
+                    <IconEyeOff size={18} stroke={2} aria-hidden="true" />
+                  )}
+                </button>
+              ) : null}
+            </div>
+          );
+        })}
       </RadioGroup>
     </Field.Root>
   );

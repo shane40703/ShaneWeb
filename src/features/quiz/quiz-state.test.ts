@@ -96,6 +96,43 @@ describe('quizProgressReducer', () => {
     expect(state['question-1']?.selected).toBe(2);
     expect(state['question-1']?.elapsedSeconds).toBe(1);
   });
+
+  it('keeps eliminated options with the question draft and protects the selected answer', () => {
+    let state: QuizProgressByQuestion = {};
+    state = quizProgressReducer(state, {
+      type: 'toggle-eliminated-option',
+      questionId: 'question-1',
+      option: 2,
+      startedAt: '2026-07-23T00:00:00.000Z',
+    });
+    state = quizProgressReducer(state, {
+      type: 'select-answer',
+      questionId: 'question-1',
+      selected: 1,
+      startedAt: '2026-07-23T00:00:01.000Z',
+    });
+    state = quizProgressReducer(state, {
+      type: 'toggle-eliminated-option',
+      questionId: 'question-1',
+      option: 1,
+      startedAt: '2026-07-23T00:00:02.000Z',
+    });
+
+    expect(state['question-1']).toEqual({
+      selected: 1,
+      eliminatedOptions: [2],
+      elapsedSeconds: 0,
+      startedAt: '2026-07-23T00:00:00.000Z',
+    });
+
+    state = quizProgressReducer(state, {
+      type: 'toggle-eliminated-option',
+      questionId: 'question-1',
+      option: 2,
+      startedAt: '2026-07-23T00:00:03.000Z',
+    });
+    expect(state['question-1']?.eliminatedOptions).toBeUndefined();
+  });
 });
 
 describe('quiz progress persistence', () => {

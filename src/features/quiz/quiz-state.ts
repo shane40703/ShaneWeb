@@ -6,6 +6,7 @@ const QUIZ_PROGRESS_STORAGE_VERSION = 2;
 
 export interface QuizQuestionProgress {
   selected?: number;
+  eliminatedOptions?: number[];
   elapsedSeconds: number;
   startedAt: string;
 }
@@ -19,6 +20,12 @@ export type QuizProgressAction =
       type: 'select-answer';
       questionId: QuestionId;
       selected: number;
+      startedAt: string;
+    }
+  | {
+      type: 'toggle-eliminated-option';
+      questionId: QuestionId;
+      option: number;
       startedAt: string;
     }
   | { type: 'tick-question'; questionId: QuestionId; startedAt: string }
@@ -63,6 +70,21 @@ export function quizProgressReducer(
         ...state,
         [action.questionId]: { ...current, selected: action.selected },
       };
+    case 'toggle-eliminated-option': {
+      if (current.selected === action.option) return state;
+      const eliminatedOptions = current.eliminatedOptions ?? [];
+      const alreadyEliminated = eliminatedOptions.includes(action.option);
+      const nextEliminatedOptions = alreadyEliminated
+        ? eliminatedOptions.filter((option) => option !== action.option)
+        : [...eliminatedOptions, action.option].sort((left, right) => left - right);
+      const nextProgress = { ...current };
+      if (nextEliminatedOptions.length) {
+        nextProgress.eliminatedOptions = nextEliminatedOptions;
+      } else {
+        delete nextProgress.eliminatedOptions;
+      }
+      return { ...state, [action.questionId]: nextProgress };
+    }
     case 'tick-question':
       return {
         ...state,
@@ -156,6 +178,11 @@ function isQuestionProgress(value: unknown): value is QuizQuestionProgress {
   const progress = value as Partial<QuizQuestionProgress>;
   return (
     (progress.selected === undefined || Number.isInteger(progress.selected)) &&
+    (progress.eliminatedOptions === undefined ||
+      (Array.isArray(progress.eliminatedOptions) &&
+        progress.eliminatedOptions.every(
+          (option) => Number.isInteger(option) && option >= 0,
+        ))) &&
     Number.isInteger(progress.elapsedSeconds) &&
     typeof progress.startedAt === 'string'
   );

@@ -183,6 +183,7 @@ export function QuizPage({ question, paper }: StaticQuestionPageProps) {
     progressState.scope === quizProgressScope ? progressState.progress : EMPTY_PROGRESS;
   const progress = progressByQuestion[question.id];
   const selected = progress?.selected;
+  const eliminatedOptions = progress?.eliminatedOptions ?? [];
   const elapsedSeconds = progress?.elapsedSeconds ?? 0;
   const position = paperQuestions.findIndex((item) => item.id === question.id);
   const questionSearch = isRandomQuiz
@@ -533,11 +534,20 @@ export function QuizPage({ question, paper }: StaticQuestionPageProps) {
                 options={question.options}
                 value={selected}
                 disabled={!quizProgressScope || singleAnswerChecked}
+                eliminatedValues={eliminatedOptions}
                 onValueChange={(value) =>
                   updateQuizProgress({
                     type: 'select-answer',
                     questionId: question.id,
                     selected: value,
+                    startedAt: new Date().toISOString(),
+                  })
+                }
+                onToggleEliminated={(option) =>
+                  updateQuizProgress({
+                    type: 'toggle-eliminated-option',
+                    questionId: question.id,
+                    option,
                     startedAt: new Date().toISOString(),
                   })
                 }
