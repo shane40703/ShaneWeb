@@ -21,6 +21,7 @@ const yearDirectoryPattern = /^\d{3}$/;
 const questionDirectoryPattern = /^\d{2}$/;
 const questionFilePattern = /^question-(\d{2})\.(txt|png|jpe?g|webp)$/;
 const questionImageFilePattern = /^question-\d{2}\.(png|jpe?g|webp)$/;
+const privateUseCharacterPattern = /[\uE000-\uF8FF]/u;
 const subjectOrder = new Map(subjects.map((subject, index) => [subject.id, index]));
 
 /** Filesystem noise that must never be mistaken for question bank content. */
@@ -271,6 +272,16 @@ async function readRequiredText(filePath: string) {
   }
   const normalized = value.trim();
   if (!normalized) fail(filePath, 'text file must not be empty');
+  const privateUseCharacter = normalized.match(privateUseCharacterPattern)?.[0];
+  if (privateUseCharacter) {
+    fail(
+      filePath,
+      `text file contains unsupported private-use character U+${privateUseCharacter
+        .codePointAt(0)!
+        .toString(16)
+        .toUpperCase()}`,
+    );
+  }
   return normalized;
 }
 
