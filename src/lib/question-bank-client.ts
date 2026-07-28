@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { Question, SubjectId } from '@/lib/types';
+import { years } from '@/question-bank/catalog';
 
 export type QuestionBankStatus = 'loading' | 'ready' | 'error';
 
@@ -11,19 +12,37 @@ export interface QuestionBankResult {
 
 /**
  * Requests are cached for the lifetime of the tab so moving between question
- * pages, notes, and history reuses one download per subject.
+ * pages, notes, and history reuses the same year-sized downloads.
  */
 const subjectRequests = new Map<SubjectId, Promise<Question[]>>();
+const subjectYearRequests = new Map<string, Promise<Question[]>>();
 const noQuestions: Question[] = [];
+
+function fetchSubjectYear(subject: SubjectId, year: number) {
+  const key = `${subject}:${year}`;
+  const cached = subjectYearRequests.get(key);
+  if (cached) return cached;
+
+  const request = fetch(`/api/questions/${subject}?year=${year}`).then(
+    async (response) => {
+      if (!response.ok) throw new Error(`題庫載入失敗（${response.status}）`);
+      return (await response.json()) as Question[];
+    },
+  );
+  request.catch(() => subjectYearRequests.delete(key));
+  subjectYearRequests.set(key, request);
+  return request;
+}
 
 function fetchSubject(subject: SubjectId) {
   const cached = subjectRequests.get(subject);
   if (cached) return cached;
 
-  const request = fetch(`/api/questions/${subject}`).then(async (response) => {
-    if (!response.ok) throw new Error(`題庫載入失敗（${response.status}）`);
-    return (await response.json()) as Question[];
-  });
+  // Full-subject responses grow beyond Vercel's function response limit as the
+  // bank expands. Year-sized chunks stay small and can be cached independently.
+  const request = Promise.all(
+    years.map((year) => fetchSubjectYear(subject, year)),
+  ).then((banks) => banks.flat());
   // A failed request must not poison the cache, otherwise retrying is pointless.
   request.catch(() => subjectRequests.delete(subject));
   subjectRequests.set(subject, request);

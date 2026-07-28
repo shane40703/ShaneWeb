@@ -31,10 +31,13 @@ describe('useSubjectQuestions', () => {
       law: [question('law-114-01', 'law')],
     };
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
-      const subject = String(input).split('/').at(-1) as SubjectId;
+      const url = String(input);
+      const subject = url.match(/\/api\/questions\/([^?]+)/)?.[1] as SubjectId;
+      const year = Number(new URL(url, 'https://example.test').searchParams.get('year'));
       return {
         ok: true,
-        json: async () => banks[subject] ?? [],
+        json: async () =>
+          year === 114 ? banks[subject] ?? [] : [],
       } as Response;
     });
     vi.stubGlobal('fetch', fetchMock);
@@ -59,6 +62,6 @@ describe('useSubjectQuestions', () => {
         'env-114-01',
       ]),
     );
-    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(fetchMock).toHaveBeenCalledTimes(26);
   });
 });

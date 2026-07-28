@@ -4,6 +4,7 @@ import styles from './law-database-page.module.css';
 export interface LawDatabaseEntry {
   name: string;
   questionCount: number;
+  linkable: boolean;
 }
 
 const searchUrl = 'https://law.moj.gov.tw/Law/LawSearchResult.aspx?ty=ONEBAR&kw=';
@@ -20,18 +21,33 @@ export function LawDatabasePage({ laws }: { laws: readonly LawDatabaseEntry[] })
         </div>
       </header>
       <div className={styles.list}>
-        {laws.map((law) => (
-          <a
-            key={law.name}
-            className={styles.law}
-            href={`${searchUrl}${encodeURIComponent(law.name)}`}
-            target="_blank"
-            rel="noreferrer"
-          >
-            <span><strong>{law.name}</strong><small>出現在 {law.questionCount} 題考題分類</small></span>
-            <IconExternalLink size={18} stroke={2} aria-label="開啟全國法規資料庫" />
-          </a>
-        ))}
+        {laws.map((law) => {
+          const content = (
+            <>
+              <span><strong>{law.name}</strong><small>出現在 {law.questionCount} 題考題分類</small></span>
+              {law.linkable ? (
+                <IconExternalLink size={18} stroke={2} aria-label="開啟全國法規資料庫" />
+              ) : (
+                <small className={styles.unavailable}>無法規連結</small>
+              )}
+            </>
+          );
+          return law.linkable ? (
+            <a
+              key={law.name}
+              className={styles.law}
+              href={`${searchUrl}${encodeURIComponent(law.name)}`}
+              target="_blank"
+              rel="noreferrer"
+            >
+              {content}
+            </a>
+          ) : (
+            <div key={law.name} className={styles.law}>
+              {content}
+            </div>
+          );
+        })}
       </div>
     </section>
   );

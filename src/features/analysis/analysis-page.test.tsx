@@ -4,7 +4,7 @@ import { AnalysisPage } from '@/features/analysis/analysis-page';
 import type { QuestionSummary } from '@/lib/types';
 
 const router = vi.hoisted(() => ({
-  query: { subject: 'law', year: '114' },
+  query: {} as Record<string, string>,
   replace: vi.fn(),
   push: vi.fn(),
 }));
@@ -32,8 +32,29 @@ function question(id: string, questionNumber: number): QuestionSummary {
 
 describe('AnalysisPage category quiz', () => {
   beforeEach(() => {
+    router.query = { subject: 'law', year: '114' };
     router.push.mockReset();
     router.replace.mockReset();
+  });
+
+  it('filters cross-year analysis by a selected year range', () => {
+    router.query = {
+      subject: 'law',
+      year: 'all',
+      fromYear: '113',
+      toYear: '114',
+    };
+    const questions = [
+      question('law-114-01', 1),
+      { ...question('law-113-01', 1), id: 'law-113-01', year: 113 },
+      { ...question('law-112-01', 1), id: 'law-112-01', year: 112 },
+    ];
+
+    render(<AnalysisPage questions={questions} />);
+
+    expect(screen.getByText(/總題數/)).toHaveTextContent('2 題');
+    expect(screen.getByLabelText('分析起始年度')).toHaveValue('113');
+    expect(screen.getByLabelText('分析結束年度')).toHaveValue('114');
   });
 
   it('starts a quiz containing every question in the selected category', () => {

@@ -70,13 +70,13 @@
   transition: border-color 150ms ease, background 150ms ease, transform 150ms ease;
 }
 
-.law:hover {
+a.law:hover {
   border-color: color-mix(in srgb, var(--primary) 42%, var(--line));
   background: var(--primary-soft);
   transform: translateY(-1px);
 }
 
-.law:focus-visible {
+a.law:focus-visible {
   outline: 3px solid var(--focus);
   outline-offset: 2px;
 }
@@ -107,4 +107,9 @@
 @media (max-width: 560px) {
   .hero { padding: 20px; }
   .list { grid-template-columns: 1fr; }
+}
+.unavailable {
+  color: #98a1ad;
+  font-size: 12px;
+  font-weight: 600;
 }

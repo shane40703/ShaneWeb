@@ -41,11 +41,11 @@ const navigation = [
   { href: '/papers', label: '歷屆試題', icon: IconFileText },
   { href: '/random', label: '隨機出題', icon: IconSparkles },
   { href: '/analysis', label: '考題分析', icon: IconChartPie },
-  { href: '/laws', label: '法規資料庫', icon: IconScale },
   { href: '/community', label: '詳解與討論', icon: IconMessages },
   { href: '/notes', label: '使用者筆記', icon: IconNotebook },
   { href: '/difficult', label: '難題標記', icon: IconBulb },
   { href: '/history', label: '已作答紀錄', icon: IconHistory },
+  { href: '/laws', label: '法規資料庫', icon: IconScale },
 ] as const;
 
 function isActive(pathname: string, href: string) {

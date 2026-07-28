@@ -44,9 +44,26 @@ export function AnalysisPage({ questions }: { questions: QuestionSummary[] }) {
       (question) => question.subject === subjectId && question.year === candidateYear,
     ),
   );
+  const oldestAvailableYear = availableYears.at(-1) ?? years.at(-1)!;
+  const newestAvailableYear = availableYears[0] ?? years[0];
+  const parsedFromYear = parseYear(valueOf(router.query.fromYear));
+  const parsedToYear = parseYear(valueOf(router.query.toYear));
+  const fromYear =
+    parsedFromYear && availableYears.includes(parsedFromYear)
+      ? parsedFromYear
+      : oldestAvailableYear;
+  const toYear =
+    parsedToYear && availableYears.includes(parsedToYear)
+      ? parsedToYear
+      : newestAvailableYear;
+  const rangeStart = Math.min(fromYear, toYear);
+  const rangeEnd = Math.max(fromYear, toYear);
   const source = questions.filter(
     (question) =>
-      question.subject === subjectId && (year === 'all' || question.year === year),
+      question.subject === subjectId &&
+      (year === 'all'
+        ? question.year >= rangeStart && question.year <= rangeEnd
+        : question.year === year),
   );
   const countedPrimaryAnalysis = getAnalysis(
     source.map((question) => ({
@@ -104,13 +121,25 @@ export function AnalysisPage({ questions }: { questions: QuestionSummary[] }) {
     { total: 0, parts: [] as string[] },
   );
 
-  function updateQuery(next: { subject?: SubjectId; year?: number | 'all' }) {
+  function updateQuery(next: {
+    subject?: SubjectId;
+    year?: number | 'all';
+    fromYear?: number;
+    toYear?: number;
+  }) {
+    const nextYear = next.year ?? year;
     void router.replace(
       {
         pathname: '/analysis',
         query: {
           subject: next.subject ?? subjectId,
-          year: String(next.year ?? year),
+          year: String(nextYear),
+          ...(nextYear === 'all'
+            ? {
+                fromYear: String(next.fromYear ?? fromYear),
+                toYear: String(next.toYear ?? toYear),
+              }
+            : {}),
         },
       },
       undefined,
@@ -120,7 +149,17 @@ export function AnalysisPage({ questions }: { questions: QuestionSummary[] }) {
 
   function changeSubject(nextSubject: SubjectId) {
     if (year === 'all') {
-      updateQuery({ subject: nextSubject });
+      const nextAvailableYears = years.filter((candidateYear) =>
+        questions.some(
+          (question) =>
+            question.subject === nextSubject && question.year === candidateYear,
+        ),
+      );
+      updateQuery({
+        subject: nextSubject,
+        fromYear: nextAvailableYears.at(-1) ?? years.at(-1)!,
+        toYear: nextAvailableYears[0] ?? years[0],
+      });
       return;
     }
     const nextAvailableYears = years.filter((candidateYear) =>
@@ -175,6 +214,48 @@ export function AnalysisPage({ questions }: { questions: QuestionSummary[] }) {
         }
         action={<span className={styles.scopeCount}>總題數 <strong>{source.length}</strong> 題</span>}
       />
+
+      {year === 'all' ? (
+        <section className={styles.yearRange} aria-label="跨年度年份區間">
+          <div>
+            <strong>跨年度區間</strong>
+            <span>起訖年度都包含在分析範圍內。</span>
+          </div>
+          <label>
+            起始年度
+            <select
+              aria-label="分析起始年度"
+              value={fromYear}
+              onChange={(event) =>
+                updateQuery({ fromYear: Number(event.target.value) })
+              }
+            >
+              {[...availableYears].reverse().map((candidateYear) => (
+                <option key={candidateYear} value={candidateYear}>
+                  {candidateYear} 年
+                </option>
+              ))}
+            </select>
+          </label>
+          <span aria-hidden="true">至</span>
+          <label>
+            結束年度
+            <select
+              aria-label="分析結束年度"
+              value={toYear}
+              onChange={(event) =>
+                updateQuery({ toYear: Number(event.target.value) })
+              }
+            >
+              {availableYears.map((candidateYear) => (
+                <option key={candidateYear} value={candidateYear}>
+                  {candidateYear} 年
+                </option>
+              ))}
+            </select>
+          </label>
+        </section>
+      ) : null}
 
       {source.length && analysis.length ? (
         <>

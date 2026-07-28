@@ -783,9 +783,13 @@ export async function loadAllQuestions() {
   return loadQuestions(await getQuestionEntries());
 }
 
-export async function loadSubjectQuestions(subject: SubjectId): Promise<Question[]> {
+export async function loadSubjectQuestions(
+  subject: SubjectId,
+  year?: number,
+): Promise<Question[]> {
   const entries = (await getQuestionEntries()).filter(
-    (entry) => entry.subject === subject,
+    (entry) =>
+      entry.subject === subject && (year === undefined || entry.year === year),
   );
   return loadQuestions(entries);
 }

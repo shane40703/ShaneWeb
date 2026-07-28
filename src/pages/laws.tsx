@@ -13,8 +13,16 @@ export const getStaticProps: GetStaticProps<{ laws: LawDatabaseEntry[] }> = asyn
   return {
     props: {
       laws: [...counts]
-        .map(([name, questionCount]) => ({ name, questionCount }))
-        .sort((left, right) => left.name.localeCompare(right.name, 'zh-Hant')),
+        .map(([name, questionCount]) => ({
+          name,
+          questionCount,
+          linkable: name !== '???' && name !== '廢止',
+        }))
+        .sort(
+          (left, right) =>
+            right.questionCount - left.questionCount ||
+            left.name.localeCompare(right.name, 'zh-Hant'),
+        ),
     },
   };
 };

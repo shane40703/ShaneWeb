@@ -314,3 +314,75 @@
   .yearBars { gap: 2px; }
   .yearBars i { width: 14px; }
 }
+.yearRange {
+  margin: -4px 0 20px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: end;
+  gap: 12px;
+  border: 1px solid #e6e9ee;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.yearRange > div {
+  min-width: 0;
+  margin-right: auto;
+  display: grid;
+  gap: 4px;
+}
+
+.yearRange > div strong {
+  color: #1f2733;
+  font-size: 14px;
+}
+
+.yearRange > div span,
+.yearRange > span {
+  color: #7a8491;
+  font-size: 12px;
+}
+
+.yearRange label {
+  display: grid;
+  gap: 5px;
+  color: #66717f;
+  font-size: 11px;
+}
+
+.yearRange select {
+  min-width: 112px;
+  height: 38px;
+  padding: 0 32px 0 11px;
+  border: 1px solid #dfe3e8;
+  border-radius: 9px;
+  background: #fff;
+  color: #27313d;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.yearRange select:focus-visible {
+  outline: 3px solid rgb(37 99 235 / 28%);
+  outline-offset: 2px;
+}
+
+@media (max-width: 620px) {
+  .yearRange {
+    align-items: stretch;
+    flex-wrap: wrap;
+  }
+
+  .yearRange > div {
+    width: 100%;
+  }
+
+  .yearRange label {
+    flex: 1;
+  }
+
+  .yearRange select {
+    width: 100%;
+  }
+}
