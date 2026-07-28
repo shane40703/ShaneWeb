@@ -29,7 +29,7 @@ afterEach(() => {
   delete process.env.AUTHOR_EDIT_KEY;
 });
 
-describe('classification admin API', () => {
+describe('classification author API', () => {
   it('stays disabled until an author key is configured', async () => {
     const result = response();
 
