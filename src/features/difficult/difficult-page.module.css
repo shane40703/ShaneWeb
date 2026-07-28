@@ -10,7 +10,7 @@
 .subjectFilters button[aria-pressed='true'] { border-color: var(--primary-solid); background: var(--primary-solid); color: var(--on-primary); }
 .subjectFilters button:disabled { opacity: .45; cursor: not-allowed; }
 .subjectFilters button span { min-width: 21px; height: 21px; padding-inline: 5px; display: grid; place-items: center; border-radius: 7px; background: var(--surface-3); color: var(--muted); font-size: 11px; }
-.subjectFilters button[aria-pressed='true'] span { background: rgb(0 0 0 / 16%); color: var(--on-primary); }
+.subjectFilters button[aria-pressed='true'] span { background: var(--on-primary-soft-overlay); color: var(--on-primary); }
 .subjectList,
 .yearList,
 .questionList { display: grid; }

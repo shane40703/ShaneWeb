@@ -99,8 +99,7 @@
   background: var(--primary-solid);
   color: var(--on-primary);
   box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--on-primary) 12%, transparent),
-    0 7px 15px color-mix(in srgb, var(--primary-solid) 24%, transparent);
+    0 7px 15px color-mix(in srgb, var(--primary-solid) 22%, transparent);
 }
 
 .button[data-difficult='true'][aria-current='step'],
@@ -109,7 +108,7 @@
   background: var(--primary-solid);
   color: var(--on-primary);
   box-shadow:
-    0 7px 15px color-mix(in srgb, var(--primary-solid) 24%, transparent),
+    0 7px 15px color-mix(in srgb, var(--primary-solid) 22%, transparent),
     inset 0 0 0 3px var(--warning);
 }
 

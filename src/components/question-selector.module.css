@@ -87,7 +87,7 @@
 }
 
 .subjectCopy small {
-  color: var(--muted);
+  color: var(--disabled-text);
   font-size: 11px;
 }
 

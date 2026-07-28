@@ -1,5 +1,5 @@
 .interactionGuard { display: contents; }
-.selectorHint { color: var(--muted); font-size: 12px; }
+.selectorHint { color: var(--disabled-text); font-size: 12px; }
 .layout { display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: 20px; align-items: start; }
 .editor,
 .savedNotes,

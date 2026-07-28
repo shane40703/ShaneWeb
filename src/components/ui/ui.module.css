@@ -39,7 +39,7 @@
   background: linear-gradient(
     135deg,
     var(--primary-solid),
-    var(--primary-solid-hover)
+    var(--primary-solid-gradient)
   );
   box-shadow: 0 8px 20px color-mix(in srgb, var(--primary) 24%, transparent);
 }
@@ -259,7 +259,7 @@
   width: 19px;
   height: 19px;
   padding: 3px;
-  border: 2px solid var(--control-line);
+  border: 2px solid var(--line-strong);
   border-radius: 50%;
   background: var(--surface);
 }

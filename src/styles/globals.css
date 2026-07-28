@@ -7,25 +7,27 @@
   --surface-3: #e9f0f8;
   --text: #14213d;
   --text-soft: #34425b;
-  --muted: #5f6d84;
+  --muted: #6c7890;
   --line: #dde6f1;
   --line-strong: #a9bbd2;
-  --control-line: #78889f;
+  --control-line: #dde6f1;
   --primary: #2563eb;
   --primary-strong: #1d4ed8;
   --primary-bright: #4d8cff;
   --primary-soft: #edf4ff;
   --primary-solid: #2563eb;
   --primary-solid-hover: #1d4ed8;
+  --primary-solid-gradient: #4d8cff;
   --on-primary: #ffffff;
-  --focus: #2563eb;
-  --success: #0f744f;
+  --on-primary-soft-overlay: rgb(255 255 255 / 18%);
+  --focus: rgb(37 99 235 / 28%);
+  --success: #13865c;
   --success-soft: #e6f8f0;
-  --success-solid: #0f744f;
+  --success-solid: #13865c;
   --on-success: #ffffff;
   --danger: #c63838;
   --danger-soft: #fff0f0;
-  --warning: #995508;
+  --warning: #b66a0c;
   --warning-soft: #fff6e5;
   --purple: #7c4bd4;
   --purple-soft: #f2ebff;
@@ -37,10 +39,10 @@
   --neutral-fill: #f5f5f7;
   --neutral-text: #3a3a3c;
   --subtle-text: #6e6e73;
-  --disabled-text: #5f6d84;
+  --disabled-text: #98a1ad;
   --sidebar-surface: #fafafa;
-  --sidebar-text: #1f1f1f;
-  --sidebar-muted: #666666;
+  --sidebar-text: rgb(0 0 0 / 88%);
+  --sidebar-muted: rgb(0 0 0 / 50%);
   --sidebar-hover: rgb(31 31 31 / 4%);
   --sidebar-active: rgb(31 31 31 / 7%);
   --image-surface: #ffffff;
@@ -71,15 +73,17 @@
   --muted: #93a4bb;
   --line: #263650;
   --line-strong: #465b79;
-  --control-line: #60799d;
+  --control-line: #263650;
   --primary: #6ea8fe;
   --primary-strong: #91bdff;
   --primary-bright: #3b82f6;
   --primary-soft: #14294a;
   --primary-solid: #3b6fd8;
   --primary-solid-hover: #315fbd;
+  --primary-solid-gradient: #315fbd;
   --on-primary: #ffffff;
-  --focus: #91bdff;
+  --on-primary-soft-overlay: rgb(0 0 0 / 16%);
+  --focus: rgb(110 168 254 / 42%);
   --success: #5ad5a6;
   --success-soft: #102d29;
   --success-solid: #147a59;
@@ -98,10 +102,10 @@
   --neutral-fill: #1d293d;
   --neutral-text: #d5deea;
   --subtle-text: #a9b7c9;
-  --disabled-text: #7f90a8;
+  --disabled-text: #718198;
   --sidebar-surface: #0f1728;
-  --sidebar-text: #eef4ff;
-  --sidebar-muted: #9aa9bd;
+  --sidebar-text: rgb(238 244 255 / 92%);
+  --sidebar-muted: rgb(204 216 235 / 60%);
   --sidebar-hover: rgb(255 255 255 / 6%);
   --sidebar-active: rgb(110 168 254 / 14%);
   --subject-blue: #7db1ff;
@@ -144,7 +148,7 @@ textarea,
 select { color-scheme: inherit; }
 ::placeholder {
   color: var(--muted);
-  opacity: 1;
+  opacity: 0.82;
 }
 a,
 button { -webkit-tap-highlight-color: transparent; }

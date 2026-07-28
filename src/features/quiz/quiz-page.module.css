@@ -109,8 +109,8 @@
 }
 
 .questionNumbers a:hover {
-  border-color: var(--quiz-accent);
-  color: var(--quiz-accent);
+  border-color: var(--primary);
+  color: var(--primary-strong);
 }
 
 .questionNumbers a[data-answered='true']:not([aria-current='step']) {
@@ -120,8 +120,8 @@
 }
 
 .questionNumbers a[aria-current='step'] {
-  border-color: var(--quiz-accent);
-  background: var(--quiz-accent);
+  border-color: var(--primary-solid);
+  background: var(--primary-solid);
   color: var(--on-primary);
   box-shadow: none;
 }
