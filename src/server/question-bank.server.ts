@@ -1,4 +1,4 @@
-import { readdir, readFile, stat } from 'node:fs/promises';
+import { readdir, readFile, stat, writeFile } from 'node:fs/promises';
 import type { Dirent } from 'node:fs';
 import path from 'node:path';
 import sharp from 'sharp';
@@ -505,6 +505,62 @@ export async function findQuestionEntry(subject: string, year: string, number: s
       entry.year === Number(year) &&
       entry.questionNumber === Number(number),
   );
+}
+
+export interface QuestionClassificationUpdate {
+  questionId: string;
+  primaryCategory: string;
+  topic: string;
+  relatedLaws?: readonly string[];
+}
+
+function parseQuestionId(questionId: string) {
+  const match = /^(law|env|construction|structure)-(\d{3})-(\d{2})$/.exec(
+    questionId,
+  );
+  if (!match) throw new Error('題目編號格式不正確');
+  return { subject: match[1] as SubjectId, year: match[2], number: match[3] };
+}
+
+export async function updateQuestionClassification(
+  update: QuestionClassificationUpdate,
+) {
+  const { subject, year, number } = parseQuestionId(update.questionId);
+  const entry = await findQuestionEntry(subject, year, number);
+  if (!entry) throw new Error('找不到指定題目');
+
+  const metaPath = path.join(entry.directory, 'meta.json');
+  const currentMeta = objectValue(
+    metaPath,
+    await readJson(metaPath),
+    'question metadata',
+  );
+  const currentTopic = stringValue(metaPath, currentMeta.topic, 'topic');
+  const currentTags = stringArray(metaPath, currentMeta.tags, 'tags');
+  const relatedLaws = update.relatedLaws
+    ?.map((law) => law.trim())
+    .filter(Boolean);
+  const nextTags = [
+    ...new Set(
+      currentTags.map((tag) => (tag === currentTopic ? update.topic : tag)),
+    ),
+  ];
+  if (!nextTags.includes(update.topic)) nextTags.unshift(update.topic);
+
+  const nextMeta: Record<string, unknown> = {
+    ...currentMeta,
+    primaryCategory: update.primaryCategory,
+    topic: update.topic,
+    tags: nextTags,
+  };
+  if (relatedLaws?.length) nextMeta.relatedLaws = [...new Set(relatedLaws)];
+  else delete nextMeta.relatedLaws;
+
+  const parsedMeta = parseQuestionMeta(metaPath, nextMeta, subject);
+  await writeFile(metaPath, `${JSON.stringify(nextMeta, null, 2)}\n`, 'utf8');
+  bankCache = undefined;
+
+  return loadQuestion({ ...entry, meta: parsedMeta });
 }
 
 async function readImageDimensions(filePath: string) {
