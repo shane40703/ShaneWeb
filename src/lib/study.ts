@@ -140,7 +140,9 @@ export function parseStoredState(raw: string | null): AppState {
   return {
     answers: keepValidEntries(state.answers, isAnswerRecord),
     difficultQuestionIds: keepValidItems(state.difficultQuestionIds, isQuestionId),
-    attempts: keepValidItems(state.attempts, isQuizAttempt),
+    attempts: keepValidItems(state.attempts, isQuizAttempt).filter(
+      (attempt) => attempt.mode === 'paper',
+    ),
     notes: keepValidEntries(state.notes, isNoteContent),
     noteImages: keepValidEntries(state.noteImages, isImageAttachmentList),
     discussionPosts: keepValidItems(state.discussionPosts, isDiscussionPost).map(

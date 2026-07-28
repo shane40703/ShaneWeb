@@ -53,6 +53,21 @@ describe('appReducer', () => {
     expect(duplicate.answers['law-114-01']?.correct).toBe(true);
   });
 
+  it('does not record random quiz attempts or their answers', () => {
+    const paperAttempt = attempt();
+    const randomAttempt = { ...paperAttempt, mode: 'random' as const };
+    const initial = createDefaultState();
+    const state = appReducer(initial, {
+      type: 'save-attempt',
+      attempt: randomAttempt,
+      results: resultsFor(paperAttempt),
+    });
+
+    expect(state).toBe(initial);
+    expect(state.attempts).toHaveLength(0);
+    expect(state.answers).toEqual({});
+  });
+
   it('keeps only the newest 100 attempts', () => {
     let state = createDefaultState();
     for (let index = 0; index < 105; index += 1) {

@@ -96,6 +96,31 @@ describe('local state validation', () => {
     expect(parseStoredState(JSON.stringify(state))).toEqual(state);
   });
 
+  it('removes legacy random attempts from stored history', () => {
+    const question = questions.find((item) => item.id === 'law-114-01');
+    expect(question).toBeDefined();
+    const paperAttempt = createAttempt({
+      mode: 'paper',
+      source: [question!],
+      answers: { [question!.id]: firstAcceptedAnswer(question!) },
+      startedAt: '2026-01-01T00:00:00.000Z',
+      elapsedSeconds: 1,
+    });
+    const randomAttempt = {
+      ...paperAttempt,
+      id: 'random-attempt',
+      mode: 'random' as const,
+    };
+    const stored = {
+      ...createDefaultState(),
+      attempts: [randomAttempt, paperAttempt],
+    };
+
+    expect(parseStoredState(JSON.stringify(stored)).attempts).toEqual([
+      paperAttempt,
+    ]);
+  });
+
   it('drops only the corrupt records and keeps the rest of the user data', () => {
     const question = questions.find((item) => item.id === 'law-114-01');
     expect(question).toBeDefined();

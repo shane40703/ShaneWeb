@@ -55,6 +55,7 @@ export function appReducer(state: AppState, action: AppAction): AppState {
         },
       };
     case 'save-attempt': {
+      if (action.attempt.mode === 'random') return state;
       if (state.attempts.some((attempt) => attempt.id === action.attempt.id)) return state;
       const answers = { ...state.answers };
       for (const [questionId, selected] of Object.entries(action.attempt.answers)) {
