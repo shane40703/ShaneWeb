@@ -213,22 +213,18 @@ describe('HistoryPage', () => {
         name: `建築環境控制・${environmentQuestions[0].year} 年`,
       })
       .closest('article');
-    const mixedGroup = screen
-      .getByRole('heading', { name: /跨科目練習/ })
-      .closest('article');
 
     expect(lawGroup).not.toBeNull();
     expect(environmentGroup).not.toBeNull();
-    expect(mixedGroup).not.toBeNull();
+    expect(
+      screen.queryByRole('heading', { name: /跨科目練習/ }),
+    ).not.toBeInTheDocument();
     expect(
       within(lawGroup!).getByText('查看完整作答紀錄（2）'),
     ).toBeInTheDocument();
     expect(within(lawGroup!).getByText('2.50 分')).toBeInTheDocument();
     expect(within(environmentGroup!).getByText('1.50 分')).toBeInTheDocument();
     expect(within(environmentGroup!).getByText('00:00:30')).toBeInTheDocument();
-    expect(within(mixedGroup!).getByText('3 / 3 題')).toBeInTheDocument();
-    expect(within(mixedGroup!).getByText('答對題數')).toBeInTheDocument();
-    expect(within(mixedGroup!).queryByText(/分$/)).not.toBeInTheDocument();
     expect(
       within(environmentGroup!).getByText('尚有 1 題內容暫時無法顯示'),
     ).toBeInTheDocument();

@@ -21,7 +21,7 @@ const questionCountBySource: Record<string, number> = {
 };
 
 function parseAnswerInfo(content: string, source: string, year: number) {
-  const entries = content.trim().split('\n').map((line) => {
+  const entries = content.trim().split(/\r?\n/u).map((line) => {
     const match = /^(\d+)=([A-D]+)$/.exec(line);
     expect(match, `${source}/${year}.txt: ${line}`).not.toBeNull();
     return {
