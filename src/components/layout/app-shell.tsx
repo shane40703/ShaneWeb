@@ -17,6 +17,7 @@ import {
 } from '@tabler/icons-react';
 import { SideDrawer } from '@/components/ui/ui';
 import { useAppState } from '@/state/app-state';
+import { ThemeToggle } from './theme-toggle';
 import styles from './app-shell.module.css';
 
 const persistenceMessages = {
@@ -138,10 +139,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </SideDrawer>
             <h1 className={styles.pageTitle}>{pageTitle}</h1>
           </div>
-          <span className={styles.anonymousBadge}>
-            <IconDeviceFloppy size={15} stroke={2} aria-hidden="true" />
-            免登入・本機保存
-          </span>
+          <div className={styles.topbarActions}>
+            <ThemeToggle />
+            <span className={styles.anonymousBadge}>
+              <IconDeviceFloppy size={15} stroke={2} aria-hidden="true" />
+              免登入・本機保存
+            </span>
+          </div>
         </header>
         <main className={styles.main}>
           <PersistenceWarning />

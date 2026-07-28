@@ -103,7 +103,7 @@
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 14px;
-  background: white;
+  background: var(--image-surface);
 }
 
 .questionPromptImage img {

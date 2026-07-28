@@ -5,7 +5,7 @@
 
 .panel h3 {
   margin: 0;
-  color: #6e6e73;
+  color: var(--subtle-text);
   font-size: 13px;
   font-weight: 600;
 }
@@ -27,9 +27,9 @@
   grid-template-columns: 28px minmax(0, 1fr) auto;
   align-items: center;
   gap: 10px;
-  border: 1px solid rgb(0 0 0 / 14%);
+  border: 1px solid var(--line);
   border-radius: 10px;
-  background: #fff;
+  background: var(--surface);
   color: var(--text);
   font-size: clamp(16px, 1.1vw, 18px);
   font-weight: 400;
@@ -53,15 +53,15 @@
   display: grid;
   place-items: center;
   border-radius: 8px;
-  background: #f5f5f7;
-  color: #6e6e73;
+  background: var(--neutral-fill);
+  color: var(--subtle-text);
   font-size: 12px;
   font-weight: 700;
 }
 
 .panel li[data-accepted='true'] b {
   background: var(--success);
-  color: white;
+  color: var(--on-accent);
 }
 
 .panel li[data-selected='true']:not([data-accepted='true']) b {

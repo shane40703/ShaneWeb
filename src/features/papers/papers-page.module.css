@@ -13,23 +13,23 @@
 
 .startButton {
   border: 0;
-  background: #2563eb;
-  color: #fff;
+  background: var(--primary);
+  color: var(--on-accent);
   text-decoration: none;
   transition: background 150ms ease;
 }
 
 .startButton:hover {
-  background: #1d4ed8;
+  background: var(--primary-strong);
 }
 
 .startButton:focus-visible {
-  outline: 3px solid rgb(37 99 235 / 28%);
+  outline: 3px solid var(--focus);
   outline-offset: 2px;
 }
 
 .disabledAction {
-  border: 1px solid #e6e9ee;
-  background: #fff;
-  color: #b8bec8;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--disabled-text);
 }

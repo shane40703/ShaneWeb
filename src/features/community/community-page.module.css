@@ -1,6 +1,6 @@
 .interactionGuard { display: contents; }
 .selectorHint {
-  color: #98a1ad;
+  color: var(--disabled-text);
   font-size: 12px;
 }
 

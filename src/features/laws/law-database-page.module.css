@@ -110,14 +110,14 @@ a.law:focus-visible {
   height: 9px;
   overflow: hidden;
   border-radius: 999px;
-  background: #e8edf5;
+  background: var(--surface-3);
 }
 
 .ratio i {
   height: 100%;
   display: block;
   border-radius: inherit;
-  background: linear-gradient(90deg, var(--primary), #60a5fa);
+  background: linear-gradient(90deg, var(--primary), var(--primary-bright));
 }
 
 .ratio strong {
@@ -153,7 +153,7 @@ a.law:focus-visible {
   }
 }
 .unavailable {
-  color: #98a1ad;
+  color: var(--disabled-text);
   font-size: 12px;
   font-weight: 600;
 }

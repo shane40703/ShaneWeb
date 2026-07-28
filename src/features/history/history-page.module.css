@@ -45,7 +45,7 @@
 .subjectFilters button[aria-pressed='true'] {
   border-color: var(--primary);
   background: var(--primary);
-  color: white;
+  color: var(--on-accent);
 }
 
 .subjectFilters button span {

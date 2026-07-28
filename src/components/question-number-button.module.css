@@ -97,7 +97,7 @@
 .button[aria-pressed='true'] {
   border-color: var(--primary);
   background: var(--primary);
-  color: white;
+  color: var(--on-accent);
   box-shadow: 0 7px 15px color-mix(in srgb, var(--primary) 22%, transparent);
 }
 
@@ -105,7 +105,7 @@
 .button[data-difficult='true'][aria-pressed='true'] {
   border-color: var(--warning);
   background: var(--primary);
-  color: white;
+  color: var(--on-accent);
   box-shadow:
     0 7px 15px color-mix(in srgb, var(--primary) 22%, transparent),
     inset 0 0 0 3px var(--warning);

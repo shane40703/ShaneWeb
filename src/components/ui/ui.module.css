@@ -34,7 +34,7 @@
 }
 
 .primary {
-  color: white;
+  color: var(--on-accent);
   border-color: var(--primary);
   background: linear-gradient(135deg, var(--primary), var(--primary-bright));
   box-shadow: 0 8px 20px color-mix(in srgb, var(--primary) 24%, transparent);
