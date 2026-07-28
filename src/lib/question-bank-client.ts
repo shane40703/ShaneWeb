@@ -40,9 +40,16 @@ function fetchSubject(subject: SubjectId) {
 
   // Full-subject responses grow beyond Vercel's function response limit as the
   // bank expands. Year-sized chunks stay small and can be cached independently.
-  const request = Promise.all(
-    years.map((year) => fetchSubjectYear(subject, year)),
-  ).then((banks) => banks.flat());
+  // Keep one request per subject in flight. Four subjects may still load in
+  // parallel, but Vercel no longer receives 52 simultaneous cold requests.
+  const request = years.reduce<Promise<Question[]>>(
+    (loaded, year) =>
+      loaded.then(async (questions) => [
+        ...questions,
+        ...(await fetchSubjectYear(subject, year)),
+      ]),
+    Promise.resolve([]),
+  );
   // A failed request must not poison the cache, otherwise retrying is pointless.
   request.catch(() => subjectRequests.delete(subject));
   subjectRequests.set(subject, request);

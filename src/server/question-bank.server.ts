@@ -787,6 +787,13 @@ export async function loadSubjectQuestions(
   subject: SubjectId,
   year?: number,
 ): Promise<Question[]> {
+  if (year !== undefined) {
+    const subjectDefinition = subjects.find((entry) => entry.id === subject);
+    if (!subjectDefinition) return [];
+    return loadQuestions(
+      await discoverYear(subject, subjectDefinition.directory, String(year)),
+    );
+  }
   const entries = (await getQuestionEntries()).filter(
     (entry) =>
       entry.subject === subject && (year === undefined || entry.year === year),

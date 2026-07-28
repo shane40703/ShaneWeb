@@ -19,6 +19,7 @@ describe('LawDatabasePage', () => {
     );
     expect(link).toHaveAttribute('target', '_blank');
     expect(screen.getByText('出現在 12 題考題分類')).toBeInTheDocument();
+    expect(screen.getByText('100.0%')).toBeInTheDocument();
   });
 
   it('does not link unknown or repealed classifications', () => {

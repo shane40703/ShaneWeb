@@ -64,4 +64,23 @@ describe('useSubjectQuestions', () => {
     );
     expect(fetchMock).toHaveBeenCalledTimes(26);
   });
+
+  it('limits each subject to one in-flight year request', async () => {
+    let active = 0;
+    let peak = 0;
+    const fetchMock = vi.fn(async () => {
+      active += 1;
+      peak = Math.max(peak, active);
+      await Promise.resolve();
+      active -= 1;
+      return { ok: true, json: async () => [] } as Response;
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const { result } = renderHook(() => useSubjectQuestions(['construction']));
+
+    await waitFor(() => expect(result.current.status).toBe('ready'));
+    expect(peak).toBe(1);
+    expect(fetchMock).toHaveBeenCalledTimes(13);
+  });
 });

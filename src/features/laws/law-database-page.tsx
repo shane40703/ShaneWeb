@@ -10,6 +10,7 @@ export interface LawDatabaseEntry {
 const searchUrl = 'https://law.moj.gov.tw/Law/LawSearchResult.aspx?ty=ONEBAR&kw=';
 
 export function LawDatabasePage({ laws }: { laws: readonly LawDatabaseEntry[] }) {
+  const totalCount = laws.reduce((total, law) => total + law.questionCount, 0);
   return (
     <section className={styles.page} aria-labelledby="law-database-title">
       <header className={styles.hero}>
@@ -22,14 +23,28 @@ export function LawDatabasePage({ laws }: { laws: readonly LawDatabaseEntry[] })
       </header>
       <div className={styles.list}>
         {laws.map((law) => {
+          const percentage = totalCount
+            ? (law.questionCount / totalCount) * 100
+            : 0;
           const content = (
             <>
-              <span><strong>{law.name}</strong><small>出現在 {law.questionCount} 題考題分類</small></span>
-              {law.linkable ? (
-                <IconExternalLink size={18} stroke={2} aria-label="開啟全國法規資料庫" />
-              ) : (
-                <small className={styles.unavailable}>無法規連結</small>
-              )}
+              <span className={styles.lawName}>
+                <strong>{law.name}</strong>
+                <small>出現在 {law.questionCount} 題考題分類</small>
+              </span>
+              <span className={styles.ratio}>
+                <span aria-hidden="true">
+                  <i style={{ width: `${percentage}%` }} />
+                </span>
+                <strong>{percentage.toFixed(1)}%</strong>
+              </span>
+              <span className={styles.destination}>
+                {law.linkable ? (
+                  <IconExternalLink size={18} stroke={2} aria-label="開啟全國法規資料庫" />
+                ) : (
+                  <small className={styles.unavailable}>無法規連結</small>
+                )}
+              </span>
             </>
           );
           return law.linkable ? (

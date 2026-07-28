@@ -51,17 +51,17 @@
 
 .list {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
-  gap: 10px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
 }
 
 .law {
-  min-height: 78px;
-  padding: 15px;
-  display: flex;
+  min-height: 68px;
+  padding: 13px 16px;
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) minmax(220px, 0.9fr) 108px;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  gap: 20px;
   border: 1px solid var(--line);
   border-radius: 14px;
   background: var(--surface);
@@ -81,7 +81,7 @@ a.law:focus-visible {
   outline-offset: 2px;
 }
 
-.law > span {
+.lawName {
   min-width: 0;
   display: grid;
   gap: 5px;
@@ -99,14 +99,58 @@ a.law:focus-visible {
   font-size: 12px;
 }
 
-.law > svg {
-  flex: none;
+.ratio {
+  display: grid;
+  grid-template-columns: minmax(100px, 1fr) 48px;
+  align-items: center;
+  gap: 10px;
+}
+
+.ratio > span {
+  height: 9px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e8edf5;
+}
+
+.ratio i {
+  height: 100%;
+  display: block;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--primary), #60a5fa);
+}
+
+.ratio strong {
+  color: var(--primary-strong);
+  font-size: 12px;
+  text-align: right;
+}
+
+.destination {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.destination svg {
   color: var(--primary);
 }
 
 @media (max-width: 560px) {
   .hero { padding: 20px; }
-  .list { grid-template-columns: 1fr; }
+  .law {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 10px 14px;
+  }
+  .ratio {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+  .destination {
+    grid-column: 2;
+    grid-row: 1;
+  }
 }
 .unavailable {
   color: #98a1ad;
