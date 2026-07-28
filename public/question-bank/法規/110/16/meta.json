@@ -1,11 +1,11 @@
 {
-  "primaryCategory": "建築法",
-  "topic": "建築師法",
+  "primaryCategory": "營造業法",
+  "topic": "營造業法",
   "relatedLaws": [
-    "其他營建法規"
+    "營造業法"
   ],
   "tags": [
-    "建築師法"
+    "營造業法"
   ],
   "answerKey": {
     "kind": "accepted",

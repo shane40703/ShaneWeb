@@ -84,7 +84,7 @@ function lawClassification(text) {
 
   if (text.includes('無障礙')) {
     return {
-      primaryCategory: '無障礙設施設計規範',
+      primaryCategory: '建築物無障礙設施設計規範',
       topic: '無障礙設計',
       relatedLaws,
     };

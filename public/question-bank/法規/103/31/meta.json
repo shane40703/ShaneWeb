@@ -1,11 +1,12 @@
 {
-  "primaryCategory": "其他營建法規",
-  "topic": "法規位階",
+  "primaryCategory": "建築技術規則",
+  "topic": "建築技術規則",
   "relatedLaws": [
-    "其他營建法規"
+    "山坡地保育利用條例",
+    "建築技術規則"
   ],
   "tags": [
-    "法規位階"
+    "建築技術規則"
   ],
   "answerKey": {
     "kind": "accepted",

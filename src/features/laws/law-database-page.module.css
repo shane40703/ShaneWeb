@@ -1,0 +1,110 @@
+.page {
+  display: grid;
+  gap: 20px;
+}
+
+.hero {
+  padding: 24px;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.icon {
+  width: 48px;
+  height: 48px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+
+.hero div {
+  display: grid;
+  gap: 5px;
+}
+
+.hero p {
+  margin: 0;
+  color: var(--primary-strong);
+  font-size: 11px;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+}
+
+.hero h2 {
+  margin: 0;
+  font-size: 24px;
+}
+
+.hero span {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+  gap: 10px;
+}
+
+.law {
+  min-height: 78px;
+  padding: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--text);
+  text-decoration: none;
+  transition: border-color 150ms ease, background 150ms ease, transform 150ms ease;
+}
+
+.law:hover {
+  border-color: color-mix(in srgb, var(--primary) 42%, var(--line));
+  background: var(--primary-soft);
+  transform: translateY(-1px);
+}
+
+.law:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.law > span {
+  min-width: 0;
+  display: grid;
+  gap: 5px;
+}
+
+.law strong {
+  overflow: hidden;
+  font-size: 14px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.law small {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.law > svg {
+  flex: none;
+  color: var(--primary);
+}
+
+@media (max-width: 560px) {
+  .hero { padding: 20px; }
+  .list { grid-template-columns: 1fr; }
+}

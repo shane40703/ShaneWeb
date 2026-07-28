@@ -1,11 +1,11 @@
 {
-  "primaryCategory": "都市計畫法",
-  "topic": "都市更新法規",
+  "primaryCategory": "其他營建法規",
+  "topic": "法規位階",
   "relatedLaws": [
-    "其他營建法規"
+    "都市更新條例"
   ],
   "tags": [
-    "都市更新法規"
+    "法規位階"
   ],
   "answerKey": {
     "kind": "accepted",

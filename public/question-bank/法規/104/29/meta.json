@@ -1,11 +1,11 @@
 {
-  "primaryCategory": "都市計畫法",
-  "topic": "國土與區域計畫",
+  "primaryCategory": "建築法",
+  "topic": "建築法",
   "relatedLaws": [
-    "其他營建法規"
+    "建築法"
   ],
   "tags": [
-    "國土與區域計畫"
+    "建築法"
   ],
   "answerKey": {
     "kind": "accepted",

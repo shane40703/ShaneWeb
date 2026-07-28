@@ -1,11 +1,11 @@
 {
-  "primaryCategory": "消防法規",
-  "topic": "消防避難",
+  "primaryCategory": "建築技術規則",
+  "topic": "建築技術規則",
   "relatedLaws": [
-    "其他營建法規"
+    "建築技術規則"
   ],
   "tags": [
-    "消防避難"
+    "建築技術規則"
   ],
   "answerKey": {
     "kind": "accepted",
