@@ -13,12 +13,13 @@ import {
 } from '@tabler/icons-react';
 import { AttachmentGallery, ImageAttachments } from '@/components/image-attachments';
 import {
-  DifficultButton,
   EmptyState,
   QuestionPrompt,
   QuestionSourceLine,
   Tag,
 } from '@/components/content/content';
+import { DifficultButton } from '@/components/difficult-button';
+import { QuestionAnswerPanel } from '@/components/question-answer-panel';
 import {
   QuestionNumberPicker,
   QuestionSelector,
@@ -35,7 +36,7 @@ import type {
 } from '@/lib/types';
 import type { QuestionBankStatus } from '@/lib/question-bank-client';
 import { questionPath } from '@/lib/question-path';
-import { formatDateTime, getAcceptedAnswerIndexes } from '@/lib/study';
+import { formatDateTime } from '@/lib/study';
 import { useClientReady } from '@/lib/use-client-ready';
 import { useAppState } from '@/state/app-state';
 import styles from './community-page.module.css';
@@ -156,7 +157,6 @@ export function CommunityPage({
   );
   const difficultQuestionIds = new Set(state.difficultQuestionIds);
   const difficult = state.difficultQuestionIds.includes(currentQuestion.id);
-  const acceptedAnswers = getAcceptedAnswerIndexes(currentQuestion);
 
   function navigateTo(questionId: string) {
     void router.replace(
@@ -303,24 +303,13 @@ export function CommunityPage({
             }
           />
         </header>
-        <QuestionPrompt question={currentQuestion} />
         <QuestionSourceLine question={currentQuestion} />
-        <ol className={styles.options}>
-          {currentQuestion.options.map((option, index) => {
-            const correct = acceptedAnswers.includes(index);
-            const optionLabel = String.fromCharCode(65 + index);
-            return (
-              <li
-                key={index}
-                data-correct={correct}
-                aria-label={correct ? `正確選項 ${optionLabel}：${option}` : undefined}
-              >
-                <span>{optionLabel}</span>
-                {option}
-              </li>
-            );
-          })}
-        </ol>
+        <QuestionPrompt question={currentQuestion} />
+        <QuestionAnswerPanel
+          question={currentQuestion}
+          heading={null}
+          ariaLabel="題目選項"
+        />
         <section className={styles.explanation} aria-label="題目詳解">
           <span>詳解</span>
           <p>{currentQuestion.explanation ?? '目前尚無詳解。'}</p>

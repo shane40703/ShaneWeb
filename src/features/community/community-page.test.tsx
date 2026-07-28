@@ -104,7 +104,9 @@ describe('CommunityPage question loading', () => {
 
     renderPage({ questionBankStatus: 'loading' });
 
-    expect(screen.getByText('law-114-01 題幹')).toBeInTheDocument();
+    const prompt = screen.getByText('law-114-01 題幹');
+    const source = screen.getByText('示範題・非完整官方試卷資料');
+    expect(source.nextElementSibling).toContainElement(prompt);
     expect(
       screen.getByRole('button', { name: '標記為難題' }),
     ).toBeInTheDocument();

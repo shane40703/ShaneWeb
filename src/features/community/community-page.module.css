@@ -13,22 +13,16 @@
   box-shadow: var(--shadow-sm);
 }
 
-.questionCard { padding: 24px; }
+.questionCard { padding: 24px; display: grid; gap: 16px; }
 .questionCard > header { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 .tags { display: flex; gap: 7px; flex-wrap: wrap; }
 .questionCard > h2 { max-width: 1000px; margin: 25px 0; font-size: clamp(20px, 2.2vw, 29px); line-height: 1.6; }
 
-.options { padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; list-style: none; }
-.options li { min-height: 56px; padding: 12px 14px; display: flex; align-items: center; gap: 11px; border: 1px solid var(--line); border-radius: 13px; background: var(--surface-2); }
-.options li span { width: 27px; height: 27px; display: grid; place-items: center; flex: 0 0 auto; border-radius: 8px; background: var(--surface); color: var(--muted); font-size: 12px; font-weight: 850; }
-.options li[data-correct='true'] { border-color: color-mix(in srgb, var(--success) 35%, var(--line)); background: var(--success-soft); }
-.options li[data-correct='true'] span { color: var(--success); }
-
-.explanation { margin-top: 20px; padding: 18px; display: grid; gap: 5px; border-left: 4px solid var(--primary); border-radius: 0 13px 13px 0; background: var(--primary-soft); }
+.explanation { margin-top: 4px; padding: 18px; display: grid; gap: 5px; border-left: 4px solid var(--primary); border-radius: 0 13px 13px 0; background: var(--primary-soft); }
 .explanation span { color: var(--primary-strong); font-size: 11px; font-weight: 800; }
 .explanation p { margin: 7px 0 0; color: var(--text-soft); line-height: 1.7; }
 
-.questionNavigation { margin-top: 22px; padding-top: 18px; display: flex; align-items: center; justify-content: space-between; gap: 10px; border-top: 1px solid var(--line); }
+.questionNavigation { margin-top: 6px; padding-top: 18px; display: flex; align-items: center; justify-content: space-between; gap: 10px; border-top: 1px solid var(--line); }
 
 .discussionLayout { margin-top: 20px; display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 20px; align-items: start; }
 .postsCard { padding: 22px; }
@@ -73,6 +67,5 @@
 
 @media (max-width: 680px) {
   .questionCard > header { align-items: flex-start; flex-direction: column; }
-  .options { grid-template-columns: 1fr; }
   .questionNavigation { flex-wrap: wrap; }
 }

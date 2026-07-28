@@ -88,10 +88,10 @@
   max-width: 920px;
   margin: 0;
   white-space: pre-line;
-  font-size: clamp(20px, 2.4vw, 30px);
-  font-weight: 750;
+  font-size: clamp(16px, 1.1vw, 18px);
+  font-weight: 400;
   line-height: 1.6;
-  letter-spacing: -0.02em;
+  letter-spacing: 0;
 }
 
 .questionPromptImage {
@@ -127,9 +127,9 @@
 }
 
 .questionPrompt[data-compact='true'] .questionPromptText {
-  font-size: 16px;
-  font-weight: 700;
-  line-height: 1.65;
+  font-size: clamp(16px, 1.1vw, 18px);
+  font-weight: 400;
+  line-height: 1.6;
 }
 
 .questionPrompt[data-compact='true'] .questionPromptImage {
@@ -165,17 +165,6 @@ a.questionSource:hover {
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
-}
-
-.difficult {
-  color: var(--muted) !important;
-  background: var(--surface) !important;
-}
-
-.difficultActive {
-  color: #8c5900 !important;
-  border-color: #e9c371 !important;
-  background: var(--warning-soft) !important;
 }
 
 @media (max-width: 720px) {

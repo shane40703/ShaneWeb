@@ -3,7 +3,6 @@ import { AlertDialog } from '@base-ui/react/alert-dialog';
 import { Button as BaseButton } from '@base-ui/react/button';
 import { Drawer } from '@base-ui/react/drawer';
 import { Field } from '@base-ui/react/field';
-import { Progress } from '@base-ui/react/progress';
 import { Radio } from '@base-ui/react/radio';
 import { RadioGroup } from '@base-ui/react/radio-group';
 import { Select } from '@base-ui/react/select';
@@ -190,16 +189,6 @@ export function OptionGroup({
         })}
       </RadioGroup>
     </Field.Root>
-  );
-}
-
-export function ProgressBar({ value, label }: { value: number; label: string }) {
-  return (
-    <Progress.Root className={styles.progressRoot} value={value} aria-label={label}>
-      <Progress.Track className={styles.progressTrack}>
-        <Progress.Indicator className={styles.progressIndicator} />
-      </Progress.Track>
-    </Progress.Root>
   );
 }
 

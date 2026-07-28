@@ -5,6 +5,7 @@ import {
   QuestionPrompt,
   QuestionSourceLine,
 } from '@/components/content/content';
+import { QuestionAnswerPanel } from '@/components/question-answer-panel';
 import {
   IconBulb,
   IconLoader2,
@@ -14,7 +15,6 @@ import {
 import { Button } from '@/components/ui/ui';
 import type { QuestionBankStatus } from '@/lib/question-bank-client';
 import { subjectsOfQuestionIds } from '@/lib/question-path';
-import { getAcceptedAnswerIndexes } from '@/lib/study';
 import type { Question, SubjectId } from '@/lib/types';
 import { subjects } from '@/question-bank/catalog';
 import { useAppState } from '@/state/app-state';
@@ -178,78 +178,52 @@ export function DifficultPage({
                             <span>{yearQuestions.length} 題</span>
                           </header>
                           <div className={styles.questionList}>
-                            {yearQuestions.map((question) => {
-                              const acceptedAnswers =
-                                getAcceptedAnswerIndexes(question);
-
-                              return (
-                                <article
-                                  className={styles.difficultItem}
-                                  key={question.id}
-                                >
-                                  <QuestionCard
-                                    question={question}
-                                    difficult
-                                    onToggleDifficult={() =>
-                                      dispatch({
-                                        type: 'toggle-difficult',
-                                        questionId: question.id,
-                                      })
-                                    }
-                                  />
-                                  <details className={styles.fullQuestion}>
-                                    <summary>
-                                      <span>查看完整題目與選項</span>
-                                      <IconChevronDown
-                                        size={18}
-                                        stroke={2}
-                                        aria-hidden="true"
-                                      />
-                                    </summary>
-                                    <div>
-                                      <QuestionPrompt question={question} />
-                                      <QuestionSourceLine question={question} />
-                                      <ol
-                                        aria-label={`第 ${question.questionNumber} 題完整選項`}
-                                      >
-                                        {question.options.map((option, index) => {
-                                          const optionLabel = String.fromCharCode(
-                                            65 + index,
-                                          );
-                                          const accepted =
-                                            acceptedAnswers.includes(index);
-
-                                          return (
-                                            <li
-                                              key={`${question.id}-${index}`}
-                                              data-accepted={accepted || undefined}
-                                              aria-label={
-                                                accepted
-                                                  ? `正確選項 ${optionLabel}：${option}`
-                                                  : undefined
-                                              }
-                                            >
-                                              <b>{optionLabel}</b>
-                                              <span>{option}</span>
-                                            </li>
-                                          );
-                                        })}
-                                      </ol>
-                                      <section
-                                        className={styles.explanationPanel}
-                                        aria-label={`第 ${question.questionNumber} 題詳解`}
-                                      >
-                                        <span>詳解</span>
-                                        <p>
-                                          {question.explanation?.trim() ||
-                                            '目前尚無詳解。'}
-                                        </p>
-                                      </section>
-                                    </div>
-                                  </details>
-                                </article>
-                              );
-                            })}
+                            {yearQuestions.map((question) => (
+                              <article
+                                className={styles.difficultItem}
+                                key={question.id}
+                              >
+                                <QuestionCard
+                                  question={question}
+                                  difficult
+                                  onToggleDifficult={() =>
+                                    dispatch({
+                                      type: 'toggle-difficult',
+                                      questionId: question.id,
+                                    })
+                                  }
+                                />
+                                <details className={styles.fullQuestion}>
+                                  <summary>
+                                    <span>查看完整題目與選項</span>
+                                    <IconChevronDown
+                                      size={18}
+                                      stroke={2}
+                                      aria-hidden="true"
+                                    />
+                                  </summary>
+                                  <div>
+                                    <QuestionSourceLine question={question} />
+                                    <QuestionPrompt question={question} />
+                                    <QuestionAnswerPanel
+                                      question={question}
+                                      heading={null}
+                                      ariaLabel={`第 ${question.questionNumber} 題完整選項`}
+                                    />
+                                    <section
+                                      className={styles.explanationPanel}
+                                      aria-label={`第 ${question.questionNumber} 題詳解`}
+                                    >
+                                      <span>詳解</span>
+                                      <p>
+                                        {question.explanation?.trim() ||
+                                          '目前尚無詳解。'}
+                                      </p>
+                                    </section>
+                                  </div>
+                                </details>
+                              </article>
+                            ))}
                           </div>
                         </section>
                       ))}

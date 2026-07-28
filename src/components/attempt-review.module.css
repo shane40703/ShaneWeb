@@ -237,58 +237,8 @@
   transform: rotate(180deg);
 }
 
-.reviewOptionList {
+.reviewOptions > section {
   padding-top: 12px;
-  display: grid;
-  gap: 8px;
-}
-
-.reviewOptionList > div {
-  min-height: 44px;
-  padding: 9px 11px;
-  display: grid;
-  grid-template-columns: 28px minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 9px;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  background: var(--surface-2);
-  font-size: 12px;
-}
-
-.reviewOptionList > div[data-selected] {
-  border-color: color-mix(in srgb, var(--danger) 45%, var(--line));
-  background: var(--danger-soft);
-}
-
-.reviewOptionList > div[data-accepted] {
-  border-color: color-mix(in srgb, var(--success) 45%, var(--line));
-  background: var(--success-soft);
-}
-
-.reviewOptionList b {
-  width: 26px;
-  height: 26px;
-  display: grid;
-  place-items: center;
-  border-radius: 7px;
-  background: var(--surface);
-  color: var(--muted);
-}
-
-.reviewOptionList > div[data-selected] b {
-  color: var(--danger);
-}
-
-.reviewOptionList > div[data-accepted] b {
-  background: var(--success);
-  color: white;
-}
-
-.reviewOptionList small {
-  color: var(--muted);
-  font-size: 10px;
-  font-weight: 800;
 }
 
 @media (max-width: 600px) {
@@ -303,14 +253,6 @@
 
   .reviewContent p b {
     margin-left: 0;
-  }
-
-  .reviewOptionList > div {
-    grid-template-columns: 28px minmax(0, 1fr);
-  }
-
-  .reviewOptionList small {
-    grid-column: 2;
   }
 
   .reviewNote > header {

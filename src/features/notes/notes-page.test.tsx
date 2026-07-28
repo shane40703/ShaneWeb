@@ -121,6 +121,20 @@ describe('NotesPage question loading', () => {
     expect(screen.getByLabelText('我的筆記')).toHaveValue('尚未儲存的草稿');
   });
 
+  it('places the source above the question without a visible options heading', async () => {
+    render(page());
+
+    const source = await screen.findByText('示範題・非完整官方試卷資料');
+    const prompt = screen.getByText('law-114-01 題幹');
+    expect(source.nextElementSibling).toContainElement(prompt);
+    expect(
+      screen.queryByRole('heading', { name: '題目選項' }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole('region', { name: '題目選項' }),
+    ).toBeInTheDocument();
+  });
+
   it('keeps an unsaved draft through a bank error and retry', async () => {
     const retry = vi.fn();
     const view = render(page({ questionBankStatus: 'loading' }));

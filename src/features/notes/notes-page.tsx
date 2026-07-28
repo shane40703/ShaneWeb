@@ -337,9 +337,13 @@ function NoteEditor({
           <Tag tone="purple">示範題</Tag>
         ) : null}
       </div>
-      <QuestionPrompt question={question} />
       <QuestionSourceLine question={question} />
-      <QuestionAnswerPanel question={question} />
+      <QuestionPrompt question={question} />
+      <QuestionAnswerPanel
+        question={question}
+        heading={null}
+        ariaLabel="題目選項"
+      />
       <label htmlFor="question-note">我的筆記</label>
       <textarea
         id="question-note"

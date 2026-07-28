@@ -19,16 +19,16 @@ import {
 } from '@tabler/icons-react';
 import { AttemptReview } from '@/components/attempt-review';
 import {
-  DifficultButton,
   QuestionPrompt,
   QuestionSourceLine,
   Tag,
 } from '@/components/content/content';
+import { DifficultButton } from '@/components/difficult-button';
 import {
   QuestionNumberButton,
   QuestionNumberGrid,
 } from '@/components/question-number-button';
-import { Button, OptionGroup, ProgressBar } from '@/components/ui/ui';
+import { Button, OptionGroup } from '@/components/ui/ui';
 import { getSubject } from '@/question-bank/catalog';
 import { useSubjectQuestions } from '@/lib/question-bank-client';
 import {
@@ -63,6 +63,26 @@ export interface StaticQuestionPageProps {
 }
 
 const EMPTY_PROGRESS: ScopedQuizProgressState['progress'] = {};
+
+function formatQuestionProgressLabel({
+  isRandomQuiz,
+  isSingleQuestion,
+  position,
+  questionNumber,
+  total,
+}: {
+  isRandomQuiz: boolean;
+  isSingleQuestion: boolean;
+  position: number;
+  questionNumber: number;
+  total: number;
+}) {
+  if (isSingleQuestion) return `第 ${questionNumber} 題`;
+  if (isRandomQuiz) {
+    return `題組 ${position + 1} / ${total}・原題第 ${questionNumber} 題`;
+  }
+  return `第 ${position + 1} / ${total} 題`;
+}
 
 function createRandomQuizSessionId() {
   return globalThis.crypto?.randomUUID?.() ??
@@ -206,9 +226,6 @@ export function QuizPage({ question, paper }: StaticQuestionPageProps) {
   const questionHref = (item: QuizQuestion) => `${item.path}${questionSearch}`;
   const previous = paperQuestions[position - 1];
   const next = paperQuestions[position + 1];
-  const answeredCount = paperQuestions.filter(
-    (item) => progressByQuestion[item.id]?.selected !== undefined,
-  ).length;
   const navigationPending =
     !routeHydrated ||
     !router.isReady ||
@@ -503,10 +520,6 @@ export function QuizPage({ question, paper }: StaticQuestionPageProps) {
               {question.source.kind === 'sample' ? <Tag tone="purple">示範題</Tag> : null}
             </div>
             <div className={styles.quizActions}>
-              <div className={styles.timer}>
-                <span>作答時間</span>
-                <strong>{formatDuration(elapsedSeconds)}</strong>
-              </div>
               <DifficultButton
                 active={difficult}
                 onClick={() =>
@@ -518,21 +531,22 @@ export function QuizPage({ question, paper }: StaticQuestionPageProps) {
               />
             </div>
           </header>
-          <ProgressBar
-            value={((position + 1) / paperQuestions.length) * 100}
-            label="試卷進度"
-          />
           <div
             className={styles.questionBody}
             data-has-image={questionHasImage || undefined}
           >
             <div className={styles.questionContentColumn}>
+              <QuestionSourceLine question={question} />
               <span className={styles.questionNumber}>
-                第 {question.questionNumber} 題・收錄題目 {position + 1}/
-                {paperQuestions.length}
+                {formatQuestionProgressLabel({
+                  isRandomQuiz,
+                  isSingleQuestion,
+                  position,
+                  questionNumber: question.questionNumber,
+                  total: paperQuestions.length,
+                })}
               </span>
               <QuestionPrompt question={question} />
-              <QuestionSourceLine question={question} />
             </div>
             <div className={styles.answerColumn}>
               <OptionGroup
@@ -609,56 +623,53 @@ export function QuizPage({ question, paper }: StaticQuestionPageProps) {
             </div>
           </div>
           <footer className={styles.navigation}>
-            {previous && !navigationPending ? (
-              <Button render={<Link href={questionHref(previous)} />}>
-                <IconArrowLeft size={17} stroke={2} aria-hidden="true" /> 上一題
-              </Button>
-            ) : (
-              <Button disabled>
-                <IconArrowLeft size={17} stroke={2} aria-hidden="true" /> 上一題
-              </Button>
-            )}
-            <span>
-              已作答 {answeredCount} / {paperQuestions.length}
-            </span>
-            {navigationPending ? (
-              <Button variant="primary" disabled>
-                <IconLoader2 size={17} stroke={2} aria-hidden="true" />{' '}
-                {isRandomQuiz ? '載入題組中' : '準備作答中'}
-              </Button>
-            ) : isSingleQuestion ? (
-              <Button
-                variant="primary"
-                disabled={!singleAnswerChecked && selected === undefined}
-                onClick={() =>
-                  singleAnswerChecked
-                    ? setCheckedSingleQuestionId(null)
-                    : checkSingleAnswer()
-                }
-              >
-                {singleAnswerChecked ? '重新作答' : '對答案'}
-              </Button>
-            ) : next ? (
-              <Button variant="primary" render={<Link href={questionHref(next)} />}>
-                下一題 <IconArrowRight size={17} stroke={2} aria-hidden="true" />
-              </Button>
-            ) : (
-              <Button variant="primary" onClick={submitQuiz}>
-                對答案
-              </Button>
-            )}
+            <div className={styles.timer}>
+              <span>作答時間</span>
+              <strong>{formatDuration(elapsedSeconds)}</strong>
+            </div>
+            <div className={styles.navigationButtons}>
+              {previous && !navigationPending ? (
+                <Button render={<Link href={questionHref(previous)} />}>
+                  <IconArrowLeft size={17} stroke={2} aria-hidden="true" /> 上一題
+                </Button>
+              ) : (
+                <Button disabled>
+                  <IconArrowLeft size={17} stroke={2} aria-hidden="true" /> 上一題
+                </Button>
+              )}
+              {navigationPending ? (
+                <Button variant="primary" disabled>
+                  <IconLoader2 size={17} stroke={2} aria-hidden="true" />{' '}
+                  {isRandomQuiz ? '載入題組中' : '準備作答中'}
+                </Button>
+              ) : isSingleQuestion ? (
+                <Button
+                  variant="primary"
+                  disabled={!singleAnswerChecked && selected === undefined}
+                  onClick={() =>
+                    singleAnswerChecked
+                      ? setCheckedSingleQuestionId(null)
+                      : checkSingleAnswer()
+                  }
+                >
+                  {singleAnswerChecked ? '重新作答' : '對答案'}
+                </Button>
+              ) : next ? (
+                <Button variant="primary" render={<Link href={questionHref(next)} />}>
+                  下一題 <IconArrowRight size={17} stroke={2} aria-hidden="true" />
+                </Button>
+              ) : (
+                <Button variant="primary" onClick={submitQuiz}>
+                  對答案
+                </Button>
+              )}
+            </div>
           </footer>
         </section>
 
         <aside className={styles.questionNavigator} aria-label="題號導覽">
           <header>
-            <div>
-              <span>STATIC PATHS</span>
-              <h2>題號導覽</h2>
-            </div>
-            <strong>
-              {position + 1}/{paperQuestions.length}
-            </strong>
+            <h2>題號導覽</h2>
           </header>
           <div className={styles.questionNumbers}>
             {randomBank.status === 'error' ? (

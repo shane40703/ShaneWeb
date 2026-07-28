@@ -10,6 +10,7 @@ import {
 } from '@tabler/icons-react';
 import { QuestionPrompt } from '@/components/content/content';
 import { ImageAttachments } from '@/components/image-attachments';
+import { QuestionAnswerPanel } from '@/components/question-answer-panel';
 import { Button, useToast } from '@/components/ui/ui';
 import {
   formatCorrectAnswer,
@@ -127,34 +128,13 @@ export function AttemptReview({
                   <span>檢視完整選項與筆記</span>
                   <IconChevronDown size={17} stroke={2} aria-hidden="true" />
                 </summary>
-                <div className={styles.reviewOptionList}>
-                  {question.options.map((option, optionIndex) => {
-                    const optionSelected = selected === optionIndex;
-                    const accepted =
-                      question.answerKey.kind === 'all-credit' ||
-                      question.answerKey.options.includes(optionIndex);
-
-                    return (
-                      <div
-                        key={`${question.id}-${optionIndex}`}
-                        data-selected={optionSelected || undefined}
-                        data-accepted={accepted || undefined}
-                      >
-                        <b>{String.fromCharCode(65 + optionIndex)}</b>
-                        <span>{option}</span>
-                        <small>
-                          {optionSelected && accepted
-                            ? '你的答案・正確答案'
-                            : optionSelected
-                              ? '你的答案'
-                              : accepted
-                                ? '正確答案'
-                                : ''}
-                        </small>
-                      </div>
-                    );
-                  })}
-                </div>
+                <QuestionAnswerPanel
+                  question={question}
+                  heading={null}
+                  ariaLabel={`第 ${question.questionNumber} 題完整選項`}
+                  selectedIndex={selected}
+                  showStatusLabels
+                />
                 <ReviewNoteEditor question={question} />
               </details>
             </article>

@@ -1,7 +1,8 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import type { ReactNode } from 'react';
-import { IconBulb, IconExternalLink, type TablerIcon } from '@tabler/icons-react';
+import { IconExternalLink, type TablerIcon } from '@tabler/icons-react';
+import { DifficultButton } from '@/components/difficult-button';
 import { Button } from '@/components/ui/ui';
 import { ImageLightbox } from '@/components/image-lightbox';
 import { getSubject } from '@/question-bank/catalog';
@@ -37,28 +38,6 @@ export function EmptyState({
       <p>{description}</p>
       {action ? <div className={styles.emptyAction}>{action}</div> : null}
     </div>
-  );
-}
-
-export function DifficultButton({
-  active,
-  onClick,
-  compact = false,
-}: {
-  active: boolean;
-  onClick: () => void;
-  compact?: boolean;
-}) {
-  return (
-    <Button
-      onClick={onClick}
-      className={active ? styles.difficultActive : styles.difficult}
-      aria-pressed={active}
-      aria-label={active ? '取消難題標記' : '標記為難題'}
-    >
-      <IconBulb size={18} stroke={2} aria-hidden="true" />
-      {compact ? (active ? '已標記' : '標記難題') : active ? '已標記難題' : '標記為難題'}
-    </Button>
   );
 }
 
@@ -145,7 +124,7 @@ export function QuestionCard({
         <QuestionPrompt question={question} compact />
       </div>
       <div className={styles.questionActions}>
-        <DifficultButton active={difficult} onClick={onToggleDifficult} compact />
+        <DifficultButton active={difficult} onClick={onToggleDifficult} />
         {action ?? (
           <Button variant="primary" render={<Link href={`/community?question=${question.id}`} />}>
             查看詳解
