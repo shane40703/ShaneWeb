@@ -1,14 +1,8 @@
 {
-  "primaryCategory": "其他營建法規",
-  "topic": "法規位階",
+  "primaryCategory": "其他",
+  "topic": "其他",
   "tags": [
-    "法規位階"
-  ],
-  "relatedLaws": [
-    "公寓大廈管理條例",
-    "建築技術規則",
-    "農業用地興建農舍辦法",
-    "營造業法施行細則"
+    "其他"
   ],
   "answerKey": {
     "kind": "accepted",

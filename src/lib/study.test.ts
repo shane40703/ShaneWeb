@@ -71,6 +71,15 @@ describe('question data', () => {
     );
   });
 
+  it('classifies law question 74 as other without unrelated law statistics', () => {
+    const question = questions.find((item) => item.id === 'law-114-74');
+
+    expect(question?.primaryCategory).toBe('其他');
+    expect(question?.topic).toBe('其他');
+    expect(question?.relatedLaws).toBeUndefined();
+    expect(getQuestionDisplayCategory(question!)).toBe('其他');
+  });
+
   it('includes available explanations in quiz review data', async () => {
     const quizQuestions = await loadQuizQuestions('law');
     const explainedQuestion = quizQuestions.find(
@@ -299,7 +308,7 @@ describe('analysis', () => {
     const lawAnalysis = getLawAnalysis(source);
 
     expect(primaryAnalysis.reduce((sum, item) => sum + item.count, 0)).toBe(80);
-    expect(lawAnalysis.reduce((sum, item) => sum + item.count, 0)).toBe(86);
+    expect(lawAnalysis.reduce((sum, item) => sum + item.count, 0)).toBe(82);
     expect(lawAnalysis.reduce((sum, item) => sum + item.percentage, 0)).toBeCloseTo(100);
   });
 });
