@@ -27,7 +27,7 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--control-line);
   border-radius: 11px;
   background: var(--surface-2);
   color: var(--text-soft);
@@ -43,9 +43,9 @@
 }
 
 .subjectFilters button[aria-pressed='true'] {
-  border-color: var(--primary);
-  background: var(--primary);
-  color: var(--on-accent);
+  border-color: var(--primary-solid);
+  background: var(--primary-solid);
+  color: var(--on-primary);
 }
 
 .subjectFilters button span {

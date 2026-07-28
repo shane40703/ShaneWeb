@@ -7,7 +7,7 @@
 }
 
 .card {
-  --quiz-accent: var(--primary);
+  --quiz-accent: var(--primary-solid);
   --quiz-border: var(--line);
   --quiz-fill: var(--neutral-fill);
   --quiz-secondary: var(--muted);
@@ -100,7 +100,7 @@
 }
 
 .questionNumbers a {
-  border-color: var(--line);
+  border-color: var(--control-line);
   border-radius: 8px;
   background: var(--neutral-fill);
   color: var(--neutral-text);
@@ -122,7 +122,7 @@
 .questionNumbers a[aria-current='step'] {
   border-color: var(--quiz-accent);
   background: var(--quiz-accent);
-  color: var(--on-accent);
+  color: var(--on-primary);
   box-shadow: none;
 }
 
@@ -316,7 +316,7 @@
 .answerColumn :global([role='radiogroup']) > div > label {
   min-height: 56px;
   padding: 12px 50px 12px 14px;
-  border-color: var(--line);
+  border-color: var(--control-line);
   border-radius: 10px;
   background: var(--surface);
   transition: border-color 120ms ease, background-color 120ms ease;
@@ -450,14 +450,14 @@
 }
 
 .navigationButtons > :first-child {
-  border-color: var(--line);
+  border-color: var(--control-line);
   background: var(--surface);
 }
 
 .navigationButtons > :last-child {
   border-color: var(--quiz-accent) !important;
   background: var(--quiz-accent) !important;
-  color: var(--on-accent);
+  color: var(--on-primary);
 }
 
 .resultCard {

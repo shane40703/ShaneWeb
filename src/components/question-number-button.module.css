@@ -11,7 +11,7 @@
   padding: 0;
   display: grid;
   place-items: center;
-  border: 1px solid var(--line);
+  border: 1px solid var(--control-line);
   border-radius: 10px;
   background: var(--surface-2);
   color: var(--text-soft);
@@ -95,19 +95,21 @@
 
 .button[aria-current='step'],
 .button[aria-pressed='true'] {
-  border-color: var(--primary);
-  background: var(--primary);
-  color: var(--on-accent);
-  box-shadow: 0 7px 15px color-mix(in srgb, var(--primary) 22%, transparent);
+  border-color: var(--primary-solid);
+  background: var(--primary-solid);
+  color: var(--on-primary);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--on-primary) 12%, transparent),
+    0 7px 15px color-mix(in srgb, var(--primary-solid) 24%, transparent);
 }
 
 .button[data-difficult='true'][aria-current='step'],
 .button[data-difficult='true'][aria-pressed='true'] {
   border-color: var(--warning);
-  background: var(--primary);
-  color: var(--on-accent);
+  background: var(--primary-solid);
+  color: var(--on-primary);
   box-shadow:
-    0 7px 15px color-mix(in srgb, var(--primary) 22%, transparent),
+    0 7px 15px color-mix(in srgb, var(--primary-solid) 24%, transparent),
     inset 0 0 0 3px var(--warning);
 }
 

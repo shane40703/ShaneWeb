@@ -354,7 +354,7 @@
   min-width: 112px;
   height: 38px;
   padding: 0 32px 0 11px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--control-line);
   border-radius: 9px;
   background: var(--surface);
   color: var(--text-soft);

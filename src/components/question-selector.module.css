@@ -32,7 +32,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--control-line);
   border-radius: 11px;
   background: var(--surface);
   color: var(--text);
@@ -67,8 +67,8 @@
   display: grid;
   place-items: center;
   border-radius: 50%;
-  background: var(--primary);
-  color: var(--on-accent);
+  background: var(--primary-solid);
+  color: var(--on-primary);
 }
 
 .subjectCopy {
@@ -87,7 +87,7 @@
 }
 
 .subjectCopy small {
-  color: var(--disabled-text);
+  color: var(--muted);
   font-size: 11px;
 }
 
@@ -148,7 +148,7 @@
 .yearButton {
   min-height: 38px;
   padding: 0 15px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--control-line);
   border-radius: 9px;
   background: var(--surface);
   color: var(--text-soft);

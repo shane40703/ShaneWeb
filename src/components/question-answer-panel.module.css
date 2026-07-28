@@ -60,8 +60,8 @@
 }
 
 .panel li[data-accepted='true'] b {
-  background: var(--success);
-  color: var(--on-accent);
+  background: var(--success-solid);
+  color: var(--on-success);
 }
 
 .panel li[data-selected='true']:not([data-accepted='true']) b {

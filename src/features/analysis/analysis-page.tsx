@@ -25,7 +25,14 @@ import {
 import type { QuestionSummary, SubjectId } from '@/lib/types';
 import styles from './analysis-page.module.css';
 
-const colors = ['#2563eb', '#0d9488', '#d97706', '#7c3aed', '#dc4c64', '#64748b'];
+const chartColors = [
+  'var(--chart-1)',
+  'var(--chart-2)',
+  'var(--chart-3)',
+  'var(--chart-4)',
+  'var(--chart-5)',
+  'var(--chart-6)',
+];
 
 function valueOf(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;
@@ -114,7 +121,9 @@ export function AnalysisPage({ questions }: { questions: QuestionSummary[] }) {
     (result, item, index) => {
       const start = result.total;
       const end = start + item.percentage;
-      result.parts.push(`${colors[index % colors.length]} ${start}% ${end}%`);
+      result.parts.push(
+        `${chartColors[index % chartColors.length]} ${start}% ${end}%`,
+      );
       result.total = end;
       return result;
     },
@@ -355,7 +364,9 @@ export function AnalysisPage({ questions }: { questions: QuestionSummary[] }) {
                 {analysis.map((item, index) => (
                   <div key={item.category}>
                     <i
-                      style={{ background: colors[index % colors.length] }}
+                      style={{
+                        background: chartColors[index % chartColors.length],
+                      }}
                       aria-hidden="true"
                     />
                     <span>{item.category}</span>

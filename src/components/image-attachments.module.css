@@ -17,7 +17,7 @@
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--control-line);
   border-radius: 10px;
   background: var(--surface);
   color: var(--primary);

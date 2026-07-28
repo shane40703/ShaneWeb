@@ -1,6 +1,6 @@
 .interactionGuard { display: contents; }
 .selectorHint {
-  color: var(--disabled-text);
+  color: var(--muted);
   font-size: 12px;
 }
 
@@ -52,7 +52,7 @@
 .composeCard > label { color: var(--muted); font-size: 11px; font-weight: 750; }
 .replyForm > div { display: flex; gap: 7px; }
 .replyForm input,
-.composeCard textarea { width: 100%; min-width: 0; border: 1px solid var(--line); border-radius: 11px; background: var(--surface); color: var(--text); }
+.composeCard textarea { width: 100%; min-width: 0; border: 1px solid var(--control-line); border-radius: 11px; background: var(--surface); color: var(--text); }
 .replyForm input { padding: 0 12px; }
 .replyForm button { flex: 0 0 auto; white-space: nowrap; }
 

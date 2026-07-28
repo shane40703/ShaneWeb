@@ -13,14 +13,14 @@
 
 .startButton {
   border: 0;
-  background: var(--primary);
-  color: var(--on-accent);
+  background: var(--primary-solid);
+  color: var(--on-primary);
   text-decoration: none;
   transition: background 150ms ease;
 }
 
 .startButton:hover {
-  background: var(--primary-strong);
+  background: var(--primary-solid-hover);
 }
 
 .startButton:focus-visible {

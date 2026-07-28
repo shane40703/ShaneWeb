@@ -5,12 +5,12 @@
 .bankNotice strong { display: block; color: var(--text); font-size: 14px; }
 .bankNotice p { margin: 3px 0 0; font-size: 13px; line-height: 1.5; }
 .subjectFilters { padding: 12px; display: flex; flex-wrap: wrap; gap: 8px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface-2); }
-.subjectFilters button { min-height: 38px; padding: 0 12px; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--line); border-radius: 11px; background: var(--surface); color: var(--text-soft); font: inherit; font-size: 12px; font-weight: 750; cursor: pointer; }
+.subjectFilters button { min-height: 38px; padding: 0 12px; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--control-line); border-radius: 11px; background: var(--surface); color: var(--text-soft); font: inherit; font-size: 12px; font-weight: 750; cursor: pointer; }
 .subjectFilters button:hover:not(:disabled) { border-color: var(--primary); color: var(--primary-strong); }
-.subjectFilters button[aria-pressed='true'] { border-color: var(--primary); background: var(--primary); color: var(--on-accent); }
+.subjectFilters button[aria-pressed='true'] { border-color: var(--primary-solid); background: var(--primary-solid); color: var(--on-primary); }
 .subjectFilters button:disabled { opacity: .45; cursor: not-allowed; }
 .subjectFilters button span { min-width: 21px; height: 21px; padding-inline: 5px; display: grid; place-items: center; border-radius: 7px; background: var(--surface-3); color: var(--muted); font-size: 11px; }
-.subjectFilters button[aria-pressed='true'] span { background: rgb(255 255 255 / 18%); color: var(--on-accent); }
+.subjectFilters button[aria-pressed='true'] span { background: rgb(0 0 0 / 16%); color: var(--on-primary); }
 .subjectList,
 .yearList,
 .questionList { display: grid; }

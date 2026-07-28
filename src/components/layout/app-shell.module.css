@@ -177,7 +177,7 @@
   align-items: center;
   justify-content: center;
   gap: 7px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--control-line);
   border-radius: 10px;
   background: var(--surface-2);
   color: var(--text-soft);
