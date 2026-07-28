@@ -5,6 +5,7 @@ import {
   IconHelpCircle,
   IconLoader2,
   IconNotebook,
+  IconTrash,
 } from '@tabler/icons-react';
 import { ImageAttachments } from '@/components/image-attachments';
 import {
@@ -22,7 +23,7 @@ import {
   QuestionNumberButton,
   QuestionNumberGrid,
 } from '@/components/question-number-button';
-import { Button, useToast } from '@/components/ui/ui';
+import { Button, ConfirmDialog, useToast } from '@/components/ui/ui';
 import type { QuestionBankStatus } from '@/lib/question-bank-client';
 import { getSubject, years } from '@/question-bank/catalog';
 import type { ImageAttachment, Question, SubjectId } from '@/lib/types';
@@ -279,8 +280,11 @@ function NoteEditor({
   images: ImageAttachment[];
   onChange: (draft: NoteDraft) => void;
 }) {
-  const { dispatch } = useAppState();
+  const { state, dispatch } = useAppState();
   const { notify } = useToast();
+  const hasSavedNote = Boolean(
+    state.notes[question.id]?.trim() || state.noteImages[question.id]?.length,
+  );
 
   function saveNote() {
     dispatch({ type: 'save-note', questionId: question.id, content, images });
@@ -310,6 +314,17 @@ function NoteEditor({
     });
     dispatch({ type: 'save-note', questionId: question.id, content, images });
     notify('已分享至詳解與討論');
+  }
+
+  function deleteNote() {
+    dispatch({
+      type: 'save-note',
+      questionId: question.id,
+      content: '',
+      images: [],
+    });
+    onChange({ content: '', images: [] });
+    notify('筆記已刪除');
   }
 
   return (
@@ -343,6 +358,20 @@ function NoteEditor({
       <div className={styles.editorFooter}>
         <span>{content.length} 字</span>
         <div>
+          {hasSavedNote ? (
+            <ConfirmDialog
+              trigger={
+                <Button variant="danger">
+                  <IconTrash size={16} stroke={2} aria-hidden="true" />
+                  刪除筆記
+                </Button>
+              }
+              title={`刪除第 ${question.questionNumber} 題筆記？`}
+              description="文字與上傳的筆記圖片都會刪除，且無法復原。"
+              confirmLabel="確認刪除"
+              onConfirm={deleteNote}
+            />
+          ) : null}
           <Button onClick={shareNote}>分享至詳解與討論</Button>
           <Button variant="primary" onClick={saveNote}>儲存筆記</Button>
         </div>

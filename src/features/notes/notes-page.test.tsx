@@ -3,10 +3,12 @@ import {
   fireEvent,
   render,
   screen,
+  waitFor,
 } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ToastProvider } from '@/components/ui/ui';
 import { NotesPage } from '@/features/notes/notes-page';
+import { createDefaultState, STORAGE_KEY } from '@/lib/study';
 import type { Question, SubjectId } from '@/lib/types';
 import { AppStateProvider } from '@/state/app-state';
 
@@ -144,5 +146,35 @@ describe('NotesPage question loading', () => {
     );
 
     expect(screen.getByLabelText('我的筆記')).toHaveValue('等待重試的草稿');
+  });
+
+  it('deletes saved note text and images after confirmation', async () => {
+    const state = createDefaultState();
+    state.notes[lawQuestion.id] = '要刪除的筆記';
+    state.noteImages[lawQuestion.id] = [
+      {
+        id: 'note-image',
+        name: 'note.png',
+        type: 'image/png',
+        dataUrl: 'data:image/png;base64,dGVzdA==',
+      },
+    ];
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+
+    render(page());
+
+    expect(await screen.findByLabelText('我的筆記')).toHaveValue('要刪除的筆記');
+    fireEvent.click(screen.getByRole('button', { name: '刪除筆記' }));
+    fireEvent.click(
+      await screen.findByRole('button', { name: '確認刪除' }),
+    );
+
+    await waitFor(() => {
+      expect(screen.getByLabelText('我的筆記')).toHaveValue('');
+      expect(
+        screen.queryByRole('button', { name: '刪除筆記' }),
+      ).not.toBeInTheDocument();
+      expect(screen.getByText('尚未儲存任何筆記。')).toBeInTheDocument();
+    });
   });
 });
