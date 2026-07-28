@@ -49,9 +49,11 @@ describe('CategoryAdminPage', () => {
     fireEvent.change(screen.getByLabelText('作者編輯金鑰'), {
       target: { value: 'author-key' },
     });
-    fireEvent.change(screen.getByLabelText('新增題目分類'), {
-      target: { value: '建築技術規則' },
+    fireEvent.change(screen.getByLabelText('輸入或選擇題目分類'), {
+      target: { value: '新訂測試法規' },
     });
+    fireEvent.click(screen.getByRole('button', { name: '新增分類' }));
+    expect(screen.getByText('新訂測試法規')).toBeInTheDocument();
     expect(screen.queryByLabelText('主分類')).not.toBeInTheDocument();
     expect(screen.queryByLabelText('主題')).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/相關法規/)).not.toBeInTheDocument();
@@ -65,7 +67,7 @@ describe('CategoryAdminPage', () => {
         headers: expect.objectContaining({ 'X-Author-Key': 'author-key' }),
         body: JSON.stringify({
           questionId: summary.id,
-          classifications: ['建築法', '建築技術規則'],
+          classifications: ['建築法', '新訂測試法規'],
         }),
       }),
     );
