@@ -1,0 +1,22 @@
+{
+  "primaryCategory": "熱",
+  "topic": "熱環境",
+  "tags": [
+    "熱環境"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "C"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 1
+  },
+  "images": {
+    "question-02.png": {
+      "alt": "第 3 題PDF 題目區含嵌入圖片附圖"
+    }
+  }
+}

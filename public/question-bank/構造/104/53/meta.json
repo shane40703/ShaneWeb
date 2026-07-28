@@ -1,0 +1,17 @@
+{
+  "primaryCategory": "施工程序",
+  "topic": "工地施工",
+  "tags": [
+    "工地施工"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "A"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 9
+  }
+}

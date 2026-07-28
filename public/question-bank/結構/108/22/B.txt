@@ -1,0 +1,1 @@
+混凝土之彈性模數（modulus of elasticity）與混凝土之抗壓強度無關，為定值

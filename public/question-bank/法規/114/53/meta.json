@@ -1,11 +1,11 @@
 {
   "primaryCategory": "都市計畫法",
   "topic": "非都市土地",
-  "tags": [
-    "非都市土地"
-  ],
   "relatedLaws": [
     "非都市土地使用管制規則"
+  ],
+  "tags": [
+    "非都市土地"
   ],
   "answerKey": {
     "kind": "accepted",

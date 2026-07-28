@@ -1,0 +1,1 @@
+如圖示之剛構架，AB、BC、CD 之長度均為L 且為相同斷面，EI = 撓曲剛度，B、C 均為鉸接。當P 作用在BC 梁之中間位置時，此剛架之彈性挫曲載重（elastic buckling load）為Pcr = k × EI(π/L)2，則k 值為何？

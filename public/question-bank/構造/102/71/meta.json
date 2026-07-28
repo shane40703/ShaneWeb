@@ -1,0 +1,22 @@
+{
+  "primaryCategory": "構法",
+  "topic": "砌體與隔間",
+  "tags": [
+    "砌體與隔間"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "B"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 7
+  },
+  "images": {
+    "question-02.png": {
+      "alt": "第 71 題題幹引用圖示、PDF 題目區含嵌入圖片附圖"
+    }
+  }
+}

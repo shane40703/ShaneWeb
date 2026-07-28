@@ -1,0 +1,20 @@
+{
+  "primaryCategory": "消防法規",
+  "topic": "消防避難",
+  "relatedLaws": [
+    "建築物室內裝修管理辦法"
+  ],
+  "tags": [
+    "消防避難"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "A"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 1
+  }
+}

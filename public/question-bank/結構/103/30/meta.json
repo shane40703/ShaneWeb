@@ -1,0 +1,22 @@
+{
+  "primaryCategory": "力學",
+  "topic": "結構力學",
+  "tags": [
+    "結構力學"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "D"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 7
+  },
+  "images": {
+    "question-02.png": {
+      "alt": "第 30 題題幹引用圖示、PDF 題目區含嵌入圖片附圖"
+    }
+  }
+}

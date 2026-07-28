@@ -1,11 +1,11 @@
 {
   "primaryCategory": "公寓大廈管理條例",
   "topic": "公寓大廈管理",
-  "tags": [
-    "公寓大廈管理"
-  ],
   "relatedLaws": [
     "公寓大廈管理條例"
+  ],
+  "tags": [
+    "公寓大廈管理"
   ],
   "answerKey": {
     "kind": "accepted",

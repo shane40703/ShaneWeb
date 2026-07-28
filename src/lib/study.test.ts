@@ -41,7 +41,7 @@ describe('question data', () => {
       }
       expect(question.primaryCategory.length).toBeGreaterThan(0);
     });
-    expect(questions).toHaveLength(492);
+    expect(questions).toHaveLength(3120);
   });
 
   it('contains every official 113 question in all four subjects', () => {

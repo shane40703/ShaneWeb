@@ -1,11 +1,11 @@
 {
   "primaryCategory": "建築法",
   "topic": "建築管理法規",
-  "tags": [
-    "建築管理法規"
-  ],
   "relatedLaws": [
     "招牌廣告及樹立廣告管理辦法"
+  ],
+  "tags": [
+    "建築管理法規"
   ],
   "answerKey": {
     "kind": "accepted",

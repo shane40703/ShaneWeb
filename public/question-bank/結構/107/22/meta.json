@@ -1,0 +1,17 @@
+{
+  "primaryCategory": "力學",
+  "topic": "材料力學",
+  "tags": [
+    "材料力學"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "B"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 4
+  }
+}

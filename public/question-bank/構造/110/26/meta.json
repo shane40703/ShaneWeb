@@ -1,0 +1,18 @@
+{
+  "primaryCategory": "材料",
+  "topic": "木質材料",
+  "tags": [
+    "木質材料"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "A",
+      "C"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 3
+  }
+}

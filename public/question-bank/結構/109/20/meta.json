@@ -1,0 +1,17 @@
+{
+  "primaryCategory": "鋼筋混凝土",
+  "topic": "鋼筋混凝土",
+  "tags": [
+    "鋼筋混凝土"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "C"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 5
+  }
+}

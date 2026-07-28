@@ -1,0 +1,22 @@
+{
+  "primaryCategory": "鋼結構",
+  "topic": "鋼結構",
+  "tags": [
+    "鋼結構"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "C"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 8
+  },
+  "images": {
+    "question-02.png": {
+      "alt": "第 39 題題幹引用圖示、PDF 題目區含嵌入圖片附圖"
+    }
+  }
+}

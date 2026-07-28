@@ -1,6 +1,9 @@
 {
   "primaryCategory": "其他",
   "topic": "其他",
+  "relatedLaws": [
+    "法律常識"
+  ],
   "tags": [
     "其他"
   ],
@@ -13,8 +16,5 @@
   "provenance": {
     "kind": "official",
     "page": 8
-  },
-  "relatedLaws": [
-    "法律常識"
-  ]
+  }
 }

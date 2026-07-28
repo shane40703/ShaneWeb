@@ -1,0 +1,22 @@
+{
+  "primaryCategory": "永續建築",
+  "topic": "基地與景觀",
+  "tags": [
+    "基地與景觀"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "C"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 6
+  },
+  "images": {
+    "question-02.png": {
+      "alt": "第 39 題PDF 題目區含嵌入圖片附圖"
+    }
+  }
+}

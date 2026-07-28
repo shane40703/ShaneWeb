@@ -1,0 +1,17 @@
+{
+  "primaryCategory": "材料",
+  "topic": "混凝土材料",
+  "tags": [
+    "混凝土材料"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "B"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 4
+  }
+}

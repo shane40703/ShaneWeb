@@ -1,12 +1,12 @@
 {
   "primaryCategory": "建築法",
   "topic": "建築管理法規",
-  "tags": [
-    "建築管理法規"
-  ],
   "relatedLaws": [
     "建築法",
     "建築物部分使用執照核發辦法"
+  ],
+  "tags": [
+    "建築管理法規"
   ],
   "answerKey": {
     "kind": "accepted",

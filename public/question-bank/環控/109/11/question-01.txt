@@ -1,0 +1,1 @@
+晝光率（daylight factor）的計算與下列那個因素無關？

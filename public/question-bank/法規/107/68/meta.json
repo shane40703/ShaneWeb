@@ -1,0 +1,20 @@
+{
+  "primaryCategory": "消防法規",
+  "topic": "消防避難",
+  "relatedLaws": [
+    "其他營建法規"
+  ],
+  "tags": [
+    "消防避難"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "A"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 8
+  }
+}

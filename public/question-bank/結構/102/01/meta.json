@@ -7,10 +7,11 @@
   "answerKey": {
     "kind": "accepted",
     "options": [
-      "C"
+      "B"
     ]
   },
   "provenance": {
-    "kind": "sample"
+    "kind": "official",
+    "page": 2
   }
 }

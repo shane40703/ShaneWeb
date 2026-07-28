@@ -1,0 +1,17 @@
+{
+  "primaryCategory": "構法",
+  "topic": "基礎工程",
+  "tags": [
+    "基礎工程"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "C"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 10
+  }
+}

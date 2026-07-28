@@ -8,9 +8,7 @@ import {
 } from 'node:fs/promises';
 import path from 'node:path';
 
-const YEAR = 113;
 const projectRoot = process.cwd();
-const sourceRoot = path.join(projectRoot, 'QuestionInfo', String(YEAR));
 const answerRoot = path.join(projectRoot, 'AnswersInfo');
 const targetRoot = path.join(projectRoot, 'public', 'question-bank');
 const answerLabels = ['A', 'B', 'C', 'D'];
@@ -323,7 +321,11 @@ function parseQuestion(content, expectedNumber) {
     throw new Error(`第 ${expectedNumber} 題缺少完整選項`);
   }
 
-  const prompt = lines
+  const questionLines = lines.slice(0, optionIndexes[0]);
+  const hasQuestionImage = questionLines.some((line) =>
+    line.startsWith('[圖片：'),
+  );
+  const prompt = questionLines
     .slice(0, optionIndexes[0])
     .filter((line) => line.trim() && !line.startsWith('[圖片：'))
     .join(' ')
@@ -338,16 +340,16 @@ function parseQuestion(content, expectedNumber) {
       .trim();
     return option || `附圖選項（${answerLabels[index]}）`;
   });
-  if (!prompt || options.some((option) => !option)) {
+  if ((!prompt && !hasQuestionImage) || options.some((option) => !option)) {
     throw new Error(`第 ${expectedNumber} 題題幹或選項為空`);
   }
-  return { prompt, options };
+  return { prompt: prompt || '請依附圖作答。', options };
 }
 
-function paperMeta(subject) {
+function paperMeta(year, subject) {
   const base =
     `https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?` +
-    `c=801&code=${YEAR}180&q=1&s=${subject.subjectCode}`;
+    `c=801&code=${year}180&q=1&s=${subject.subjectCode}`;
   return {
     status: 'official-complete',
     paperCode: subject.paperCode,
@@ -358,26 +360,55 @@ function paperMeta(subject) {
   };
 }
 
-async function importSubject(subject) {
+async function readExistingClassification(questionTargetRoot) {
+  try {
+    const existing = JSON.parse(
+      await readFile(path.join(questionTargetRoot, 'meta.json'), 'utf8'),
+    );
+    return Object.fromEntries(
+      ['primaryCategory', 'topic', 'tags', 'relatedLaws']
+        .filter((key) => key in existing)
+        .map((key) => [key, existing[key]]),
+    );
+  } catch (error) {
+    if (error?.code === 'ENOENT') return {};
+    throw error;
+  }
+}
+
+async function removePreviousQuestionImages(questionTargetRoot) {
+  try {
+    const entries = await readdir(questionTargetRoot);
+    await Promise.all(
+      entries
+        .filter((fileName) => /^question-\d+\.(png|jpe?g|webp)$/i.test(fileName))
+        .map((fileName) => rm(path.join(questionTargetRoot, fileName))),
+    );
+  } catch (error) {
+    if (error?.code !== 'ENOENT') throw error;
+  }
+}
+
+async function importSubject(year, subject) {
+  const sourceRoot = path.join(projectRoot, 'QuestionInfo', String(year));
   const subjectSourceRoot = path.join(sourceRoot, subject.source);
   const subjectTargetRoot = path.join(
     targetRoot,
     subject.directory,
-    String(YEAR),
+    String(year),
   );
   const answers = parseAnswers(
     await readFile(
-      path.join(answerRoot, subject.source, `${YEAR}.txt`),
+      path.join(answerRoot, subject.source, `${year}.txt`),
       'utf8',
     ),
     subject.questionCount,
   );
 
-  await rm(subjectTargetRoot, { recursive: true, force: true });
   await mkdir(subjectTargetRoot, { recursive: true });
   await writeFile(
     path.join(subjectTargetRoot, 'paper.json'),
-    `${JSON.stringify(paperMeta(subject), null, 2)}\n`,
+    `${JSON.stringify(paperMeta(year, subject), null, 2)}\n`,
   );
 
   for (
@@ -411,9 +442,13 @@ async function importSubject(subject) {
       ? `question-02${path.extname(imageFileName).toLowerCase()}`
       : null;
     const classification = classify(subject.source, prompt);
+    const existingClassification = await readExistingClassification(
+      questionTargetRoot,
+    );
     const metadata = {
       ...classification,
-      tags: [classification.topic],
+      ...existingClassification,
+      tags: existingClassification.tags ?? [classification.topic],
       answerKey:
         answer === 'ABCD'
           ? { kind: 'all-credit' }
@@ -436,6 +471,7 @@ async function importSubject(subject) {
     };
 
     await mkdir(questionTargetRoot, { recursive: true });
+    await removePreviousQuestionImages(questionTargetRoot);
     await writeFile(path.join(questionTargetRoot, 'question-01.txt'), `${prompt}\n`);
     await Promise.all(
       options.map((option, index) =>
@@ -458,12 +494,16 @@ async function importSubject(subject) {
   }
 }
 
-for (const subject of subjects) {
-  await importSubject(subject);
+const years = Array.from({ length: 13 }, (_, index) => 102 + index);
+
+for (const year of years) {
+  for (const subject of subjects) {
+    await importSubject(year, subject);
+  }
 }
 
 console.log(
-  `已匯入 ${YEAR} 年 ${subjects.reduce(
+  `已匯入 ${years[0]}～${years.at(-1)} 年 ${years.length * subjects.reduce(
     (total, subject) => total + subject.questionCount,
     0,
   )} 題正式題庫。`,

@@ -1,0 +1,20 @@
+{
+  "primaryCategory": "公寓大廈管理條例",
+  "topic": "公寓大廈管理",
+  "relatedLaws": [
+    "其他營建法規"
+  ],
+  "tags": [
+    "公寓大廈管理"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "D"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 5
+  }
+}

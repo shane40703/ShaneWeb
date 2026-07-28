@@ -1,0 +1,21 @@
+{
+  "primaryCategory": "營造業法",
+  "topic": "營造業法",
+  "relatedLaws": [
+    "建築師法",
+    "營造業法"
+  ],
+  "tags": [
+    "營造業法"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "A"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 5
+  }
+}

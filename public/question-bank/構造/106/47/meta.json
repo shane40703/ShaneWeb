@@ -1,0 +1,17 @@
+{
+  "primaryCategory": "施工程序",
+  "topic": "混凝土施工",
+  "tags": [
+    "混凝土施工"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "D"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 5
+  }
+}

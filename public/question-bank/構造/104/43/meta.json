@@ -1,0 +1,22 @@
+{
+  "primaryCategory": "構法",
+  "topic": "防火與隔音",
+  "tags": [
+    "防火與隔音"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "C"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 7
+  },
+  "images": {
+    "question-02.png": {
+      "alt": "第 43 題選項疑似為圖片、PDF 題目區含嵌入圖片附圖"
+    }
+  }
+}

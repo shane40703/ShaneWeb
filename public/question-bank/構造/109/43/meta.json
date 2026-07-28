@@ -1,0 +1,18 @@
+{
+  "primaryCategory": "工程管理",
+  "topic": "品質與安全",
+  "tags": [
+    "品質與安全"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "C",
+      "D"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 6
+  }
+}

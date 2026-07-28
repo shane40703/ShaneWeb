@@ -1,0 +1,18 @@
+{
+  "primaryCategory": "鋼結構",
+  "topic": "鋼結構",
+  "tags": [
+    "鋼結構"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "B",
+      "D"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 8
+  }
+}

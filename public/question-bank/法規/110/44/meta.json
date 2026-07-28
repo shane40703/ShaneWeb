@@ -1,0 +1,20 @@
+{
+  "primaryCategory": "都市計畫法",
+  "topic": "都市更新法規",
+  "relatedLaws": [
+    "其他營建法規"
+  ],
+  "tags": [
+    "都市更新法規"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "C"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 5
+  }
+}

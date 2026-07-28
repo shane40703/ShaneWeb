@@ -1,0 +1,22 @@
+{
+  "primaryCategory": "力學",
+  "topic": "載重",
+  "tags": [
+    "載重"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "D"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 5
+  },
+  "images": {
+    "question-02.png": {
+      "alt": "第 23 題題幹引用圖示、PDF 題目區含嵌入圖片附圖"
+    }
+  }
+}

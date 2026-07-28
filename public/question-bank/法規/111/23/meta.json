@@ -1,0 +1,20 @@
+{
+  "primaryCategory": "其他營建法規",
+  "topic": "法規位階",
+  "relatedLaws": [
+    "違章建築處理辦法"
+  ],
+  "tags": [
+    "法規位階"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "A"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 3
+  }
+}

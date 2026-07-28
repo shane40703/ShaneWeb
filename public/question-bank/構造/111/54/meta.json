@@ -1,0 +1,22 @@
+{
+  "primaryCategory": "構法",
+  "topic": "砌體與隔間",
+  "tags": [
+    "砌體與隔間"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "D"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 6
+  },
+  "images": {
+    "question-02.png": {
+      "alt": "第 54 題PDF 題目區含嵌入圖片附圖"
+    }
+  }
+}

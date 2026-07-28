@@ -1,0 +1,21 @@
+{
+  "primaryCategory": "政府採購法",
+  "topic": "政府採購法",
+  "relatedLaws": [
+    "採購評選委員會組織準則",
+    "政府採購法"
+  ],
+  "tags": [
+    "政府採購法"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "C"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 7
+  }
+}

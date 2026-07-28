@@ -1,11 +1,11 @@
 {
   "primaryCategory": "其他營建法規",
   "topic": "農舍法規",
-  "tags": [
-    "農舍法規"
-  ],
   "relatedLaws": [
     "農業用地興建農舍辦法"
+  ],
+  "tags": [
+    "農舍法規"
   ],
   "answerKey": {
     "kind": "accepted",

@@ -1,0 +1,22 @@
+{
+  "primaryCategory": "構法",
+  "topic": "基礎工程",
+  "tags": [
+    "基礎工程"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "C"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 8
+  },
+  "images": {
+    "question-02.png": {
+      "alt": "第 44 題題幹引用圖示、PDF 題目區含嵌入圖片附圖"
+    }
+  }
+}

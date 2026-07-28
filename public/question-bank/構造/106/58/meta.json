@@ -1,0 +1,22 @@
+{
+  "primaryCategory": "施工程序",
+  "topic": "工地施工",
+  "tags": [
+    "工地施工"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "A"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 6
+  },
+  "images": {
+    "question-02.png": {
+      "alt": "第 58 題選項疑似為圖片、PDF 題目區含嵌入圖片附圖"
+    }
+  }
+}

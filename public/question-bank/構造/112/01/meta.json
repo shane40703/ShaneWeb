@@ -7,10 +7,16 @@
   "answerKey": {
     "kind": "accepted",
     "options": [
-      "B"
+      "A"
     ]
   },
   "provenance": {
-    "kind": "sample"
+    "kind": "official",
+    "page": 1
+  },
+  "images": {
+    "question-02.png": {
+      "alt": "第 1 題PDF 題目區含嵌入圖片附圖"
+    }
   }
 }

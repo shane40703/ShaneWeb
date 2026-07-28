@@ -1,0 +1,20 @@
+{
+  "primaryCategory": "其他營建法規",
+  "topic": "住宅法",
+  "relatedLaws": [
+    "其他營建法規"
+  ],
+  "tags": [
+    "住宅法"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "B"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 1
+  }
+}

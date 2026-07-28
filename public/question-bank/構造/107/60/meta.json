@@ -1,0 +1,22 @@
+{
+  "primaryCategory": "施工程序",
+  "topic": "鋼構施工",
+  "tags": [
+    "鋼構施工"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "B"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 8
+  },
+  "images": {
+    "question-02.png": {
+      "alt": "第 60 題選項疑似為圖片附圖"
+    }
+  }
+}

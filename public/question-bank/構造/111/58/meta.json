@@ -1,0 +1,17 @@
+{
+  "primaryCategory": "構法",
+  "topic": "木構造",
+  "tags": [
+    "木構造"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "D"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 7
+  }
+}

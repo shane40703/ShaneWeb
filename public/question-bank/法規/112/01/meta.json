@@ -1,16 +1,20 @@
 {
   "primaryCategory": "都市計畫法",
   "topic": "都市計畫法",
+  "relatedLaws": [
+    "建築法"
+  ],
   "tags": [
     "都市計畫法"
   ],
   "answerKey": {
     "kind": "accepted",
     "options": [
-      "B"
+      "D"
     ]
   },
   "provenance": {
-    "kind": "sample"
+    "kind": "official",
+    "page": 1
   }
 }

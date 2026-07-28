@@ -1,0 +1,20 @@
+{
+  "primaryCategory": "建築法",
+  "topic": "建築管理法規",
+  "relatedLaws": [
+    "其他營建法規"
+  ],
+  "tags": [
+    "建築管理法規"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "A"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 1
+  }
+}

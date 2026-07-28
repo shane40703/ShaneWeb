@@ -1,6 +1,9 @@
 {
   "primaryCategory": "無障礙設施設計規範",
   "topic": "無障礙設計",
+  "relatedLaws": [
+    "建築師法"
+  ],
   "tags": [
     "無障礙設計"
   ],
@@ -11,6 +14,7 @@
     ]
   },
   "provenance": {
-    "kind": "sample"
+    "kind": "official",
+    "page": 1
   }
 }

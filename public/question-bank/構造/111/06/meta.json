@@ -1,0 +1,22 @@
+{
+  "primaryCategory": "防水工程",
+  "topic": "屋頂防水",
+  "tags": [
+    "屋頂防水"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "B"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 1
+  },
+  "images": {
+    "question-02.png": {
+      "alt": "第 6 題PDF 題目區含嵌入圖片附圖"
+    }
+  }
+}

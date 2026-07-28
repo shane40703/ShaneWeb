@@ -1,0 +1,20 @@
+{
+  "primaryCategory": "都市計畫法",
+  "topic": "國土與區域計畫",
+  "relatedLaws": [
+    "實施區域計畫地區建築管理辦法"
+  ],
+  "tags": [
+    "國土與區域計畫"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "B"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 3
+  }
+}

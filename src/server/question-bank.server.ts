@@ -253,9 +253,9 @@ function parsePaperMeta(filePath: string, value: unknown): PaperMeta {
 async function readJson(filePath: string) {
   let source: string;
   try {
-    source = await readFile(filePath, 'utf8');
-  } catch {
-    fail(filePath, 'required UTF-8 JSON file is missing');
+    source = await readUtf8(filePath);
+  } catch (error) {
+    fail(filePath, `required UTF-8 JSON file is unavailable: ${readErrorMessage(error)}`);
   }
   try {
     return JSON.parse(source) as unknown;
@@ -267,9 +267,9 @@ async function readJson(filePath: string) {
 async function readRequiredText(filePath: string) {
   let value: string;
   try {
-    value = await readFile(filePath, 'utf8');
-  } catch {
-    fail(filePath, 'required UTF-8 text file is missing');
+    value = await readUtf8(filePath);
+  } catch (error) {
+    fail(filePath, `required UTF-8 text file is unavailable: ${readErrorMessage(error)}`);
   }
   const normalized = value.trim();
   if (!normalized) fail(filePath, 'text file must not be empty');
@@ -508,6 +508,28 @@ export async function findQuestionEntry(subject: string, year: string, number: s
   );
 }
 
+function readErrorMessage(error: unknown) {
+  if (error && typeof error === 'object' && 'code' in error) {
+    return String(error.code);
+  }
+  return error instanceof Error ? error.message : 'unknown error';
+}
+
+async function readUtf8(filePath: string) {
+  let lastError: unknown;
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    try {
+      return await readFile(filePath, 'utf8');
+    } catch (error) {
+      lastError = error;
+      if (attempt < 2) {
+        await new Promise((resolve) => setTimeout(resolve, 25 * (attempt + 1)));
+      }
+    }
+  }
+  throw lastError;
+}
+
 export interface QuestionClassificationUpdate {
   questionId: string;
   classifications: readonly string[];
@@ -670,11 +692,10 @@ export async function loadQuestion(entry: QuestionEntry): Promise<Question> {
     }
   }
 
-  const options = await Promise.all(
-    answerLabels.map((answer: AnswerLabel) =>
-      readRequiredText(path.join(directory, `${answer}.txt`)),
-    ),
-  );
+  const options: string[] = [];
+  for (const answer of answerLabels) {
+    options.push(await readRequiredText(path.join(directory, `${answer}.txt`)));
+  }
   const content: Question['content'][number][] = [];
   const plainText: string[] = [];
   const usedImages = new Set<string>();
@@ -745,15 +766,28 @@ export async function loadQuestion(entry: QuestionEntry): Promise<Question> {
   };
 }
 
+async function loadQuestions(entries: readonly QuestionEntry[]) {
+  const questions: Question[] = [];
+  const concurrency = 4;
+  for (let index = 0; index < entries.length; index += concurrency) {
+    questions.push(
+      ...(await Promise.all(
+        entries.slice(index, index + concurrency).map((entry) => loadQuestion(entry)),
+      )),
+    );
+  }
+  return questions;
+}
+
 export async function loadAllQuestions() {
-  return Promise.all((await getQuestionEntries()).map((entry) => loadQuestion(entry)));
+  return loadQuestions(await getQuestionEntries());
 }
 
 export async function loadSubjectQuestions(subject: SubjectId): Promise<Question[]> {
   const entries = (await getQuestionEntries()).filter(
     (entry) => entry.subject === subject,
   );
-  return Promise.all(entries.map((entry) => loadQuestion(entry)));
+  return loadQuestions(entries);
 }
 
 export async function loadQuizQuestions(
@@ -763,6 +797,6 @@ export async function loadQuizQuestions(
   const entries = (await getQuestionEntries()).filter(
     (entry) => entry.subject === subject && (year === undefined || entry.year === year),
   );
-  const questions = await Promise.all(entries.map((entry) => loadQuestion(entry)));
+  const questions = await loadQuestions(entries);
   return questions.map(toQuizQuestion);
 }

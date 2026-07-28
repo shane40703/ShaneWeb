@@ -1,0 +1,22 @@
+{
+  "primaryCategory": "材料",
+  "topic": "混凝土材料",
+  "tags": [
+    "混凝土材料"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "C"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 4
+  },
+  "images": {
+    "question-02.png": {
+      "alt": "第 28 題PDF 題目區含嵌入圖片附圖"
+    }
+  }
+}

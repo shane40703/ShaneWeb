@@ -1,0 +1,1 @@
+圖中桁架結構，零桿（zero-force member）之數量為何？

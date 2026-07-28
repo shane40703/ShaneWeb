@@ -1,0 +1,17 @@
+{
+  "primaryCategory": "施工程序",
+  "topic": "裝修施工",
+  "tags": [
+    "裝修施工"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "B"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 8
+  }
+}

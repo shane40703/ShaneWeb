@@ -1,0 +1,22 @@
+{
+  "primaryCategory": "構法",
+  "topic": "帷幕牆與外牆",
+  "tags": [
+    "帷幕牆與外牆"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "D"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 6
+  },
+  "images": {
+    "question-02.png": {
+      "alt": "第 50 題選項疑似為圖片、PDF 題目區含嵌入圖片附圖"
+    }
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "primaryCategory": "力學",
+  "topic": "載重",
+  "tags": [
+    "載重"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "A"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 7
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "primaryCategory": "耐震",
+  "topic": "耐震設計",
+  "tags": [
+    "耐震設計"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "C"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 7
+  },
+  "images": {
+    "question-02.png": {
+      "alt": "第 32 題題幹引用圖示、選項疑似為圖片、PDF 題目區含嵌入圖片附圖"
+    }
+  }
+}

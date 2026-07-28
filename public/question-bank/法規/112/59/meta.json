@@ -1,0 +1,20 @@
+{
+  "primaryCategory": "都市計畫法",
+  "topic": "非都市土地",
+  "relatedLaws": [
+    "其他營建法規"
+  ],
+  "tags": [
+    "非都市土地"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "A"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 7
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "primaryCategory": "設備",
+  "topic": "空調",
+  "tags": [
+    "空調"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "A",
+      "B"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 2
+  }
+}

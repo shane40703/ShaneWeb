@@ -1,0 +1,22 @@
+{
+  "primaryCategory": "構法",
+  "topic": "砌體與隔間",
+  "tags": [
+    "砌體與隔間"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "C"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 10
+  },
+  "images": {
+    "question-02.png": {
+      "alt": "第 80 題題幹引用表格附圖"
+    }
+  }
+}

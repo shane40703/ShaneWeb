@@ -1,0 +1,20 @@
+{
+  "primaryCategory": "都市計畫法",
+  "topic": "國土與區域計畫",
+  "relatedLaws": [
+    "國土計畫法"
+  ],
+  "tags": [
+    "國土與區域計畫"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "B"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 8
+  }
+}

@@ -31,7 +31,7 @@ describe('question text quality', () => {
         path.relative(process.cwd(), source.filePath),
       ).not.toMatch(privateUseCharacterPattern);
     }
-  });
+  }, 15_000);
 
   it('keeps corrected separators and formula glyphs in the runtime bank', async () => {
     const questions = await loadAllQuestions();

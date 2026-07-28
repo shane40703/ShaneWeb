@@ -16,29 +16,29 @@ describe('question content renderer', () => {
     expect(question!.content.map((block) => block.kind)).toEqual(['text', 'image']);
     expect(question!.content[1]).toMatchObject({
       kind: 'image',
-      src: '/question-bank/構造/114/01/question-02.jpg',
-      width: 480,
-      height: 444,
+      src: '/question-bank/構造/114/01/question-02.png',
+      width: 299,
+      height: 278,
     });
 
     const { container } = render(<QuestionPrompt question={question!} />);
     const text = screen.getByText(/衝擊韌性試片結果圖/);
-    const image = screen.getByRole('img', { name: /三個衝擊韌性試片斷口照片/ });
+    const image = screen.getByRole('img', { name: /第 1 題題幹引用圖示/ });
     expect(
       text.compareDocumentPosition(image) & Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
     expect(container.querySelectorAll('img')).toHaveLength(1);
-    expect(image).toHaveAttribute('width', '480');
-    expect(image).toHaveAttribute('height', '444');
+    expect(image).toHaveAttribute('width', '299');
+    expect(image).toHaveAttribute('height', '278');
 
     fireEvent.click(
       screen.getByRole('button', {
-        name: /放大題目圖片.*三個衝擊韌性試片斷口照片/,
+        name: /放大題目圖片.*第 1 題題幹引用圖示/,
       }),
     );
     expect(
       screen.getByRole('dialog', {
-        name: /放大檢視.*三個衝擊韌性試片斷口照片/,
+        name: /放大檢視.*第 1 題題幹引用圖示/,
       }),
     ).toBeInTheDocument();
     fireEvent.click(

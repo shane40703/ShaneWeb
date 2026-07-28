@@ -1,0 +1,17 @@
+{
+  "primaryCategory": "結構系統",
+  "topic": "基礎設計",
+  "tags": [
+    "基礎設計"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "B"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 8
+  }
+}

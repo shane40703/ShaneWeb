@@ -1,0 +1,18 @@
+{
+  "primaryCategory": "構法",
+  "topic": "砌體與隔間",
+  "tags": [
+    "砌體與隔間"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "A",
+      "B"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 3
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "primaryCategory": "工程管理",
+  "topic": "品質與安全",
+  "tags": [
+    "品質與安全"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "B"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 8
+  },
+  "images": {
+    "question-02.png": {
+      "alt": "第 45 題PDF 題目區含嵌入圖片附圖"
+    }
+  }
+}

@@ -1,0 +1,1 @@
+鋼材之彈性模數（modulus of elasticity）不會隨著強度提高而增大

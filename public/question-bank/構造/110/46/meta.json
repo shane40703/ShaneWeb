@@ -1,0 +1,18 @@
+{
+  "primaryCategory": "材料",
+  "topic": "綠建材",
+  "tags": [
+    "綠建材"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "B",
+      "C"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 6
+  }
+}

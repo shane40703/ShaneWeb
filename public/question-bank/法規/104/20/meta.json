@@ -1,0 +1,25 @@
+{
+  "primaryCategory": "其他營建法規",
+  "topic": "法規位階",
+  "relatedLaws": [
+    "其他營建法規"
+  ],
+  "tags": [
+    "法規位階"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "C"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 3
+  },
+  "images": {
+    "question-02.png": {
+      "alt": "第 20 題題幹引用圖示、PDF 題目區含嵌入圖片附圖"
+    }
+  }
+}

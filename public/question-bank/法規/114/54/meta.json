@@ -1,11 +1,11 @@
 {
   "primaryCategory": "建築法",
   "topic": "建築管理法規",
-  "tags": [
-    "建築管理法規"
-  ],
   "relatedLaws": [
     "原有合法建築物公共安全改善辦法"
+  ],
+  "tags": [
+    "建築管理法規"
   ],
   "answerKey": {
     "kind": "accepted",

@@ -1,0 +1,1 @@
+Ax=3 kN(→)，Ay=3 kN(↑)，Ex=3 kN(←)，Ey=3 kN(↑)

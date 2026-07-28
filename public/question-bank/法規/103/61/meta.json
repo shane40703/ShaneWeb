@@ -1,0 +1,25 @@
+{
+  "primaryCategory": "建築技術規則",
+  "topic": "建築技術規則",
+  "relatedLaws": [
+    "建築技術規則"
+  ],
+  "tags": [
+    "建築技術規則"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "C"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 7
+  },
+  "images": {
+    "question-02.png": {
+      "alt": "第 61 題PDF 題目區含嵌入圖片附圖"
+    }
+  }
+}

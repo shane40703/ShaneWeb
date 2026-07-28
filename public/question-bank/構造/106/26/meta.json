@@ -1,0 +1,22 @@
+{
+  "primaryCategory": "材料",
+  "topic": "材料",
+  "tags": [
+    "材料"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "C"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 3
+  },
+  "images": {
+    "question-02.png": {
+      "alt": "第 26 題題幹引用圖示、選項疑似為圖片、PDF 題目區含嵌入圖片附圖"
+    }
+  }
+}

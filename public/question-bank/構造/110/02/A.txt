@@ -1,0 +1,1 @@
+Low-E 是指低輻射（Low Emissivity）的意思，Emissivity 是指物體吸收了熱量之後再將能量輻射出去的能力

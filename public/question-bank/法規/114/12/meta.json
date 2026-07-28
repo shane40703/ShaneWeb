@@ -1,11 +1,11 @@
 {
   "primaryCategory": "建築法",
   "topic": "建築管理法規",
-  "tags": [
-    "建築管理法規"
-  ],
   "relatedLaws": [
     "建築物使用類組及變更使用辦法"
+  ],
+  "tags": [
+    "建築管理法規"
   ],
   "answerKey": {
     "kind": "accepted",

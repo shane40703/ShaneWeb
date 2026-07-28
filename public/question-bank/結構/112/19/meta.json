@@ -1,0 +1,22 @@
+{
+  "primaryCategory": "鋼筋混凝土",
+  "topic": "鋼筋混凝土",
+  "tags": [
+    "鋼筋混凝土"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "D"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 5
+  },
+  "images": {
+    "question-02.png": {
+      "alt": "第 19 題題幹引用圖示、PDF 題目區含嵌入圖片附圖"
+    }
+  }
+}
