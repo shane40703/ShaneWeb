@@ -52,6 +52,11 @@
   line-height: 1.6;
 }
 
+.lawQuestions > header button {
+  width: fit-content;
+  margin-top: 10px;
+}
+
 .lawList {
   max-height: 520px;
   margin-top: 14px;
@@ -299,6 +304,10 @@
   .lawList button {
     grid-template-columns: minmax(120px, 1fr) 70px 45px;
     gap: 8px;
+  }
+
+  .lawQuestions > header button {
+    width: 100%;
   }
 
   .barRow { grid-template-columns: 90px 1fr 38px; }

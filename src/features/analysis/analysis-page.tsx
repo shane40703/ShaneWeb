@@ -1,8 +1,13 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { type CSSProperties, useState } from 'react';
-import { IconChartPie, IconExternalLink } from '@tabler/icons-react';
+import {
+  IconChartPie,
+  IconExternalLink,
+  IconPlayerPlay,
+} from '@tabler/icons-react';
 import { EmptyState } from '@/components/content/content';
+import { Button } from '@/components/ui/ui';
 import {
   QuestionSelector,
   type SelectorYear,
@@ -133,6 +138,20 @@ export function AnalysisPage({ questions }: { questions: QuestionSummary[] }) {
     updateQuery({ year: nextYear });
   }
 
+  function startSelectedCategoryQuiz() {
+    const firstQuestion = selectedCategoryQuestions[0];
+    if (!firstQuestion) return;
+    void router.push({
+      pathname: firstQuestion.path,
+      query: {
+        mode: 'random',
+        questions: selectedCategoryQuestions
+          .map((question) => question.id)
+          .join(','),
+      },
+    });
+  }
+
   return (
     <>
       <QuestionSelector
@@ -201,6 +220,14 @@ export function AnalysisPage({ questions }: { questions: QuestionSummary[] }) {
                   <p>
                     目前範圍共 {selectedCategoryQuestions.length} 題，點選即可前往作答。
                   </p>
+                  <Button
+                    variant="primary"
+                    onClick={startSelectedCategoryQuiz}
+                    disabled={!selectedCategoryQuestions.length}
+                  >
+                    <IconPlayerPlay size={16} stroke={2} aria-hidden="true" />
+                    作答全部 {selectedCategoryQuestions.length} 題
+                  </Button>
                 </header>
                 <div>
                   {selectedCategoryQuestions.map((question) => (
