@@ -15,23 +15,17 @@ function readUpdate(value: unknown): QuestionClassificationUpdate | null {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
   const body = value as Record<string, unknown>;
   const questionId = stringValue(body.questionId);
-  const primaryCategory = stringValue(body.primaryCategory);
-  const topic = stringValue(body.topic);
-  if (!questionId || !primaryCategory || !topic) return null;
   if (
-    body.relatedLaws !== undefined &&
-    (!Array.isArray(body.relatedLaws) ||
-      body.relatedLaws.some((law) => typeof law !== 'string'))
+    !questionId ||
+    !Array.isArray(body.classifications) ||
+    !body.classifications.length ||
+    body.classifications.some((classification) => typeof classification !== 'string')
   ) {
     return null;
   }
   return {
     questionId,
-    primaryCategory,
-    topic,
-    ...(body.relatedLaws === undefined
-      ? {}
-      : { relatedLaws: body.relatedLaws as string[] }),
+    classifications: body.classifications as string[],
   };
 }
 

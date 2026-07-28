@@ -6,18 +6,16 @@ import {
   IconKey,
   IconSearch,
   IconShieldLock,
+  IconX,
 } from '@tabler/icons-react';
 import { Button } from '@/components/ui/ui';
 import { subjects, years } from '@/question-bank/catalog';
-import { categoryCatalog } from '@/question-bank/schema';
+import { analysisCategoryCatalog } from '@/question-bank/schema';
+import { getQuestionDisplayCategories } from '@/lib/study';
 import type { Question, QuestionSummary, SubjectId } from '@/lib/types';
 import styles from './category-admin-page.module.css';
 
 type ReviewFilter = 'needs-review' | 'all';
-
-function categoryMap(subject: SubjectId) {
-  return categoryCatalog[subject] as Readonly<Record<string, readonly string[]>>;
-}
 
 function needsReview(question: QuestionSummary) {
   return (
@@ -25,17 +23,6 @@ function needsReview(question: QuestionSummary) {
     question.topic === '其他' ||
     (question.subject === 'law' && !question.relatedLaws?.length)
   );
-}
-
-function relatedLawsFromInput(value: string) {
-  return [
-    ...new Set(
-      value
-        .split(/[\n,，]/u)
-        .map((law) => law.trim())
-        .filter(Boolean),
-    ),
-  ];
 }
 
 export function CategoryAdminPage({
@@ -67,10 +54,18 @@ export function CategoryAdminPage({
   const selectedQuestion =
     filteredQuestions.find((question) => question.id === selectedId) ??
     filteredQuestions[0];
-  const categories = categoryMap(subjectId);
-  const [primaryCategory, setPrimaryCategory] = useState('');
-  const [topic, setTopic] = useState('');
-  const [relatedLaws, setRelatedLaws] = useState('');
+  const classificationOptions = useMemo(() => {
+    const existing = questions
+      .filter((question) => question.subject === subjectId)
+      .flatMap(getQuestionDisplayCategories);
+    const catalog = Object.entries(analysisCategoryCatalog[subjectId])
+      .filter(([, topics]) => topics.length || existing.includes(topics[0] ?? ''))
+      .map(([classification]) => classification);
+    return [...new Set([...catalog, ...existing])].sort((left, right) =>
+      left.localeCompare(right, 'zh-Hant'),
+    );
+  }, [questions, subjectId]);
+  const [classifications, setClassifications] = useState<string[]>([]);
   const [authorKey, setAuthorKey] = useState('');
   const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState<
@@ -86,17 +81,23 @@ export function CategoryAdminPage({
       return;
     }
     editedQuestionId.current = selectedQuestion.id;
-    setPrimaryCategory(selectedQuestion.primaryCategory);
-    setTopic(selectedQuestion.topic);
-    setRelatedLaws((selectedQuestion.relatedLaws ?? []).join('\n'));
+    setClassifications(getQuestionDisplayCategories(selectedQuestion));
     setStatus(undefined);
   }, [selectedQuestion]);
 
-  const topicOptions = categories[primaryCategory] ?? [];
+  function addClassification(classification: string) {
+    if (!classification) return;
+    setClassifications((current) =>
+      subjectId === 'law'
+        ? [...new Set([...current, classification])]
+        : [classification],
+    );
+  }
 
-  function changeCategory(nextCategory: string) {
-    setPrimaryCategory(nextCategory);
-    setTopic(categories[nextCategory]?.[0] ?? '');
+  function removeClassification(classification: string) {
+    setClassifications((current) =>
+      current.filter((item) => item !== classification),
+    );
   }
 
   async function saveClassification() {
@@ -115,11 +116,7 @@ export function CategoryAdminPage({
         },
         body: JSON.stringify({
           questionId: selectedQuestion.id,
-          primaryCategory,
-          topic,
-          ...(selectedQuestion.subject === 'law'
-            ? { relatedLaws: relatedLawsFromInput(relatedLaws) }
-            : {}),
+          classifications,
         }),
       });
       const body = (await response.json()) as
@@ -275,7 +272,7 @@ export function CategoryAdminPage({
                   </span>
                   <strong>{question.text}</strong>
                   <small>
-                    {question.primaryCategory}／{question.topic}
+                    {getQuestionDisplayCategories(question).join('、')}
                   </small>
                 </button>
               ))
@@ -308,42 +305,42 @@ export function CategoryAdminPage({
               <p className={styles.questionText}>{selectedQuestion.text}</p>
               <div className={styles.editorFields}>
                 <label>
-                  主分類
+                  題目分類{selectedQuestion.subject === 'law' ? '（可複選）' : ''}
                   <select
-                    value={primaryCategory}
-                    onChange={(event) => changeCategory(event.target.value)}
+                    aria-label="新增題目分類"
+                    value=""
+                    onChange={(event) => addClassification(event.target.value)}
                   >
-                    {Object.keys(categories).map((category) => (
-                      <option value={category} key={category}>
-                        {category}
+                    <option value="">請選擇分類</option>
+                    {classificationOptions.map((classification) => (
+                      <option
+                        value={classification}
+                        key={classification}
+                        disabled={classifications.includes(classification)}
+                      >
+                        {classification}
                       </option>
                     ))}
                   </select>
                 </label>
-                <label>
-                  主題
-                  <select
-                    value={topic}
-                    onChange={(event) => setTopic(event.target.value)}
-                  >
-                    {topicOptions.map((candidateTopic) => (
-                      <option value={candidateTopic} key={candidateTopic}>
-                        {candidateTopic}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                {selectedQuestion.subject === 'law' ? (
-                  <label className={styles.relatedLaws}>
-                    相關法規（每行一項，可複數）
-                    <textarea
-                      rows={7}
-                      value={relatedLaws}
-                      onChange={(event) => setRelatedLaws(event.target.value)}
-                      placeholder="例如：&#10;建築法&#10;建築技術規則"
-                    />
-                  </label>
-                ) : null}
+                <div className={styles.classificationTags} aria-label="目前題目分類">
+                  {classifications.length ? (
+                    classifications.map((classification) => (
+                      <span key={classification}>
+                        {classification}
+                        <button
+                          type="button"
+                          aria-label={`移除分類 ${classification}`}
+                          onClick={() => removeClassification(classification)}
+                        >
+                          <IconX size={13} stroke={2.4} aria-hidden="true" />
+                        </button>
+                      </span>
+                    ))
+                  ) : (
+                    <p>尚未選擇分類</p>
+                  )}
+                </div>
               </div>
               <footer>
                 {status ? (
@@ -355,7 +352,7 @@ export function CategoryAdminPage({
                 )}
                 <Button
                   variant="primary"
-                  disabled={saving}
+                  disabled={saving || !classifications.length}
                   onClick={saveClassification}
                 >
                   <IconDeviceFloppy size={17} stroke={2} aria-hidden="true" />

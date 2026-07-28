@@ -83,13 +83,13 @@ describe('question data', () => {
     expect(categories).toEqual(['建築法', '建築技術規則']);
   });
 
-  it('classifies law question 74 as other without unrelated law statistics', () => {
+  it('uses the author classification for law question 74', () => {
     const question = questions.find((item) => item.id === 'law-114-74');
 
     expect(question?.primaryCategory).toBe('其他');
     expect(question?.topic).toBe('其他');
-    expect(question?.relatedLaws).toBeUndefined();
-    expect(getQuestionDisplayCategory(question!)).toBe('其他');
+    expect(question?.relatedLaws).toEqual(['法律常識']);
+    expect(getQuestionDisplayCategory(question!)).toBe('法律常識');
   });
 
   it('includes available explanations in quiz review data', async () => {
@@ -322,7 +322,7 @@ describe('analysis', () => {
     expect(primaryAnalysis.reduce((sum, item) => sum + item.count, 0)).toBe(80);
     expect(lawAnalysis.reduce((sum, item) => sum + item.count, 0)).toBe(83);
     expect(lawAnalysis).toContainEqual(
-      expect.objectContaining({ law: '其他', count: 1 }),
+      expect.objectContaining({ law: '法律常識', count: 1 }),
     );
     expect(lawAnalysis.reduce((sum, item) => sum + item.percentage, 0)).toBeCloseTo(100);
   });

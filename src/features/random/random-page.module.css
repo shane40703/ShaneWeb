@@ -54,8 +54,7 @@
 }
 
 .randomSubjects,
-.countChoices,
-.categoryChoices {
+.countChoices {
   margin-top: 16px;
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -63,8 +62,7 @@
 }
 
 .randomSubjects button,
-.countChoices button,
-.categoryChoices button {
+.countChoices button {
   min-height: 58px;
   padding: 11px 12px;
   border: 1px solid var(--line);
@@ -79,10 +77,8 @@
 
 .randomSubjects button:hover,
 .countChoices button:hover,
-.categoryChoices button:hover,
 .randomSubjects button[aria-pressed='true'],
-.countChoices button[aria-pressed='true'],
-.categoryChoices button[aria-pressed='true'] {
+.countChoices button[aria-pressed='true'] {
   border-color: var(--primary);
   background: var(--primary-soft);
   color: var(--primary-strong);
@@ -90,9 +86,9 @@
 
 .randomSubjects button:focus-visible,
 .countChoices button:focus-visible,
-.categoryChoices button:focus-visible,
 .randomStart:focus-visible,
-.yearRange select:focus-visible {
+.yearRange select:focus-visible,
+.categorySelect select:focus-visible {
   outline: 3px solid var(--focus);
   outline-offset: 2px;
 }
@@ -150,25 +146,10 @@
   grid-template-columns: repeat(5, minmax(0, 1fr));
 }
 
-.categoryChoices {
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-}
-
-.categoryChoices button {
-  display: grid;
-  place-content: center;
-  gap: 4px;
-}
-
-.categoryChoices button strong {
-  line-height: 1.35;
-}
-
-.categoryChoices button small {
-  color: var(--muted);
-  font-size: 10px;
-  font-weight: 650;
-}
+.categorySelect { max-width: 620px; margin-top: 16px; display: grid; gap: 7px; color: var(--muted); font-size: 11px; font-weight: 750; }
+.categorySelect select { min-height: 48px; padding: 0 13px; border: 1px solid var(--line); border-radius: 11px; background: var(--surface); color: var(--text); font: inherit; font-size: 13px; font-weight: 750; }
+.categorySelect > small { color: var(--muted); font-size: 11px; font-weight: 500; }
+.categorySelect > small strong { color: var(--primary-strong); }
 
 .countChoices button {
   display: grid;
@@ -252,9 +233,6 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .categoryChoices {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
 }
 
 @media (max-width: 520px) {
@@ -264,10 +242,6 @@
   }
 
   .randomSubjects {
-    grid-template-columns: 1fr;
-  }
-
-  .categoryChoices {
     grid-template-columns: 1fr;
   }
 

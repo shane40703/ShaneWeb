@@ -47,9 +47,9 @@ describe('RandomPage', () => {
 
     render(<RandomPage questions={questions} />);
 
-    fireEvent.click(
-      screen.getByRole('button', { name: '建築技術規則 2 題' }),
-    );
+    fireEvent.change(screen.getByLabelText('隨機出題題目類別'), {
+      target: { value: '建築技術規則' },
+    });
     expect(screen.getByText('從 2 題中抽出 2 題')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: '抽出題組' }));
 
@@ -82,9 +82,9 @@ describe('RandomPage', () => {
     ];
     render(<RandomPage questions={questions} />);
 
-    fireEvent.click(
-      screen.getByRole('button', { name: '建築技術規則 1 題' }),
-    );
+    fireEvent.change(screen.getByLabelText('隨機出題題目類別'), {
+      target: { value: '建築技術規則' },
+    });
     fireEvent.click(screen.getByRole('button', { name: '抽出題組' }));
 
     const destination = router.push.mock.calls[0][0] as {

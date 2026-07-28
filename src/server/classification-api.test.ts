@@ -65,8 +65,7 @@ describe('classification author API', () => {
         headers: { 'x-author-key': 'correct-key' },
         body: {
           questionId: 'law-114-01',
-          primaryCategory: '建築法',
-          topic: '',
+          classifications: [],
         },
       }),
       result,

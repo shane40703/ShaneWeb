@@ -5,6 +5,7 @@ import sharp from 'sharp';
 import { subjects } from '@/question-bank/catalog';
 import {
   answerLabels,
+  analysisCategoryCatalog,
   categoryCatalog,
   type AnswerLabel,
   type PaperMeta,
@@ -509,9 +510,7 @@ export async function findQuestionEntry(subject: string, year: string, number: s
 
 export interface QuestionClassificationUpdate {
   questionId: string;
-  primaryCategory: string;
-  topic: string;
-  relatedLaws?: readonly string[];
+  classifications: readonly string[];
 }
 
 function parseQuestionId(questionId: string) {
@@ -536,24 +535,73 @@ export async function updateQuestionClassification(
     'question metadata',
   );
   const currentTopic = stringValue(metaPath, currentMeta.topic, 'topic');
+  const currentPrimaryCategory = stringValue(
+    metaPath,
+    currentMeta.primaryCategory,
+    'primaryCategory',
+  );
   const currentTags = stringArray(metaPath, currentMeta.tags, 'tags');
-  const relatedLaws = update.relatedLaws
-    ?.map((law) => law.trim())
+  const classifications = update.classifications
+    .map((classification) => classification.trim())
     .filter(Boolean);
+  if (!classifications.length) throw new Error('至少需要一個題目分類');
+  const uniqueClassifications = [...new Set(classifications)];
+
+  let primaryCategory = currentPrimaryCategory;
+  let topic = currentTopic;
+  if (subject === 'law') {
+    const primaryMatch = uniqueClassifications.find((classification) =>
+      Object.hasOwn(categoryCatalog.law, classification),
+    ) as keyof typeof categoryCatalog.law | undefined;
+    if (primaryMatch) {
+      primaryCategory = primaryMatch;
+      const primaryTopics = categoryCatalog.law[primaryMatch];
+      topic = primaryTopics.includes(currentTopic as never)
+        ? currentTopic
+        : primaryTopics[0];
+    }
+  } else {
+    if (uniqueClassifications.length !== 1) {
+      throw new Error('此科目只能選擇一個題目分類');
+    }
+    const classification = uniqueClassifications[0];
+    const analysisCategories = analysisCategoryCatalog[subject];
+    const classificationTopics = analysisCategories[classification];
+    if (!classificationTopics) throw new Error('題目分類不在此科目的分類目錄');
+    if (classificationTopics.length) {
+      topic = classificationTopics.includes(currentTopic)
+        ? currentTopic
+        : classificationTopics[0];
+      const primaryMatch = Object.entries(categoryCatalog[subject]).find(
+        ([, topics]) => (topics as readonly string[]).includes(topic),
+      )?.[0];
+      if (!primaryMatch) throw new Error('題目分類無法對應至題庫主分類');
+      primaryCategory = primaryMatch;
+    } else {
+      const currentClassification =
+        Object.entries(analysisCategories).find(([, topics]) =>
+          topics.includes(currentTopic),
+        )?.[0] ?? currentPrimaryCategory;
+      if (currentClassification !== classification) {
+        throw new Error('這個分類尚未設定可對應的題庫主題');
+      }
+    }
+  }
+
   const nextTags = [
     ...new Set(
-      currentTags.map((tag) => (tag === currentTopic ? update.topic : tag)),
+      currentTags.map((tag) => (tag === currentTopic ? topic : tag)),
     ),
   ];
-  if (!nextTags.includes(update.topic)) nextTags.unshift(update.topic);
+  if (!nextTags.includes(topic)) nextTags.unshift(topic);
 
   const nextMeta: Record<string, unknown> = {
     ...currentMeta,
-    primaryCategory: update.primaryCategory,
-    topic: update.topic,
+    primaryCategory,
+    topic,
     tags: nextTags,
   };
-  if (relatedLaws?.length) nextMeta.relatedLaws = [...new Set(relatedLaws)];
+  if (subject === 'law') nextMeta.relatedLaws = uniqueClassifications;
   else delete nextMeta.relatedLaws;
 
   const parsedMeta = parseQuestionMeta(metaPath, nextMeta, subject);

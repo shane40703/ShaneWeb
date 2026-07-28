@@ -175,29 +175,33 @@ export function RandomPage({ questions }: { questions: QuestionSummary[] }) {
           <div>
             <h3>選擇題目類別</h3>
             <p>可從跨年度的相同類別集中抽題。</p>
-            <div className={styles.categoryChoices}>
-              <button
-                type="button"
-                aria-label={`全部類別 ${rangeCandidates.length} 題`}
-                aria-pressed={category === 'all'}
-                onClick={() => setCategoryValue('all')}
+            <label className={styles.categorySelect}>
+              題目類別
+              <select
+                aria-label="隨機出題題目類別"
+                value={category}
+                onChange={(event) => setCategoryValue(event.target.value)}
               >
-                <strong>全部類別</strong>
-                <small>{rangeCandidates.length} 題</small>
-              </button>
-              {availableCategories.map((candidateCategory) => (
-                <button
-                  type="button"
-                  key={candidateCategory}
-                  aria-label={`${candidateCategory} ${categoryCounts.get(candidateCategory)} 題`}
-                  aria-pressed={candidateCategory === category}
-                  onClick={() => setCategoryValue(candidateCategory)}
-                >
-                  <strong>{candidateCategory}</strong>
-                  <small>{categoryCounts.get(candidateCategory)} 題</small>
-                </button>
-              ))}
-            </div>
+                <option value="all">
+                  全部類別（{rangeCandidates.length} 題）
+                </option>
+                {availableCategories.map((candidateCategory) => (
+                  <option
+                    value={candidateCategory}
+                    key={candidateCategory}
+                  >
+                    {candidateCategory}（{categoryCounts.get(candidateCategory)} 題）
+                  </option>
+                ))}
+              </select>
+              <small>
+                目前選擇{' '}
+                <strong>
+                  {category === 'all' ? '全部類別' : category}
+                </strong>
+                ，共 {candidates.length} 題
+              </small>
+            </label>
           </div>
         </section>
 

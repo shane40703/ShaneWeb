@@ -49,15 +49,12 @@ describe('CategoryAdminPage', () => {
     fireEvent.change(screen.getByLabelText('作者編輯金鑰'), {
       target: { value: 'author-key' },
     });
-    fireEvent.change(screen.getByLabelText('主分類'), {
+    fireEvent.change(screen.getByLabelText('新增題目分類'), {
       target: { value: '建築技術規則' },
     });
-    fireEvent.change(
-      screen.getByLabelText('相關法規（每行一項，可複數）'),
-      {
-        target: { value: '建築法\n建築技術規則\n建築法' },
-      },
-    );
+    expect(screen.queryByLabelText('主分類')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('主題')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/相關法規/)).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: '驗證並儲存' }));
 
     await waitFor(() => expect(fetchMock).toHaveBeenCalledOnce());
@@ -68,9 +65,7 @@ describe('CategoryAdminPage', () => {
         headers: expect.objectContaining({ 'X-Author-Key': 'author-key' }),
         body: JSON.stringify({
           questionId: summary.id,
-          primaryCategory: '建築技術規則',
-          topic: '建築技術規則',
-          relatedLaws: ['建築法', '建築技術規則'],
+          classifications: ['建築法', '建築技術規則'],
         }),
       }),
     );
