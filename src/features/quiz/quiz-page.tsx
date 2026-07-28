@@ -36,7 +36,7 @@ import {
   createAttempt,
   formatCorrectAnswer,
   formatDuration,
-  getQuestionDisplayCategory,
+  getQuestionDisplayCategories,
   getSubjectScoreConfig,
   isQuestionCorrect,
   toQuizQuestion,
@@ -497,7 +497,9 @@ export function QuizPage({ question, paper }: StaticQuestionPageProps) {
             <div className={styles.meta}>
               <Tag tone="green">{subject?.shortName}</Tag>
               <Tag>{question.year} 年</Tag>
-              <Tag tone="orange">{getQuestionDisplayCategory(question)}</Tag>
+              {getQuestionDisplayCategories(question).map((category) => (
+                <Tag tone="orange" key={category}>{category}</Tag>
+              ))}
               {question.source.kind === 'sample' ? <Tag tone="purple">示範題</Tag> : null}
             </div>
             <div className={styles.quizActions}>

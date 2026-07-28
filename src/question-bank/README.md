@@ -48,6 +48,7 @@ public/question-bank/
   "primaryCategory": "防水工程",
   "topic": "屋頂防水",
   "tags": ["防水工程"],
+  "relatedLaws": ["建築法", "建築技術規則"],
   "answerKey": {
     "kind": "accepted",
     "options": ["A", "B"]
@@ -65,6 +66,10 @@ public/question-bank/
 ```
 
 分類、主題與標籤必須符合 `schema.ts` 的 `categoryCatalog`。Loader 也會驗證 JSON 欄位、答案、來源、圖片宣告及資料夾內容；無效資料會讓測試或 `next build` 直接失敗。
+
+法規科目若同一題涉及兩種以上法規，可用 `relatedLaws` 陣列依序列出；題目會在
+每個相關法規的統計、篩選與作答入口中各出現一次。若沒有明確法規，省略此欄位並
+使用主分類作為後備分類。
 
 圖片的 URL、寬度和高度不寫入 JSON：URL 由題目路徑推導，實際尺寸由 loader 使用 Sharp 讀取圖片 metadata。頁面會把尺寸交給 Next Image，讓瀏覽器在圖片下載前保留正確比例，避免圖片造成 CLS。只有無法由圖片推導的 `alt` 需要維護在 `meta.json`。
 

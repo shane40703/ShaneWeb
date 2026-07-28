@@ -5,7 +5,7 @@ import { IconBulb, IconExternalLink, type TablerIcon } from '@tabler/icons-react
 import { Button } from '@/components/ui/ui';
 import { ImageLightbox } from '@/components/image-lightbox';
 import { getSubject } from '@/question-bank/catalog';
-import { getQuestionDisplayCategory } from '@/lib/study';
+import { getQuestionDisplayCategories } from '@/lib/study';
 import type { Question } from '@/lib/types';
 import styles from './content.module.css';
 
@@ -135,7 +135,9 @@ export function QuestionCard({
           <Tag>{question.year} 年</Tag>
           <Tag tone="green">{subject?.shortName}</Tag>
           <Tag tone="purple">第 {question.questionNumber} 題</Tag>
-          <Tag tone="orange">{getQuestionDisplayCategory(question)}</Tag>
+          {getQuestionDisplayCategories(question).map((category) => (
+            <Tag tone="orange" key={category}>{category}</Tag>
+          ))}
           {question.source.kind === 'sample' ? (
             <Tag tone="purple">示範題</Tag>
           ) : null}

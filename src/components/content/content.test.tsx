@@ -1,6 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
+  QuestionCard,
   QuestionPrompt,
   QuestionSourceLine,
 } from '@/components/content/content';
@@ -53,5 +54,24 @@ describe('question content renderer', () => {
       'href',
       expect.stringContaining('s=0103&t=Q'),
     );
+  });
+
+  it('renders every related law as a question category', () => {
+    const question = questions.find((candidate) => candidate.id === 'law-114-01');
+    expect(question).toBeDefined();
+
+    render(
+      <QuestionCard
+        question={{
+          ...question!,
+          relatedLaws: ['建築法', '建築技術規則'],
+        }}
+        difficult={false}
+        onToggleDifficult={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByText('建築法')).toBeInTheDocument();
+    expect(screen.getByText('建築技術規則')).toBeInTheDocument();
   });
 });

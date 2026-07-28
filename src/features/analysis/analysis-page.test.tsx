@@ -1,5 +1,5 @@
-import { fireEvent, render, screen } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AnalysisPage } from '@/features/analysis/analysis-page';
 import type { QuestionSummary } from '@/lib/types';
 
@@ -12,6 +12,8 @@ const router = vi.hoisted(() => ({
 vi.mock('next/router', () => ({
   useRouter: () => router,
 }));
+
+afterEach(cleanup);
 
 function question(id: string, questionNumber: number): QuestionSummary {
   return {
@@ -50,6 +52,37 @@ describe('AnalysisPage category quiz', () => {
       query: {
         mode: 'random',
         questions: 'law-114-01,law-114-02',
+      },
+    });
+  });
+
+  it('can start from a secondary related-law category', () => {
+    const questions = [
+      {
+        ...question('law-114-01', 1),
+        relatedLaws: ['建築法', '建築技術規則'],
+      },
+      {
+        ...question('law-114-02', 2),
+        primaryCategory: '建築法',
+        topic: '建築法',
+        relatedLaws: ['建築法'],
+      },
+    ];
+    render(<AnalysisPage questions={questions} />);
+
+    fireEvent.click(
+      screen.getByRole('button', { name: /建築技術規則1 題/ }),
+    );
+    fireEvent.click(
+      screen.getByRole('button', { name: '作答全部 1 題' }),
+    );
+
+    expect(router.push).toHaveBeenCalledWith({
+      pathname: questions[0].path,
+      query: {
+        mode: 'random',
+        questions: questions[0].id,
       },
     });
   });

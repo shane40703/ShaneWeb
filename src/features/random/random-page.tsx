@@ -4,7 +4,7 @@ import { IconSparkles } from '@tabler/icons-react';
 import { subjects, years } from '@/question-bank/catalog';
 import { analysisCategoryCatalog } from '@/question-bank/schema';
 import {
-  getAnalysisCategory,
+  getQuestionDisplayCategories,
   isSubjectId,
   pickRandomItems,
 } from '@/lib/study';
@@ -46,12 +46,9 @@ export function RandomPage({ questions }: { questions: QuestionSummary[] }) {
   );
   const categoryCounts = new Map<string, number>();
   rangeCandidates.forEach((question) => {
-    const category = getAnalysisCategory(
-      question.subject,
-      question.topic,
-      question.primaryCategory,
-    );
-    categoryCounts.set(category, (categoryCounts.get(category) ?? 0) + 1);
+    getQuestionDisplayCategories(question).forEach((category) => {
+      categoryCounts.set(category, (categoryCounts.get(category) ?? 0) + 1);
+    });
   });
   const availableCategories = [
     ...Object.keys(analysisCategoryCatalog[subjectId]).filter((category) =>
@@ -68,12 +65,7 @@ export function RandomPage({ questions }: { questions: QuestionSummary[] }) {
     category === 'all'
       ? rangeCandidates
       : rangeCandidates.filter(
-          (question) =>
-            getAnalysisCategory(
-              question.subject,
-              question.topic,
-              question.primaryCategory,
-            ) === category,
+          (question) => getQuestionDisplayCategories(question).includes(category),
         );
   const countOptions = [5, 10, 15, 20, 30].filter((count) => count <= candidates.length);
   if (candidates.length && !countOptions.length) {

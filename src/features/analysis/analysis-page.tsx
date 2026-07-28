@@ -18,6 +18,7 @@ import {
   getAnalysis,
   getAnalysisCategory,
   getLawAnalysis,
+  getQuestionDisplayCategories,
   isSubjectId,
   parseYear,
 } from '@/lib/study';
@@ -84,7 +85,7 @@ export function AnalysisPage({ questions }: { questions: QuestionSummary[] }) {
   const selectedCategoryQuestions = selectedCategory
     ? source.filter((question) =>
         subjectId === 'law'
-          ? question.relatedLaws?.includes(selectedCategory)
+          ? getQuestionDisplayCategories(question).includes(selectedCategory)
           : getAnalysisCategory(
               question.subject,
               question.topic,

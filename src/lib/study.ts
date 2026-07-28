@@ -248,10 +248,21 @@ export function formatCorrectAnswer(question: Pick<Question, 'answerKey'>) {
 export function getQuestionDisplayCategory(
   question: Pick<Question, 'subject' | 'topic' | 'primaryCategory' | 'relatedLaws'>,
 ) {
-  return (
-    question.relatedLaws?.[0] ??
-    getAnalysisCategory(question.subject, question.topic, question.primaryCategory)
-  );
+  return getQuestionDisplayCategories(question)[0];
+}
+
+export function getQuestionDisplayCategories(
+  question: Pick<Question, 'subject' | 'topic' | 'primaryCategory' | 'relatedLaws'>,
+) {
+  return question.relatedLaws?.length
+    ? [...new Set(question.relatedLaws)]
+    : [
+        getAnalysisCategory(
+          question.subject,
+          question.topic,
+          question.primaryCategory,
+        ),
+      ];
 }
 
 export function getAnalysisCategory(subject: SubjectId, topic: string, fallback: string) {
@@ -348,12 +359,22 @@ export function getAnalysis(source: readonly { primaryCategory: string }[]) {
     );
 }
 
-export function getLawAnalysis(source: readonly { relatedLaws?: readonly string[] }[]) {
+export function getLawAnalysis(
+  source: readonly {
+    primaryCategory?: string;
+    relatedLaws?: readonly string[];
+  }[],
+) {
   const counts = new Map<string, number>();
   let totalReferences = 0;
 
   source.forEach((question) => {
-    question.relatedLaws?.forEach((law) => {
+    const relatedLaws = question.relatedLaws?.length
+      ? question.relatedLaws
+      : question.primaryCategory
+        ? [question.primaryCategory]
+        : [];
+    relatedLaws.forEach((law) => {
       counts.set(law, (counts.get(law) ?? 0) + 1);
       totalReferences += 1;
     });

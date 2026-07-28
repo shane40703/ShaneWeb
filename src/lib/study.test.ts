@@ -9,6 +9,7 @@ import {
   getAnalysis,
   getAttemptScopeKey,
   getLawAnalysis,
+  getQuestionDisplayCategories,
   getQuestionDisplayCategory,
   getSubjectScoreConfig,
   isQuestionCorrect,
@@ -69,6 +70,17 @@ describe('question data', () => {
     expect(getQuestionDisplayCategory(publicSafetyQuestion!)).toBe(
       '建築物公共安全檢查簽證及申報辦法',
     );
+  });
+
+  it('keeps every related law as a display and filtering category', () => {
+    const categories = getQuestionDisplayCategories({
+      subject: 'law',
+      topic: '建築技術規則',
+      primaryCategory: '建築技術規則',
+      relatedLaws: ['建築法', '建築技術規則'],
+    });
+
+    expect(categories).toEqual(['建築法', '建築技術規則']);
   });
 
   it('classifies law question 74 as other without unrelated law statistics', () => {
@@ -308,7 +320,10 @@ describe('analysis', () => {
     const lawAnalysis = getLawAnalysis(source);
 
     expect(primaryAnalysis.reduce((sum, item) => sum + item.count, 0)).toBe(80);
-    expect(lawAnalysis.reduce((sum, item) => sum + item.count, 0)).toBe(82);
+    expect(lawAnalysis.reduce((sum, item) => sum + item.count, 0)).toBe(83);
+    expect(lawAnalysis).toContainEqual(
+      expect.objectContaining({ law: '其他', count: 1 }),
+    );
     expect(lawAnalysis.reduce((sum, item) => sum + item.percentage, 0)).toBeCloseTo(100);
   });
 });
