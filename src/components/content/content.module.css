@@ -85,13 +85,14 @@
 }
 
 .questionPromptText {
-  max-width: 920px;
+  max-width: none;
   margin: 0;
   white-space: pre-line;
-  font-size: clamp(16px, 1.1vw, 18px);
+  font-size: var(--question-font-size, 18px);
   font-weight: 400;
   line-height: 1.6;
   letter-spacing: 0;
+  text-wrap: pretty;
 }
 
 .questionPromptImage {
@@ -127,7 +128,7 @@
 }
 
 .questionPrompt[data-compact='true'] .questionPromptText {
-  font-size: clamp(16px, 1.1vw, 18px);
+  font-size: var(--question-font-size, 18px);
   font-weight: 400;
   line-height: 1.6;
 }

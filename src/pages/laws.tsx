@@ -8,6 +8,7 @@ export const getStaticProps: GetStaticProps<{ laws: LawDatabaseEntry[] }> = asyn
   (await getQuestionSummaries())
     .filter((question) => question.subject === 'law')
     .flatMap((question) => question.relatedLaws ?? [])
+    .filter((law) => law !== '???' && law !== '廢止')
     .forEach((law) => counts.set(law, (counts.get(law) ?? 0) + 1));
 
   return {
@@ -16,7 +17,7 @@ export const getStaticProps: GetStaticProps<{ laws: LawDatabaseEntry[] }> = asyn
         .map(([name, questionCount]) => ({
           name,
           questionCount,
-          linkable: name !== '???' && name !== '廢止',
+          linkable: true,
         }))
         .sort(
           (left, right) =>

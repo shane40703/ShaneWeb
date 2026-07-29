@@ -1,0 +1,17 @@
+.page { display: grid; gap: 20px; }
+.page > header, .controls, .preview { border: 1px solid var(--line); border-radius: 18px; background: var(--surface); box-shadow: var(--shadow-sm); }
+.page > header { padding: 24px; display: flex; align-items: flex-start; gap: 15px; }
+.page > header > svg { color: var(--primary); }
+.page header span, .preview > span { color: var(--primary-strong); font-size: 10px; font-weight: 850; letter-spacing: .1em; }
+.page h2 { margin: 3px 0; font-size: 24px; }
+.page header p { margin: 0; color: var(--muted); font-size: 13px; }
+.controls { padding: 22px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+.controls label { padding: 18px; display: grid; grid-template-columns: 1fr auto; gap: 12px; border-radius: 14px; background: var(--surface-2); }
+.controls label > span { font-size: 14px; font-weight: 800; }
+.controls label > strong { color: var(--primary-strong); }
+.controls input { grid-column: 1 / -1; width: 100%; accent-color: var(--primary); }
+.preview { padding: 24px; display: grid; gap: 14px; }
+.preview p { margin: 0; line-height: 1.65; text-wrap: pretty; }
+.preview ol { margin: 0; padding: 0; display: grid; gap: 9px; list-style: none; }
+.preview li { padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; }
+@media (max-width: 650px) { .controls { grid-template-columns: 1fr; } }

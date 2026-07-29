@@ -23,6 +23,10 @@ export function createDefaultState(): AppState {
     noteImages: {},
     discussionPosts: [],
     likedDiscussionPostIds: [],
+    readingPreferences: {
+      questionFontSize: 18,
+      optionFontSize: 18,
+    },
   };
 }
 
@@ -137,6 +141,16 @@ export function parseStoredState(raw: string | null): AppState {
   }
 
   const state = parsed as Record<string, unknown>;
+  const preferences =
+    state.readingPreferences &&
+    typeof state.readingPreferences === 'object' &&
+    !Array.isArray(state.readingPreferences)
+      ? (state.readingPreferences as Record<string, unknown>)
+      : {};
+  const validFontSize = (value: unknown) =>
+    typeof value === 'number' && [14, 16, 18, 20, 22, 24].includes(value)
+      ? value
+      : 18;
   return {
     answers: keepValidEntries(state.answers, isAnswerRecord),
     difficultQuestionIds: keepValidItems(state.difficultQuestionIds, isQuestionId),
@@ -149,6 +163,10 @@ export function parseStoredState(raw: string | null): AppState {
       (post) => ({ ...post, images: post.images ?? [] }),
     ),
     likedDiscussionPostIds: keepValidItems(state.likedDiscussionPostIds, isQuestionId),
+    readingPreferences: {
+      questionFontSize: validFontSize(preferences.questionFontSize),
+      optionFontSize: validFontSize(preferences.optionFontSize),
+    },
   };
 }
 

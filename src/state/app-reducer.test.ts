@@ -151,4 +151,46 @@ describe('appReducer', () => {
     expect(state.discussionPosts[0].likes).toBe(post.likes);
     expect(state.likedDiscussionPostIds).not.toContain(post.id);
   });
+
+  it('updates reading sizes and lets an administrator remove discussions', () => {
+    const post = {
+      id: 'post-admin',
+      questionId: 'law-114-01',
+      type: 'question' as const,
+      content: '待刪除',
+      images: [],
+      createdAt: '2026-01-01T00:00:00.000Z',
+      likes: 0,
+      replies: [
+        {
+          id: 'reply-admin',
+          content: '待刪除回覆',
+          createdAt: '2026-01-01T00:00:00.000Z',
+        },
+      ],
+      reported: false,
+    };
+    let state = appReducer(createDefaultState(), {
+      type: 'add-discussion-post',
+      post,
+    });
+    state = appReducer(state, {
+      type: 'set-reading-font-size',
+      target: 'question',
+      size: 22,
+    });
+    state = appReducer(state, {
+      type: 'delete-discussion-reply',
+      postId: post.id,
+      replyId: 'reply-admin',
+    });
+    expect(state.readingPreferences.questionFontSize).toBe(22);
+    expect(state.discussionPosts[0].replies).toEqual([]);
+
+    state = appReducer(state, {
+      type: 'delete-discussion-post',
+      postId: post.id,
+    });
+    expect(state.discussionPosts).toEqual([]);
+  });
 });

@@ -598,7 +598,9 @@ export function QuizPage({ question, paper }: StaticQuestionPageProps) {
                   </header>
                   <p>
                     你的答案：{String.fromCharCode(65 + selected)}
-                    <b>標準答案：{formatCorrectAnswer(question)}</b>
+                    <b className={styles.correctAnswer}>
+                      標準答案：{formatCorrectAnswer(question)}
+                    </b>
                   </p>
                   <div>
                     <span>詳解</span>

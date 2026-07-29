@@ -142,4 +142,8 @@ export interface AppState {
   noteImages: Record<QuestionId, ImageAttachment[]>;
   discussionPosts: DiscussionPost[];
   likedDiscussionPostIds: string[];
+  readingPreferences: {
+    questionFontSize: number;
+    optionFontSize: number;
+  };
 }

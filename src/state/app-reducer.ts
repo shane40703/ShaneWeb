@@ -27,7 +27,14 @@ export type AppAction =
   | { type: 'add-discussion-post'; post: DiscussionPost }
   | { type: 'like-discussion-post'; postId: string }
   | { type: 'report-discussion-post'; postId: string }
-  | { type: 'add-discussion-reply'; postId: string; reply: DiscussionReply };
+  | { type: 'add-discussion-reply'; postId: string; reply: DiscussionReply }
+  | { type: 'delete-discussion-post'; postId: string }
+  | { type: 'delete-discussion-reply'; postId: string; replyId: string }
+  | {
+      type: 'set-reading-font-size';
+      target: 'question' | 'option';
+      size: number;
+    };
 
 export function appReducer(state: AppState, action: AppAction): AppState {
   switch (action.type) {
@@ -118,6 +125,40 @@ export function appReducer(state: AppState, action: AppAction): AppState {
             ? { ...post, replies: [...post.replies, action.reply] }
             : post,
         ),
+      };
+    case 'delete-discussion-post':
+      return {
+        ...state,
+        discussionPosts: state.discussionPosts.filter(
+          (post) => post.id !== action.postId,
+        ),
+        likedDiscussionPostIds: state.likedDiscussionPostIds.filter(
+          (postId) => postId !== action.postId,
+        ),
+      };
+    case 'delete-discussion-reply':
+      return {
+        ...state,
+        discussionPosts: state.discussionPosts.map((post) =>
+          post.id === action.postId
+            ? {
+                ...post,
+                replies: post.replies.filter(
+                  (reply) => reply.id !== action.replyId,
+                ),
+              }
+            : post,
+        ),
+      };
+    case 'set-reading-font-size':
+      return {
+        ...state,
+        readingPreferences: {
+          ...state.readingPreferences,
+          [action.target === 'question'
+            ? 'questionFontSize'
+            : 'optionFontSize']: action.size,
+        },
       };
   }
 }

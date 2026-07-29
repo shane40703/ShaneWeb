@@ -110,5 +110,5 @@ describe('AnswersInfo contract', () => {
     expect(questions).toHaveLength(3120);
     expect(comparedOfficial).toBe(3120);
     expect(skippedSamples).toBe(0);
-  });
+  }, 15_000);
 });

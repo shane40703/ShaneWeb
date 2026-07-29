@@ -377,25 +377,6 @@ export function AnalysisPage({ questions }: { questions: QuestionSummary[] }) {
             </div>
           </section>
 
-          {year === 'all' ? (
-            <section className={styles.yearCard}>
-              <header><span>跨年度比較</span><strong>各年度收錄題數</strong></header>
-              <div className={styles.yearBars}>
-                {years.map((candidateYear) => {
-                  const count = source.filter((question) => question.year === candidateYear).length;
-                  const max = Math.max(...years.map((entryYear) => source.filter((question) => question.year === entryYear).length), 1);
-                  return (
-                    <div key={candidateYear}>
-                      <span>{candidateYear}</span>
-                      <i style={{ height: `${Math.max(5, (count / max) * 100)}%` }} />
-                      <strong>{count}</strong>
-                    </div>
-                  );
-                })}
-              </div>
-            </section>
-          ) : null}
-
         </>
       ) : (
         <section className={styles.tableCard}>

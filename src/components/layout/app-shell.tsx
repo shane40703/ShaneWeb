@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { useState } from 'react';
+import { type CSSProperties, useState } from 'react';
 import {
   IconAlertTriangle,
   IconBuildingSkyscraper,
@@ -13,6 +13,7 @@ import {
   IconMessages,
   IconNotebook,
   IconScale,
+  IconSettings,
   IconSparkles,
 } from '@tabler/icons-react';
 import { SideDrawer } from '@/components/ui/ui';
@@ -46,6 +47,7 @@ const navigation = [
   { href: '/notes', label: '使用者筆記', icon: IconNotebook },
   { href: '/difficult', label: '難題標記', icon: IconBulb },
   { href: '/history', label: '已作答紀錄', icon: IconHistory },
+  { href: '/settings', label: '閱讀設定', icon: IconSettings },
   { href: '/laws', label: '法規資料庫', icon: IconScale },
 ] as const;
 
@@ -111,6 +113,7 @@ function SidebarContent({
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
+  const { state } = useAppState();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const pathname = router.pathname;
   const currentPage = navigation.find((item) => isActive(pathname, item.href));
@@ -119,7 +122,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     : (currentPage?.label ?? '建築師考試');
 
   return (
-    <div className={styles.shell}>
+    <div
+      className={styles.shell}
+      style={
+        {
+          '--question-font-size': `${state.readingPreferences.questionFontSize}px`,
+          '--option-font-size': `${state.readingPreferences.optionFontSize}px`,
+        } as CSSProperties
+      }
+    >
       <aside className={styles.desktopSidebar}>
         <SidebarContent pathname={pathname} />
       </aside>

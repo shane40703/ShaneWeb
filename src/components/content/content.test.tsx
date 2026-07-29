@@ -1,5 +1,5 @@
-import { fireEvent, render, screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   QuestionCard,
   QuestionPrompt,
@@ -8,6 +8,8 @@ import {
 import { loadAllQuestions } from '@/server/question-bank.server';
 
 const questions = await loadAllQuestions();
+
+afterEach(cleanup);
 
 describe('question content renderer', () => {
   it('renders filename-ordered text before an accessible question image', () => {
@@ -53,6 +55,15 @@ describe('question content renderer', () => {
     expect(screen.getByRole('link', { name: /資料來源：考選部/ })).toHaveAttribute(
       'href',
       expect.stringContaining('s=0103&t=Q'),
+    );
+  });
+
+  it('uses the working 103 environment-control source paper', () => {
+    const question = questions.find((candidate) => candidate.id === 'env-103-01');
+    render(<QuestionSourceLine question={question!} />);
+    expect(screen.getByRole('link', { name: /資料來源：考選部/ })).toHaveAttribute(
+      'href',
+      expect.stringContaining('code=103170'),
     );
   });
 

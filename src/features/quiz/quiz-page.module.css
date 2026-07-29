@@ -11,7 +11,7 @@
   --quiz-border: var(--line);
   --quiz-fill: var(--neutral-fill);
   --quiz-secondary: var(--muted);
-  --quiz-reading-size: clamp(16px, 1.1vw, 18px);
+  --quiz-reading-size: var(--question-font-size, 18px);
   container-name: quiz-card;
   container-type: inline-size;
   min-width: 0;
@@ -28,14 +28,14 @@
 
 .quizLayout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 220px;
+  grid-template-columns: minmax(0, 1fr) 248px;
   align-items: start;
   gap: 16px;
 }
 
 .resultReviewLayout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 210px;
+  grid-template-columns: minmax(0, 1fr) 248px;
   align-items: start;
   gap: 20px;
 }
@@ -99,6 +99,11 @@
   overflow-y: auto;
 }
 
+.questionNumbers > div {
+  grid-template-columns: repeat(4, 38px);
+  justify-content: space-between;
+}
+
 .questionNumbers a {
   border-color: var(--control-line);
   border-radius: 8px;
@@ -124,6 +129,13 @@
   background: var(--primary-solid);
   color: var(--on-primary);
   box-shadow: none;
+}
+
+.questionNumbers a[data-wrong='true'],
+.questionNumbers a[data-wrong='true'][aria-current='step'] {
+  border-color: var(--danger);
+  background: var(--danger-soft);
+  color: var(--danger);
 }
 
 .navigatorLegend {
@@ -257,8 +269,7 @@
   letter-spacing: 0;
 }
 
-.questionContentColumn > div > p,
-.answerColumn :global([role='radiogroup']) > div > label {
+.questionContentColumn > div > p {
   font-size: var(--quiz-reading-size);
   font-weight: 400;
   line-height: 1.6;
@@ -266,8 +277,23 @@
 }
 
 .questionContentColumn > div > p {
-  max-width: 920px;
+  max-width: none;
   margin: 0;
+  text-wrap: pretty;
+}
+
+.answerColumn :global([role='radiogroup']) > div > label {
+  font-size: var(--option-font-size, 18px);
+  font-weight: 400;
+  line-height: 1.6;
+  letter-spacing: 0;
+}
+
+.correctAnswer {
+  margin-left: 18px;
+  color: var(--primary-strong);
+  font-size: 1.2em;
+  font-weight: 850;
 }
 
 .questionContentColumn > div > figure {
