@@ -38,7 +38,7 @@ function PersistenceWarning() {
   );
 }
 
-const navigation = [
+const primaryNavigation = [
   { href: '/', label: '首頁', icon: IconHome },
   { href: '/papers', label: '歷屆試題', icon: IconFileText },
   { href: '/random', label: '隨機出題', icon: IconSparkles },
@@ -47,9 +47,14 @@ const navigation = [
   { href: '/notes', label: '使用者筆記', icon: IconNotebook },
   { href: '/difficult', label: '難題標記', icon: IconBulb },
   { href: '/history', label: '已作答紀錄', icon: IconHistory },
-  { href: '/settings', label: '閱讀設定', icon: IconSettings },
   { href: '/laws', label: '法規資料庫', icon: IconScale },
 ] as const;
+
+const utilityNavigation = [
+  { href: '/settings', label: '閱讀設定', icon: IconSettings },
+] as const;
+
+const navigation = [...primaryNavigation, ...utilityNavigation] as const;
 
 function isActive(pathname: string, href: string) {
   return href === '/' ? pathname === '/' : pathname.startsWith(href);
@@ -78,22 +83,37 @@ function Navigation({
 }) {
   return (
     <nav className={styles.navigation} aria-label="主要功能">
-      {navigation.map((item) => (
-        <Link
-          key={item.href}
-          href={item.href}
-          onClick={onNavigate}
-          aria-current={isActive(pathname, item.href) ? 'page' : undefined}
-          className={styles.navItem}
-        >
-          <span className={styles.navSymbol} aria-hidden="true">
-            <item.icon size={20} stroke={1.9} />
-          </span>
-          <span className={styles.navLabel}>{item.label}</span>
-        </Link>
-      ))}
+      <NavigationGroup items={primaryNavigation} pathname={pathname} onNavigate={onNavigate} />
+      <div className={styles.utilityNavigation}>
+        <NavigationGroup items={utilityNavigation} pathname={pathname} onNavigate={onNavigate} />
+      </div>
     </nav>
   );
+}
+
+function NavigationGroup({
+  items,
+  pathname,
+  onNavigate,
+}: {
+  items: readonly (typeof navigation)[number][];
+  pathname: string;
+  onNavigate?: () => void;
+}) {
+  return items.map((item) => (
+    <Link
+      key={item.href}
+      href={item.href}
+      onClick={onNavigate}
+      aria-current={isActive(pathname, item.href) ? 'page' : undefined}
+      className={styles.navItem}
+    >
+      <span className={styles.navSymbol} aria-hidden="true">
+        <item.icon size={20} stroke={1.9} />
+      </span>
+      <span className={styles.navLabel}>{item.label}</span>
+    </Link>
+  ));
 }
 
 function SidebarContent({
