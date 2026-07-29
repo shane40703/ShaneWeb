@@ -134,6 +134,15 @@ export interface DiscussionPost {
   reported: boolean;
 }
 
+export interface ContentReport {
+  id: string;
+  pageUrl: string;
+  questionId: string;
+  category: '題目內容' | '答案' | '圖片' | '詳解' | '其他';
+  description: string;
+  createdAt: string;
+}
+
 export interface AppState {
   answers: Record<QuestionId, AnswerRecord>;
   difficultQuestionIds: QuestionId[];
@@ -146,4 +155,5 @@ export interface AppState {
     questionFontSize: number;
     optionFontSize: number;
   };
+  contentReports: ContentReport[];
 }

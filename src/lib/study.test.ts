@@ -92,13 +92,11 @@ describe('question data', () => {
     expect(getQuestionDisplayCategory(question!)).toBe('法律常識');
   });
 
-  it('includes available explanations in quiz review data', async () => {
+  it('does not expose removed placeholder explanations', async () => {
     const quizQuestions = await loadQuizQuestions('law');
-    const explainedQuestion = quizQuestions.find(
-      (question) => question.id === 'law-111-01',
-    );
-
-    expect(explainedQuestion?.explanation).toBeTruthy();
+    expect(
+      quizQuestions.some((question) => question.explanation),
+    ).toBe(false);
   });
 });
 

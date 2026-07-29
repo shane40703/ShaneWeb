@@ -8,6 +8,7 @@ import {
   IconChartPie,
   IconDeviceFloppy,
   IconFileText,
+  IconFlag,
   IconHistory,
   IconHome,
   IconMessages,
@@ -52,6 +53,7 @@ const primaryNavigation = [
 
 const utilityNavigation = [
   { href: '/settings', label: '閱讀設定', icon: IconSettings },
+  { href: '/report', label: '問題回報', icon: IconFlag },
 ] as const;
 
 const navigation = [...primaryNavigation, ...utilityNavigation] as const;

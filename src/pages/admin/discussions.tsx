@@ -51,6 +51,7 @@ export default function DiscussionAdminPage() {
             {error ? <p role="alert">{error}</p> : null}
           </section>
         ) : (
+          <>
           <section className={styles.posts}>
             <header><strong>{state.discussionPosts.length} 則留言</strong><Button onClick={() => setAuthorized(false)}>鎖定後台</Button></header>
             {state.discussionPosts.length ? state.discussionPosts.map((post) => (
@@ -72,6 +73,29 @@ export default function DiscussionAdminPage() {
               </article>
             )) : <p className={styles.empty}>目前瀏覽器沒有留言。</p>}
           </section>
+          <section className={styles.posts}>
+            <header><strong>{state.contentReports.length} 則問題回報</strong></header>
+            {state.contentReports.length ? state.contentReports.map((report) => (
+              <article key={report.id}>
+                <div>
+                  <span>{report.category}・{formatDateTime(report.createdAt)}</span>
+                  <p>{report.description}</p>
+                  <small>
+                    {report.questionId ? `題目：${report.questionId}` : '未指定題目'}
+                    {report.pageUrl ? `・頁面：${report.pageUrl}` : ''}
+                  </small>
+                </div>
+                <ConfirmDialog
+                  trigger={<Button variant="danger"><IconTrash size={16} aria-hidden="true" />刪除回報</Button>}
+                  title="刪除這則問題回報？"
+                  description="此操作會從目前瀏覽器永久移除回報。"
+                  confirmLabel="確認刪除"
+                  onConfirm={() => dispatch({ type: 'delete-content-report', reportId: report.id })}
+                />
+              </article>
+            )) : <p className={styles.empty}>目前瀏覽器沒有問題回報。</p>}
+          </section>
+          </>
         )}
       </section>
     </>

@@ -1,5 +1,6 @@
 import type {
   AppState,
+  ContentReport,
   DiscussionPost,
   DiscussionReply,
   ImageAttachment,
@@ -34,7 +35,9 @@ export type AppAction =
       type: 'set-reading-font-size';
       target: 'question' | 'option';
       size: number;
-    };
+    }
+  | { type: 'add-content-report'; report: ContentReport }
+  | { type: 'delete-content-report'; reportId: string };
 
 export function appReducer(state: AppState, action: AppAction): AppState {
   switch (action.type) {
@@ -159,6 +162,18 @@ export function appReducer(state: AppState, action: AppAction): AppState {
             ? 'questionFontSize'
             : 'optionFontSize']: action.size,
         },
+      };
+    case 'add-content-report':
+      return {
+        ...state,
+        contentReports: [action.report, ...state.contentReports],
+      };
+    case 'delete-content-report':
+      return {
+        ...state,
+        contentReports: state.contentReports.filter(
+          (report) => report.id !== action.reportId,
+        ),
       };
   }
 }

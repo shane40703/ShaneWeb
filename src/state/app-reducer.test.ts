@@ -193,4 +193,25 @@ describe('appReducer', () => {
     });
     expect(state.discussionPosts).toEqual([]);
   });
+
+  it('stores and removes content reports', () => {
+    const report = {
+      id: 'report-test',
+      pageUrl: '/questions/law/114/01',
+      questionId: 'law-114-01',
+      category: '答案' as const,
+      description: '答案疑似有誤',
+      createdAt: '2026-07-29T00:00:00.000Z',
+    };
+    let state = appReducer(createDefaultState(), {
+      type: 'add-content-report',
+      report,
+    });
+    expect(state.contentReports).toEqual([report]);
+    state = appReducer(state, {
+      type: 'delete-content-report',
+      reportId: report.id,
+    });
+    expect(state.contentReports).toEqual([]);
+  });
 });

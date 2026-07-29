@@ -4,6 +4,7 @@ import { analysisCategoryCatalog } from '@/question-bank/schema';
 import type {
   AnswerRecord,
   AppState,
+  ContentReport,
   DiscussionPost,
   ImageAttachment,
   Question,
@@ -27,6 +28,7 @@ export function createDefaultState(): AppState {
       questionFontSize: 18,
       optionFontSize: 18,
     },
+    contentReports: [],
   };
 }
 
@@ -123,6 +125,19 @@ function isImageAttachmentList(value: unknown): value is ImageAttachment[] {
   return Array.isArray(value) && value.every(isImageAttachment);
 }
 
+function isContentReport(value: unknown): value is ContentReport {
+  if (!value || typeof value !== 'object') return false;
+  const report = value as Partial<ContentReport>;
+  return (
+    typeof report.id === 'string' &&
+    typeof report.pageUrl === 'string' &&
+    typeof report.questionId === 'string' &&
+    ['題目內容', '答案', '圖片', '詳解', '其他'].includes(report.category ?? '') &&
+    typeof report.description === 'string' &&
+    typeof report.createdAt === 'string'
+  );
+}
+
 /**
  * Rebuilds the stored state entry by entry so a single corrupt record — an
  * attempt from an older schema, a truncated write — costs the user only that
@@ -167,6 +182,7 @@ export function parseStoredState(raw: string | null): AppState {
       questionFontSize: validFontSize(preferences.questionFontSize),
       optionFontSize: validFontSize(preferences.optionFontSize),
     },
+    contentReports: keepValidItems(state.contentReports, isContentReport),
   };
 }
 
