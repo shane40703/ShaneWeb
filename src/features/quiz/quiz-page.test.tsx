@@ -194,5 +194,14 @@ describe('QuizPage progress presentation', () => {
     expect(summary).toHaveTextContent('建築法');
     expect(summary).toHaveTextContent('第 43 題');
     expect(summary).toHaveTextContent('1 題');
+    expect(
+      screen.getByRole('tab', { name: /建築法/ }),
+    ).toHaveAttribute('aria-selected', 'true');
+    expect(
+      screen.getByRole('tabpanel', { name: '建築法錯題' }),
+    ).toHaveTextContent('第 43 題題幹');
+    expect(
+      screen.getByRole('region', { name: '第 43 題錯題選項' }),
+    ).toBeInTheDocument();
   });
 });
