@@ -1,6 +1,9 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { AttachmentGallery } from '@/components/image-attachments';
+import {
+  appendImageFiles,
+  AttachmentGallery,
+} from '@/components/image-attachments';
 
 const image = {
   id: 'image-1',
@@ -25,5 +28,38 @@ describe('AttachmentGallery', () => {
       screen.getAllByRole('button', { name: '關閉放大圖片' })[1],
     );
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+});
+
+describe('appendImageFiles', () => {
+  it('turns a pasted image file into a note attachment', async () => {
+    const result = await appendImageFiles(
+      [],
+      [new File(['image'], 'clipboard.png', { type: 'image/png' })],
+    );
+
+    expect(result.error).toBe('');
+    expect(result.images).toHaveLength(1);
+    expect(result.images[0]).toMatchObject({
+      name: 'clipboard.png',
+      type: 'image/png',
+    });
+    expect(result.images[0].dataUrl).toMatch(/^data:image\/png;base64,/);
+  });
+
+  it('keeps the four-image limit when pasting', async () => {
+    const images = Array.from({ length: 4 }, (_, index) => ({
+      id: `image-${index}`,
+      name: `${index}.png`,
+      type: 'image/png',
+      dataUrl: 'data:image/png;base64,dGVzdA==',
+    }));
+    const result = await appendImageFiles(
+      images,
+      [new File(['image'], 'extra.png', { type: 'image/png' })],
+    );
+
+    expect(result.images).toEqual(images);
+    expect(result.error).toContain('最多上傳 4 張');
   });
 });

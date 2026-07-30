@@ -9,7 +9,10 @@ import {
   IconX,
 } from '@tabler/icons-react';
 import { QuestionPrompt } from '@/components/content/content';
-import { ImageAttachments } from '@/components/image-attachments';
+import {
+  appendImageFiles,
+  ImageAttachments,
+} from '@/components/image-attachments';
 import { QuestionAnswerPanel } from '@/components/question-answer-panel';
 import { Button, useToast } from '@/components/ui/ui';
 import {
@@ -206,8 +209,24 @@ function ReviewNoteEditor({ question }: { question: ReviewQuestion }) {
         aria-label={`第 ${question.questionNumber} 題筆記內容`}
         value={content}
         onChange={(event) => setContent(event.target.value)}
+        onPaste={(event) => {
+          const files = [...event.clipboardData.files].filter((file) =>
+            file.type.startsWith('image/'),
+          );
+          if (!files.length) return;
+          event.preventDefault();
+          void appendImageFiles(images, files).then((result) => {
+            setImages(result.images);
+            notify(
+              result.images.length > images.length
+                ? '已貼上筆記圖片'
+                : '無法貼上圖片',
+              result.error || undefined,
+            );
+          });
+        }}
         rows={3}
-        placeholder="在檢討答案時記下法條、公式或易錯觀念…"
+        placeholder="在檢討答案時記下法條、公式或易錯觀念，也可以直接貼上截圖…"
       />
       <ImageAttachments
         images={images}

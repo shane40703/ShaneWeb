@@ -30,6 +30,40 @@ function readAsDataUrl(file: File) {
   });
 }
 
+export async function appendImageFiles(
+  images: ImageAttachment[],
+  files: readonly File[],
+) {
+  const available = MAX_IMAGES - images.length;
+  if (available <= 0) {
+    return {
+      images,
+      error: `每題最多上傳 ${MAX_IMAGES} 張圖片。`,
+    };
+  }
+
+  const accepted = files
+    .filter((file) => file.type.startsWith('image/'))
+    .filter((file) => file.size <= MAX_IMAGE_BYTES)
+    .slice(0, available);
+  const nextImages = await Promise.all(
+    accepted.map(async (file) => ({
+      id: attachmentId(),
+      name: file.name || `剪貼簿圖片-${Date.now()}.png`,
+      type: file.type,
+      dataUrl: await readAsDataUrl(file),
+    })),
+  );
+
+  return {
+    images: [...images, ...nextImages],
+    error:
+      accepted.length !== files.length
+        ? `僅接受 2 MB 以下圖片，每題最多 ${MAX_IMAGES} 張。`
+        : '',
+  };
+}
+
 export function ImageAttachments({
   images,
   onChange,
@@ -47,32 +81,9 @@ export function ImageAttachments({
     event.target.value = '';
     if (!files.length) return;
 
-    const available = MAX_IMAGES - images.length;
-    if (available <= 0) {
-      setError(`每題最多上傳 ${MAX_IMAGES} 張圖片。`);
-      return;
-    }
-
-    const accepted = files
-      .filter((file) => file.type.startsWith('image/'))
-      .filter((file) => file.size <= MAX_IMAGE_BYTES)
-      .slice(0, available);
-
-    if (accepted.length !== files.length) {
-      setError(`僅接受 2 MB 以下圖片，每題最多 ${MAX_IMAGES} 張。`);
-    } else {
-      setError('');
-    }
-
-    const nextImages = await Promise.all(
-      accepted.map(async (file) => ({
-        id: attachmentId(),
-        name: file.name,
-        type: file.type,
-        dataUrl: await readAsDataUrl(file),
-      })),
-    );
-    onChange([...images, ...nextImages]);
+    const result = await appendImageFiles(images, files);
+    setError(result.error);
+    onChange(result.images);
   }
 
   return (

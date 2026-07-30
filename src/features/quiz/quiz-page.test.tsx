@@ -1,5 +1,6 @@
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { ToastProvider } from '@/components/ui/ui';
 import { QuizPage } from '@/features/quiz/quiz-page';
 import type { Question, QuizQuestion } from '@/lib/types';
 
@@ -70,6 +71,9 @@ function quizQuestion(item: Question): QuizQuestion {
     subject: item.subject,
     year: item.year,
     questionNumber: item.questionNumber,
+    topic: item.topic,
+    primaryCategory: item.primaryCategory,
+    relatedLaws: item.relatedLaws,
     text: item.text,
     content: item.content,
     options: item.options,
@@ -88,6 +92,7 @@ afterEach(cleanup);
 describe('QuizPage progress presentation', () => {
   beforeEach(() => {
     window.localStorage.clear();
+    window.scrollTo = vi.fn();
     mocks.dispatch.mockReset();
     mocks.reportPersistence.mockReset();
     mocks.replace.mockReset();
@@ -152,5 +157,42 @@ describe('QuizPage progress presentation', () => {
 
     expect(screen.getAllByText('第 43 題')).toHaveLength(1);
     expect(screen.queryByText('第 1 / 1 題')).not.toBeInTheDocument();
+  });
+
+  it('shows answer feedback without the empty explanation panel', () => {
+    mocks.router.query = { mode: 'single' };
+
+    render(
+      <ToastProvider>
+        <QuizPage question={currentQuestion} paper={paper} />
+      </ToastProvider>,
+    );
+    fireEvent.click(screen.getByText('選項 B').closest('label')!);
+    fireEvent.click(screen.getByRole('button', { name: '對答案' }));
+
+    expect(screen.getByRole('status')).toHaveTextContent('答錯了');
+    expect(screen.getByRole('status')).not.toHaveTextContent('詳解');
+    expect(screen.getByRole('status')).not.toHaveTextContent('目前尚無詳解');
+  });
+
+  it('groups wrong answers by question category after submission', () => {
+    mocks.router.query = {
+      mode: 'random',
+      questions: currentQuestion.id,
+      quizSession: 'test-session',
+    };
+
+    render(
+      <ToastProvider>
+        <QuizPage question={currentQuestion} paper={paper} />
+      </ToastProvider>,
+    );
+    fireEvent.click(screen.getByText('選項 B').closest('label')!);
+    fireEvent.click(screen.getByRole('button', { name: '對答案' }));
+
+    const summary = screen.getByRole('region', { name: '錯題類型統計' });
+    expect(summary).toHaveTextContent('建築法');
+    expect(summary).toHaveTextContent('第 43 題');
+    expect(summary).toHaveTextContent('1 題');
   });
 });

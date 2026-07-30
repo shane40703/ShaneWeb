@@ -36,6 +36,7 @@ import {
   createAttempt,
   formatCorrectAnswer,
   formatDuration,
+  getQuestionDisplayCategory,
   getQuestionDisplayCategories,
   getSubjectScoreConfig,
   isQuestionCorrect,
@@ -388,6 +389,32 @@ export function QuizPage({ question, paper }: StaticQuestionPageProps) {
     const resultPercentage = resultMaximum
       ? Math.min(100, Math.max(0, (resultValue / resultMaximum) * 100))
       : 0;
+    const wrongCategoryMap = new Map<
+      string,
+      { count: number; questionNumbers: number[] }
+    >();
+    paperQuestions.forEach((item) => {
+      const selectedAnswer = attempt.answers[item.id];
+      if (
+        selectedAnswer === undefined ||
+        isQuestionCorrect(item, selectedAnswer)
+      ) {
+        return;
+      }
+      const category = getQuestionDisplayCategory(item);
+      const current = wrongCategoryMap.get(category) ?? {
+        count: 0,
+        questionNumbers: [],
+      };
+      current.count += 1;
+      current.questionNumbers.push(item.questionNumber);
+      wrongCategoryMap.set(category, current);
+    });
+    const wrongCategories = [...wrongCategoryMap.entries()].sort(
+      ([leftCategory, left], [rightCategory, right]) =>
+        right.count - left.count ||
+        leftCategory.localeCompare(rightCategory, 'zh-Hant'),
+    );
 
     return (
       <>
@@ -446,6 +473,31 @@ export function QuizPage({ question, paper }: StaticQuestionPageProps) {
             </div>
           </div>
         </section>
+        {wrongCategories.length ? (
+          <section
+            className={styles.wrongCategorySummary}
+            aria-label="錯題類型統計"
+          >
+            <header>
+              <div>
+                <span>WRONG ANSWER ANALYSIS</span>
+                <h2>錯題類型統計</h2>
+              </div>
+              <strong>{wrongCategories.length} 類</strong>
+            </header>
+            <div>
+              {wrongCategories.map(([category, summary]) => (
+                <article key={category}>
+                  <div>
+                    <strong>{category}</strong>
+                    <span>第 {summary.questionNumbers.join('、')} 題</span>
+                  </div>
+                  <b>{summary.count} 題</b>
+                </article>
+              ))}
+            </div>
+          </section>
+        ) : null}
         <div className={styles.resultReviewLayout}>
           <AttemptReview
             attempt={attempt}
@@ -602,15 +654,6 @@ export function QuizPage({ question, paper }: StaticQuestionPageProps) {
                       標準答案：{formatCorrectAnswer(question)}
                     </b>
                   </p>
-                  <div>
-                    <span>詳解</span>
-                    <p>
-                      {question.explanation?.trim() ||
-                        (question.answerKey.kind === 'all-credit'
-                          ? '本題一律給分。'
-                          : '目前尚無詳解。')}
-                    </p>
-                  </div>
                 </section>
               ) : null}
               {isRandomQuiz || isSingleQuestion ? (

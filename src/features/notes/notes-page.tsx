@@ -7,7 +7,10 @@ import {
   IconNotebook,
   IconTrash,
 } from '@tabler/icons-react';
-import { ImageAttachments } from '@/components/image-attachments';
+import {
+  appendImageFiles,
+  ImageAttachments,
+} from '@/components/image-attachments';
 import {
   EmptyState,
   QuestionPrompt,
@@ -351,8 +354,24 @@ function NoteEditor({
         onChange={(event) =>
           onChange({ content: event.target.value, images })
         }
+        onPaste={(event) => {
+          const files = [...event.clipboardData.files].filter((file) =>
+            file.type.startsWith('image/'),
+          );
+          if (!files.length) return;
+          event.preventDefault();
+          void appendImageFiles(images, files).then((result) => {
+            onChange({ content, images: result.images });
+            notify(
+              result.images.length > images.length
+                ? '已貼上筆記圖片'
+                : '無法貼上圖片',
+              result.error || undefined,
+            );
+          });
+        }}
         rows={12}
-        placeholder="記下法條、公式、易錯觀念或解題步驟…"
+        placeholder="記下法條、公式、易錯觀念或解題步驟，也可以直接貼上截圖…"
       />
       <ImageAttachments
         images={images}
