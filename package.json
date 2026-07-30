@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:sites": "opennextjs-cloudflare build && node scripts/stage-sites-build.mjs",
     "start": "next start",
     "lint": "eslint .",
     "import:113": "node scripts/import-113-question-bank.mjs",
@@ -23,6 +24,7 @@
     "sharp": "^0.35.3"
   },
   "devDependencies": {
+    "@opennextjs/cloudflare": "1.20.2",
     "@playwright/test": "1.61.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
@@ -34,7 +36,8 @@
     "eslint-config-next": "16.2.11",
     "jsdom": "^27.4.0",
     "typescript": "^5.9.3",
-    "vitest": "4.1.10"
+    "vitest": "4.1.10",
+    "wrangler": "4.115.0"
   },
   "overrides": {
     "next": {
