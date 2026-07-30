@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { QuestionPrompt } from '@/components/content/content';
 import { QuestionAnswerPanel } from '@/components/question-answer-panel';
 import {
+  formatDateTime,
   getQuestionDisplayCategory,
   isQuestionCorrect,
 } from '@/lib/study';
@@ -22,27 +23,72 @@ type AnalysisQuestion = Pick<
   | 'answerKey'
 >;
 
+interface AnalysisEntry {
+  id: string;
+  question: AnalysisQuestion;
+  selectedAnswer: number;
+  submittedAt: string;
+}
+
+type WrongCategoryAnalysisProps = {
+  questions: readonly AnalysisQuestion[];
+  title?: string;
+  eyebrow?: string;
+  ariaLabel?: string;
+} & (
+  | { attempt: QuizAttempt; attempts?: never }
+  | { attempt?: never; attempts: readonly QuizAttempt[] }
+);
+
+function formatQuestionReferences(entries: readonly AnalysisEntry[]) {
+  const counts = new Map<string, number>();
+  entries.forEach(({ question }) => {
+    const reference = `${question.year} 年第 ${question.questionNumber} 題`;
+    counts.set(reference, (counts.get(reference) ?? 0) + 1);
+  });
+  return [...counts.entries()]
+    .map(([reference, count]) =>
+      count > 1 ? `${reference}（${count} 次）` : reference,
+    )
+    .join('、');
+}
+
 export function WrongCategoryAnalysis({
   attempt,
+  attempts,
   questions,
-}: {
-  attempt: QuizAttempt;
-  questions: readonly AnalysisQuestion[];
-}) {
-  const categoryMap = new Map<string, AnalysisQuestion[]>();
-  questions.forEach((question) => {
-    const selectedAnswer = attempt.answers[question.id];
-    if (
-      selectedAnswer === undefined ||
-      isQuestionCorrect(question, selectedAnswer)
-    ) {
-      return;
-    }
-    const category = getQuestionDisplayCategory(question);
-    categoryMap.set(category, [
-      ...(categoryMap.get(category) ?? []),
-      question,
-    ]);
+  title = '錯題類型統計',
+  eyebrow = 'WRONG ANSWER ANALYSIS',
+  ariaLabel = '錯題類型統計',
+}: WrongCategoryAnalysisProps) {
+  const sourceAttempts = attempts ?? (attempt ? [attempt] : []);
+  const aggregate = attempts !== undefined;
+  const questionById = new Map(
+    questions.map((question) => [question.id, question]),
+  );
+  const categoryMap = new Map<string, AnalysisEntry[]>();
+  sourceAttempts.forEach((sourceAttempt) => {
+    sourceAttempt.questionIds.forEach((questionId) => {
+      const question = questionById.get(questionId);
+      const selectedAnswer = sourceAttempt.answers[questionId];
+      if (
+        !question ||
+        selectedAnswer === undefined ||
+        isQuestionCorrect(question, selectedAnswer)
+      ) {
+        return;
+      }
+      const category = getQuestionDisplayCategory(question);
+      categoryMap.set(category, [
+        ...(categoryMap.get(category) ?? []),
+        {
+          id: `${sourceAttempt.id}:${question.id}`,
+          question,
+          selectedAnswer,
+          submittedAt: sourceAttempt.submittedAt,
+        },
+      ]);
+    });
   });
   const categories = [...categoryMap.entries()].sort(
     ([leftCategory, left], [rightCategory, right]) =>
@@ -58,20 +104,33 @@ export function WrongCategoryAnalysis({
   const selectedQuestions = selectedCategory
     ? categoryMap.get(selectedCategory) ?? []
     : [];
+  const wrongAnswerCount = categories.reduce(
+    (total, [, entries]) => total + entries.length,
+    0,
+  );
+  const yearCount = new Set(
+    categories.flatMap(([, entries]) =>
+      entries.map(({ question }) => question.year),
+    ),
+  ).size;
 
   if (!categories.length) return null;
 
   return (
-    <section className={styles.summary} aria-label="錯題類型統計">
+    <section className={styles.summary} aria-label={ariaLabel}>
       <header>
         <div>
-          <span>WRONG ANSWER ANALYSIS</span>
-          <h2>錯題類型統計</h2>
+          <span>{eyebrow}</span>
+          <h2>{title}</h2>
         </div>
-        <strong>{categories.length} 類</strong>
+        <strong>
+          {aggregate
+            ? `${yearCount} 個年度・${wrongAnswerCount} 次答錯`
+            : `${categories.length} 類`}
+        </strong>
       </header>
       <div className={styles.tabs} role="tablist">
-        {categories.map(([category, categoryQuestions]) => (
+        {categories.map(([category, entries]) => (
           <button
             type="button"
             role="tab"
@@ -81,16 +140,11 @@ export function WrongCategoryAnalysis({
           >
             <span>
               <strong>{category}</strong>
-              <small>
-                {categoryQuestions
-                  .map(
-                    (question) =>
-                      `${question.year} 年第 ${question.questionNumber} 題`,
-                  )
-                  .join('、')}
-              </small>
+              <small>{formatQuestionReferences(entries)}</small>
             </span>
-            <b>{categoryQuestions.length} 題</b>
+            <b>
+              {entries.length} {aggregate ? '次' : '題'}
+            </b>
           </button>
         ))}
       </div>
@@ -101,26 +155,29 @@ export function WrongCategoryAnalysis({
       >
         <header>
           <h3>{selectedCategory}</h3>
-          <span>共 {selectedQuestions.length} 題</span>
+          <span>
+            共 {selectedQuestions.length} {aggregate ? '次答錯' : '題'}
+          </span>
         </header>
         <div>
-          {selectedQuestions.map((question) => (
-            <article key={question.id}>
+          {selectedQuestions.map((entry) => (
+            <article key={entry.id}>
               <header>
                 <strong>
-                  {question.year} 年・第 {question.questionNumber} 題
+                  {entry.question.year} 年・第 {entry.question.questionNumber} 題
+                  {aggregate ? `・${formatDateTime(entry.submittedAt)}` : ''}
                 </strong>
                 <span>
                   你的答案：
-                  {String.fromCharCode(65 + attempt.answers[question.id])}
+                  {String.fromCharCode(65 + entry.selectedAnswer)}
                 </span>
               </header>
-              <QuestionPrompt question={question} compact />
+              <QuestionPrompt question={entry.question} compact />
               <QuestionAnswerPanel
-                question={question}
+                question={entry.question}
                 heading={null}
-                ariaLabel={`第 ${question.questionNumber} 題錯題選項`}
-                selectedIndex={attempt.answers[question.id]}
+                ariaLabel={`第 ${entry.question.questionNumber} 題錯題選項`}
+                selectedIndex={entry.selectedAnswer}
                 showStatusLabels
               />
             </article>

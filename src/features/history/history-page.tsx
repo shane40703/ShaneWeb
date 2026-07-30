@@ -121,6 +121,15 @@ export function HistoryPage({
           </div>
         </section>
       ) : null}
+      {hydrated && filteredAttempts.length ? (
+        <WrongCategoryAnalysis
+          attempts={filteredAttempts}
+          questions={questions}
+          title="跨年度錯題分析"
+          eyebrow="CROSS-YEAR WRONG ANSWER ANALYSIS"
+          ariaLabel="跨年度錯題分析"
+        />
+      ) : null}
       <section className={styles.panel}>
         {!hydrated ? (
           <EmptyState icon={IconLoader2} title="正在讀取紀錄" description="請稍候。" />

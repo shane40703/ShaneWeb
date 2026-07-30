@@ -57,8 +57,9 @@ function acceptedAnswer(question: (typeof paperQuestions)[number]) {
 
 function wrongAnswer(question: (typeof questions)[number]) {
   if (question.answerKey.kind !== 'accepted') return 0;
+  const acceptedOptions = question.answerKey.options;
   return question.options.findIndex(
-    (_, index) => !question.answerKey.options.includes(index),
+    (_, index) => !acceptedOptions.includes(index),
   );
 }
 
@@ -278,22 +279,21 @@ describe('HistoryPage', () => {
     expect(retry).toHaveBeenCalledWith('env');
   });
 
-  it('shows a cross-year wrong-category analysis inside a saved attempt', async () => {
+  it('aggregates wrong answers from saved paper attempts across years', async () => {
     expect(crossYearQuestions).toHaveLength(2);
-    const attempt = createAttempt({
-      mode: 'random',
-      source: crossYearQuestions,
-      answers: Object.fromEntries(
-        crossYearQuestions.map((question) => [
-          question.id,
-          wrongAnswer(question),
-        ]),
-      ),
-      startedAt: '2026-07-25T00:00:00.000Z',
-      elapsedSeconds: 60,
-    });
+    const attempts = crossYearQuestions.map((question, index) => ({
+      ...createAttempt({
+        mode: 'paper',
+        source: [question],
+        answers: { [question.id]: wrongAnswer(question) },
+        startedAt: `2026-07-${24 + index}T00:00:00.000Z`,
+        elapsedSeconds: 30,
+      }),
+      id: `cross-year-attempt-${index}`,
+      submittedAt: `2026-07-${25 + index}T00:00:00.000Z`,
+    }));
     const state = createDefaultState();
-    state.attempts = [attempt];
+    state.attempts = attempts;
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 
     render(
@@ -305,15 +305,19 @@ describe('HistoryPage', () => {
     );
 
     const analysis = await screen.findByRole('region', {
-      name: '錯題類型統計',
+      name: '跨年度錯題分析',
     });
     expect(analysis).toHaveTextContent(`${crossYearQuestions[0].year} 年`);
     expect(analysis).toHaveTextContent(`${crossYearQuestions[1].year} 年`);
+    expect(analysis).toHaveTextContent('2 個年度・2 次答錯');
     expect(
       within(analysis).getByRole('tabpanel'),
     ).toHaveTextContent(crossYearQuestions[0].text);
     expect(
       within(analysis).getAllByRole('region', { name: /錯題選項/ }),
+    ).toHaveLength(2);
+    expect(
+      screen.getAllByRole('region', { name: '錯題類型統計' }),
     ).toHaveLength(2);
   });
 
