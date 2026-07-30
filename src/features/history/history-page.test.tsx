@@ -304,6 +304,12 @@ describe('HistoryPage', () => {
       </ToastProvider>,
     );
 
+    expect(
+      screen.queryByRole('region', { name: '跨年度錯題分析' }),
+    ).not.toBeInTheDocument();
+    fireEvent.click(
+      await screen.findByRole('tab', { name: '跨年度錯題分析' }),
+    );
     const analysis = await screen.findByRole('region', {
       name: '跨年度錯題分析',
     });
@@ -316,9 +322,73 @@ describe('HistoryPage', () => {
     expect(
       within(analysis).getAllByRole('region', { name: /錯題選項/ }),
     ).toHaveLength(2);
+
+    fireEvent.click(
+      screen.getByRole('tab', { name: '每次作答紀錄' }),
+    );
+    expect(
+      screen.queryByRole('region', { name: '跨年度錯題分析' }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('region', { name: '錯題類型統計' }),
+    ).not.toBeInTheDocument();
+    const firstAttemptGroup = screen
+      .getByRole('heading', {
+        name: `建築環境控制・${crossYearQuestions[0].year} 年`,
+      })
+      .closest('article');
+    expect(firstAttemptGroup).not.toBeNull();
+    fireEvent.click(
+      within(firstAttemptGroup!).getByRole('button', {
+        name: '錯題統計結果',
+      }),
+    );
     expect(
       screen.getAllByRole('region', { name: '錯題類型統計' }),
-    ).toHaveLength(2);
+    ).toHaveLength(1);
+    expect(
+      within(firstAttemptGroup!).getByRole('tabpanel', {
+        name: '錯題統計結果',
+      }),
+    ).toHaveTextContent(crossYearQuestions[0].text);
+  });
+
+  it('marks a cross-record analysis as partial while another wrong answer loads', async () => {
+    const loadedQuestion = paperQuestions[0];
+    const loadingQuestion = environmentQuestions[0];
+    const state = createDefaultState();
+    state.attempts = [loadedQuestion, loadingQuestion].map((question, index) => ({
+      ...createAttempt({
+        mode: 'paper',
+        source: [question],
+        answers: { [question.id]: wrongAnswer(question) },
+        startedAt: `2026-07-${24 + index}T00:00:00.000Z`,
+        elapsedSeconds: 30,
+      }),
+      id: `partial-attempt-${index}`,
+    }));
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+
+    render(
+      <ToastProvider>
+        <AppStateProvider>
+          <HistoryPage
+            questions={[loadedQuestion]}
+            questionBankStatuses={{ law: 'ready', env: 'loading' }}
+          />
+        </AppStateProvider>
+      </ToastProvider>,
+    );
+
+    fireEvent.click(
+      await screen.findByRole('tab', { name: '跨年度錯題分析' }),
+    );
+    expect(
+      await screen.findByRole('region', { name: '跨年度錯題分析' }),
+    ).toHaveTextContent(loadedQuestion.text);
+    expect(screen.getByRole('status')).toHaveTextContent(
+      '尚有 1 次答錯內容載入中',
+    );
   });
 
   it('shows each missing subject bank own loading or error state', async () => {

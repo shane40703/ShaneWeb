@@ -2,6 +2,28 @@
   min-height: 430px;
 }
 
+.historyViewTabs {
+  margin-bottom: 14px;
+}
+
+.crossYearPanel {
+  min-height: 430px;
+}
+
+.crossYearPanel > section:first-child {
+  margin-top: 0;
+}
+
+.analysisNotice {
+  margin: 12px 0 0;
+  padding: 11px 13px;
+  border: 1px solid color-mix(in srgb, var(--warning) 36%, var(--line));
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--warning) 10%, var(--surface));
+  color: var(--text-soft);
+  font-size: 12px;
+}
+
 .subjectFilters {
   margin-bottom: 18px;
   padding: 14px 16px;
@@ -167,7 +189,8 @@
   flex-wrap: wrap;
 }
 
-.stats span {
+.stats > span,
+.wrongStat {
   min-height: 35px;
   padding: 0 11px;
   display: inline-flex;
@@ -179,8 +202,76 @@
   font-size: 11px;
 }
 
+.wrongStat {
+  padding-block: 7px;
+  align-items: flex-start;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+}
+
+.wrongStat > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.wrongStat button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--danger);
+  font: inherit;
+  font-size: 10px;
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.wrongStat button:hover {
+  color: color-mix(in srgb, var(--danger) 75%, var(--text));
+}
+
+.wrongStat button:focus-visible,
+.attemptReviewTrigger:focus-visible {
+  border-radius: 4px;
+  outline: 3px solid color-mix(in srgb, var(--primary) 24%, transparent);
+  outline-offset: 3px;
+}
+
 .stats strong {
   color: var(--text);
+}
+
+.attemptReviewTrigger {
+  margin-bottom: 16px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--primary-strong);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.attemptResultPanel {
+  margin-bottom: 16px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-2);
+}
+
+.attemptResultContent {
+  margin-top: 12px;
+}
+
+.attemptResultContent > section:first-child {
+  margin-top: 0;
 }
 
 .attemptReview {

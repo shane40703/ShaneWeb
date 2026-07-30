@@ -190,6 +190,16 @@ describe('QuizPage progress presentation', () => {
     fireEvent.click(screen.getByText('選項 B').closest('label')!);
     fireEvent.click(screen.getByRole('button', { name: '對答案' }));
 
+    expect(
+      screen.queryByRole('region', { name: '錯題類型統計' }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole('region', { name: '完整作答紀錄' }),
+    ).toBeInTheDocument();
+    fireEvent.click(
+      screen.getByRole('button', { name: '錯題統計結果' }),
+    );
+
     const summary = screen.getByRole('region', { name: '錯題類型統計' });
     expect(summary).toHaveTextContent('建築法');
     expect(summary).toHaveTextContent('第 43 題');
@@ -202,6 +212,45 @@ describe('QuizPage progress presentation', () => {
     ).toHaveTextContent('第 43 題題幹');
     expect(
       screen.getByRole('region', { name: '第 43 題錯題選項' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole('region', { name: '完整作答紀錄' }),
+    ).not.toBeInTheDocument();
+
+    fireEvent.click(
+      screen.getByRole('tab', { name: '逐題作答結果' }),
+    );
+    expect(
+      screen.getByRole('region', { name: '完整作答紀錄' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole('region', { name: '錯題類型統計' }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('does not offer an empty wrong-answer view after a perfect result', () => {
+    mocks.router.query = {
+      mode: 'random',
+      questions: currentQuestion.id,
+      quizSession: 'test-session',
+    };
+
+    render(
+      <ToastProvider>
+        <QuizPage question={currentQuestion} paper={paper} />
+      </ToastProvider>,
+    );
+    fireEvent.click(screen.getByText('選項 A').closest('label')!);
+    fireEvent.click(screen.getByRole('button', { name: '對答案' }));
+
+    expect(
+      screen.queryByRole('button', { name: '錯題統計結果' }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('tablist', { name: '作答結果分頁' }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole('region', { name: '完整作答紀錄' }),
     ).toBeInTheDocument();
   });
 });

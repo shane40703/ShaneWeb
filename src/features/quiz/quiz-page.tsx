@@ -28,6 +28,10 @@ import {
   QuestionNumberButton,
   QuestionNumberGrid,
 } from '@/components/question-number-button';
+import {
+  ResultViewTabs,
+  type ResultView,
+} from '@/components/result-view-tabs';
 import { Button, OptionGroup } from '@/components/ui/ui';
 import { WrongCategoryAnalysis } from '@/components/wrong-category-analysis';
 import { getSubject } from '@/question-bank/catalog';
@@ -98,8 +102,10 @@ export function QuizPage({ question, paper }: StaticQuestionPageProps) {
     progress: EMPTY_PROGRESS,
   });
   const [attempt, setAttempt] = useState<QuizAttempt | null>(null);
+  const [resultView, setResultView] = useState<ResultView>('review');
   const [checkedSingleQuestionId, setCheckedSingleQuestionId] =
     useState<string | null>(null);
+  const resultViewRef = useRef<HTMLDivElement | null>(null);
   const routeHydrated = useClientReady();
   const pendingRandomSessionId = useRef<string | null>(null);
   const subject = getSubject(question.subject);
@@ -324,6 +330,16 @@ export function QuizPage({ question, paper }: StaticQuestionPageProps) {
     });
   }
 
+  function showResultView(view: ResultView, scrollToView = false) {
+    setResultView(view);
+    if (scrollToView) {
+      resultViewRef.current?.scrollIntoView?.({
+        behavior: 'smooth',
+        block: 'start',
+      });
+    }
+  }
+
   function submitQuiz() {
     if (attempt) return;
 
@@ -364,6 +380,7 @@ export function QuizPage({ question, paper }: StaticQuestionPageProps) {
       type: 'clear-questions',
       questionIds: paperQuestions.map((item) => item.id),
     });
+    setResultView('review');
     setAttempt(nextAttempt);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -434,6 +451,15 @@ export function QuizPage({ question, paper }: StaticQuestionPageProps) {
               <div data-tone="danger">
                 <strong>{attempt.wrongCount}</strong>
                 <span>答錯</span>
+                {attempt.wrongCount ? (
+                  <button
+                    type="button"
+                    className={styles.resultStatAction}
+                    onClick={() => showResultView('wrong-analysis', true)}
+                  >
+                    錯題統計結果
+                  </button>
+                ) : null}
               </div>
               <div>
                 <strong>{attempt.unansweredCount}</strong>
@@ -446,62 +472,99 @@ export function QuizPage({ question, paper }: StaticQuestionPageProps) {
             </div>
           </div>
         </section>
-        <WrongCategoryAnalysis attempt={attempt} questions={paperQuestions} />
-        <div className={styles.resultReviewLayout}>
-          <AttemptReview
-            attempt={attempt}
-            questions={paperQuestions}
-            anchorPrefix="result-question"
-          />
-          <aside className={styles.questionNavigator} aria-label="作答結果題號導覽">
-            <header>
-              <div>
-                <span>RESULT MAP</span>
-                <h2>題號導覽</h2>
-              </div>
-              <strong>
-                {attempt.correctCount}/{paperQuestions.length}
-              </strong>
-            </header>
-            <div className={styles.questionNumbers}>
-              <QuestionNumberGrid>
-                {paperQuestions.map((item) => {
-                  const itemDifficult = state.difficultQuestionIds.includes(item.id);
-                  const itemSelected = attempt.answers[item.id];
-                  const itemWrong =
-                    itemSelected !== undefined && !isQuestionCorrect(item, itemSelected);
-
-                  return (
-                    <QuestionNumberButton
-                      key={item.id}
-                      href={`#result-question-${item.id}`}
-                      ariaLabel={`查看第 ${item.questionNumber} 題結果`}
-                      active={false}
-                      answered={itemSelected !== undefined}
-                      difficult={itemDifficult}
-                      wrong={itemWrong}
-                    >
-                      {item.questionNumber}
-                    </QuestionNumberButton>
-                  );
-                })}
-              </QuestionNumberGrid>
+        <div className={styles.resultView} ref={resultViewRef}>
+          {attempt.wrongCount ? (
+            <ResultViewTabs
+              value={resultView}
+              onValueChange={showResultView}
+              idPrefix="quiz-result"
+              ariaLabel="作答結果分頁"
+            />
+          ) : null}
+          {resultView === 'wrong-analysis' && attempt.wrongCount ? (
+            <div
+              className={styles.resultViewPanel}
+              id="quiz-result-wrong-analysis-panel"
+              role="tabpanel"
+              aria-labelledby="quiz-result-wrong-analysis-tab"
+            >
+              <WrongCategoryAnalysis
+                attempt={attempt}
+                questions={paperQuestions}
+              />
             </div>
-            <footer className={styles.navigatorLegend}>
-              <span>
-                <i data-tone="wrong" />
-                答錯
-              </span>
-              <span>
-                <i data-tone="difficult" />
-                難題
-              </span>
-              <span>
-                <i data-tone="combined" />
-                答錯＋難題
-              </span>
-            </footer>
-          </aside>
+          ) : (
+            <div
+              className={styles.resultViewPanel}
+              id="quiz-result-review-panel"
+              role={attempt.wrongCount ? 'tabpanel' : undefined}
+              aria-labelledby={
+                attempt.wrongCount ? 'quiz-result-review-tab' : undefined
+              }
+            >
+              <div className={styles.resultReviewLayout}>
+                <AttemptReview
+                  attempt={attempt}
+                  questions={paperQuestions}
+                  anchorPrefix="result-question"
+                />
+                <aside
+                  className={styles.questionNavigator}
+                  aria-label="作答結果題號導覽"
+                >
+                  <header>
+                    <div>
+                      <span>RESULT MAP</span>
+                      <h2>題號導覽</h2>
+                    </div>
+                    <strong>
+                      {attempt.correctCount}/{paperQuestions.length}
+                    </strong>
+                  </header>
+                  <div className={styles.questionNumbers}>
+                    <QuestionNumberGrid>
+                      {paperQuestions.map((item) => {
+                        const itemDifficult =
+                          state.difficultQuestionIds.includes(item.id);
+                        const itemSelected = attempt.answers[item.id];
+                        const itemWrong =
+                          itemSelected !== undefined &&
+                          !isQuestionCorrect(item, itemSelected);
+
+                        return (
+                          <QuestionNumberButton
+                            key={item.id}
+                            href={`#result-question-${item.id}`}
+                            ariaLabel={`查看第 ${item.questionNumber} 題結果`}
+                            active={false}
+                            answered={itemSelected !== undefined}
+                            difficult={itemDifficult}
+                            wrong={itemWrong}
+                          >
+                            {item.questionNumber}
+                          </QuestionNumberButton>
+                        );
+                      })}
+                    </QuestionNumberGrid>
+                  </div>
+                  <footer className={styles.navigatorLegend}>
+                    <span>
+                      <i data-tone="wrong" />
+                      答錯
+                    </span>
+                    <span>
+                      <i data-tone="difficult" />
+                      難題
+                    </span>
+                    <span>
+                      <i data-tone="combined" />
+                      答錯＋難題
+                    </span>
+                  </footer>
+                </aside>
+              </div>
+            </div>
+          )}
         </div>
       </>
     );

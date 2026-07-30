@@ -7,6 +7,10 @@ import {
 } from '@tabler/icons-react';
 import { AttemptReview } from '@/components/attempt-review';
 import { EmptyState, Tag } from '@/components/content/content';
+import {
+  ResultViewTabs,
+  type ResultView,
+} from '@/components/result-view-tabs';
 import { Button, ConfirmDialog, useToast } from '@/components/ui/ui';
 import { WrongCategoryAnalysis } from '@/components/wrong-category-analysis';
 import { getSubject, subjects } from '@/question-bank/catalog';
@@ -18,6 +22,7 @@ import {
   formatDuration,
   getAttemptScopeKey,
   getSubjectScoreConfig,
+  isQuestionCorrect,
 } from '@/lib/study';
 import type { Question, QuizAttempt, SubjectId } from '@/lib/types';
 import { useAppState } from '@/state/app-state';
@@ -63,6 +68,10 @@ export function HistoryPage({
   const { state, dispatch, hydrated } = useAppState();
   const { notify } = useToast();
   const [subjectFilter, setSubjectFilter] = useState<'all' | 'mixed' | SubjectId>('all');
+  const [historyView, setHistoryView] = useState<ResultView>('review');
+  const [attemptViews, setAttemptViews] = useState<
+    Record<string, ResultView | undefined>
+  >({});
   const filteredAttempts =
     subjectFilter === 'all'
       ? state.attempts
@@ -71,10 +80,59 @@ export function HistoryPage({
   const mixedCount = state.attempts.filter(
     (attempt) => attempt.subject === 'mixed',
   ).length;
+  const filteredWrongCount = filteredAttempts.reduce(
+    (total, attempt) => total + attempt.wrongCount,
+    0,
+  );
+  const filteredQuestionIds = new Set(
+    filteredAttempts.flatMap((attempt) => attempt.questionIds),
+  );
+  const questionById = new Map(
+    questions.map((question) => [question.id, question]),
+  );
+  const loadedWrongCount = filteredAttempts.reduce(
+    (total, attempt) =>
+      total +
+      attempt.questionIds.filter((questionId) => {
+        const question = questionById.get(questionId);
+        const selectedAnswer = attempt.answers[questionId];
+        return (
+          question &&
+          selectedAnswer !== undefined &&
+          !isQuestionCorrect(question, selectedAnswer)
+        );
+      }).length,
+    0,
+  );
+  const unresolvedWrongCount = Math.max(
+    0,
+    filteredWrongCount - loadedWrongCount,
+  );
+  const filteredQuestionStatuses = [
+    ...new Set(
+      [...filteredQuestionIds].flatMap((questionId) => {
+        const parsed = parseQuestionId(questionId);
+        return parsed ? [questionBankStatuses[parsed.subject]] : [];
+      }),
+    ),
+  ];
 
   function deleteAttempt(attemptId: string) {
     dispatch({ type: 'delete-attempt', attemptId });
     notify('已清除這次作答紀錄');
+  }
+
+  function selectAttemptView(attemptId: string, view: ResultView) {
+    setAttemptViews((current) => ({ ...current, [attemptId]: view }));
+  }
+
+  function toggleAttemptView(attemptId: string, view: ResultView) {
+    setAttemptViews((current) => {
+      const next = { ...current };
+      if (current[attemptId] === view) delete next[attemptId];
+      else next[attemptId] = view;
+      return next;
+    });
   }
 
   return (
@@ -122,20 +180,86 @@ export function HistoryPage({
         </section>
       ) : null}
       {hydrated && filteredAttempts.length ? (
-        <WrongCategoryAnalysis
-          attempts={filteredAttempts}
-          questions={questions}
-          title="跨年度錯題分析"
-          eyebrow="CROSS-YEAR WRONG ANSWER ANALYSIS"
-          ariaLabel="跨年度錯題分析"
-        />
+        <div className={styles.historyViewTabs}>
+          <ResultViewTabs
+            value={historyView}
+            onValueChange={setHistoryView}
+            idPrefix="history"
+            ariaLabel="已作答紀錄分頁"
+            reviewLabel="每次作答紀錄"
+            analysisLabel="跨年度錯題分析"
+          />
+        </div>
       ) : null}
-      <section className={styles.panel}>
-        {!hydrated ? (
-          <EmptyState icon={IconLoader2} title="正在讀取紀錄" description="請稍候。" />
-        ) : groups.length ? (
-          <div className={styles.list}>
-            {groups.map(({ key, entries, ordinalById }) => {
+      {hydrated &&
+      filteredAttempts.length &&
+      historyView === 'wrong-analysis' ? (
+        <section
+          className={styles.crossYearPanel}
+          id="history-wrong-analysis-panel"
+          role="tabpanel"
+          aria-labelledby="history-wrong-analysis-tab"
+        >
+          {loadedWrongCount ? (
+            <>
+              <WrongCategoryAnalysis
+                attempts={filteredAttempts}
+                questions={questions}
+                title="跨年度錯題分析"
+                eyebrow="CROSS-YEAR WRONG ANSWER ANALYSIS"
+                ariaLabel="跨年度錯題分析"
+              />
+              {unresolvedWrongCount ? (
+                <p className={styles.analysisNotice} role="status">
+                  {filteredQuestionStatuses.includes('loading')
+                    ? `尚有 ${unresolvedWrongCount} 次答錯內容載入中，以下先顯示已載入的分析。`
+                    : filteredQuestionStatuses.includes('error')
+                      ? `尚有 ${unresolvedWrongCount} 次答錯內容暫時無法顯示，以下先顯示可用的分析。`
+                      : `尚有 ${unresolvedWrongCount} 次答錯內容未能依目前題庫完整還原。`}
+                </p>
+              ) : null}
+            </>
+          ) : filteredWrongCount &&
+            filteredQuestionStatuses.includes('loading') ? (
+            <EmptyState
+              icon={IconLoader2}
+              title="正在載入跨年度錯題"
+              description="題目載入完成後，就能依分類查看歷次答錯紀錄。"
+            />
+          ) : filteredWrongCount ? (
+            <EmptyState
+              icon={IconHistory}
+              title="錯題內容暫時無法顯示"
+              description="作答次數與分數仍會保留，請確認連線後再試一次。"
+            />
+          ) : (
+            <EmptyState
+              icon={IconHistory}
+              title="目前沒有跨年度錯題"
+              description="完成其他年度試卷後，這裡會彙整每次答錯的分類與題目。"
+            />
+          )}
+        </section>
+      ) : (
+        <section
+          className={styles.panel}
+          id="history-review-panel"
+          role={hydrated && filteredAttempts.length ? 'tabpanel' : undefined}
+          aria-labelledby={
+            hydrated && filteredAttempts.length
+              ? 'history-review-tab'
+              : undefined
+          }
+        >
+          {!hydrated ? (
+            <EmptyState
+              icon={IconLoader2}
+              title="正在讀取紀錄"
+              description="請稍候。"
+            />
+          ) : groups.length ? (
+            <div className={styles.list}>
+              {groups.map(({ key, entries, ordinalById }) => {
               const first = entries[0];
               const subject =
                 first.subject === 'mixed' ? null : getSubject(first.subject);
@@ -224,6 +348,17 @@ export function HistoryPage({
                                 .maximumScore,
                             }
                           : null;
+                      const hasVisibleWrongQuestions = attemptQuestions.some(
+                        (item) => {
+                          const selectedAnswer = attempt.answers[item.id];
+                          return (
+                            selectedAnswer !== undefined &&
+                            !isQuestionCorrect(item, selectedAnswer)
+                          );
+                        },
+                      );
+                      const activeAttemptView = attemptViews[attempt.id];
+                      const attemptViewId = `history-attempt-${attempt.id}`;
 
                       return (
                         <section className={styles.attempt} key={attempt.id}>
@@ -263,9 +398,28 @@ export function HistoryPage({
                             <span>
                               答對 <strong>{attempt.correctCount}</strong>
                             </span>
-                            <span>
-                              答錯 <strong>{attempt.wrongCount}</strong>
-                            </span>
+                            <div className={styles.wrongStat}>
+                              <span>
+                                答錯 <strong>{attempt.wrongCount}</strong>
+                              </span>
+                              {hasVisibleWrongQuestions ? (
+                                <button
+                                  type="button"
+                                  aria-expanded={
+                                    activeAttemptView === 'wrong-analysis'
+                                  }
+                                  aria-controls={`${attemptViewId}-panel`}
+                                  onClick={() =>
+                                    toggleAttemptView(
+                                      attempt.id,
+                                      'wrong-analysis',
+                                    )
+                                  }
+                                >
+                                  錯題統計結果
+                                </button>
+                              ) : null}
+                            </div>
                             <span>
                               未答 <strong>{attempt.unansweredCount}</strong>
                             </span>
@@ -275,22 +429,63 @@ export function HistoryPage({
                             </span>
                           </div>
                           {attemptQuestions.length ? (
-                            <WrongCategoryAnalysis
-                              attempt={attempt}
-                              questions={attemptQuestions}
-                            />
+                            <button
+                              type="button"
+                              className={styles.attemptReviewTrigger}
+                              aria-expanded={activeAttemptView === 'review'}
+                              aria-controls={`${attemptViewId}-panel`}
+                              onClick={() =>
+                                toggleAttemptView(attempt.id, 'review')
+                              }
+                            >
+                              查看完整作答紀錄（{attemptQuestions.length}）
+                            </button>
                           ) : null}
-                          {attemptQuestions.length ? (
-                            <details className={styles.attemptReview}>
-                              <summary>
-                                查看完整作答紀錄（{attemptQuestions.length}）
-                              </summary>
-                              <AttemptReview
-                                attempt={attempt}
-                                questions={attemptQuestions}
-                                embedded
-                              />
-                            </details>
+                          {attemptQuestions.length && activeAttemptView ? (
+                            <div
+                              className={styles.attemptResultPanel}
+                              id={`${attemptViewId}-panel`}
+                            >
+                              {hasVisibleWrongQuestions ? (
+                                <ResultViewTabs
+                                  value={activeAttemptView}
+                                  onValueChange={(view) =>
+                                    selectAttemptView(attempt.id, view)
+                                  }
+                                  idPrefix={attemptViewId}
+                                  ariaLabel={`第 ${ordinal} 次作答結果分頁`}
+                                  reviewLabel="完整作答紀錄"
+                                />
+                              ) : null}
+                              <div
+                                className={styles.attemptResultContent}
+                                id={`${attemptViewId}-${activeAttemptView}-panel`}
+                                role={
+                                  hasVisibleWrongQuestions
+                                    ? 'tabpanel'
+                                    : undefined
+                                }
+                                aria-labelledby={
+                                  hasVisibleWrongQuestions
+                                    ? `${attemptViewId}-${activeAttemptView}-tab`
+                                    : undefined
+                                }
+                              >
+                                {activeAttemptView === 'wrong-analysis' &&
+                                hasVisibleWrongQuestions ? (
+                                  <WrongCategoryAnalysis
+                                    attempt={attempt}
+                                    questions={attemptQuestions}
+                                  />
+                                ) : (
+                                  <AttemptReview
+                                    attempt={attempt}
+                                    questions={attemptQuestions}
+                                    embedded
+                                  />
+                                )}
+                              </div>
+                            </div>
                           ) : null}
                           {missingQuestionCount ? (
                             <div className={styles.attemptReview} role="status">
@@ -341,31 +536,39 @@ export function HistoryPage({
                   </div>
                 </article>
               );
-            })}
-          </div>
-        ) : (
-          <EmptyState
-            icon={IconHistory}
-            title={state.attempts.length ? '此科目還沒有作答紀錄' : '還沒有作答紀錄'}
-            description={
-              state.attempts.length
-                ? '切換其他科目，或查看全部已作答紀錄。'
-                : '完成並交卷後，結果會保存在這裡。'
-            }
-            action={
-              state.attempts.length ? (
-                <Button variant="primary" onClick={() => setSubjectFilter('all')}>
-                  查看全部紀錄
-                </Button>
-              ) : (
-                <Button variant="primary" render={<Link href="/papers" />}>
-                  開始第一份試卷
-                </Button>
-              )
-            }
-          />
-        )}
-      </section>
+              })}
+            </div>
+          ) : (
+            <EmptyState
+              icon={IconHistory}
+              title={
+                state.attempts.length
+                  ? '此科目還沒有作答紀錄'
+                  : '還沒有作答紀錄'
+              }
+              description={
+                state.attempts.length
+                  ? '切換其他科目，或查看全部已作答紀錄。'
+                  : '完成並交卷後，結果會保存在這裡。'
+              }
+              action={
+                state.attempts.length ? (
+                  <Button
+                    variant="primary"
+                    onClick={() => setSubjectFilter('all')}
+                  >
+                    查看全部紀錄
+                  </Button>
+                ) : (
+                  <Button variant="primary" render={<Link href="/papers" />}>
+                    開始第一份試卷
+                  </Button>
+                )
+              }
+            />
+          )}
+        </section>
+      )}
     </>
   );
 }
