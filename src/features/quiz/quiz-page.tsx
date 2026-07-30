@@ -24,12 +24,12 @@ import {
   Tag,
 } from '@/components/content/content';
 import { DifficultButton } from '@/components/difficult-button';
-import { QuestionAnswerPanel } from '@/components/question-answer-panel';
 import {
   QuestionNumberButton,
   QuestionNumberGrid,
 } from '@/components/question-number-button';
 import { Button, OptionGroup } from '@/components/ui/ui';
+import { WrongCategoryAnalysis } from '@/components/wrong-category-analysis';
 import { getSubject } from '@/question-bank/catalog';
 import { useSubjectQuestions } from '@/lib/question-bank-client';
 import {
@@ -37,7 +37,6 @@ import {
   createAttempt,
   formatCorrectAnswer,
   formatDuration,
-  getQuestionDisplayCategory,
   getQuestionDisplayCategories,
   getSubjectScoreConfig,
   isQuestionCorrect,
@@ -722,118 +721,5 @@ export function QuizPage({ question, paper }: StaticQuestionPageProps) {
         </aside>
       </div>
     </>
-  );
-}
-
-function WrongCategoryAnalysis({
-  attempt,
-  questions,
-}: {
-  attempt: QuizAttempt;
-  questions: readonly QuizQuestion[];
-}) {
-  const categoryMap = new Map<string, QuizQuestion[]>();
-  questions.forEach((question) => {
-    const selectedAnswer = attempt.answers[question.id];
-    if (
-      selectedAnswer === undefined ||
-      isQuestionCorrect(question, selectedAnswer)
-    ) {
-      return;
-    }
-    const category = getQuestionDisplayCategory(question);
-    categoryMap.set(category, [
-      ...(categoryMap.get(category) ?? []),
-      question,
-    ]);
-  });
-  const categories = [...categoryMap.entries()].sort(
-    ([leftCategory, left], [rightCategory, right]) =>
-      right.length - left.length ||
-      leftCategory.localeCompare(rightCategory, 'zh-Hant'),
-  );
-  const [selectedCategoryValue, setSelectedCategoryValue] = useState(
-    categories[0]?.[0] ?? '',
-  );
-  const selectedCategory = categoryMap.has(selectedCategoryValue)
-    ? selectedCategoryValue
-    : categories[0]?.[0];
-  const selectedQuestions = selectedCategory
-    ? categoryMap.get(selectedCategory) ?? []
-    : [];
-
-  if (!categories.length) return null;
-
-  return (
-    <section
-      className={styles.wrongCategorySummary}
-      aria-label="錯題類型統計"
-    >
-      <header>
-        <div>
-          <span>WRONG ANSWER ANALYSIS</span>
-          <h2>錯題類型統計</h2>
-        </div>
-        <strong>{categories.length} 類</strong>
-      </header>
-      <div className={styles.wrongCategoryTabs} role="tablist">
-        {categories.map(([category, categoryQuestions]) => (
-          <button
-            type="button"
-            role="tab"
-            key={category}
-            aria-selected={category === selectedCategory}
-            aria-controls="wrong-category-panel"
-            onClick={() => setSelectedCategoryValue(category)}
-          >
-            <span>
-              <strong>{category}</strong>
-              <small>
-                第{' '}
-                {categoryQuestions
-                  .map((question) => question.questionNumber)
-                  .join('、')}{' '}
-                題
-              </small>
-            </span>
-            <b>{categoryQuestions.length} 題</b>
-          </button>
-        ))}
-      </div>
-      <div
-        id="wrong-category-panel"
-        className={styles.wrongCategoryPanel}
-        role="tabpanel"
-        aria-label={`${selectedCategory}錯題`}
-      >
-        <header>
-          <h3>{selectedCategory}</h3>
-          <span>共 {selectedQuestions.length} 題</span>
-        </header>
-        <div>
-          {selectedQuestions.map((question) => (
-            <article key={question.id}>
-              <header>
-                <strong>
-                  {question.year} 年・第 {question.questionNumber} 題
-                </strong>
-                <span>
-                  你的答案：
-                  {String.fromCharCode(65 + attempt.answers[question.id])}
-                </span>
-              </header>
-              <QuestionPrompt question={question} compact />
-              <QuestionAnswerPanel
-                question={question}
-                heading={null}
-                ariaLabel={`第 ${question.questionNumber} 題錯題選項`}
-                selectedIndex={attempt.answers[question.id]}
-                showStatusLabels
-              />
-            </article>
-          ))}
-        </div>
-      </div>
-    </section>
   );
 }

@@ -8,6 +8,7 @@ import {
 import { AttemptReview } from '@/components/attempt-review';
 import { EmptyState, Tag } from '@/components/content/content';
 import { Button, ConfirmDialog, useToast } from '@/components/ui/ui';
+import { WrongCategoryAnalysis } from '@/components/wrong-category-analysis';
 import { getSubject, subjects } from '@/question-bank/catalog';
 import type { QuestionBankStatus } from '@/lib/question-bank-client';
 import { parseQuestionId, questionPathFromId } from '@/lib/question-path';
@@ -264,6 +265,12 @@ export function HistoryPage({
                               <strong>{formatDuration(attempt.elapsedSeconds)}</strong>
                             </span>
                           </div>
+                          {attemptQuestions.length ? (
+                            <WrongCategoryAnalysis
+                              attempt={attempt}
+                              questions={attemptQuestions}
+                            />
+                          ) : null}
                           {attemptQuestions.length ? (
                             <details className={styles.attemptReview}>
                               <summary>

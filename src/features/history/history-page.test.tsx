@@ -11,6 +11,7 @@ import { ToastProvider } from '@/components/ui/ui';
 import {
   createAttempt,
   createDefaultState,
+  getQuestionDisplayCategory,
   STORAGE_KEY,
 } from '@/lib/study';
 import { loadAllQuestions } from '@/server/question-bank.server';
@@ -23,11 +24,42 @@ const paperQuestions = questions
 const environmentQuestions = questions
   .filter((question) => question.subject === 'env')
   .slice(0, 1);
+const crossYearQuestionGroups = new Map<string, typeof questions>();
+questions
+  .filter(
+    (question) =>
+      question.subject === 'env' && question.answerKey.kind === 'accepted',
+  )
+  .forEach((question) => {
+    const category = getQuestionDisplayCategory(question);
+    crossYearQuestionGroups.set(category, [
+      ...(crossYearQuestionGroups.get(category) ?? []),
+      question,
+    ]);
+  });
+const crossYearQuestions =
+  (
+    [...crossYearQuestionGroups.values()]
+      .map((entries) => [
+        entries[0],
+        entries.find((question) => question.year !== entries[0]?.year),
+      ])
+      .find((entries) => entries.every(Boolean)) ?? []
+  ).filter(
+    (question): question is (typeof questions)[number] => Boolean(question),
+  );
 
 function acceptedAnswer(question: (typeof paperQuestions)[number]) {
   return question.answerKey.kind === 'accepted'
     ? question.answerKey.options[0]
     : 0;
+}
+
+function wrongAnswer(question: (typeof questions)[number]) {
+  if (question.answerKey.kind !== 'accepted') return 0;
+  return question.options.findIndex(
+    (_, index) => !question.answerKey.options.includes(index),
+  );
 }
 
 describe('HistoryPage', () => {
@@ -244,6 +276,45 @@ describe('HistoryPage', () => {
     );
     expect(retry).toHaveBeenCalledTimes(1);
     expect(retry).toHaveBeenCalledWith('env');
+  });
+
+  it('shows a cross-year wrong-category analysis inside a saved attempt', async () => {
+    expect(crossYearQuestions).toHaveLength(2);
+    const attempt = createAttempt({
+      mode: 'random',
+      source: crossYearQuestions,
+      answers: Object.fromEntries(
+        crossYearQuestions.map((question) => [
+          question.id,
+          wrongAnswer(question),
+        ]),
+      ),
+      startedAt: '2026-07-25T00:00:00.000Z',
+      elapsedSeconds: 60,
+    });
+    const state = createDefaultState();
+    state.attempts = [attempt];
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+
+    render(
+      <ToastProvider>
+        <AppStateProvider>
+          <HistoryPage questions={questions} />
+        </AppStateProvider>
+      </ToastProvider>,
+    );
+
+    const analysis = await screen.findByRole('region', {
+      name: '錯題類型統計',
+    });
+    expect(analysis).toHaveTextContent(`${crossYearQuestions[0].year} 年`);
+    expect(analysis).toHaveTextContent(`${crossYearQuestions[1].year} 年`);
+    expect(
+      within(analysis).getByRole('tabpanel'),
+    ).toHaveTextContent(crossYearQuestions[0].text);
+    expect(
+      within(analysis).getAllByRole('region', { name: /錯題選項/ }),
+    ).toHaveLength(2);
   });
 
   it('shows each missing subject bank own loading or error state', async () => {
