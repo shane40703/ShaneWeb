@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "npm run build:sites",
     "build:sites": "node scripts/clean-sites-build.mjs && opennextjs-cloudflare build && node scripts/stage-sites-build.mjs",
     "start": "next start",
     "lint": "eslint .",
