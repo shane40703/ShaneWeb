@@ -7,10 +7,7 @@ export default defineConfig([
   ...nextTypescript,
   globalIgnores([
     '.next/**',
-    '.open-next/**',
-    '.wrangler/**',
     'coverage/**',
-    'dist/**',
     'playwright-report/**',
     'test-results/**',
     'todo/new_ui/**',
