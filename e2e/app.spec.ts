@@ -829,6 +829,8 @@ test('all retained routes support direct visits and removed routes return 404', 
     { path: '/notes', title: '使用者筆記' },
     { path: '/difficult', title: '難題標記' },
     { path: '/history', title: '已作答紀錄' },
+    { path: '/settings', title: '閱讀設定' },
+    { path: '/appearance', title: '配色設定' },
   ] as const;
 
   for (const route of routes) {
@@ -841,14 +843,53 @@ test('all retained routes support direct visits and removed routes return 404', 
     await expectCompactTopbarHeading(page, route.title);
   }
 
-  const settingsResponse = await page.goto('/settings');
-  expect(settingsResponse?.status()).toBe(404);
-  await expect(page.getByRole('link', { name: '網頁介面設定' })).toHaveCount(0);
-
   const quizResponse = await page.goto('/quiz');
   expect(quizResponse?.status()).toBe(404);
   const missingQuestionResponse = await page.goto('/questions/law/114/99');
   expect(missingQuestionResponse?.status()).toBe(404);
+});
+
+test('custom theme colors apply to their mode and survive a reload', async ({
+  page,
+}, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop');
+
+  await page.goto('/appearance');
+  await page.getByRole('radio', { name: '深色模式' }).locator('..').click();
+  await page.getByLabel('頁面背景十六進位色碼').fill('#000000');
+
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+  await page.getByRole('button', { name: '套用此模式' }).click();
+  await page.getByRole('button', { name: '切換為深色模式' }).click();
+
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        document.documentElement.style.getPropertyValue('--bg').trim(),
+      ),
+    )
+    .toBe('#000000');
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        const stored = JSON.parse(
+          localStorage.getItem('shaneweb:theme-colors') ?? '{}',
+        );
+        return stored.palettes?.dark?.background;
+      }),
+    )
+    .toBe('#000000');
+
+  await page.reload();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        document.documentElement.style.getPropertyValue('--bg').trim(),
+      ),
+    )
+    .toBe('#000000');
 });
 
 test('mobile drawer links to separate paper and random quiz pages', async ({ page }, testInfo) => {
@@ -867,6 +908,10 @@ test('mobile drawer links to separate paper and random quiz pages', async ({ pag
   await expect(
     page.getByRole('heading', { name: '選擇科目與年度' }),
   ).toHaveCount(0);
+  await page.getByRole('button', { name: '開啟選單' }).click();
+  await page.getByRole('link', { name: '配色設定' }).click();
+  await expect(page).toHaveURL(/\/appearance$/);
+  await expectCompactTopbarHeading(page, '配色設定');
   const hasHorizontalOverflow = await page.evaluate(
     () => document.documentElement.scrollWidth > window.innerWidth,
   );

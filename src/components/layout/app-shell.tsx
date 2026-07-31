@@ -13,6 +13,7 @@ import {
   IconHome,
   IconMessages,
   IconNotebook,
+  IconPalette,
   IconScale,
   IconSettings,
   IconSparkles,
@@ -24,8 +25,9 @@ import styles from './app-shell.module.css';
 
 const persistenceMessages = {
   'quota-exceeded':
-    '瀏覽器儲存空間已滿，最新的作答與筆記沒有存檔。請刪除部分筆記圖片後再試一次。',
-  unavailable: '這個瀏覽器不允許本機儲存，離開頁面後作答紀錄與筆記不會保留。',
+    '瀏覽器儲存空間已滿，最新的作答、筆記或配色沒有存檔。請刪除部分筆記圖片後再試一次。',
+  unavailable:
+    '這個瀏覽器不允許本機儲存，重新整理後作答紀錄、筆記與配色不會保留。',
 } as const;
 
 function PersistenceWarning() {
@@ -53,6 +55,7 @@ const primaryNavigation = [
 
 const utilityNavigation = [
   { href: '/settings', label: '閱讀設定', icon: IconSettings },
+  { href: '/appearance', label: '配色設定', icon: IconPalette },
   { href: '/report', label: '問題回報', icon: IconFlag },
 ] as const;
 
