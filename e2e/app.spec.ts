@@ -892,6 +892,73 @@ test('custom theme colors apply to their mode and survive a reload', async ({
     .toBe('#000000');
 });
 
+test('official theme presets preview, apply, and survive a reload', async ({
+  page,
+}, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop');
+
+  await page.goto('/appearance');
+  await page.getByRole('radio', { name: '深色模式' }).locator('..').click();
+
+  const defaultPreset = page.getByRole('radio', { name: /藍圖深夜/ });
+  const carbonPreset = page.getByRole('radio', { name: /現代炭黑/ });
+  await defaultPreset.focus();
+  await page.keyboard.press('ArrowRight');
+
+  await expect(carbonPreset).toBeChecked();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+  await expect
+    .poll(() =>
+      page
+        .getByRole('region', { name: '深色模式配色預覽' })
+        .evaluate((element) =>
+          element.style.getPropertyValue('--bg').trim(),
+        ),
+    )
+    .toBe('#181818');
+  expect(
+    await page.evaluate(() => {
+      const stored = JSON.parse(
+        localStorage.getItem('shaneweb:theme-colors') ?? '{}',
+      );
+      return stored.palettes?.dark?.background ?? null;
+    }),
+  ).toBeNull();
+
+  await page.getByRole('button', { name: '套用此模式' }).click();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        const stored = JSON.parse(
+          localStorage.getItem('shaneweb:theme-colors') ?? '{}',
+        );
+        return stored.palettes?.dark?.background;
+      }),
+    )
+    .toBe('#181818');
+
+  await page.getByRole('button', { name: '切換為深色模式' }).click();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        document.documentElement.style.getPropertyValue('--bg').trim(),
+      ),
+    )
+    .toBe('#181818');
+
+  await page.reload();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        document.documentElement.style.getPropertyValue('--bg').trim(),
+      ),
+    )
+    .toBe('#181818');
+});
+
 test('mobile drawer links to separate paper and random quiz pages', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'mobile');
 

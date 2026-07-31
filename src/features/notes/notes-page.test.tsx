@@ -76,6 +76,63 @@ describe('NotesPage question loading', () => {
     expect(screen.queryByText('law-114-01 題幹')).not.toBeInTheDocument();
   });
 
+  it('requests only the subject referenced by an unresolved deep link', async () => {
+    const requestQuestionBank = vi.fn();
+    router.query = { question: environmentQuestion.id };
+
+    render(
+      page({
+        questionBankStatuses: { env: 'idle' },
+        onRequestQuestionBank: requestQuestionBank,
+      }),
+    );
+
+    await waitFor(() => {
+      expect(requestQuestionBank).toHaveBeenCalledWith('env');
+    });
+    expect(
+      screen.getByRole('heading', { name: '正在載入題目' }),
+    ).toBeInTheDocument();
+  });
+
+  it('loads another subject only after the user selects it', async () => {
+    const requestQuestionBank = vi.fn();
+    const view = render(
+      page({
+        questionBankStatuses: { env: 'idle' },
+        onRequestQuestionBank: requestQuestionBank,
+      }),
+    );
+
+    fireEvent.click(
+      await screen.findByRole('button', { name: /建築環境控制/ }),
+    );
+
+    expect(requestQuestionBank).toHaveBeenCalledWith('env');
+    expect(
+      screen.getByRole('heading', { name: '正在載入題目' }),
+    ).toBeInTheDocument();
+
+    view.rerender(
+      page({
+        questions: [lawQuestion, environmentQuestion],
+        questionBankStatuses: { env: 'ready' },
+        onRequestQuestionBank: requestQuestionBank,
+      }),
+    );
+
+    await waitFor(() => {
+      expect(router.replace).toHaveBeenCalledWith(
+        {
+          pathname: '/notes',
+          query: { question: environmentQuestion.id },
+        },
+        undefined,
+        { shallow: true, scroll: false },
+      );
+    });
+  });
+
   it('shows a retry action instead of the wrong editor after a load error', () => {
     const retry = vi.fn();
     router.query = { question: environmentQuestion.id };
@@ -190,5 +247,28 @@ describe('NotesPage question loading', () => {
       ).not.toBeInTheDocument();
       expect(screen.getByText('尚未儲存任何筆記。')).toBeInTheDocument();
     });
+  });
+
+  it('lists saved notes without downloading their subject first', async () => {
+    const state = createDefaultState();
+    state.notes[environmentQuestion.id] = '環控筆記';
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+
+    render(page());
+
+    const savedNoteLabel = await screen.findByText('114・環控・第 1 題');
+    const savedNote = savedNoteLabel.closest('button');
+    expect(savedNote).not.toBeNull();
+    if (!savedNote) return;
+    fireEvent.click(savedNote);
+
+    expect(router.replace).toHaveBeenCalledWith(
+      {
+        pathname: '/notes',
+        query: { question: environmentQuestion.id },
+      },
+      undefined,
+      { shallow: true, scroll: false },
+    );
   });
 });

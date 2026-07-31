@@ -25,6 +25,17 @@ afterEach(() => {
 });
 
 describe('useSubjectQuestions', () => {
+  it('does not request the API when no subject is selected', () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+
+    const { result } = renderHook(() => useSubjectQuestions([]));
+
+    expect(result.current.status).toBe('ready');
+    expect(result.current.questions).toEqual([]);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
   it('keeps caller order when flattening cached subject requests', async () => {
     const banks: Partial<Record<SubjectId, Question[]>> = {
       env: [question('env-114-01', 'env')],

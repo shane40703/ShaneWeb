@@ -1,5 +1,5 @@
 import { useRouter } from 'next/router';
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   IconAlertCircle,
   IconHelpCircle,
@@ -28,6 +28,7 @@ import {
 } from '@/components/question-number-button';
 import { Button, ConfirmDialog, useToast } from '@/components/ui/ui';
 import type { QuestionBankStatus } from '@/lib/question-bank-client';
+import { parseQuestionId } from '@/lib/question-path';
 import { getSubject, years } from '@/question-bank/catalog';
 import type { ImageAttachment, Question, SubjectId } from '@/lib/types';
 import { useClientReady } from '@/lib/use-client-ready';
@@ -43,19 +44,26 @@ interface NoteDraft {
   images: ImageAttachment[];
 }
 
+export type NotesQuestionBankStatus = QuestionBankStatus | 'idle';
+
 export function NotesPage({
   questions,
   questionBankStatus = 'ready',
+  questionBankStatuses,
+  onRequestQuestionBank,
   onRetryQuestionBank,
 }: {
   questions: Question[];
   questionBankStatus?: QuestionBankStatus;
-  onRetryQuestionBank?: () => void;
+  questionBankStatuses?: Partial<Record<SubjectId, NotesQuestionBankStatus>>;
+  onRequestQuestionBank?: (subjectId: SubjectId) => void;
+  onRetryQuestionBank?: (subjectId: SubjectId) => void;
 }) {
   const router = useRouter();
   const { state, hydrated } = useAppState();
   const routeHydrated = useClientReady();
   const [drafts, setDrafts] = useState<Record<string, NoteDraft>>({});
+  const [pendingSubject, setPendingSubject] = useState<SubjectId>();
   const requestedQuestionId =
     routeHydrated && router.isReady !== false
       ? valueOf(router.query.question)
@@ -66,11 +74,70 @@ export function NotesPage({
   const currentQuestion = requestedQuestionId
     ? requestedQuestion
     : questions[0];
+  const requestedSubject = requestedQuestionId
+    ? parseQuestionId(requestedQuestionId)?.subject
+    : undefined;
+  const unresolvedSubject =
+    pendingSubject ??
+    (requestedQuestionId && !requestedQuestion ? requestedSubject : undefined);
+  const unresolvedStatus = unresolvedSubject
+    ? (questionBankStatuses?.[unresolvedSubject] ?? questionBankStatus)
+    : questionBankStatus;
+  const retrySubject = unresolvedSubject ?? currentQuestion?.subject;
+  const pendingSubjectHasQuestions = pendingSubject
+    ? questions.some((question) => question.subject === pendingSubject)
+    : false;
+
+  const navigateTo = useCallback(
+    (questionId: string) =>
+      router.replace(
+        { pathname: '/notes', query: { question: questionId } },
+        undefined,
+        { shallow: true, scroll: false },
+      ),
+    [router],
+  );
+
+  useEffect(() => {
+    if (
+      !routeHydrated ||
+      !requestedSubject ||
+      requestedQuestion ||
+      unresolvedStatus === 'error'
+    ) {
+      return;
+    }
+    onRequestQuestionBank?.(requestedSubject);
+  }, [
+    onRequestQuestionBank,
+    requestedQuestion,
+    requestedSubject,
+    routeHydrated,
+    unresolvedStatus,
+  ]);
+
+  useEffect(() => {
+    if (!pendingSubject) return;
+    const first = questions
+      .filter((question) => question.subject === pendingSubject)
+      .sort(
+        (left, right) =>
+          right.year - left.year ||
+          left.questionNumber - right.questionNumber,
+      )[0];
+    if (!first) return;
+    void Promise.resolve(navigateTo(first.id)).then(() => {
+      setPendingSubject(undefined);
+    });
+  }, [navigateTo, pendingSubject, questions]);
 
   if (
     routeHydrated &&
     (router.isReady === false ||
-      (!currentQuestion && questionBankStatus === 'loading'))
+      (Boolean(unresolvedSubject) &&
+        (unresolvedStatus === 'idle' ||
+          unresolvedStatus === 'loading' ||
+          (Boolean(pendingSubject) && pendingSubjectHasQuestions))))
   ) {
     return (
       <EmptyState
@@ -81,17 +148,33 @@ export function NotesPage({
     );
   }
 
-  if (questionBankStatus === 'error') {
+  if (unresolvedStatus === 'error') {
     return (
       <EmptyState
         icon={IconAlertCircle}
         title="題庫載入失敗"
         description="目前無法取得完整題庫，請重新載入後再試。"
         action={
-          onRetryQuestionBank ? (
-            <Button onClick={onRetryQuestionBank}>重新載入</Button>
+          onRetryQuestionBank && retrySubject ? (
+            <Button onClick={() => onRetryQuestionBank(retrySubject)}>
+              重新載入
+            </Button>
           ) : undefined
         }
+      />
+    );
+  }
+
+  if (
+    pendingSubject &&
+    unresolvedStatus === 'ready' &&
+    !pendingSubjectHasQuestions
+  ) {
+    return (
+      <EmptyState
+        icon={IconHelpCircle}
+        title="題庫尚無資料"
+        description="目前找不到這個科目的題目。"
       />
     );
   }
@@ -127,27 +210,20 @@ export function NotesPage({
     ...new Set([...Object.keys(state.notes), ...Object.keys(state.noteImages)]),
   ];
   const noteEntries = noteIds
-    .map((id) => ({
-      question: questions.find((question) => question.id === id),
-      content: state.notes[id] ?? '',
-      imageCount: state.noteImages[id]?.length ?? 0,
-    }))
+    .map((id) => {
+      const parsed = parseQuestionId(id);
+      return parsed
+        ? {
+            id,
+            ...parsed,
+            content: state.notes[id] ?? '',
+            imageCount: state.noteImages[id]?.length ?? 0,
+          }
+        : null;
+    })
     .filter(
-      (
-        entry,
-      ): entry is {
-        question: Question;
-        content: string;
-        imageCount: number;
-      } => Boolean(entry.question),
+      (entry): entry is NonNullable<typeof entry> => Boolean(entry),
     );
-
-  function navigateTo(questionId: string) {
-    void router.replace({ pathname: '/notes', query: { question: questionId } }, undefined, {
-      shallow: true,
-      scroll: false,
-    });
-  }
 
   function selectSubject(subjectId: SubjectId) {
     const first = questions
@@ -156,7 +232,12 @@ export function NotesPage({
         (left, right) =>
           right.year - left.year || left.questionNumber - right.questionNumber,
       )[0];
-    if (first) navigateTo(first.id);
+    if (first) {
+      void navigateTo(first.id);
+      return;
+    }
+    setPendingSubject(subjectId);
+    onRequestQuestionBank?.(subjectId);
   }
 
   function selectYear(value: SelectorYear) {
@@ -165,7 +246,7 @@ export function NotesPage({
       (question) =>
         question.subject === activeQuestion.subject && question.year === value,
     );
-    if (first) navigateTo(first.id);
+    if (first) void navigateTo(first.id);
   }
 
   const questionSelector = (
@@ -255,9 +336,9 @@ export function NotesPage({
             <header><span>SAVED</span><h2>已儲存筆記</h2><strong>{noteEntries.length}</strong></header>
             {noteEntries.length ? (
               <div>
-                {noteEntries.map(({ question, content, imageCount }) => (
-                  <button key={question.id} onClick={() => navigateTo(question.id)} aria-current={question.id === currentQuestion.id}>
-                    <span>{question.year}・{getSubject(question.subject)?.shortName}・第 {question.questionNumber} 題</span>
+                {noteEntries.map(({ id, subject, year, questionNumber, content, imageCount }) => (
+                  <button key={id} onClick={() => void navigateTo(id)} aria-current={id === currentQuestion.id}>
+                    <span>{year}・{getSubject(subject)?.shortName}・第 {questionNumber} 題</span>
                     <strong>{content || `圖片筆記 ${imageCount} 張`}</strong>
                   </button>
                 ))}

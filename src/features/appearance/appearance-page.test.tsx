@@ -1,4 +1,11 @@
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ToastProvider } from '@/components/ui/ui';
@@ -8,6 +15,7 @@ import {
   type ThemeMode,
   type ThemePalette,
 } from '@/lib/theme';
+import { OFFICIAL_THEME_PRESETS } from '@/lib/theme-presets';
 
 const useThemeMock = vi.hoisted(() => vi.fn());
 
@@ -74,6 +82,122 @@ describe('AppearancePage', () => {
   });
 
   afterEach(cleanup);
+
+  it('offers five official palettes for the mode being edited', async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    const lightPresets = screen.getByRole('radiogroup', {
+      name: '淺色模式本站官方配色',
+    });
+    expect(within(lightPresets).getAllByRole('radio')).toHaveLength(5);
+    expect(
+      within(lightPresets).getByRole('radio', { name: /現代紙白/ }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole('radio', { name: /現代炭黑/ }),
+    ).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('radio', { name: '深色模式' }));
+
+    const darkPresets = screen.getByRole('radiogroup', {
+      name: '深色模式本站官方配色',
+    });
+    expect(within(darkPresets).getAllByRole('radio')).toHaveLength(5);
+    expect(
+      within(darkPresets).getByRole('radio', { name: /現代炭黑/ }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole('radio', { name: /現代紙白/ }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('previews an official palette before saving and applies its six colors', async () => {
+    const user = userEvent.setup();
+    const { context } = renderPage();
+    const preset = OFFICIAL_THEME_PRESETS.light[1];
+
+    await user.click(screen.getByRole('radio', { name: /現代紙白/ }));
+
+    expect(screen.getByLabelText('頁面背景十六進位色碼')).toHaveValue(
+      preset.palette.background,
+    );
+    expect(
+      screen
+        .getByRole('region', { name: '淺色模式配色預覽' })
+        .style.getPropertyValue('--bg'),
+    ).toBe(preset.palette.background);
+    expect(context.savePalette).not.toHaveBeenCalled();
+    expect(
+      screen.getByText(/已選擇「現代紙白」.*按「套用此模式」後才會保存/),
+    ).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: '套用此模式' }));
+
+    expect(context.savePalette).toHaveBeenCalledWith('light', preset.palette);
+    expect(await screen.findByText('已套用淺色模式配色')).toBeInTheDocument();
+  });
+
+  it('keeps saved and preview states distinct and leaves official presets when edited', async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    expect(
+      screen.getByRole('radio', { name: /藍圖晨光.*使用中/ }),
+    ).toBeChecked();
+    await user.click(screen.getByRole('radio', { name: /現代紙白/ }));
+    expect(
+      screen.getByRole('radio', { name: /現代紙白.*預覽中/ }),
+    ).toBeChecked();
+    expect(
+      screen.getByRole('radio', { name: /藍圖晨光.*使用中/ }),
+    ).not.toBeChecked();
+
+    fireEvent.change(screen.getByLabelText('頁面背景十六進位色碼'), {
+      target: { value: '#F4F4F4' },
+    });
+
+    expect(
+      within(
+        screen.getByRole('radiogroup', {
+          name: '淺色模式本站官方配色',
+        }),
+      )
+        .getAllByRole('radio')
+        .every((radio) => !(radio as HTMLInputElement).checked),
+    ).toBe(true);
+  });
+
+  it('resets stored colors when the baseline official palette is applied', async () => {
+    const user = userEvent.setup();
+    const paper = OFFICIAL_THEME_PRESETS.light[1].palette;
+    const context = themeContext({
+      light: paper,
+      customPalettes: { light: paper },
+    });
+    renderPage(context);
+
+    await user.click(screen.getByRole('radio', { name: /藍圖晨光/ }));
+    expect(context.resetPalette).not.toHaveBeenCalled();
+    expect(context.savePalette).not.toHaveBeenCalled();
+
+    await user.click(screen.getByRole('button', { name: '套用此模式' }));
+
+    expect(context.resetPalette).toHaveBeenCalledWith('light');
+    expect(context.savePalette).not.toHaveBeenCalled();
+  });
+
+  it('keeps appearance controls unavailable until stored colors hydrate', () => {
+    const context = themeContext();
+    context.hydrated = false;
+    renderPage(context);
+
+    expect(screen.getByRole('radio', { name: '深色模式' })).toBeDisabled();
+    expect(screen.getByRole('radio', { name: /藍圖晨光/ })).toBeDisabled();
+    expect(screen.getByLabelText('頁面背景十六進位色碼')).toBeDisabled();
+    expect(screen.getByRole('button', { name: '載入預設色' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: '套用此模式' })).toBeDisabled();
+  });
 
   it('keeps independent drafts while switching between light and dark editing modes', async () => {
     const user = userEvent.setup();

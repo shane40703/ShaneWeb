@@ -12,6 +12,7 @@ import {
   IconCheck,
   IconMoonStars,
   IconPalette,
+  IconSparkles,
   IconSun,
 } from '@tabler/icons-react';
 import { useTheme } from '@/components/theme-provider';
@@ -25,6 +26,12 @@ import {
   type ThemeContrastIssue,
   validateThemePalette,
 } from '@/lib/theme';
+import {
+  findOfficialThemePreset,
+  OFFICIAL_THEME_PRESETS,
+  themePalettesMatch,
+  type OfficialThemePreset,
+} from '@/lib/theme-presets';
 import styles from '@/features/appearance/appearance-page.module.css';
 
 type PaletteKey = keyof ThemePalette;
@@ -84,10 +91,6 @@ function copyPalette(palette: ThemePalette): ThemePalette {
 
 function paletteIsSyntacticallyValid(palette: ThemePalette) {
   return colorFields.every(({ key }) => isHexColor(palette[key]));
-}
-
-function palettesMatch(left: ThemePalette, right: ThemePalette) {
-  return colorFields.every(({ key }) => left[key] === right[key]);
 }
 
 function storageFailureDescription(result: 'quota-exceeded' | 'unavailable') {
@@ -158,8 +161,16 @@ export default function AppearancePage() {
   const invalidKeys = colorFields
     .filter(({ key }) => !isHexColor(draft[key]))
     .map(({ key }) => key);
-  const canApply = syntaxValid && validation.valid && !saving;
+  const canApply = hydrated && syntaxValid && validation.valid && !saving;
   const currentModeLabel = modeLabels[editingMode];
+  const selectedOfficialPreset = useMemo(
+    () => findOfficialThemePreset(editingMode, draft),
+    [draft, editingMode],
+  );
+  const appliedOfficialPreset = useMemo(
+    () => findOfficialThemePreset(editingMode, palettes[editingMode]),
+    [editingMode, palettes],
+  );
 
   function selectMode(nextMode: ThemeMode) {
     setEditingMode(nextMode);
@@ -182,6 +193,28 @@ export default function AppearancePage() {
     }
   }
 
+  function loadOfficialPreset(preset: OfficialThemePreset) {
+    const presetPalette = copyPalette(preset.palette);
+    setDrafts((current) => ({
+      ...current,
+      [editingMode]: presetPalette,
+    }));
+    setPreviewPalettes((current) => ({
+      ...current,
+      [editingMode]: copyPalette(preset.palette),
+    }));
+    setDefaultDrafts((current) => ({
+      ...current,
+      [editingMode]: themePalettesMatch(
+        preset.palette,
+        DEFAULT_THEME_PALETTES[editingMode],
+      ),
+    }));
+    setStatusMessage(
+      `已選擇「${preset.name}」，可先查看預覽；按「套用此模式」後才會保存。`,
+    );
+  }
+
   function loadDefaultPalette() {
     const defaultPalette = copyPalette(DEFAULT_THEME_PALETTES[editingMode]);
     setDrafts((current) => ({ ...current, [editingMode]: defaultPalette }));
@@ -202,7 +235,7 @@ export default function AppearancePage() {
     setStatusMessage('');
     const restoringDefault =
       defaultDrafts[editingMode] &&
-      palettesMatch(draft, DEFAULT_THEME_PALETTES[editingMode]);
+      themePalettesMatch(draft, DEFAULT_THEME_PALETTES[editingMode]);
 
     try {
       const result = restoringDefault
@@ -254,7 +287,7 @@ export default function AppearancePage() {
             <span className={styles.eyebrow}>APPEARANCE</span>
             <h2 id="appearance-title">配色設定</h2>
             <p>
-              分別設計淺色與深色模式。通過可讀性檢查後，配色會保存在目前瀏覽器。
+              從官方配色快速開始，也能分別微調淺色與深色模式。通過可讀性檢查後，配色會保存在目前瀏覽器。
             </p>
           </div>
         </header>
@@ -262,6 +295,7 @@ export default function AppearancePage() {
         <fieldset
           className={styles.modeFieldset}
           aria-describedby="appearance-mode-help"
+          aria-busy={!hydrated}
         >
           <legend>選擇要編輯的模式</legend>
           <p id="appearance-mode-help">
@@ -271,6 +305,10 @@ export default function AppearancePage() {
             {modes.map((option) => {
               const selected = editingMode === option.mode;
               const customized = Boolean(customPalettes[option.mode]);
+              const appliedPreset = findOfficialThemePreset(
+                option.mode,
+                palettes[option.mode],
+              );
               const Icon = option.mode === 'light' ? IconSun : IconMoonStars;
 
               return (
@@ -285,6 +323,7 @@ export default function AppearancePage() {
                     value={option.mode}
                     aria-label={option.label}
                     checked={selected}
+                    disabled={!hydrated}
                     onChange={() => selectMode(option.mode)}
                   />
                   <span className={styles.modeIcon} aria-hidden="true">
@@ -295,13 +334,99 @@ export default function AppearancePage() {
                     <small>{option.description}</small>
                   </span>
                   <span className={styles.modeState}>
-                    {customized ? '已自訂' : '使用預設'}
+                    {appliedPreset?.name ?? (customized ? '自訂配色' : '使用預設')}
                   </span>
                 </label>
               );
             })}
           </div>
         </fieldset>
+
+        <section
+          className={styles.presetPanel}
+          aria-labelledby="official-presets-title"
+          aria-describedby="official-presets-help"
+          aria-busy={!hydrated}
+        >
+          <div className={styles.sectionHeading}>
+            <div>
+              <span className={styles.eyebrow}>OFFICIAL COLLECTION</span>
+              <h3 id="official-presets-title">
+                {currentModeLabel}・本站官方配色
+              </h3>
+            </div>
+            <span className={styles.presetCount}>5 組精選</span>
+          </div>
+          <p className={styles.presetHelp} id="official-presets-help">
+            選擇色票會立即更新下方獨立預覽；確認後再按「套用此模式」，不會意外改變整個網站。
+          </p>
+
+          <div
+            className={styles.presetGrid}
+            role="radiogroup"
+            aria-label={`${currentModeLabel}本站官方配色`}
+          >
+            {OFFICIAL_THEME_PRESETS[editingMode].map((preset) => {
+              const selected = selectedOfficialPreset?.id === preset.id;
+              const applied = appliedOfficialPreset?.id === preset.id;
+              const presetState = applied
+                ? mode === editingMode
+                  ? '使用中'
+                  : '已設定'
+                : selected
+                  ? '預覽中'
+                  : '官方';
+
+              return (
+                <label
+                  className={styles.presetCard}
+                  data-selected={selected || undefined}
+                  key={preset.id}
+                >
+                  <input
+                    type="radio"
+                    name={`official-preset-${editingMode}`}
+                    value={preset.id}
+                    checked={selected}
+                    disabled={!hydrated}
+                    onChange={() => loadOfficialPreset(preset)}
+                    aria-label={`${preset.name}：${preset.description}，${presetState}`}
+                  />
+                  <span className={styles.presetCardHeader}>
+                    <strong>{preset.name}</strong>
+                    <span
+                      className={styles.presetBadge}
+                      data-selected={selected || applied || undefined}
+                    >
+                      {selected || applied ? (
+                        <>
+                          <IconCheck size={12} stroke={2.5} aria-hidden="true" />
+                          {presetState}
+                        </>
+                      ) : (
+                        <>
+                          <IconSparkles size={12} stroke={2} aria-hidden="true" />
+                          官方
+                        </>
+                      )}
+                    </span>
+                  </span>
+                  <span className={styles.presetDescription}>
+                    {preset.description}
+                  </span>
+                  <span className={styles.presetSwatches} aria-hidden="true">
+                    {colorFields.map(({ key }) => (
+                      <span
+                        key={key}
+                        style={{ backgroundColor: preset.palette[key] }}
+                      />
+                    ))}
+                  </span>
+                </label>
+              );
+            })}
+          </div>
+        </section>
 
         <div className={styles.workspace}>
           <section className={styles.editor} aria-labelledby="palette-editor-title">
@@ -339,6 +464,7 @@ export default function AppearancePage() {
                       <input
                         type="color"
                         value={nativeColor}
+                        disabled={!hydrated}
                         onChange={(event: ChangeEvent<HTMLInputElement>) =>
                           updateColor(field.key, event.target.value)
                         }
@@ -355,6 +481,7 @@ export default function AppearancePage() {
                       maxLength={7}
                       pattern="#[0-9A-Fa-f]{6}"
                       value={value}
+                      disabled={!hydrated}
                       onChange={(event) => updateColor(field.key, event.target.value)}
                       aria-label={`${field.label}十六進位色碼`}
                       aria-invalid={invalid}
@@ -407,7 +534,7 @@ export default function AppearancePage() {
             </div>
 
             <div className={styles.actions}>
-              <Button type="button" onClick={loadDefaultPalette}>
+              <Button type="button" disabled={!hydrated} onClick={loadDefaultPalette}>
                 載入預設色
               </Button>
               <Button

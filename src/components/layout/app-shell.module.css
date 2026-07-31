@@ -73,8 +73,8 @@
 .navigation {
   min-height: 0;
   flex: 1;
-  display: grid;
-  grid-template-rows: auto auto;
+  display: flex;
+  flex-direction: column;
   gap: 2px;
 }
 
