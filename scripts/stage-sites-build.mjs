@@ -6,6 +6,7 @@ const projectRoot = process.cwd();
 const distDirectory = path.join(projectRoot, 'dist');
 const serverDirectory = path.join(distDirectory, 'server');
 const clientDirectory = path.join(distDirectory, 'client');
+const hostingDirectory = path.join(distDirectory, '.openai');
 const wranglerDirectory = path.join(projectRoot, '.wrangler');
 const wranglerExecutable = path.join(
   projectRoot,
@@ -47,8 +48,16 @@ await Promise.all([
   rm(path.join(serverDirectory, 'worker.js.map'), { force: true }),
   rm(path.join(serverDirectory, 'README.md'), { force: true }),
 ]);
-await cp(path.join(projectRoot, '.open-next', 'assets'), clientDirectory, {
-  recursive: true,
-});
+await Promise.all([
+  cp(path.join(projectRoot, '.open-next', 'assets'), clientDirectory, {
+    recursive: true,
+  }),
+  mkdir(hostingDirectory, { recursive: true }).then(() =>
+    cp(
+      path.join(projectRoot, '.openai', 'hosting.json'),
+      path.join(hostingDirectory, 'hosting.json'),
+    ),
+  ),
+]);
 
 console.log(`Sites build staged in ${distDirectory}`);
