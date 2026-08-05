@@ -172,7 +172,23 @@ describe('HistoryPage', () => {
     expect(
       within(lawGroup!).getAllByRole('button', { name: '再做一次' }),
     ).toHaveLength(1);
-    const openedAttempt = summaries[0].parentElement;
+    const firstAttemptSection = within(lawGroup!)
+      .getByRole('heading', { name: '第 1 次' })
+      .closest('section');
+    expect(firstAttemptSection).not.toBeNull();
+    expect(
+      within(firstAttemptSection!).queryByText(/^答對/),
+    ).not.toBeInTheDocument();
+    expect(
+      within(firstAttemptSection!).queryByText(/^答錯/),
+    ).not.toBeInTheDocument();
+    expect(
+      within(firstAttemptSection!).queryByText(/^未答/),
+    ).not.toBeInTheDocument();
+    expect(
+      within(firstAttemptSection!).queryByText(/^時間/),
+    ).not.toBeInTheDocument();
+    const openedAttempt = summaries[0].closest('section');
     expect(openedAttempt).not.toBeNull();
     const review = within(openedAttempt!).getByRole('region', {
       name: '完整作答紀錄',
@@ -257,7 +273,7 @@ describe('HistoryPage', () => {
     ).toBeInTheDocument();
     expect(within(lawGroup!).getByText('2.50 分')).toBeInTheDocument();
     expect(within(environmentGroup!).getByText('1.50 分')).toBeInTheDocument();
-    expect(within(environmentGroup!).getByText('00:00:30')).toBeInTheDocument();
+    expect(within(environmentGroup!).queryByText('00:00:30')).not.toBeInTheDocument();
     expect(
       within(environmentGroup!).getByText('尚有 1 題內容暫時無法顯示'),
     ).toBeInTheDocument();

@@ -19,7 +19,6 @@ import { parseQuestionId, questionPathFromId } from '@/lib/question-path';
 import {
   calculateScore,
   formatDateTime,
-  formatDuration,
   getAttemptScopeKey,
   getSubjectScoreConfig,
   isQuestionCorrect,
@@ -394,53 +393,39 @@ export function HistoryPage({
                               )}
                             </div>
                           </header>
-                          <div className={styles.stats}>
-                            <span>
-                              答對 <strong>{attempt.correctCount}</strong>
-                            </span>
-                            <div className={styles.wrongStat}>
-                              <span>
-                                答錯 <strong>{attempt.wrongCount}</strong>
-                              </span>
-                              {hasVisibleWrongQuestions ? (
-                                <button
-                                  type="button"
-                                  aria-expanded={
-                                    activeAttemptView === 'wrong-analysis'
-                                  }
-                                  aria-controls={`${attemptViewId}-panel`}
-                                  onClick={() =>
-                                    toggleAttemptView(
-                                      attempt.id,
-                                      'wrong-analysis',
-                                    )
-                                  }
-                                >
-                                  錯題統計結果
-                                </button>
-                              ) : null}
-                            </div>
-                            <span>
-                              未答 <strong>{attempt.unansweredCount}</strong>
-                            </span>
-                            <span>
-                              時間{' '}
-                              <strong>{formatDuration(attempt.elapsedSeconds)}</strong>
-                            </span>
+                          <div className={styles.attemptResultActions}>
+                            {attemptQuestions.length ? (
+                              <button
+                                type="button"
+                                className={styles.attemptReviewTrigger}
+                                aria-expanded={activeAttemptView === 'review'}
+                                aria-controls={`${attemptViewId}-panel`}
+                                onClick={() =>
+                                  toggleAttemptView(attempt.id, 'review')
+                                }
+                              >
+                                查看完整作答紀錄（{attemptQuestions.length}）
+                              </button>
+                            ) : null}
+                            {hasVisibleWrongQuestions ? (
+                              <button
+                                type="button"
+                                className={styles.wrongAnalysisTrigger}
+                                aria-expanded={
+                                  activeAttemptView === 'wrong-analysis'
+                                }
+                                aria-controls={`${attemptViewId}-panel`}
+                                onClick={() =>
+                                  toggleAttemptView(
+                                    attempt.id,
+                                    'wrong-analysis',
+                                  )
+                                }
+                              >
+                                錯題統計結果
+                              </button>
+                            ) : null}
                           </div>
-                          {attemptQuestions.length ? (
-                            <button
-                              type="button"
-                              className={styles.attemptReviewTrigger}
-                              aria-expanded={activeAttemptView === 'review'}
-                              aria-controls={`${attemptViewId}-panel`}
-                              onClick={() =>
-                                toggleAttemptView(attempt.id, 'review')
-                              }
-                            >
-                              查看完整作答紀錄（{attemptQuestions.length}）
-                            </button>
-                          ) : null}
                           {attemptQuestions.length && activeAttemptView ? (
                             <div
                               className={styles.attemptResultPanel}
