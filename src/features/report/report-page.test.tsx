@@ -11,6 +11,10 @@ vi.mock('@/state/app-state', () => ({
   useAppState: () => ({ dispatch: vi.fn() }),
 }));
 
+vi.mock('@/components/cloud-sync-provider', () => ({
+  useCloudSync: () => ({ user: null, signIn: vi.fn() }),
+}));
+
 afterEach(cleanup);
 
 describe('ReportPage', () => {

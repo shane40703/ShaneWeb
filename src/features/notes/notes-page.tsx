@@ -260,12 +260,6 @@ export function NotesPage({
       onSubjectChange={selectSubject}
       onYearChange={selectYear}
       ariaLabel="筆記題目選擇"
-      summary={
-        <>
-          已選 <strong>{getSubject(currentQuestion.subject)?.name} · {currentQuestion.year} 年 · 第 {currentQuestion.questionNumber} 題</strong>
-        </>
-      }
-      action={<span className={styles.selectorHint}>筆記對應目前題目</span>}
     />
   );
 

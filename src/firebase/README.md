@@ -57,3 +57,10 @@ firebase deploy --only firestore:rules
 - 每篇投稿最多 5,000 字、每則回覆最多 2,000 字，限制由 Firestore Rules 強制執行。
 - 目前共享投稿只支援文字。圖片應在後續版本上傳至 Firebase Storage，Firestore 僅保存檔案路徑，請勿把 Base64 圖片寫入 Firestore。
 - Firebase 未設定時，開發環境仍會使用既有的本機投稿備援。
+
+## 問題回報
+
+- Firebase 已設定時，使用者必須 Google 登入才能送出問題回報。
+- 回報集中寫入 Firestore 的 `contentReports` 集合，包含類型、題號、說明、來源頁面、登入 UID、狀態及建立時間。
+- Firestore Rules 只允許登入者建立格式正確的回報，不允許一般前端讀取、修改或刪除全部回報。
+- 專案管理者與後端工程師可先從 Firebase Console 查看；後續管理介面應透過 Firebase Admin SDK 在伺服器端存取。

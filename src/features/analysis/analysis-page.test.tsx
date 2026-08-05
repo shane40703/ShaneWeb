@@ -52,7 +52,7 @@ describe('AnalysisPage category quiz', () => {
 
     render(<AnalysisPage questions={questions} />);
 
-    expect(screen.getByText(/總題數/)).toHaveTextContent('2 題');
+    expect(screen.queryByText(/總題數/)).not.toBeInTheDocument();
     expect(screen.getByLabelText('分析起始年度')).toHaveValue('113');
     expect(screen.getByLabelText('分析結束年度')).toHaveValue('114');
   });

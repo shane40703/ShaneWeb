@@ -123,6 +123,28 @@ service cloud.firestore {
       }
     }
 
+    match /contentReports/{reportId} {
+      allow read, update, delete: if false;
+      allow create: if request.auth != null
+        && request.resource.data.keys().hasOnly([
+          'pageUrl', 'questionId', 'category', 'description',
+          'reporterId', 'status', 'createdAt'
+        ])
+        && request.resource.data.pageUrl is string
+        && request.resource.data.pageUrl.size() <= 1000
+        && request.resource.data.questionId is string
+        && request.resource.data.questionId.size() <= 80
+        && request.resource.data.category in [
+          '題目內容', '答案', '圖片', '詳解', '其他'
+        ]
+        && request.resource.data.description is string
+        && request.resource.data.description.size() >= 1
+        && request.resource.data.description.size() <= 5000
+        && request.resource.data.reporterId == request.auth.uid
+        && request.resource.data.status == 'open'
+        && request.resource.data.createdAt is timestamp;
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }

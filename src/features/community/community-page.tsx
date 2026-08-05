@@ -283,7 +283,6 @@ export function CommunityPage({
             </strong>
           </>
         }
-        action={<span className={styles.selectorHint}>詳解顯示於下方</span>}
       />
 
       <section className={styles.questionCard}>
@@ -310,10 +309,6 @@ export function CommunityPage({
           heading={null}
           ariaLabel="題目選項"
         />
-        <section className={styles.explanation} aria-label="題目詳解">
-          <span>詳解</span>
-          <p>{currentQuestion.explanation ?? '目前尚無詳解。'}</p>
-        </section>
         <footer className={styles.questionNavigation}>
           <Button
             disabled={currentIndex <= 0}

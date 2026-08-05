@@ -12,7 +12,7 @@ import {
   QuestionSelector,
   type SelectorYear,
 } from '@/components/question-selector';
-import { subjects, years } from '@/question-bank/catalog';
+import { years } from '@/question-bank/catalog';
 import { analysisCategoryCatalog } from '@/question-bank/schema';
 import {
   getAnalysis,
@@ -45,7 +45,6 @@ export function AnalysisPage({ questions }: { questions: QuestionSummary[] }) {
   const queryYear = valueOf(router.query.year);
   const parsedYear = parseYear(queryYear);
   const year: number | 'all' = queryYear === 'all' ? 'all' : parsedYear ?? 114;
-  const subject = subjects.find((candidate) => candidate.id === subjectId) ?? subjects[0];
   const availableYears = years.filter((candidateYear) =>
     questions.some(
       (question) => question.subject === subjectId && question.year === candidateYear,
@@ -216,12 +215,6 @@ export function AnalysisPage({ questions }: { questions: QuestionSummary[] }) {
         onSubjectChange={changeSubject}
         onYearChange={changeYear}
         ariaLabel="分析條件"
-        summary={
-          <>
-            已選 <strong>{subject.name} · {year === 'all' ? '跨年度' : `${year} 年`}</strong>
-          </>
-        }
-        action={<span className={styles.scopeCount}>總題數 <strong>{source.length}</strong> 題</span>}
       />
 
       {year === 'all' ? (
