@@ -42,7 +42,7 @@ function isAnswerRecord(value: unknown): value is AnswerRecord {
   );
 }
 
-function isQuizAttempt(value: unknown): value is QuizAttempt {
+export function isQuizAttempt(value: unknown): value is QuizAttempt {
   if (!value || typeof value !== 'object') return false;
   const attempt = value as Partial<QuizAttempt>;
   return (

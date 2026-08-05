@@ -152,6 +152,31 @@ describe('appReducer', () => {
     expect(state.likedDiscussionPostIds).not.toContain(post.id);
   });
 
+  it('merges cloud attempts by id and keeps the newest first', () => {
+    const local = {
+      ...attempt(),
+      id: 'attempt-local',
+      submittedAt: '2026-01-01T00:00:00.000Z',
+    };
+    const cloud = {
+      ...attempt(1),
+      id: 'attempt-cloud',
+      submittedAt: '2026-02-01T00:00:00.000Z',
+    };
+    const state = createDefaultState();
+    state.attempts = [local];
+
+    const merged = appReducer(state, {
+      type: 'merge-attempts',
+      attempts: [local, cloud],
+    });
+
+    expect(merged.attempts.map((entry) => entry.id)).toEqual([
+      cloud.id,
+      local.id,
+    ]);
+  });
+
   it('updates reading sizes and lets an administrator remove discussions', () => {
     const post = {
       id: 'post-admin',

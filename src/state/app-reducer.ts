@@ -18,6 +18,7 @@ export type AppAction =
       answeredAt: string;
     }
   | { type: 'save-attempt'; attempt: QuizAttempt; results: Record<string, boolean> }
+  | { type: 'merge-attempts'; attempts: QuizAttempt[] }
   | { type: 'delete-attempt'; attemptId: string }
   | {
       type: 'save-note';
@@ -79,6 +80,22 @@ export function appReducer(state: AppState, action: AppAction): AppState {
         ...state,
         answers,
         attempts: [action.attempt, ...state.attempts].slice(0, 100),
+      };
+    }
+    case 'merge-attempts': {
+      const attempts = new Map(
+        [...state.attempts, ...action.attempts].map((attempt) => [
+          attempt.id,
+          attempt,
+        ]),
+      );
+      return {
+        ...state,
+        attempts: [...attempts.values()]
+          .sort((left, right) =>
+            right.submittedAt.localeCompare(left.submittedAt),
+          )
+          .slice(0, 100),
       };
     }
     case 'delete-attempt':
