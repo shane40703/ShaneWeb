@@ -13,7 +13,6 @@ import {
   IconHome,
   IconMessages,
   IconNotebook,
-  IconPalette,
   IconScale,
   IconSettings,
   IconSparkles,
@@ -54,8 +53,7 @@ const primaryNavigation = [
 ] as const;
 
 const utilityNavigation = [
-  { href: '/settings', label: '閱讀設定', icon: IconSettings },
-  { href: '/appearance', label: '配色設定', icon: IconPalette },
+  { href: '/settings', label: '設定', icon: IconSettings },
   { href: '/report', label: '問題回報', icon: IconFlag },
 ] as const;
 
@@ -141,7 +139,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const { state } = useAppState();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const pathname = router.pathname;
-  const currentPage = navigation.find((item) => isActive(pathname, item.href));
+  const navigationPath = pathname === '/appearance' ? '/settings' : pathname;
+  const currentPage = navigation.find((item) =>
+    isActive(navigationPath, item.href),
+  );
   const pageTitle = pathname.startsWith('/questions/')
     ? '作答頁'
     : (currentPage?.label ?? '建築師考試');
@@ -157,7 +158,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       }
     >
       <aside className={styles.desktopSidebar}>
-        <SidebarContent pathname={pathname} />
+        <SidebarContent pathname={navigationPath} />
       </aside>
       <div className={styles.workspace}>
         <header className={styles.topbar}>
@@ -169,7 +170,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               title="主要功能"
             >
               <SidebarContent
-                pathname={pathname}
+                pathname={navigationPath}
                 onNavigate={() => setDrawerOpen(false)}
               />
             </SideDrawer>

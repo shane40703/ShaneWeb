@@ -1,10 +1,5 @@
 .page { display: grid; gap: 20px; }
-.page > header, .page form, .notice { border: 1px solid var(--line); border-radius: 18px; background: var(--surface); box-shadow: var(--shadow-sm); }
-.page > header { padding: 24px; display: flex; gap: 15px; }
-.page > header svg { color: var(--primary); }
-.page header span { color: var(--primary-strong); font-size: 10px; font-weight: 850; letter-spacing: .1em; }
-.page h2 { margin: 4px 0; font-size: 24px; }
-.page header p { margin: 0; color: var(--muted); font-size: 13px; }
+.page form, .notice { border: 1px solid var(--line); border-radius: 18px; background: var(--surface); box-shadow: var(--shadow-sm); }
 .page form { padding: 24px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
 .page label { display: grid; gap: 7px; color: var(--muted); font-size: 12px; font-weight: 800; }
 .page input, .page select, .page textarea { width: 100%; padding: 11px 12px; border: 1px solid var(--control-line); border-radius: 10px; background: var(--surface); color: var(--text); font: inherit; }

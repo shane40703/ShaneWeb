@@ -83,6 +83,26 @@ describe('AppearancePage', () => {
 
   afterEach(cleanup);
 
+  it('keeps apply actions at the top and custom colors inside advanced settings', () => {
+    renderPage();
+
+    expect(
+      screen.queryByRole('heading', { name: '配色設定' }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: '頁面預覽' }),
+    ).toBeInTheDocument();
+    const advanced = screen.getByText('進階設定', { exact: true }).closest('details');
+    expect(advanced).not.toHaveAttribute('open');
+    const applyButton = screen.getByRole('button', { name: '套用此模式' });
+    const presets = screen.getByRole('radiogroup', {
+      name: '淺色模式本站官方配色',
+    });
+    expect(
+      applyButton.compareDocumentPosition(presets) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
+
   it('offers five official palettes for the mode being edited', async () => {
     const user = userEvent.setup();
     renderPage();

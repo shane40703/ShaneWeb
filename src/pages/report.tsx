@@ -1,7 +1,6 @@
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { type FormEvent, useState } from 'react';
-import { IconFlag } from '@tabler/icons-react';
 import { Button, useToast } from '@/components/ui/ui';
 import type { ContentReport } from '@/lib/types';
 import { useAppState } from '@/state/app-state';
@@ -56,14 +55,6 @@ export default function ReportPage() {
     <>
       <Head><title>問題回報｜建築師考試</title></Head>
       <section className={styles.page}>
-        <header>
-          <IconFlag size={26} stroke={2} aria-hidden="true" />
-          <div>
-            <span>CONTENT REPORT</span>
-            <h2>問題回報</h2>
-            <p>若題目、答案、圖片或詳解有誤，請提供足夠資訊協助管理者確認。</p>
-          </div>
-        </header>
         <form onSubmit={submit}>
           <label>
             問題類型

@@ -829,8 +829,8 @@ test('all retained routes support direct visits and removed routes return 404', 
     { path: '/notes', title: '使用者筆記' },
     { path: '/difficult', title: '難題標記' },
     { path: '/history', title: '已作答紀錄' },
-    { path: '/settings', title: '閱讀設定' },
-    { path: '/appearance', title: '配色設定' },
+    { path: '/settings', title: '設定' },
+    { path: '/appearance', title: '設定' },
   ] as const;
 
   for (const route of routes) {
@@ -856,6 +856,7 @@ test('custom theme colors apply to their mode and survive a reload', async ({
 
   await page.goto('/appearance');
   await page.getByRole('radio', { name: '深色模式' }).locator('..').click();
+  await page.getByText('進階設定', { exact: true }).click();
   await page.getByLabel('頁面背景十六進位色碼').fill('#000000');
 
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
@@ -976,9 +977,11 @@ test('mobile drawer links to separate paper and random quiz pages', async ({ pag
     page.getByRole('heading', { name: '選擇科目與年度' }),
   ).toHaveCount(0);
   await page.getByRole('button', { name: '開啟選單' }).click();
-  await page.getByRole('link', { name: '配色設定' }).click();
-  await expect(page).toHaveURL(/\/appearance$/);
-  await expectCompactTopbarHeading(page, '配色設定');
+  await page.getByRole('link', { name: '設定' }).click();
+  await expect(page).toHaveURL(/\/settings$/);
+  await expectCompactTopbarHeading(page, '設定');
+  await expect(page.getByText('閱讀設定', { exact: true })).toBeVisible();
+  await expect(page.getByText('介面配色設定', { exact: true })).toBeVisible();
   const hasHorizontalOverflow = await page.evaluate(
     () => document.documentElement.scrollWidth > window.innerWidth,
   );

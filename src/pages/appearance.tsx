@@ -11,7 +11,6 @@ import {
   IconAlertTriangle,
   IconCheck,
   IconMoonStars,
-  IconPalette,
   IconSparkles,
   IconSun,
 } from '@tabler/icons-react';
@@ -99,7 +98,7 @@ function storageFailureDescription(result: 'quota-exceeded' | 'unavailable') {
     : '瀏覽器目前不允許保存；本次瀏覽仍可使用，重新整理後會還原。';
 }
 
-export default function AppearancePage() {
+export function AppearanceSettings({ embedded = false }: { embedded?: boolean }) {
   const {
     mode,
     palettes,
@@ -275,22 +274,12 @@ export default function AppearancePage() {
 
   return (
     <>
-      <Head>
-        <title>配色設定｜建築師考試</title>
-      </Head>
-      <section className={styles.page} aria-labelledby="appearance-title">
-        <header className={styles.hero}>
-          <span className={styles.heroIcon} aria-hidden="true">
-            <IconPalette size={28} stroke={2} />
-          </span>
-          <div>
-            <span className={styles.eyebrow}>APPEARANCE</span>
-            <h2 id="appearance-title">配色設定</h2>
-            <p>
-              從官方配色快速開始，也能分別微調淺色與深色模式。通過可讀性檢查後，配色會保存在目前瀏覽器。
-            </p>
-          </div>
-        </header>
+      {!embedded ? (
+        <Head>
+          <title>介面配色設定｜建築師考試</title>
+        </Head>
+      ) : null}
+      <section className={styles.page} aria-label="介面配色設定">
 
         <fieldset
           className={styles.modeFieldset}
@@ -342,6 +331,24 @@ export default function AppearancePage() {
           </div>
         </fieldset>
 
+        <div className={styles.stickyActions}>
+          <span>確認預覽效果後再套用至網站</span>
+          <div className={styles.actions}>
+            <Button type="button" disabled={!hydrated} onClick={loadDefaultPalette}>
+              載入預設色
+            </Button>
+            <Button
+              type="button"
+              variant="primary"
+              disabled={!canApply}
+              aria-describedby="palette-validation-status"
+              onClick={applyPalette}
+            >
+              {saving ? '正在套用…' : '套用此模式'}
+            </Button>
+          </div>
+        </div>
+
         <section
           className={styles.presetPanel}
           aria-labelledby="official-presets-title"
@@ -358,7 +365,7 @@ export default function AppearancePage() {
             <span className={styles.presetCount}>5 組精選</span>
           </div>
           <p className={styles.presetHelp} id="official-presets-help">
-            選擇色票會立即更新下方獨立預覽；確認後再按「套用此模式」，不會意外改變整個網站。
+            選擇色票會立即更新下方頁面預覽；確認後再按「套用此模式」，不會意外改變整個網站。
           </p>
 
           <div
@@ -429,7 +436,9 @@ export default function AppearancePage() {
         </section>
 
         <div className={styles.workspace}>
-          <section className={styles.editor} aria-labelledby="palette-editor-title">
+          <details className={styles.advancedSettings}>
+            <summary>進階設定</summary>
+            <section className={styles.editor} aria-labelledby="palette-editor-title">
             <div className={styles.sectionHeading}>
               <div>
                 <span className={styles.eyebrow}>COLOR TOKENS</span>
@@ -533,21 +542,8 @@ export default function AppearancePage() {
               {statusMessage ? <p>{statusMessage}</p> : null}
             </div>
 
-            <div className={styles.actions}>
-              <Button type="button" disabled={!hydrated} onClick={loadDefaultPalette}>
-                載入預設色
-              </Button>
-              <Button
-                type="button"
-                variant="primary"
-                disabled={!canApply}
-                aria-describedby="palette-validation-status"
-                onClick={applyPalette}
-              >
-                {saving ? '正在套用…' : '套用此模式'}
-              </Button>
-            </div>
-          </section>
+            </section>
+          </details>
 
           <section
             className={styles.previewPanel}
@@ -556,7 +552,7 @@ export default function AppearancePage() {
             <div className={styles.sectionHeading}>
               <div>
                 <span className={styles.eyebrow}>LIVE PREVIEW</span>
-                <h3 id="palette-preview-title">獨立預覽</h3>
+                <h3 id="palette-preview-title">頁面預覽</h3>
               </div>
               <span className={styles.previewMode}>{currentModeLabel}</span>
             </div>
@@ -613,4 +609,8 @@ export default function AppearancePage() {
       </section>
     </>
   );
+}
+
+export default function AppearancePage() {
+  return <AppearanceSettings />;
 }
