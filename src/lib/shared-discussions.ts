@@ -1,0 +1,368 @@
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
+  onSnapshot,
+  query,
+  serverTimestamp,
+  setDoc,
+  updateDoc,
+  where,
+  type DocumentData,
+  type Unsubscribe,
+} from 'firebase/firestore';
+import { useCloudSync } from '@/components/cloud-sync-provider';
+import {
+  firebaseConfigurationAvailable,
+  getFirebaseServices,
+} from '@/lib/firebase-client';
+import type {
+  DiscussionPost,
+  DiscussionPostType,
+  DiscussionReply,
+  QuestionId,
+} from '@/lib/types';
+import { useAppState } from '@/state/app-state';
+
+export interface SharedDiscussionPost extends DiscussionPost {
+  authorId?: string;
+  authorName?: string;
+  likedByCurrentUser?: boolean;
+  ownedByCurrentUser?: boolean;
+}
+
+function timestampToIso(value: unknown) {
+  if (
+    value &&
+    typeof value === 'object' &&
+    'toDate' in value &&
+    typeof value.toDate === 'function'
+  ) {
+    return value.toDate().toISOString();
+  }
+  return new Date().toISOString();
+}
+
+export function parseCloudDiscussionPost(id: string, data: DocumentData) {
+  if (
+    data.deleted === true ||
+    typeof data.questionId !== 'string' ||
+    !['explanation', 'supplement', 'question', 'correction'].includes(data.type) ||
+    typeof data.content !== 'string' ||
+    typeof data.authorId !== 'string'
+  ) {
+    return null;
+  }
+  return {
+    id,
+    questionId: data.questionId as QuestionId,
+    type: data.type as DiscussionPostType,
+    content: data.content,
+    images: [],
+    createdAt: timestampToIso(data.createdAt),
+    likes: 0,
+    replies: [],
+    reported: false,
+    authorId: data.authorId,
+    authorName:
+      typeof data.authorName === 'string' && data.authorName.trim()
+        ? data.authorName
+        : '匿名使用者',
+  } satisfies SharedDiscussionPost;
+}
+
+export function parseCloudDiscussionReply(id: string, data: DocumentData) {
+  if (typeof data.content !== 'string' || typeof data.authorId !== 'string') {
+    return null;
+  }
+  return {
+    id,
+    content: data.content,
+    createdAt: timestampToIso(data.createdAt),
+    authorId: data.authorId,
+  } satisfies DiscussionReply & { authorId: string };
+}
+
+export function useSharedDiscussions(questionId: QuestionId) {
+  const { state, dispatch } = useAppState();
+  const { user, signIn } = useCloudSync();
+  const enabled = firebaseConfigurationAvailable();
+  const [cloudPosts, setCloudPosts] = useState<SharedDiscussionPost[]>([]);
+  const [repliesByPost, setRepliesByPost] = useState<
+    Record<string, Array<DiscussionReply & { authorId: string }>>
+  >({});
+  const [likesByPost, setLikesByPost] = useState<
+    Record<string, { count: number; liked: boolean }>
+  >({});
+  const [reportedPostIds, setReportedPostIds] = useState<string[]>([]);
+  const [loadedQuestionId, setLoadedQuestionId] = useState<string | null>(null);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (!enabled) return;
+    const firebase = getFirebaseServices();
+    if (!firebase) return;
+    const postsQuery = query(
+      collection(firebase.db, 'discussionPosts'),
+      where('questionId', '==', questionId),
+    );
+    return onSnapshot(
+      postsQuery,
+      (snapshot) => {
+        const posts = snapshot.docs
+          .flatMap((item) => {
+            const post = parseCloudDiscussionPost(item.id, item.data());
+            return post ? [post] : [];
+          })
+          .sort((left, right) => right.createdAt.localeCompare(left.createdAt));
+        setCloudPosts(posts);
+        setLoadedQuestionId(questionId);
+        setError('');
+      },
+      () => {
+        setError('無法讀取共享投稿，請確認 Firestore 規則與網路連線。');
+        setLoadedQuestionId(questionId);
+      },
+    );
+  }, [enabled, questionId]);
+
+  const postIdsKey = cloudPosts.map((post) => post.id).join('|');
+  useEffect(() => {
+    if (!enabled || !postIdsKey) return;
+    const firebase = getFirebaseServices();
+    if (!firebase) return;
+    const stops: Unsubscribe[] = [];
+    cloudPosts.forEach((post) => {
+      stops.push(
+        onSnapshot(
+          collection(firebase.db, 'discussionPosts', post.id, 'replies'),
+          (snapshot) => {
+            const replies = snapshot.docs
+              .flatMap((item) => {
+                const reply = parseCloudDiscussionReply(item.id, item.data());
+                return reply ? [reply] : [];
+              })
+              .sort((left, right) => left.createdAt.localeCompare(right.createdAt));
+            setRepliesByPost((current) => ({ ...current, [post.id]: replies }));
+          },
+        ),
+      );
+      stops.push(
+        onSnapshot(
+          collection(firebase.db, 'discussionPosts', post.id, 'likes'),
+          (snapshot) => {
+            setLikesByPost((current) => ({
+              ...current,
+              [post.id]: {
+                count: snapshot.size,
+                liked: user ? snapshot.docs.some((item) => item.id === user.uid) : false,
+              },
+            }));
+          },
+        ),
+      );
+      if (user) {
+        stops.push(
+          onSnapshot(
+            doc(firebase.db, 'discussionPosts', post.id, 'reports', user.uid),
+            (snapshot) => {
+              setReportedPostIds((current) =>
+                snapshot.exists()
+                  ? [...new Set([...current, post.id])]
+                  : current.filter((id) => id !== post.id),
+              );
+            },
+          ),
+        );
+      }
+    });
+    return () => stops.forEach((stop) => stop());
+  }, [cloudPosts, enabled, postIdsKey, user]);
+
+  const posts = useMemo<SharedDiscussionPost[]>(() => {
+    if (!enabled) {
+      return state.discussionPosts.filter((post) => post.questionId === questionId);
+    }
+    return cloudPosts
+      .filter((post) => post.questionId === questionId)
+      .map((post) => ({
+        ...post,
+        replies: repliesByPost[post.id] ?? [],
+        likes: likesByPost[post.id]?.count ?? 0,
+        likedByCurrentUser: likesByPost[post.id]?.liked ?? false,
+        reported: reportedPostIds.includes(post.id),
+        ownedByCurrentUser: Boolean(user && post.authorId === user.uid),
+      }));
+  }, [
+    cloudPosts,
+    enabled,
+    likesByPost,
+    questionId,
+    repliesByPost,
+    reportedPostIds,
+    state.discussionPosts,
+    user,
+  ]);
+
+  const requireUser = useCallback(() => {
+    if (!user) throw new Error('請先使用 Google 登入後再操作。');
+    return user;
+  }, [user]);
+
+  const addPost = useCallback(
+    async (type: DiscussionPostType, content: string) => {
+      const trimmed = content.trim();
+      if (!trimmed) return;
+      if (!enabled) {
+        const now = new Date().toISOString();
+        dispatch({
+          type: 'add-discussion-post',
+          post: {
+            id: `post-${now}`,
+            questionId,
+            type,
+            content: trimmed,
+            images: [],
+            createdAt: now,
+            likes: 0,
+            replies: [],
+            reported: false,
+          },
+        });
+        return;
+      }
+      const activeUser = requireUser();
+      const firebase = getFirebaseServices();
+      if (!firebase) return;
+      await addDoc(collection(firebase.db, 'discussionPosts'), {
+        questionId,
+        type,
+        content: trimmed,
+        authorId: activeUser.uid,
+        authorName: '匿名使用者',
+        createdAt: serverTimestamp(),
+        deleted: false,
+      });
+    },
+    [dispatch, enabled, questionId, requireUser],
+  );
+
+  const addReply = useCallback(
+    async (postId: string, content: string) => {
+      const trimmed = content.trim();
+      if (!trimmed) return;
+      if (!enabled) {
+        dispatch({
+          type: 'add-discussion-reply',
+          postId,
+          reply: {
+            id: `reply-${postId}-${new Date().toISOString()}`,
+            content: trimmed,
+            createdAt: new Date().toISOString(),
+          },
+        });
+        return;
+      }
+      const activeUser = requireUser();
+      const firebase = getFirebaseServices();
+      if (!firebase) return;
+      await addDoc(collection(firebase.db, 'discussionPosts', postId, 'replies'), {
+        content: trimmed,
+        authorId: activeUser.uid,
+        authorName: '匿名使用者',
+        createdAt: serverTimestamp(),
+      });
+    },
+    [dispatch, enabled, requireUser],
+  );
+
+  const toggleLike = useCallback(
+    async (postId: string, liked: boolean) => {
+      if (!enabled) {
+        dispatch({ type: 'like-discussion-post', postId });
+        return;
+      }
+      const activeUser = requireUser();
+      const firebase = getFirebaseServices();
+      if (!firebase) return;
+      const like = doc(firebase.db, 'discussionPosts', postId, 'likes', activeUser.uid);
+      if (liked) await deleteDoc(like);
+      else {
+        await setDoc(like, {
+          userId: activeUser.uid,
+          createdAt: serverTimestamp(),
+        });
+      }
+    },
+    [dispatch, enabled, requireUser],
+  );
+
+  const reportPost = useCallback(
+    async (postId: string) => {
+      if (!enabled) {
+        dispatch({ type: 'report-discussion-post', postId });
+        return;
+      }
+      const activeUser = requireUser();
+      const firebase = getFirebaseServices();
+      if (!firebase) return;
+      await setDoc(
+        doc(firebase.db, 'discussionPosts', postId, 'reports', activeUser.uid),
+        { reporterId: activeUser.uid, createdAt: serverTimestamp() },
+      );
+      setReportedPostIds((current) => [...new Set([...current, postId])]);
+    },
+    [dispatch, enabled, requireUser],
+  );
+
+  const deletePost = useCallback(
+    async (postId: string) => {
+      if (!enabled) {
+        dispatch({ type: 'delete-discussion-post', postId });
+        return;
+      }
+      requireUser();
+      const firebase = getFirebaseServices();
+      if (!firebase) return;
+      await updateDoc(doc(firebase.db, 'discussionPosts', postId), {
+        content: '',
+        deleted: true,
+        deletedAt: serverTimestamp(),
+      });
+    },
+    [dispatch, enabled, requireUser],
+  );
+
+  const deleteReply = useCallback(
+    async (postId: string, replyId: string) => {
+      if (!enabled) {
+        dispatch({ type: 'delete-discussion-reply', postId, replyId });
+        return;
+      }
+      requireUser();
+      const firebase = getFirebaseServices();
+      if (!firebase) return;
+      await deleteDoc(
+        doc(firebase.db, 'discussionPosts', postId, 'replies', replyId),
+      );
+    },
+    [dispatch, enabled, requireUser],
+  );
+
+  return {
+    posts,
+    enabled,
+    loading: enabled && loadedQuestionId !== questionId,
+    error,
+    user,
+    signIn,
+    addPost,
+    addReply,
+    toggleLike,
+    reportPost,
+    deletePost,
+    deleteReply,
+  };
+}

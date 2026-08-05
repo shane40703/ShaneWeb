@@ -22,7 +22,7 @@ NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=...
 NEXT_PUBLIC_FIREBASE_APP_ID=...
 ```
 
-這些 Firebase Web 設定值不是管理員密鑰，會出現在瀏覽器程式碼中。使用者資料由 `firestore.rules` 限制為只有相同 Firebase UID 可以存取。
+這些 Firebase Web 設定值不是管理員密鑰，會出現在瀏覽器程式碼中。私人作答資料由 `firestore.rules` 限制為只有相同 Firebase UID 可以存取；共享討論則允許公開讀取，但只有登入者可以投稿或互動。
 
 ## 3. 發布 Firestore Rules
 
@@ -47,3 +47,13 @@ firebase deploy --only firestore:rules
 - 登入後完成新試卷：保留本機資料並上傳 Firestore。
 - 隨機出題紀錄原本就不保存，因此不會同步。
 - 筆記、難題、閱讀設定與配色尚未納入第一階段。
+
+## 共享詳解與討論
+
+- 所有人都能即時讀取公開投稿與回覆。
+- Google 登入後才能投稿、回覆、按讚或檢舉。
+- 投稿與回覆以匿名名稱顯示，但 Firestore 會保存 Firebase UID 以驗證作者權限。
+- 作者可以刪除自己的投稿或回覆；投稿使用軟刪除，避免遺留的子集合被錯誤顯示。
+- 每篇投稿最多 5,000 字、每則回覆最多 2,000 字，限制由 Firestore Rules 強制執行。
+- 目前共享投稿只支援文字。圖片應在後續版本上傳至 Firebase Storage，Firestore 僅保存檔案路徑，請勿把 Base64 圖片寫入 Firestore。
+- Firebase 未設定時，開發環境仍會使用既有的本機投稿備援。

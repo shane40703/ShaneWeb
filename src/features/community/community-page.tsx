@@ -10,8 +10,9 @@ import {
   IconLoader2,
   IconMessageCircle,
   IconNotebook,
+  IconTrash,
 } from '@tabler/icons-react';
-import { AttachmentGallery, ImageAttachments } from '@/components/image-attachments';
+import { AttachmentGallery } from '@/components/image-attachments';
 import {
   EmptyState,
   QuestionPrompt,
@@ -25,18 +26,23 @@ import {
   QuestionSelector,
   type SelectorYear,
 } from '@/components/question-selector';
-import { Button, SimpleSelect, useToast } from '@/components/ui/ui';
+import {
+  Button,
+  ConfirmDialog,
+  SimpleSelect,
+  useToast,
+} from '@/components/ui/ui';
 import { getSubject, years } from '@/question-bank/catalog';
 import type {
   DiscussionPost,
   DiscussionPostType,
-  ImageAttachment,
   Question,
   SubjectId,
 } from '@/lib/types';
 import type { QuestionBankStatus } from '@/lib/question-bank-client';
 import { questionPath } from '@/lib/question-path';
 import { formatDateTime } from '@/lib/study';
+import { useSharedDiscussions } from '@/lib/shared-discussions';
 import { useClientReady } from '@/lib/use-client-ready';
 import { useAppState } from '@/state/app-state';
 import styles from './community-page.module.css';
@@ -82,8 +88,8 @@ export function CommunityPage({
     : questions[0];
   const [postType, setPostType] = useState<DiscussionPostType>('explanation');
   const [postContent, setPostContent] = useState('');
-  const [postImages, setPostImages] = useState<ImageAttachment[]>([]);
   const [replyDrafts, setReplyDrafts] = useState<Record<string, string>>({});
+  const shared = useSharedDiscussions(currentQuestion?.id ?? 'unavailable');
 
   if (
     routeHydrated &&
@@ -149,11 +155,9 @@ export function CommunityPage({
   const currentIndex = subjectQuestions.findIndex(
     (question) => question.id === currentQuestion.id,
   );
-  const posts = state.discussionPosts.filter(
-    (post) => post.questionId === currentQuestion.id,
-  );
+  const posts = shared.posts;
   const discussionQuestionIds = new Set(
-    state.discussionPosts.map((post) => post.questionId),
+    posts.map((post) => post.questionId),
   );
   const difficultQuestionIds = new Set(state.difficultQuestionIds);
   const difficult = state.difficultQuestionIds.includes(currentQuestion.id);
@@ -185,28 +189,20 @@ export function CommunityPage({
     if (first) navigateTo(first.id);
   }
 
-  function addPost(event: FormEvent) {
+  async function addPost(event: FormEvent) {
     event.preventDefault();
     const content = postContent.trim();
-    if (!content && !postImages.length) return;
-    const now = new Date().toISOString();
-    dispatch({
-      type: 'add-discussion-post',
-      post: {
-        id: `post-${now}`,
-        questionId: activeQuestion.id,
-        type: postType,
-        content,
-        images: postImages,
-        createdAt: now,
-        likes: 0,
-        replies: [],
-        reported: false,
-      },
-    });
-    setPostContent('');
-    setPostImages([]);
-    notify('已匿名投稿', '內容已保存在目前瀏覽器。');
+    if (!content) return;
+    try {
+      await shared.addPost(postType, content);
+      setPostContent('');
+      notify(
+        '投稿完成',
+        shared.enabled ? '所有使用者現在都能看到這則內容。' : '內容已保存在目前瀏覽器。',
+      );
+    } catch (reason) {
+      notify('投稿失敗', reason instanceof Error ? reason.message : '請稍後再試。');
+    }
   }
 
   function savePostToNote(post: DiscussionPost) {
@@ -228,20 +224,24 @@ export function CommunityPage({
     notify('已加入我的筆記', '文字與圖片已保存到這一題。');
   }
 
-  function addReply(postId: string, event: FormEvent) {
+  async function addReply(postId: string, event: FormEvent) {
     event.preventDefault();
     const content = replyDrafts[postId]?.trim();
     if (!content) return;
-    dispatch({
-      type: 'add-discussion-reply',
-      postId,
-      reply: {
-        id: `reply-${postId}-${new Date().toISOString()}`,
-        content,
-        createdAt: new Date().toISOString(),
-      },
-    });
-    setReplyDrafts((current) => ({ ...current, [postId]: '' }));
+    try {
+      await shared.addReply(postId, content);
+      setReplyDrafts((current) => ({ ...current, [postId]: '' }));
+    } catch (reason) {
+      notify('回覆失敗', reason instanceof Error ? reason.message : '請稍後再試。');
+    }
+  }
+
+  async function runPostAction(action: () => Promise<void>, title: string) {
+    try {
+      await action();
+    } catch (reason) {
+      notify(title, reason instanceof Error ? reason.message : '請稍後再試。');
+    }
   }
 
   return (
@@ -355,10 +355,12 @@ export function CommunityPage({
           <header className={styles.sectionHeader}>
             <div>
               <span>DISCUSSION</span>
-              <h2>匿名內容</h2>
+              <h2>共享內容</h2>
             </div>
             <strong>{posts.length} 則</strong>
           </header>
+          {shared.error ? <p role="alert">{shared.error}</p> : null}
+          {shared.loading ? <p role="status">正在載入共享投稿…</p> : null}
           {posts.length ? (
             <div className={styles.postList}>
               {posts.map((post) => (
@@ -379,6 +381,19 @@ export function CommunityPage({
                         <div key={reply.id}>
                           <span>匿名回覆・{formatDateTime(reply.createdAt)}</span>
                           <p>{reply.content}</p>
+                          {shared.user && reply.authorId === shared.user.uid ? (
+                            <Button
+                              variant="ghost"
+                              onClick={() =>
+                                void runPostAction(
+                                  () => shared.deleteReply(post.id, reply.id),
+                                  '刪除回覆失敗',
+                                )
+                              }
+                            >
+                              刪除回覆
+                            </Button>
+                          ) : null}
                         </div>
                       ))}
                     </div>
@@ -386,9 +401,22 @@ export function CommunityPage({
                   <div className={styles.postActions}>
                     <Button
                       variant="ghost"
-                      aria-pressed={state.likedDiscussionPostIds.includes(post.id)}
+                      aria-pressed={
+                        shared.enabled
+                          ? Boolean(post.likedByCurrentUser)
+                          : state.likedDiscussionPostIds.includes(post.id)
+                      }
                       onClick={() =>
-                        dispatch({ type: 'like-discussion-post', postId: post.id })
+                        void runPostAction(
+                          () =>
+                            shared.toggleLike(
+                              post.id,
+                              shared.enabled
+                                ? Boolean(post.likedByCurrentUser)
+                                : state.likedDiscussionPostIds.includes(post.id),
+                            ),
+                          '無法更新按讚',
+                        )
                       }
                     >
                       <IconHeart size={17} stroke={2} aria-hidden="true" /> 讚{' '}
@@ -402,11 +430,33 @@ export function CommunityPage({
                       variant="ghost"
                       disabled={post.reported}
                       onClick={() =>
-                        dispatch({ type: 'report-discussion-post', postId: post.id })
+                        void runPostAction(
+                          () => shared.reportPost(post.id),
+                          '無法送出檢舉',
+                        )
                       }
                     >
                       {post.reported ? '已檢舉' : '檢舉'}
                     </Button>
+                    {post.ownedByCurrentUser ? (
+                      <ConfirmDialog
+                        trigger={
+                          <Button variant="danger">
+                            <IconTrash size={16} stroke={2} aria-hidden="true" />
+                            刪除
+                          </Button>
+                        }
+                        title="刪除這則共享投稿？"
+                        description="刪除後所有使用者都不會再看到這則內容。"
+                        confirmLabel="確認刪除"
+                        onConfirm={() =>
+                          void runPostAction(
+                            () => shared.deletePost(post.id),
+                            '刪除失敗',
+                          )
+                        }
+                      />
+                    ) : null}
                   </div>
                   <form
                     className={styles.replyForm}
@@ -423,9 +473,19 @@ export function CommunityPage({
                             [post.id]: event.target.value,
                           }))
                         }
-                        placeholder="輸入匿名回覆"
+                        placeholder={
+                          shared.enabled && !shared.user
+                            ? '請先登入後再回覆'
+                            : '輸入匿名回覆'
+                        }
+                        disabled={shared.enabled && !shared.user}
                       />
-                      <Button type="submit">回覆</Button>
+                      <Button
+                        type="submit"
+                        disabled={shared.enabled && !shared.user}
+                      >
+                        回覆
+                      </Button>
                     </div>
                   </form>
                 </article>
@@ -441,8 +501,18 @@ export function CommunityPage({
         </section>
 
         <form className={styles.composeCard} onSubmit={addPost}>
-          <span className={styles.composeEyebrow}>匿名投稿</span>
+          <span className={styles.composeEyebrow}>共享投稿</span>
           <h2>分享解題觀念</h2>
+          {shared.enabled && !shared.user ? (
+            <Button
+              type="button"
+              variant="primary"
+              fullWidth
+              onClick={() => void shared.signIn()}
+            >
+              使用 Google 登入後投稿
+            </Button>
+          ) : null}
           <SimpleSelect
             label="投稿類型"
             value={postType}
@@ -456,16 +526,21 @@ export function CommunityPage({
             onChange={(event) => setPostContent(event.target.value)}
             rows={8}
             placeholder="請清楚描述你的詳解、補充、提問或勘誤…"
+            disabled={shared.enabled && !shared.user}
           />
-          <ImageAttachments
-            images={postImages}
-            onChange={setPostImages}
-            label="上傳詳解圖片"
-          />
-          <Button type="submit" variant="primary" fullWidth>
-            匿名送出
+          <Button
+            type="submit"
+            variant="primary"
+            fullWidth
+            disabled={shared.enabled && !shared.user}
+          >
+            送出共享投稿
           </Button>
-          <p>目前沒有帳號系統，投稿內容僅儲存在這台裝置，不會同步給其他使用者。</p>
+          <p>
+            {shared.enabled
+              ? '共享投稿會公開顯示給所有使用者；目前僅支援文字內容。'
+              : 'Firebase 尚未設定，投稿內容僅儲存在這台裝置。'}
+          </p>
         </form>
       </div>
     </div>

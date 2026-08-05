@@ -116,6 +116,7 @@ export interface DiscussionReply {
   id: string;
   content: string;
   createdAt: string;
+  authorId?: string;
 }
 
 export interface ImageAttachment {

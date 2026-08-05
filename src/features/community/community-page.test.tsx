@@ -1,6 +1,7 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ToastProvider } from '@/components/ui/ui';
+import { CloudSyncProvider } from '@/components/cloud-sync-provider';
 import { CommunityPage } from '@/features/community/community-page';
 import type { Question, SubjectId } from '@/lib/types';
 import { AppStateProvider } from '@/state/app-state';
@@ -40,7 +41,9 @@ function renderPage(
   return render(
     <ToastProvider>
       <AppStateProvider>
-        <CommunityPage questions={[lawQuestion]} {...props} />
+        <CloudSyncProvider>
+          <CommunityPage questions={[lawQuestion]} {...props} />
+        </CloudSyncProvider>
       </AppStateProvider>
     </ToastProvider>,
   );
@@ -50,6 +53,10 @@ afterEach(cleanup);
 
 describe('CommunityPage question loading', () => {
   beforeEach(() => {
+    vi.stubEnv('NEXT_PUBLIC_FIREBASE_API_KEY', '');
+    vi.stubEnv('NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN', '');
+    vi.stubEnv('NEXT_PUBLIC_FIREBASE_PROJECT_ID', '');
+    vi.stubEnv('NEXT_PUBLIC_FIREBASE_APP_ID', '');
     window.localStorage.clear();
     router.isReady = true;
     router.query = {};
@@ -124,5 +131,19 @@ describe('CommunityPage question loading', () => {
       screen.getByRole('heading', { name: '正在載入題目' }),
     ).toBeInTheDocument();
     expect(screen.queryByText('law-114-01 題幹')).not.toBeInTheDocument();
+  });
+
+  it('keeps local text posting available when Firebase is not configured', async () => {
+    renderPage();
+
+    fireEvent.change(screen.getByLabelText('內容'), {
+      target: { value: '本機備援投稿' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: '送出共享投稿' }));
+
+    expect(await screen.findByText('本機備援投稿')).toBeInTheDocument();
+    expect(
+      screen.getByText('Firebase 尚未設定，投稿內容僅儲存在這台裝置。'),
+    ).toBeInTheDocument();
   });
 });

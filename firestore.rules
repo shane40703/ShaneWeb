@@ -32,6 +32,97 @@ service cloud.firestore {
       allow create, update: if ownsDocument() && validAttempt();
     }
 
+    match /discussionPosts/{postId} {
+      function signedIn() {
+        return request.auth != null;
+      }
+
+      function ownsPost() {
+        return signedIn() && resource.data.authorId == request.auth.uid;
+      }
+
+      function parentPostIsActive() {
+        return get(
+          /databases/$(database)/documents/discussionPosts/$(postId)
+        ).data.deleted == false;
+      }
+
+      function validPost() {
+        return request.resource.data.keys().hasOnly([
+          'questionId', 'type', 'content', 'authorId', 'authorName',
+          'createdAt', 'deleted'
+        ])
+        && request.resource.data.questionId is string
+        && request.resource.data.questionId.size() <= 80
+        && request.resource.data.type in [
+          'explanation', 'supplement', 'question', 'correction'
+        ]
+        && request.resource.data.content is string
+        && request.resource.data.content.size() >= 1
+        && request.resource.data.content.size() <= 5000
+        && request.resource.data.authorId == request.auth.uid
+        && request.resource.data.authorName == '匿名使用者'
+        && request.resource.data.createdAt is timestamp
+        && request.resource.data.deleted == false;
+      }
+
+      allow read: if true;
+      allow create: if signedIn() && validPost();
+      allow update: if ownsPost()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'content', 'deleted', 'deletedAt'
+        ])
+        && request.resource.data.content == ''
+        && request.resource.data.deleted == true
+        && request.resource.data.deletedAt is timestamp;
+      allow delete: if false;
+
+      match /replies/{replyId} {
+        function validReply() {
+          return request.resource.data.keys().hasOnly([
+            'content', 'authorId', 'authorName', 'createdAt'
+          ])
+          && request.resource.data.content is string
+          && request.resource.data.content.size() >= 1
+          && request.resource.data.content.size() <= 2000
+          && request.resource.data.authorId == request.auth.uid
+          && request.resource.data.authorName == '匿名使用者'
+          && request.resource.data.createdAt is timestamp;
+        }
+
+        allow read: if true;
+        allow create: if request.auth != null
+          && parentPostIsActive()
+          && validReply();
+        allow update: if false;
+        allow delete: if request.auth != null
+          && resource.data.authorId == request.auth.uid;
+      }
+
+      match /likes/{userId} {
+        allow read: if true;
+        allow create: if request.auth != null
+          && request.auth.uid == userId
+          && parentPostIsActive()
+          && request.resource.data.keys().hasOnly(['userId', 'createdAt'])
+          && request.resource.data.userId == userId
+          && request.resource.data.createdAt is timestamp;
+        allow update: if false;
+        allow delete: if request.auth != null && request.auth.uid == userId;
+      }
+
+      match /reports/{userId} {
+        allow read: if request.auth != null && request.auth.uid == userId;
+        allow create: if request.auth != null
+          && request.auth.uid == userId
+          && parentPostIsActive()
+          && request.resource.data.keys().hasOnly(['reporterId', 'createdAt'])
+          && request.resource.data.reporterId == userId
+          && request.resource.data.createdAt is timestamp;
+        allow update, delete: if false;
+      }
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }
