@@ -488,6 +488,7 @@ test('community selectors and local anonymous interactions work', async ({ page 
   await expect(page.getByRole('group', { name: '年度' })).toBeVisible();
   const questionPicker = page.getByRole('group', { name: '題號' });
   await expect(questionPicker).toBeVisible();
+  await expect(page.getByRole('link', { name: '返回作答頁' })).toHaveCount(0);
   const firstQuestionNumber = questionPicker.getByRole('button').first();
   await expect(firstQuestionNumber).not.toHaveAttribute('data-content', 'true');
   await page.getByRole('button', { name: '標記為難題' }).click();

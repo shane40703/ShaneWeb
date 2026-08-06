@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import { type FormEvent, useState } from 'react';
 import { useRouter } from 'next/router';
 import {
@@ -40,7 +39,6 @@ import type {
   SubjectId,
 } from '@/lib/types';
 import type { QuestionBankStatus } from '@/lib/question-bank-client';
-import { questionPath } from '@/lib/question-path';
 import { formatDateTime } from '@/lib/study';
 import { useSharedDiscussions } from '@/lib/shared-discussions';
 import { useClientReady } from '@/lib/use-client-ready';
@@ -318,20 +316,6 @@ export function CommunityPage({
             }
           >
             <IconArrowLeft size={17} stroke={2} aria-hidden="true" /> 上一題
-          </Button>
-          <Button
-            variant="ghost"
-            render={
-              <Link
-                href={questionPath(
-                  currentQuestion.subject,
-                  currentQuestion.year,
-                  currentQuestion.questionNumber,
-                )}
-              />
-            }
-          >
-            返回作答頁
           </Button>
           <Button
             disabled={currentIndex >= subjectQuestions.length - 1}

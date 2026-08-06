@@ -120,6 +120,9 @@ describe('CommunityPage question loading', () => {
     expect(
       screen.queryByRole('heading', { name: '正在載入題目' }),
     ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('link', { name: '返回作答頁' }),
+    ).not.toBeInTheDocument();
   });
 
   it('waits for the router before treating an absent query as the default question', () => {
