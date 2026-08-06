@@ -47,6 +47,13 @@ describe('RandomPage', () => {
 
     render(<RandomPage questions={questions} />);
 
+    expect(
+      screen.getByRole('button', { name: '建築構造與施工' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/題符合年度/, { selector: 'strong' }),
+    ).toHaveTextContent('3 題符合年度');
+
     fireEvent.change(screen.getByLabelText('隨機出題題目類別'), {
       target: { value: '建築技術規則' },
     });
