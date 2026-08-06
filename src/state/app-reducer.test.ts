@@ -95,12 +95,48 @@ describe('appReducer', () => {
     });
     expect(state.difficultQuestionIds).toEqual(['law-114-01']);
     expect(state.notes['law-114-01']).toBe('採光比例要再確認');
+    expect(state.noteUpdatedAt['law-114-01']).toBeTruthy();
     state = appReducer(state, {
       type: 'save-note',
       questionId: 'law-114-01',
       content: ' ',
     });
     expect(state.notes['law-114-01']).toBeUndefined();
+    expect(state.noteUpdatedAt['law-114-01']).toBeTruthy();
+  });
+
+  it('merges only newer cloud note versions and keeps deletion tombstones', () => {
+    const state = createDefaultState();
+    state.notes['law-114-01'] = '本機新版';
+    state.noteUpdatedAt['law-114-01'] = '2026-08-06T10:00:00.000Z';
+
+    const merged = appReducer(state, {
+      type: 'merge-notes',
+      notes: [
+        {
+          questionId: 'law-114-01',
+          content: '雲端舊版',
+          updatedAt: '2026-08-06T09:00:00.000Z',
+        },
+        {
+          questionId: 'env-114-01',
+          content: '雲端筆記',
+          updatedAt: '2026-08-06T11:00:00.000Z',
+        },
+        {
+          questionId: 'structure-114-01',
+          content: '',
+          updatedAt: '2026-08-06T12:00:00.000Z',
+        },
+      ],
+    });
+
+    expect(merged.notes['law-114-01']).toBe('本機新版');
+    expect(merged.notes['env-114-01']).toBe('雲端筆記');
+    expect(merged.notes['structure-114-01']).toBeUndefined();
+    expect(merged.noteUpdatedAt['structure-114-01']).toBe(
+      '2026-08-06T12:00:00.000Z',
+    );
   });
 
   it('deletes only the selected attempt', () => {

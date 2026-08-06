@@ -1,9 +1,9 @@
-import { render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AttemptReview } from '@/components/attempt-review';
 import { ToastProvider } from '@/components/ui/ui';
 import type { QuizAttempt } from '@/lib/types';
-import { AppStateProvider } from '@/state/app-state';
+import { AppStateProvider, useAppState } from '@/state/app-state';
 
 const questions = [
   {
@@ -45,7 +45,25 @@ const attempt: QuizAttempt = {
   unansweredCount: 0,
 };
 
+function DiscussionProbe() {
+  const { state } = useAppState();
+  return (
+    <output aria-label="共享詳解狀態">
+      {state.discussionPosts.map((post) => post.content).join('、')}
+    </output>
+  );
+}
+
 describe('AttemptReview', () => {
+  afterEach(cleanup);
+
+  beforeEach(() => {
+    vi.stubEnv('NEXT_PUBLIC_FIREBASE_API_KEY', '');
+    vi.stubEnv('NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN', '');
+    vi.stubEnv('NEXT_PUBLIC_FIREBASE_PROJECT_ID', '');
+    vi.stubEnv('NEXT_PUBLIC_FIREBASE_APP_ID', '');
+  });
+
   it('renders every answer and its complete options', () => {
     render(
       <ToastProvider>
@@ -84,5 +102,25 @@ describe('AttemptReview', () => {
         .getByRole('region', { name: '第 1 題使用者筆記' })
         .closest('details'),
     ).toHaveTextContent('檢視完整選項與筆記');
+  });
+
+  it('publishes a review note through the discussion data source', async () => {
+    render(
+      <ToastProvider>
+        <AppStateProvider>
+          <AttemptReview attempt={attempt} questions={questions.slice(0, 1)} />
+          <DiscussionProbe />
+        </AppStateProvider>
+      </ToastProvider>,
+    );
+
+    fireEvent.change(screen.getByLabelText('第 1 題筆記內容'), {
+      target: { value: '從對答案分享的詳解' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /分享至詳解與討論/ }));
+
+    expect(await screen.findByLabelText('共享詳解狀態')).toHaveTextContent(
+      '從對答案分享的詳解',
+    );
   });
 });

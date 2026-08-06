@@ -2,12 +2,13 @@ import { render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   CloudSyncProvider,
+  parseCloudNote,
   useCloudSync,
 } from '@/components/cloud-sync-provider';
 
 vi.mock('@/state/app-state', () => ({
   useAppState: () => ({
-    state: { attempts: [] },
+    state: { attempts: [], notes: {}, noteUpdatedAt: {} },
     dispatch: vi.fn(),
     hydrated: true,
   }),
@@ -34,5 +35,20 @@ describe('CloudSyncProvider', () => {
     );
 
     expect(screen.getByLabelText('cloud status')).toHaveTextContent('disabled');
+  });
+
+  it('parses versioned cloud notes and rejects malformed records', () => {
+    expect(
+      parseCloudNote({
+        questionId: 'law-114-01',
+        content: '跨裝置筆記',
+        updatedAt: '2026-08-06T10:00:00.000Z',
+      }),
+    ).toEqual({
+      questionId: 'law-114-01',
+      content: '跨裝置筆記',
+      updatedAt: '2026-08-06T10:00:00.000Z',
+    });
+    expect(parseCloudNote({ questionId: 'law-114-01' })).toBeNull();
   });
 });

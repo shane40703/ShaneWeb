@@ -30,6 +30,7 @@ import { Button, ConfirmDialog, useToast } from '@/components/ui/ui';
 import type { QuestionBankStatus } from '@/lib/question-bank-client';
 import { parseQuestionId } from '@/lib/question-path';
 import { getSubject, years } from '@/question-bank/catalog';
+import { useDiscussionPublisher } from '@/lib/shared-discussions';
 import type { ImageAttachment, Question, SubjectId } from '@/lib/types';
 import { useClientReady } from '@/lib/use-client-ready';
 import { useAppState } from '@/state/app-state';
@@ -360,6 +361,7 @@ function NoteEditor({
 }) {
   const { state, dispatch } = useAppState();
   const { notify } = useToast();
+  const discussion = useDiscussionPublisher(question.id);
   const hasSavedNote = Boolean(
     state.notes[question.id]?.trim() || state.noteImages[question.id]?.length,
   );
@@ -369,29 +371,27 @@ function NoteEditor({
     notify(content.trim() || images.length ? '筆記已儲存' : '筆記已刪除');
   }
 
-  function shareNote() {
+  async function shareNote() {
     const trimmed = content.trim();
     if (!trimmed && !images.length) {
       notify('尚無可分享的筆記');
       return;
     }
-    const now = new Date().toISOString();
-    dispatch({
-      type: 'add-discussion-post',
-      post: {
-        id: `post-note-${now}`,
-        questionId: question.id,
-        type: 'explanation',
-        content: trimmed,
-        images,
-        createdAt: now,
-        likes: 0,
-        replies: [],
-        reported: false,
-      },
-    });
     dispatch({ type: 'save-note', questionId: question.id, content, images });
-    notify('已分享至詳解與討論');
+    try {
+      await discussion.publish('explanation', trimmed, images);
+      notify(
+        '已分享至詳解與討論',
+        discussion.enabled && images.length
+          ? '文字已共享；筆記圖片目前僅保存在自己的裝置。'
+          : undefined,
+      );
+    } catch (reason) {
+      notify(
+        '分享失敗',
+        reason instanceof Error ? reason.message : '請稍後再試。',
+      );
+    }
   }
 
   function deleteNote() {
@@ -470,7 +470,7 @@ function NoteEditor({
               onConfirm={deleteNote}
             />
           ) : null}
-          <Button onClick={shareNote}>分享至詳解與討論</Button>
+          <Button onClick={() => void shareNote()}>分享至詳解與討論</Button>
           <Button variant="primary" onClick={saveNote}>儲存筆記</Button>
         </div>
       </div>

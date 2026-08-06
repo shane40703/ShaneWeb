@@ -126,6 +126,12 @@ export interface ImageAttachment {
   dataUrl: string;
 }
 
+export interface SyncedNote {
+  questionId: QuestionId;
+  content: string;
+  updatedAt: string;
+}
+
 export interface DiscussionPost {
   id: string;
   questionId: QuestionId;
@@ -152,6 +158,7 @@ export interface AppState {
   difficultQuestionIds: QuestionId[];
   attempts: QuizAttempt[];
   notes: Record<QuestionId, string>;
+  noteUpdatedAt: Record<QuestionId, string>;
   noteImages: Record<QuestionId, ImageAttachment[]>;
   discussionPosts: DiscussionPost[];
   likedDiscussionPostIds: string[];

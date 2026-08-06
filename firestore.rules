@@ -32,6 +32,28 @@ service cloud.firestore {
       allow create, update: if ownsDocument() && validAttempt();
     }
 
+    match /users/{userId}/notes/{questionId} {
+      function ownsNote() {
+        return request.auth != null && request.auth.uid == userId;
+      }
+
+      function validNote() {
+        return request.resource.data.keys().hasOnly([
+          'questionId', 'content', 'updatedAt', 'syncedAt'
+        ])
+        && request.resource.data.questionId == questionId
+        && request.resource.data.content is string
+        && request.resource.data.content.size() <= 20000
+        && request.resource.data.updatedAt is string
+        && request.resource.data.updatedAt.size() <= 40
+        && request.resource.data.syncedAt is timestamp;
+      }
+
+      allow read: if ownsNote();
+      allow create, update: if ownsNote() && validNote();
+      allow delete: if false;
+    }
+
     match /discussionPosts/{postId} {
       function signedIn() {
         return request.auth != null;

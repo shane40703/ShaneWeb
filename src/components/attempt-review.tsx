@@ -19,6 +19,7 @@ import {
   formatCorrectAnswer,
   isQuestionCorrect,
 } from '@/lib/study';
+import { useDiscussionPublisher } from '@/lib/shared-discussions';
 import type { ImageAttachment, Question, QuizAttempt } from '@/lib/types';
 import { useAppState } from '@/state/app-state';
 import styles from './attempt-review.module.css';
@@ -151,6 +152,7 @@ export function AttemptReview({
 function ReviewNoteEditor({ question }: { question: ReviewQuestion }) {
   const { state, dispatch } = useAppState();
   const { notify } = useToast();
+  const discussion = useDiscussionPublisher(question.id);
   const [content, setContent] = useState(state.notes[question.id] ?? '');
   const [images, setImages] = useState<ImageAttachment[]>(
     state.noteImages[question.id] ?? [],
@@ -166,34 +168,32 @@ function ReviewNoteEditor({ question }: { question: ReviewQuestion }) {
     notify(content.trim() || images.length ? '筆記已儲存' : '筆記已刪除');
   }
 
-  function shareNote() {
+  async function shareNote() {
     const trimmed = content.trim();
     if (!trimmed && !images.length) {
       notify('尚無可分享的筆記');
       return;
     }
-    const now = new Date().toISOString();
-    dispatch({
-      type: 'add-discussion-post',
-      post: {
-        id: `post-review-${question.id}-${now}`,
-        questionId: question.id,
-        type: 'explanation',
-        content: trimmed,
-        images,
-        createdAt: now,
-        likes: 0,
-        replies: [],
-        reported: false,
-      },
-    });
     dispatch({
       type: 'save-note',
       questionId: question.id,
       content,
       images,
     });
-    notify('筆記已分享至詳解與討論');
+    try {
+      await discussion.publish('explanation', trimmed, images);
+      notify(
+        '筆記已分享至詳解與討論',
+        discussion.enabled && images.length
+          ? '文字已共享；筆記圖片目前僅保存在自己的裝置。'
+          : undefined,
+      );
+    } catch (reason) {
+      notify(
+        '分享失敗',
+        reason instanceof Error ? reason.message : '請稍後再試。',
+      );
+    }
   }
 
   return (
@@ -203,7 +203,7 @@ function ReviewNoteEditor({ question }: { question: ReviewQuestion }) {
           <IconNotebook size={16} stroke={2} aria-hidden="true" />
           使用者筆記
         </span>
-        <small>僅保存在目前瀏覽器</small>
+        <small>登入後同步文字筆記・圖片保存在本機</small>
       </header>
       <textarea
         aria-label={`第 ${question.questionNumber} 題筆記內容`}
@@ -234,7 +234,7 @@ function ReviewNoteEditor({ question }: { question: ReviewQuestion }) {
         label="上傳筆記圖片"
       />
       <footer>
-        <Button onClick={shareNote}>
+        <Button onClick={() => void shareNote()}>
           <IconMessages size={16} stroke={2} aria-hidden="true" />
           分享至詳解與討論
         </Button>

@@ -5,6 +5,7 @@ import type {
   DiscussionReply,
   ImageAttachment,
   QuizAttempt,
+  SyncedNote,
 } from '@/lib/types';
 
 export type AppAction =
@@ -25,7 +26,9 @@ export type AppAction =
       questionId: string;
       content: string;
       images?: ImageAttachment[];
+      updatedAt?: string;
     }
+  | { type: 'merge-notes'; notes: SyncedNote[] }
   | { type: 'add-discussion-post'; post: DiscussionPost }
   | { type: 'like-discussion-post'; postId: string }
   | { type: 'report-discussion-post'; postId: string }
@@ -105,6 +108,7 @@ export function appReducer(state: AppState, action: AppAction): AppState {
       };
     case 'save-note': {
       const notes = { ...state.notes };
+      const noteUpdatedAt = { ...state.noteUpdatedAt };
       const noteImages = { ...state.noteImages };
       const content = action.content.trim();
       const images = action.images ?? noteImages[action.questionId] ?? [];
@@ -112,7 +116,20 @@ export function appReducer(state: AppState, action: AppAction): AppState {
       else delete notes[action.questionId];
       if (images.length) noteImages[action.questionId] = images;
       else delete noteImages[action.questionId];
-      return { ...state, notes, noteImages };
+      noteUpdatedAt[action.questionId] =
+        action.updatedAt ?? new Date().toISOString();
+      return { ...state, notes, noteUpdatedAt, noteImages };
+    }
+    case 'merge-notes': {
+      const notes = { ...state.notes };
+      const noteUpdatedAt = { ...state.noteUpdatedAt };
+      action.notes.forEach((note) => {
+        if ((noteUpdatedAt[note.questionId] ?? '') >= note.updatedAt) return;
+        if (note.content.trim()) notes[note.questionId] = note.content.trim();
+        else delete notes[note.questionId];
+        noteUpdatedAt[note.questionId] = note.updatedAt;
+      });
+      return { ...state, notes, noteUpdatedAt };
     }
     case 'add-discussion-post':
       return { ...state, discussionPosts: [action.post, ...state.discussionPosts] };

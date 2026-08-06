@@ -21,6 +21,7 @@ export function createDefaultState(): AppState {
     difficultQuestionIds: [],
     attempts: [],
     notes: {},
+    noteUpdatedAt: {},
     noteImages: {},
     discussionPosts: [],
     likedDiscussionPostIds: [],
@@ -173,6 +174,7 @@ export function parseStoredState(raw: string | null): AppState {
       (attempt) => attempt.mode === 'paper',
     ),
     notes: keepValidEntries(state.notes, isNoteContent),
+    noteUpdatedAt: keepValidEntries(state.noteUpdatedAt, isNoteContent),
     noteImages: keepValidEntries(state.noteImages, isImageAttachmentList),
     discussionPosts: keepValidItems(state.discussionPosts, isDiscussionPost).map(
       (post) => ({ ...post, images: post.images ?? [] }),

@@ -85,6 +85,62 @@ export function parseCloudDiscussionReply(id: string, data: DocumentData) {
   } satisfies DiscussionReply & { authorId: string };
 }
 
+export function useDiscussionPublisher(questionId: QuestionId) {
+  const { dispatch } = useAppState();
+  const enabled = firebaseConfigurationAvailable();
+
+  const publish = useCallback(
+    async (
+      type: DiscussionPostType,
+      content: string,
+      images: DiscussionPost['images'] = [],
+    ) => {
+      const trimmed = content.trim();
+      if (!trimmed) {
+        throw new Error(
+          images.length
+            ? '共享投稿目前只支援文字；圖片已保留在使用者筆記。'
+            : '請先輸入要分享的內容。',
+        );
+      }
+      if (!enabled) {
+        const now = new Date().toISOString();
+        dispatch({
+          type: 'add-discussion-post',
+          post: {
+            id: `post-${questionId}-${now}`,
+            questionId,
+            type,
+            content: trimmed,
+            images,
+            createdAt: now,
+            likes: 0,
+            replies: [],
+            reported: false,
+          },
+        });
+        return;
+      }
+      const firebase = getFirebaseServices();
+      if (!firebase) throw new Error('Firebase 尚未完成設定。');
+      const user = firebase.auth.currentUser;
+      if (!user) throw new Error('請先使用 Google 登入後再分享。');
+      await addDoc(collection(firebase.db, 'discussionPosts'), {
+        questionId,
+        type,
+        content: trimmed,
+        authorId: user.uid,
+        authorName: '匿名使用者',
+        createdAt: serverTimestamp(),
+        deleted: false,
+      });
+    },
+    [dispatch, enabled, questionId],
+  );
+
+  return { publish, enabled };
+}
+
 export function useSharedDiscussions(questionId: QuestionId) {
   const { state, dispatch } = useAppState();
   const { user, signIn } = useCloudSync();
