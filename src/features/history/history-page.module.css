@@ -88,6 +88,65 @@
   gap: 14px;
 }
 
+.yearGroup {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 19px;
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.yearGroup > summary {
+  min-height: 76px;
+  padding: 18px 22px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 14px;
+  background: var(--surface-2);
+  cursor: pointer;
+  list-style: none;
+}
+
+.yearGroup > summary::-webkit-details-marker {
+  display: none;
+}
+
+.yearGroup > summary > strong {
+  color: var(--text);
+  font-size: 20px;
+}
+
+.yearGroup > summary > span {
+  color: var(--primary-strong);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.yearGroup > summary > svg {
+  color: var(--muted);
+  transition: transform 150ms ease;
+}
+
+.yearGroup[open] > summary {
+  border-bottom: 1px solid var(--line);
+}
+
+.yearGroup[open] > summary > svg {
+  transform: rotate(180deg);
+}
+
+.yearGroup > summary:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: -3px;
+}
+
+.yearGroupContent {
+  padding: 16px;
+  display: grid;
+  gap: 14px;
+}
+
 .attemptGroup {
   overflow: hidden;
   border: 1px solid var(--line);
@@ -268,6 +327,11 @@
 }
 
 @media (max-width: 560px) {
+  .yearGroup > summary {
+    min-height: 68px;
+    padding-inline: 16px;
+  }
+
   .groupHeader,
   .attempt > header {
     flex-direction: column;

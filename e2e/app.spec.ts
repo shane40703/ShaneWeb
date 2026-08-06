@@ -248,6 +248,10 @@ test('static question paths preserve state and submit a paper result to history'
 
   await page.goto('/history');
   await expectCompactTopbarHeading(page, '已作答紀錄');
+  const yearHistory = page.locator('details[aria-label="114 年作答紀錄"]');
+  await expect(yearHistory.locator('summary')).toContainText('共作答 1 次');
+  await expect(yearHistory.getByText('1 / 2 題', { exact: true })).toBeHidden();
+  await yearHistory.locator('summary').click();
   await expect(page.getByText('1 / 2 題', { exact: true })).toBeVisible();
   await expect(page.getByText('答對題數', { exact: true })).toBeVisible();
   await expect(page.getByText(/100\\.00 分/)).toHaveCount(0);

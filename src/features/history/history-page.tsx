@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import {
+  IconChevronDown,
   IconHistory,
   IconLoader2,
   IconTrash,
@@ -46,6 +47,21 @@ function groupAttempts(attempts: QuizAttempt[]) {
   });
 }
 
+function groupAttemptsByYear(attempts: QuizAttempt[]) {
+  const years = new Map<number | null, QuizAttempt[]>();
+  attempts.forEach((attempt) => {
+    years.set(attempt.year, [...(years.get(attempt.year) ?? []), attempt]);
+  });
+  return [...years.entries()]
+    .sort(([left], [right]) => (right ?? -1) - (left ?? -1))
+    .map(([year, entries]) => ({
+      key: year === null ? 'cross-year' : String(year),
+      year,
+      entries,
+      scopeGroups: groupAttempts(entries),
+    }));
+}
+
 function retryHref(attempt: QuizAttempt) {
   const baseHref = questionPathFromId(attempt.questionIds[0] ?? '') ?? '/papers';
   return attempt.mode === 'random' && attempt.questionIds.length
@@ -75,7 +91,7 @@ export function HistoryPage({
     subjectFilter === 'all'
       ? state.attempts
       : state.attempts.filter((attempt) => attempt.subject === subjectFilter);
-  const groups = groupAttempts(filteredAttempts);
+  const yearGroups = groupAttemptsByYear(filteredAttempts);
   const mixedCount = state.attempts.filter(
     (attempt) => attempt.subject === 'mixed',
   ).length;
@@ -256,9 +272,23 @@ export function HistoryPage({
               title="正在讀取紀錄"
               description="請稍候。"
             />
-          ) : groups.length ? (
+          ) : yearGroups.length ? (
             <div className={styles.list}>
-              {groups.map(({ key, entries, ordinalById }) => {
+              {yearGroups.map((yearGroup) => (
+                <details
+                  className={styles.yearGroup}
+                  key={yearGroup.key}
+                  aria-label={`${yearGroup.year ? `${yearGroup.year} 年` : '跨年度'}作答紀錄`}
+                >
+                  <summary>
+                    <strong>
+                      {yearGroup.year ? `${yearGroup.year} 年` : '跨年度'}
+                    </strong>
+                    <span>共作答 {yearGroup.entries.length} 次</span>
+                    <IconChevronDown size={20} stroke={2} aria-hidden="true" />
+                  </summary>
+                  <div className={styles.yearGroupContent}>
+              {yearGroup.scopeGroups.map(({ key, entries, ordinalById }) => {
               const first = entries[0];
               const subject =
                 first.subject === 'mixed' ? null : getSubject(first.subject);
@@ -522,6 +552,9 @@ export function HistoryPage({
                 </article>
               );
               })}
+                  </div>
+                </details>
+              ))}
             </div>
           ) : (
             <EmptyState

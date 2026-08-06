@@ -114,6 +114,22 @@ describe('HistoryPage', () => {
     const subjectFilters = await screen.findByRole('group', {
       name: '已作答紀錄科目分類',
     });
+    const lawYearGroup = screen.getByLabelText('114 年作答紀錄');
+    const lawYearAttemptCount = state.attempts.filter(
+      (savedAttempt) => savedAttempt.year === 114,
+    ).length;
+    expect(lawYearGroup).not.toHaveAttribute('open');
+    within(lawYearGroup)
+      .getAllByText('2.50 分')
+      .forEach((score) => expect(score).not.toBeVisible());
+    expect(
+      within(lawYearGroup).getByText(`共作答 ${lawYearAttemptCount} 次`),
+    ).toBeVisible();
+    fireEvent.click(within(lawYearGroup).getByText('114 年', { selector: 'strong' }));
+    expect(lawYearGroup).toHaveAttribute('open');
+    within(lawYearGroup)
+      .getAllByText('2.50 分')
+      .forEach((score) => expect(score).toBeVisible());
     expect(
       within(subjectFilters).getByRole('button', { name: '全部 3' }),
     ).toHaveAttribute('aria-pressed', 'true');
