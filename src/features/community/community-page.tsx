@@ -40,7 +40,10 @@ import type {
 } from '@/lib/types';
 import type { QuestionBankStatus } from '@/lib/question-bank-client';
 import { formatDateTime } from '@/lib/study';
-import { useSharedDiscussions } from '@/lib/shared-discussions';
+import {
+  useDiscussionQuestionIds,
+  useSharedDiscussions,
+} from '@/lib/shared-discussions';
 import { useClientReady } from '@/lib/use-client-ready';
 import { useAppState } from '@/state/app-state';
 import styles from './community-page.module.css';
@@ -88,6 +91,7 @@ export function CommunityPage({
   const [postContent, setPostContent] = useState('');
   const [replyDrafts, setReplyDrafts] = useState<Record<string, string>>({});
   const shared = useSharedDiscussions(currentQuestion?.id ?? 'unavailable');
+  const discussionQuestionIds = useDiscussionQuestionIds();
 
   if (
     routeHydrated &&
@@ -154,9 +158,6 @@ export function CommunityPage({
     (question) => question.id === currentQuestion.id,
   );
   const posts = shared.posts;
-  const discussionQuestionIds = new Set(
-    posts.map((post) => post.questionId),
-  );
   const difficultQuestionIds = new Set(state.difficultQuestionIds);
   const difficult = state.difficultQuestionIds.includes(currentQuestion.id);
 

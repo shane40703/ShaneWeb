@@ -17,6 +17,7 @@ import {
 import {
   collection,
   doc,
+  getDoc,
   getDocs,
   onSnapshot,
   serverTimestamp,
@@ -77,11 +78,13 @@ export function CloudSyncProvider({ children }: { children: ReactNode }) {
   const [readyUserId, setReadyUserId] = useState<string | null>(null);
   const syncedAttemptIds = useRef(new Set<string>());
   const syncedNoteVersions = useRef(new Map<string, string>());
+  const syncedDifficultSignature = useRef('');
   const localAttempts = useRef(state.attempts);
   const localNotes = useRef({
     notes: state.notes,
     noteUpdatedAt: state.noteUpdatedAt,
   });
+  const localDifficult = useRef(state.difficultQuestionIds);
 
   useEffect(() => {
     localAttempts.current = state.attempts;
@@ -95,6 +98,10 @@ export function CloudSyncProvider({ children }: { children: ReactNode }) {
   }, [state.noteUpdatedAt, state.notes]);
 
   useEffect(() => {
+    localDifficult.current = state.difficultQuestionIds;
+  }, [state.difficultQuestionIds]);
+
+  useEffect(() => {
     const firebase = getFirebaseServices();
     if (!firebase) return;
     return onAuthStateChanged(firebase.auth, (nextUser) => {
@@ -102,6 +109,7 @@ export function CloudSyncProvider({ children }: { children: ReactNode }) {
       setReadyUserId(null);
       syncedAttemptIds.current.clear();
       syncedNoteVersions.current.clear();
+      syncedDifficultSignature.current = '';
       setError('');
       setStatus(nextUser ? 'syncing' : 'signed-out');
     });
@@ -114,8 +122,10 @@ export function CloudSyncProvider({ children }: { children: ReactNode }) {
     let active = true;
     let stopListening: (() => void) | undefined;
     let stopListeningToNotes: (() => void) | undefined;
+    let stopListeningToDifficult: (() => void) | undefined;
     const attempts = collection(firebase.db, 'users', user.uid, 'attempts');
     const notes = collection(firebase.db, 'users', user.uid, 'notes');
+    const difficult = doc(firebase.db, 'users', user.uid, 'settings', 'difficult');
 
     void (async () => {
       try {
@@ -140,6 +150,25 @@ export function CloudSyncProvider({ children }: { children: ReactNode }) {
           syncedNoteVersions.current.set(note.questionId, note.updatedAt),
         );
         dispatch({ type: 'merge-notes', notes: remoteNotes });
+
+        const difficultSnapshot = await getDoc(difficult);
+        if (!active) return;
+        const remoteDifficult = difficultSnapshot.exists() &&
+          Array.isArray(difficultSnapshot.data().questionIds)
+          ? difficultSnapshot.data().questionIds.filter(
+              (id: unknown): id is string => typeof id === 'string',
+            )
+          : [];
+        const mergedDifficult = [
+          ...new Set([...localDifficult.current, ...remoteDifficult]),
+        ].sort();
+        dispatch({ type: 'set-difficult', questionIds: mergedDifficult });
+        await setDoc(difficult, {
+          questionIds: mergedDifficult,
+          updatedAt: new Date().toISOString(),
+          syncedAt: serverTimestamp(),
+        });
+        syncedDifficultSignature.current = JSON.stringify(mergedDifficult);
 
         await Promise.all(
           localAttempts.current.map((attempt) =>
@@ -227,6 +256,26 @@ export function CloudSyncProvider({ children }: { children: ReactNode }) {
             setStatus('error');
           },
         );
+
+        stopListeningToDifficult = onSnapshot(
+          difficult,
+          (snapshot) => {
+            if (!snapshot.exists()) return;
+            const questionIds = Array.isArray(snapshot.data().questionIds)
+              ? snapshot.data().questionIds.filter(
+                  (id: unknown): id is string => typeof id === 'string',
+                ).sort()
+              : [];
+            const signature = JSON.stringify(questionIds);
+            syncedDifficultSignature.current = signature;
+            dispatch({ type: 'set-difficult', questionIds });
+            setStatus('synced');
+          },
+          () => {
+            setError('無法讀取雲端難題標記，請確認 Firestore 權限設定。');
+            setStatus('error');
+          },
+        );
       } catch {
         if (!active) return;
         setError('作答紀錄同步失敗，請檢查網路或 Firebase 設定。');
@@ -238,6 +287,7 @@ export function CloudSyncProvider({ children }: { children: ReactNode }) {
       active = false;
       stopListening?.();
       stopListeningToNotes?.();
+      stopListeningToDifficult?.();
     };
   }, [dispatch, hydrated, user]);
 
@@ -298,6 +348,31 @@ export function CloudSyncProvider({ children }: { children: ReactNode }) {
         setStatus('error');
       });
   }, [readyUserId, state.noteUpdatedAt, state.notes, user]);
+
+  useEffect(() => {
+    const firebase = getFirebaseServices();
+    if (!firebase || !user || readyUserId !== user.uid) return;
+    const questionIds = [...state.difficultQuestionIds].sort();
+    const signature = JSON.stringify(questionIds);
+    if (syncedDifficultSignature.current === signature) return;
+    setStatus('syncing');
+    void setDoc(
+      doc(firebase.db, 'users', user.uid, 'settings', 'difficult'),
+      {
+        questionIds,
+        updatedAt: new Date().toISOString(),
+        syncedAt: serverTimestamp(),
+      },
+    )
+      .then(() => {
+        syncedDifficultSignature.current = signature;
+        setStatus('synced');
+      })
+      .catch(() => {
+        setError('最新難題標記仍保存在本機，恢復連線後請重新登入同步。');
+        setStatus('error');
+      });
+  }, [readyUserId, state.difficultQuestionIds, user]);
 
   const handleSignIn = useCallback(async () => {
     const firebase = getFirebaseServices();

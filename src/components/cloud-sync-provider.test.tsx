@@ -8,7 +8,12 @@ import {
 
 vi.mock('@/state/app-state', () => ({
   useAppState: () => ({
-    state: { attempts: [], notes: {}, noteUpdatedAt: {} },
+    state: {
+      attempts: [],
+      notes: {},
+      noteUpdatedAt: {},
+      difficultQuestionIds: [],
+    },
     dispatch: vi.fn(),
     hydrated: true,
   }),

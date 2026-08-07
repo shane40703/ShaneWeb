@@ -141,6 +141,40 @@ export function useDiscussionPublisher(questionId: QuestionId) {
   return { publish, enabled };
 }
 
+export function useDiscussionQuestionIds() {
+  const { state } = useAppState();
+  const enabled = firebaseConfigurationAvailable();
+  const [cloudQuestionIds, setCloudQuestionIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (!enabled) return;
+    const firebase = getFirebaseServices();
+    if (!firebase) return;
+    return onSnapshot(collection(firebase.db, 'discussionPosts'), (snapshot) => {
+      setCloudQuestionIds([
+        ...new Set(
+          snapshot.docs.flatMap((item) => {
+            const data = item.data();
+            return data.deleted !== true && typeof data.questionId === 'string'
+              ? [data.questionId]
+              : [];
+          }),
+        ),
+      ]);
+    });
+  }, [enabled]);
+
+  return useMemo(
+    () =>
+      new Set(
+        enabled
+          ? cloudQuestionIds
+          : state.discussionPosts.map((post) => post.questionId),
+      ),
+    [cloudQuestionIds, enabled, state.discussionPosts],
+  );
+}
+
 export function useSharedDiscussions(questionId: QuestionId) {
   const { state, dispatch } = useAppState();
   const { user, signIn } = useCloudSync();

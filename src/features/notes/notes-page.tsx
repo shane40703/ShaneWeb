@@ -225,6 +225,11 @@ export function NotesPage({
     .filter(
       (entry): entry is NonNullable<typeof entry> => Boolean(entry),
     );
+  const visibleNoteEntries = noteEntries.filter(
+    (entry) =>
+      entry.subject === currentQuestion.subject &&
+      entry.year === currentQuestion.year,
+  );
 
   function selectSubject(subjectId: SubjectId) {
     const first = questions
@@ -328,10 +333,10 @@ export function NotesPage({
             </footer>
           </section>
           <section className={styles.savedNotes}>
-            <header><span>SAVED</span><h2>已儲存筆記</h2><strong>{noteEntries.length}</strong></header>
-            {noteEntries.length ? (
+            <header><span>SAVED</span><h2>已儲存筆記</h2><strong>{visibleNoteEntries.length}</strong></header>
+            {visibleNoteEntries.length ? (
               <div>
-                {noteEntries.map(({ id, subject, year, questionNumber, content, imageCount }) => (
+                {visibleNoteEntries.map(({ id, subject, year, questionNumber, content, imageCount }) => (
                   <button key={id} onClick={() => void navigateTo(id)} aria-current={id === currentQuestion.id}>
                     <span>{year}・{getSubject(subject)?.shortName}・第 {questionNumber} 題</span>
                     <strong>{content || `圖片筆記 ${imageCount} 張`}</strong>

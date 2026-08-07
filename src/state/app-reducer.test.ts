@@ -105,6 +105,18 @@ describe('appReducer', () => {
     expect(state.noteUpdatedAt['law-114-01']).toBeTruthy();
   });
 
+  it('replaces difficult questions with the deduplicated cloud list', () => {
+    const state = appReducer(createDefaultState(), {
+      type: 'set-difficult',
+      questionIds: ['law-114-01', 'env-114-02', 'law-114-01'],
+    });
+
+    expect(state.difficultQuestionIds).toEqual([
+      'law-114-01',
+      'env-114-02',
+    ]);
+  });
+
   it('merges only newer cloud note versions and keeps deletion tombstones', () => {
     const state = createDefaultState();
     state.notes['law-114-01'] = '本機新版';

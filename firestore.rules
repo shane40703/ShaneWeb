@@ -54,6 +54,24 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    match /users/{userId}/settings/difficult {
+      function ownsDifficultSettings() {
+        return request.auth != null && request.auth.uid == userId;
+      }
+
+      allow read: if ownsDifficultSettings();
+      allow create, update: if ownsDifficultSettings()
+        && request.resource.data.keys().hasOnly([
+          'questionIds', 'updatedAt', 'syncedAt'
+        ])
+        && request.resource.data.questionIds is list
+        && request.resource.data.questionIds.size() <= 5000
+        && request.resource.data.updatedAt is string
+        && request.resource.data.updatedAt.size() <= 40
+        && request.resource.data.syncedAt is timestamp;
+      allow delete: if false;
+    }
+
     match /discussionPosts/{postId} {
       function signedIn() {
         return request.auth != null;

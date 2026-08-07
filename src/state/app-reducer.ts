@@ -11,6 +11,7 @@ import type {
 export type AppAction =
   | { type: 'hydrate'; state: AppState }
   | { type: 'toggle-difficult'; questionId: string }
+  | { type: 'set-difficult'; questionIds: string[] }
   | {
       type: 'save-answer';
       questionId: string;
@@ -56,6 +57,11 @@ export function appReducer(state: AppState, action: AppAction): AppState {
           : [...state.difficultQuestionIds, action.questionId],
       };
     }
+    case 'set-difficult':
+      return {
+        ...state,
+        difficultQuestionIds: [...new Set(action.questionIds)],
+      };
     case 'save-answer':
       return {
         ...state,

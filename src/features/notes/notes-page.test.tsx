@@ -249,26 +249,15 @@ describe('NotesPage question loading', () => {
     });
   });
 
-  it('lists saved notes without downloading their subject first', async () => {
+  it('lists only saved notes from the currently selected subject and year', async () => {
     const state = createDefaultState();
+    state.notes[lawQuestion.id] = '法規筆記';
     state.notes[environmentQuestion.id] = '環控筆記';
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 
     render(page());
 
-    const savedNoteLabel = await screen.findByText('114・環控・第 1 題');
-    const savedNote = savedNoteLabel.closest('button');
-    expect(savedNote).not.toBeNull();
-    if (!savedNote) return;
-    fireEvent.click(savedNote);
-
-    expect(router.replace).toHaveBeenCalledWith(
-      {
-        pathname: '/notes',
-        query: { question: environmentQuestion.id },
-      },
-      undefined,
-      { shallow: true, scroll: false },
-    );
+    expect(await screen.findByText('114・法規・第 1 題')).toBeInTheDocument();
+    expect(screen.queryByText('114・環控・第 1 題')).not.toBeInTheDocument();
   });
 });
