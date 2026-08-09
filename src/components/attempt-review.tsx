@@ -31,12 +31,6 @@ type ReviewQuestion = Pick<
 > &
   Partial<Pick<Question, 'content' | 'explanation'>>;
 
-function explanationText(question: ReviewQuestion) {
-  if (question.explanation) return question.explanation;
-  if (question.answerKey.kind === 'all-credit') return '本題一律給分。';
-  return '目前尚無詳解。';
-}
-
 export function AttemptReview({
   attempt,
   questions,
@@ -135,16 +129,13 @@ export function AttemptReview({
                   <b>標準答案：{formatCorrectAnswer(question)}</b>
                 </p>
               </div>
-              <div className={styles.bestAnswer}>
-                <header>
-                  <span>詳解</span>
-                  <Link href={`/community?question=${question.id}`}>
-                    詳解與討論
-                    <IconMessages size={15} stroke={2} aria-hidden="true" />
-                  </Link>
-                </header>
-                <p>{explanationText(question)}</p>
-              </div>
+              <Link
+                className={styles.reviewDiscussionLink}
+                href={`/community?question=${question.id}`}
+              >
+                前往詳解與討論
+                <IconMessages size={15} stroke={2} aria-hidden="true" />
+              </Link>
               <details className={styles.reviewOptions}>
                 <summary>
                   <span>檢視完整選項與筆記</span>

@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { type CSSProperties, useState } from 'react';
+import { type CSSProperties, useEffect, useState } from 'react';
 import {
   IconAlertTriangle,
   IconBuildingSkyscraper,
@@ -20,9 +20,11 @@ import {
   IconScale,
   IconSettings,
   IconSparkles,
+  IconX,
 } from '@tabler/icons-react';
 import { SideDrawer } from '@/components/ui/ui';
 import { useCloudSync } from '@/components/cloud-sync-provider';
+import { SettingsPanel } from '@/features/settings/settings-panel';
 import { useAppState } from '@/state/app-state';
 import { ThemeToggle } from './theme-toggle';
 import styles from './app-shell.module.css';
@@ -85,15 +87,17 @@ function Brand() {
 function Navigation({
   pathname,
   onNavigate,
+  onOpenSettings,
 }: {
   pathname: string;
   onNavigate?: () => void;
+  onOpenSettings?: () => void;
 }) {
   return (
     <nav className={styles.navigation} aria-label="主要功能">
-      <NavigationGroup items={primaryNavigation} pathname={pathname} onNavigate={onNavigate} />
+      <NavigationGroup items={primaryNavigation} pathname={pathname} onNavigate={onNavigate} onOpenSettings={onOpenSettings} />
       <div className={styles.utilityNavigation}>
-        <NavigationGroup items={utilityNavigation} pathname={pathname} onNavigate={onNavigate} />
+        <NavigationGroup items={utilityNavigation} pathname={pathname} onNavigate={onNavigate} onOpenSettings={onOpenSettings} />
       </div>
     </nav>
   );
@@ -103,16 +107,24 @@ function NavigationGroup({
   items,
   pathname,
   onNavigate,
+  onOpenSettings,
 }: {
   items: readonly (typeof navigation)[number][];
   pathname: string;
   onNavigate?: () => void;
+  onOpenSettings?: () => void;
 }) {
   return items.map((item) => (
     <Link
       key={item.href}
       href={item.href}
-      onClick={onNavigate}
+      onClick={(event) => {
+        if (item.href === '/settings' && onOpenSettings) {
+          event.preventDefault();
+          onOpenSettings();
+        }
+        onNavigate?.();
+      }}
       aria-current={isActive(pathname, item.href) ? 'page' : undefined}
       className={styles.navItem}
     >
@@ -127,14 +139,16 @@ function NavigationGroup({
 function SidebarContent({
   pathname,
   onNavigate,
+  onOpenSettings,
 }: {
   pathname: string;
   onNavigate?: () => void;
+  onOpenSettings?: () => void;
 }) {
   return (
     <div className={styles.sidebarInner}>
       <Brand />
-      <Navigation pathname={pathname} onNavigate={onNavigate} />
+      <Navigation pathname={pathname} onNavigate={onNavigate} onOpenSettings={onOpenSettings} />
     </div>
   );
 }
@@ -144,6 +158,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const { state } = useAppState();
   const cloud = useCloudSync();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const pathname = router.pathname;
   const navigationPath = pathname === '/appearance' ? '/settings' : pathname;
   const currentPage = navigation.find((item) =>
@@ -152,6 +167,20 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const pageTitle = pathname.startsWith('/questions/')
     ? '作答頁'
     : (currentPage?.label ?? '建築師考試');
+
+  useEffect(() => {
+    if (!settingsOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setSettingsOpen(false);
+    };
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', closeOnEscape);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener('keydown', closeOnEscape);
+    };
+  }, [settingsOpen]);
 
   return (
     <div
@@ -164,7 +193,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       }
     >
       <aside className={styles.desktopSidebar}>
-        <SidebarContent pathname={navigationPath} />
+        <SidebarContent
+          pathname={navigationPath}
+          onOpenSettings={() => setSettingsOpen(true)}
+        />
       </aside>
       <div className={styles.workspace}>
         <header className={styles.topbar}>
@@ -178,6 +210,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <SidebarContent
                 pathname={navigationPath}
                 onNavigate={() => setDrawerOpen(false)}
+                onOpenSettings={() => setSettingsOpen(true)}
               />
             </SideDrawer>
             <h1 className={styles.pageTitle}>{pageTitle}</h1>
@@ -231,6 +264,40 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           {children}
         </main>
       </div>
+      {settingsOpen ? (
+        <div
+          className={styles.settingsDialog}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="settings-dialog-title"
+        >
+          <button
+            type="button"
+            className={styles.settingsBackdrop}
+            aria-label="關閉設定"
+            onClick={() => setSettingsOpen(false)}
+          />
+          <section className={styles.settingsPopup}>
+            <header>
+              <div>
+                <span>SETTINGS</span>
+                <h2 id="settings-dialog-title">設定</h2>
+              </div>
+              <button
+                type="button"
+                aria-label="關閉設定"
+                onClick={() => setSettingsOpen(false)}
+                autoFocus
+              >
+                <IconX size={22} stroke={2} aria-hidden="true" />
+              </button>
+            </header>
+            <div className={styles.settingsBody}>
+              <SettingsPanel />
+            </div>
+          </section>
+        </div>
+      ) : null}
     </div>
   );
 }

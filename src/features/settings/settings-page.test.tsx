@@ -30,7 +30,7 @@ describe('SettingsPage', () => {
     const appearanceSection = screen
       .getByText('介面配色設定', { exact: true })
       .closest('details');
-    expect(readingSection).toHaveAttribute('open');
+    expect(readingSection).not.toHaveAttribute('open');
     expect(appearanceSection).not.toHaveAttribute('open');
     expect(screen.getByLabelText('介面配色內容')).toBeInTheDocument();
   });

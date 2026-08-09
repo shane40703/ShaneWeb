@@ -5,6 +5,7 @@
 }
 
 .questionCard,
+.questionNavigator,
 .postsCard,
 .composeCard {
   border: 1px solid var(--line);
@@ -13,12 +14,19 @@
   box-shadow: var(--shadow-sm);
 }
 
-.questionCard { padding: 24px; display: grid; gap: 16px; }
+.questionLayout { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 20px; align-items: start; }
+.questionCard { min-width: 0; padding: 24px; display: grid; gap: 16px; }
 .questionCard > header { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 .tags { display: flex; gap: 7px; flex-wrap: wrap; }
 .questionCard > h2 { max-width: 1000px; margin: 25px 0; font-size: clamp(20px, 2.2vw, 29px); line-height: 1.6; }
 
 .questionNavigation { margin-top: 6px; padding-top: 18px; display: flex; align-items: center; justify-content: space-between; gap: 10px; border-top: 1px solid var(--line); }
+.questionNavigator { max-height: calc(100vh - 112px); padding: 20px; position: sticky; top: 92px; overflow-y: auto; }
+.questionNavigator > header { margin-bottom: 16px; padding-bottom: 14px; display: flex; align-items: center; justify-content: space-between; gap: 12px; border-bottom: 1px solid var(--line); }
+.questionNavigator > header div { display: grid; gap: 3px; }
+.questionNavigator > header span { color: var(--primary-strong); font-size: 10px; font-weight: 850; letter-spacing: .12em; }
+.questionNavigator > header h2 { margin: 0; font-size: 18px; }
+.questionNavigator > header strong { padding: 7px 9px; border-radius: 9px; background: var(--primary-soft); color: var(--primary-strong); font-size: 12px; }
 
 .discussionLayout { margin-top: 20px; display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 20px; align-items: start; }
 .postsCard { padding: 22px; }
@@ -57,8 +65,11 @@
 .composeCard > p { margin: -4px 0 0; color: var(--muted); font-size: 10px; line-height: 1.6; }
 
 @media (max-width: 950px) {
+  .questionLayout,
   .discussionLayout { grid-template-columns: 1fr; }
+  .questionNavigator,
   .composeCard { position: static; }
+  .questionNavigator { max-height: none; }
 }
 
 @media (max-width: 680px) {

@@ -258,7 +258,65 @@ export function CommunityPage({
         onSubjectChange={selectSubject}
         onYearChange={selectYear}
         ariaLabel="題目選擇"
-        questionPicker={
+      />
+
+      <div className={styles.questionLayout}>
+        <section className={styles.questionCard}>
+          <header>
+            <div className={styles.tags}>
+              <Tag tone="green">{subject?.name}</Tag>
+              <Tag>{currentQuestion.year} 年</Tag>
+              {currentQuestion.source.kind === 'sample' ? (
+                <Tag tone="purple">示範題</Tag>
+              ) : null}
+            </div>
+            <DifficultButton
+              active={difficult}
+              onClick={() =>
+                dispatch({ type: 'toggle-difficult', questionId: currentQuestion.id })
+              }
+            />
+          </header>
+          <QuestionSourceLine question={currentQuestion} />
+          <QuestionPrompt question={currentQuestion} />
+          <QuestionAnswerPanel
+            question={currentQuestion}
+            heading={null}
+            ariaLabel="題目選項"
+          />
+          <footer className={styles.questionNavigation}>
+            <Button
+              disabled={currentIndex <= 0}
+              onClick={() =>
+                subjectQuestions[currentIndex - 1] &&
+                navigateTo(subjectQuestions[currentIndex - 1].id)
+              }
+            >
+              <IconArrowLeft size={17} stroke={2} aria-hidden="true" /> 上一題
+            </Button>
+            <Button
+              disabled={currentIndex >= subjectQuestions.length - 1}
+              onClick={() =>
+                subjectQuestions[currentIndex + 1] &&
+                navigateTo(subjectQuestions[currentIndex + 1].id)
+              }
+            >
+              下一題 <IconArrowRight size={17} stroke={2} aria-hidden="true" />
+            </Button>
+          </footer>
+        </section>
+
+        <aside className={styles.questionNavigator} aria-label="詳解討論題號導覽">
+          <header>
+            <div>
+              <span>QUESTION MAP</span>
+              <h2>題號導覽</h2>
+            </div>
+            <strong>
+              {paperQuestions.findIndex((item) => item.id === currentQuestion.id) + 1}/
+              {paperQuestions.length}
+            </strong>
+          </header>
           <QuestionNumberPicker
             questions={paperQuestions.map((question) => ({
               id: question.id,
@@ -272,63 +330,8 @@ export function CommunityPage({
             onValueChange={navigateTo}
             showStatusLegend
           />
-        }
-        summary={
-          <>
-            已選{' '}
-            <strong>
-              {subject?.name} · {currentQuestion.year} 年 · 第{' '}
-              {currentQuestion.questionNumber} 題
-            </strong>
-          </>
-        }
-      />
-
-      <section className={styles.questionCard}>
-        <header>
-          <div className={styles.tags}>
-            <Tag tone="green">{subject?.name}</Tag>
-            <Tag>{currentQuestion.year} 年</Tag>
-            <Tag tone="purple">第 {currentQuestion.questionNumber} 題</Tag>
-            {currentQuestion.source.kind === 'sample' ? (
-              <Tag tone="purple">示範題</Tag>
-            ) : null}
-          </div>
-          <DifficultButton
-            active={difficult}
-            onClick={() =>
-              dispatch({ type: 'toggle-difficult', questionId: currentQuestion.id })
-            }
-          />
-        </header>
-        <QuestionSourceLine question={currentQuestion} />
-        <QuestionPrompt question={currentQuestion} />
-        <QuestionAnswerPanel
-          question={currentQuestion}
-          heading={null}
-          ariaLabel="題目選項"
-        />
-        <footer className={styles.questionNavigation}>
-          <Button
-            disabled={currentIndex <= 0}
-            onClick={() =>
-              subjectQuestions[currentIndex - 1] &&
-              navigateTo(subjectQuestions[currentIndex - 1].id)
-            }
-          >
-            <IconArrowLeft size={17} stroke={2} aria-hidden="true" /> 上一題
-          </Button>
-          <Button
-            disabled={currentIndex >= subjectQuestions.length - 1}
-            onClick={() =>
-              subjectQuestions[currentIndex + 1] &&
-              navigateTo(subjectQuestions[currentIndex + 1].id)
-            }
-          >
-            下一題 <IconArrowRight size={17} stroke={2} aria-hidden="true" />
-          </Button>
-        </footer>
-      </section>
+        </aside>
+      </div>
 
       <div className={styles.discussionLayout}>
         <section className={styles.postsCard}>

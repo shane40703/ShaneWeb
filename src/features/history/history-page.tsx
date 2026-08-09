@@ -82,15 +82,28 @@ export function HistoryPage({
 }) {
   const { state, dispatch, hydrated } = useAppState();
   const { notify } = useToast();
-  const [subjectFilter, setSubjectFilter] = useState<'all' | 'mixed' | SubjectId>('all');
+  const [subjectFilter, setSubjectFilter] = useState<'mixed' | SubjectId>();
   const [historyView, setHistoryView] = useState<ResultView>('review');
   const [attemptViews, setAttemptViews] = useState<
     Record<string, ResultView | undefined>
   >({});
-  const filteredAttempts =
-    subjectFilter === 'all'
-      ? state.attempts
-      : state.attempts.filter((attempt) => attempt.subject === subjectFilter);
+  const availableSubjectFilters = [
+    ...subjects
+      .map((subject) => subject.id)
+      .filter((subjectId) =>
+        state.attempts.some((attempt) => attempt.subject === subjectId),
+      ),
+    ...(state.attempts.some((attempt) => attempt.subject === 'mixed')
+      ? (['mixed'] as const)
+      : []),
+  ];
+  const activeSubjectFilter =
+    subjectFilter && availableSubjectFilters.includes(subjectFilter)
+      ? subjectFilter
+      : availableSubjectFilters[0];
+  const filteredAttempts = state.attempts.filter(
+    (attempt) => attempt.subject === activeSubjectFilter,
+  );
   const yearGroups = groupAttemptsByYear(filteredAttempts);
   const mixedCount = state.attempts.filter(
     (attempt) => attempt.subject === 'mixed',
@@ -159,18 +172,11 @@ export function HistoryPage({
           aria-label="已作答紀錄科目分類"
         >
           <div>
-            <button
-              type="button"
-              aria-pressed={subjectFilter === 'all'}
-              onClick={() => setSubjectFilter('all')}
-            >
-              全部 <span>{state.attempts.length}</span>
-            </button>
             {subjects.map((subject) => (
               <button
                 key={subject.id}
                 type="button"
-                aria-pressed={subjectFilter === subject.id}
+                aria-pressed={activeSubjectFilter === subject.id}
                 onClick={() => setSubjectFilter(subject.id)}
               >
                 {subject.name}
@@ -185,7 +191,7 @@ export function HistoryPage({
             {mixedCount ? (
               <button
                 type="button"
-                aria-pressed={subjectFilter === 'mixed'}
+                aria-pressed={activeSubjectFilter === 'mixed'}
                 onClick={() => setSubjectFilter('mixed')}
               >
                 跨科目 <span>{mixedCount}</span>
@@ -560,29 +566,12 @@ export function HistoryPage({
           ) : (
             <EmptyState
               icon={IconHistory}
-              title={
-                state.attempts.length
-                  ? '此科目還沒有作答紀錄'
-                  : '還沒有作答紀錄'
-              }
-              description={
-                state.attempts.length
-                  ? '切換其他科目，或查看全部已作答紀錄。'
-                  : '完成並交卷後，結果會保存在這裡。'
-              }
+              title="還沒有作答紀錄"
+              description="完成並交卷後，結果會保存在這裡。"
               action={
-                state.attempts.length ? (
-                  <Button
-                    variant="primary"
-                    onClick={() => setSubjectFilter('all')}
-                  >
-                    查看全部紀錄
-                  </Button>
-                ) : (
-                  <Button variant="primary" render={<Link href="/papers" />}>
-                    開始第一份試卷
-                  </Button>
-                )
+                <Button variant="primary" render={<Link href="/papers" />}>
+                  開始第一份試卷
+                </Button>
               }
             />
           )}

@@ -116,14 +116,16 @@ describe('HistoryPage', () => {
     });
     const lawYearGroup = screen.getByLabelText('114 年作答紀錄');
     const lawYearAttemptCount = state.attempts.filter(
-      (savedAttempt) => savedAttempt.year === 114,
+      (savedAttempt) => savedAttempt.subject === 'law' && savedAttempt.year === 114,
     ).length;
     expect(lawYearGroup).not.toHaveAttribute('open');
     within(lawYearGroup)
       .getAllByText('2.50 分')
       .forEach((score) => expect(score).not.toBeVisible());
     expect(
-      within(lawYearGroup).getByText(`共作答 ${lawYearAttemptCount} 次`),
+      within(lawYearGroup.querySelector('summary')!).getByText(
+        `共作答 ${lawYearAttemptCount} 次`,
+      ),
     ).toBeVisible();
     fireEvent.click(within(lawYearGroup).getByText('114 年', { selector: 'strong' }));
     expect(lawYearGroup).toHaveAttribute('open');
@@ -131,8 +133,11 @@ describe('HistoryPage', () => {
       .getAllByText('2.50 分')
       .forEach((score) => expect(score).toBeVisible());
     expect(
-      within(subjectFilters).getByRole('button', { name: '全部 3' }),
+      within(subjectFilters).getByRole('button', { name: '建築法規與實務 2' }),
     ).toHaveAttribute('aria-pressed', 'true');
+    expect(
+      within(subjectFilters).queryByRole('button', { name: /全部/ }),
+    ).not.toBeInTheDocument();
     fireEvent.click(
       within(subjectFilters).getByRole('button', {
         name: '建築環境控制 1',
@@ -144,9 +149,7 @@ describe('HistoryPage', () => {
     expect(
       screen.queryByRole('heading', { name: /建築法規與實務・114 年/ }),
     ).not.toBeInTheDocument();
-    fireEvent.click(
-      within(subjectFilters).getByRole('button', { name: '全部 3' }),
-    );
+    fireEvent.click(within(subjectFilters).getByRole('button', { name: '建築法規與實務 2' }));
 
     const summaries = await screen.findAllByText('查看完整作答紀錄（2）');
     fireEvent.click(summaries[0]);
@@ -155,13 +158,7 @@ describe('HistoryPage', () => {
       .getByRole('heading', { name: '建築法規與實務・114 年' })
       .closest('article');
     expect(lawGroup).not.toBeNull();
-    const environmentGroup = screen
-      .getByRole('heading', {
-        name: `建築環境控制・${environmentQuestions[0].year} 年`,
-      })
-      .closest('article');
-    expect(environmentGroup).not.toBeNull();
-    expect(screen.getByText('共作答 2 次')).toBeInTheDocument();
+    expect(screen.getAllByText('共作答 2 次')).toHaveLength(2);
     ['第 1 次', '第 2 次'].forEach((ordinal) => {
       const attemptSection = within(lawGroup!)
         .getByRole('heading', { name: ordinal })
@@ -172,16 +169,6 @@ describe('HistoryPage', () => {
         within(attemptSection!).getByText('/ 100.00 分'),
       ).toBeInTheDocument();
     });
-    const environmentAttemptSection = within(environmentGroup!)
-      .getByRole('heading', { name: '第 1 次' })
-      .closest('section');
-    expect(environmentAttemptSection).not.toBeNull();
-    expect(
-      within(environmentAttemptSection!).getByText('1.50 分'),
-    ).toBeInTheDocument();
-    expect(
-      within(environmentAttemptSection!).getByText('/ 60.00 分'),
-    ).toBeInTheDocument();
     expect(
       within(lawGroup!).getByRole('button', { name: '清除第 2 次紀錄' }),
     ).toBeInTheDocument();
@@ -281,6 +268,8 @@ describe('HistoryPage', () => {
         name: '建築法規與實務・114 年',
       })
     ).closest('article');
+    expect(within(lawGroup!).getByText('查看完整作答紀錄（2）')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: '建築環境控制 1' }));
     const environmentGroup = screen
       .getByRole('heading', {
         name: `建築環境控制・${environmentQuestions[0].year} 年`,
@@ -289,13 +278,6 @@ describe('HistoryPage', () => {
 
     expect(lawGroup).not.toBeNull();
     expect(environmentGroup).not.toBeNull();
-    expect(
-      screen.queryByRole('heading', { name: /跨科目練習/ }),
-    ).not.toBeInTheDocument();
-    expect(
-      within(lawGroup!).getByText('查看完整作答紀錄（2）'),
-    ).toBeInTheDocument();
-    expect(within(lawGroup!).getByText('2.50 分')).toBeInTheDocument();
     expect(within(environmentGroup!).getByText('1.50 分')).toBeInTheDocument();
     expect(within(environmentGroup!).queryByText('00:00:30')).not.toBeInTheDocument();
     expect(
@@ -395,7 +377,7 @@ describe('HistoryPage', () => {
 
   it('marks a cross-record analysis as partial while another wrong answer loads', async () => {
     const loadedQuestion = paperQuestions[0];
-    const loadingQuestion = environmentQuestions[0];
+    const loadingQuestion = paperQuestions[1];
     const state = createDefaultState();
     state.attempts = [loadedQuestion, loadingQuestion].map((question, index) => ({
       ...createAttempt({
@@ -414,7 +396,7 @@ describe('HistoryPage', () => {
         <AppStateProvider>
           <HistoryPage
             questions={[loadedQuestion]}
-            questionBankStatuses={{ law: 'ready', env: 'loading' }}
+            questionBankStatuses={{ law: 'loading' }}
           />
         </AppStateProvider>
       </ToastProvider>,
@@ -466,15 +448,16 @@ describe('HistoryPage', () => {
         name: '建築法規與實務・114 年',
       })
     ).closest('article');
+    expect(
+      within(lawGroup!).getByText('尚有 2 題內容載入中'),
+    ).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: '建築環境控制 1' }));
     const environmentGroup = screen
       .getByRole('heading', {
         name: `建築環境控制・${environmentQuestions[0].year} 年`,
       })
       .closest('article');
 
-    expect(
-      within(lawGroup!).getByText('尚有 2 題內容載入中'),
-    ).toBeInTheDocument();
     expect(
       within(environmentGroup!).getByText('尚有 1 題內容暫時無法顯示'),
     ).toBeInTheDocument();
