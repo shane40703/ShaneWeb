@@ -497,6 +497,7 @@ export function HistoryPage({
                                     attempt={attempt}
                                     questions={attemptQuestions}
                                     embedded
+                                    showDifficultActions
                                   />
                                 )}
                               </div>

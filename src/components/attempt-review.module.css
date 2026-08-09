@@ -85,10 +85,21 @@
   gap: 6px;
 }
 
-.reviewContent > span {
+.reviewQuestionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.reviewQuestionHeader > span {
   color: var(--muted);
   font-size: 11px;
   font-weight: 800;
+}
+
+.reviewQuestionHeader > button {
+  flex: 0 0 auto;
 }
 
 .reviewContent > strong {
@@ -253,6 +264,10 @@
 
   .reviewContent p b {
     margin-left: 0;
+  }
+
+  .reviewQuestionHeader {
+    align-items: flex-start;
   }
 
   .reviewNote > header {

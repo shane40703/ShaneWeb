@@ -13,6 +13,7 @@ import {
   appendImageFiles,
   ImageAttachments,
 } from '@/components/image-attachments';
+import { DifficultButton } from '@/components/difficult-button';
 import { QuestionAnswerPanel } from '@/components/question-answer-panel';
 import { Button, useToast } from '@/components/ui/ui';
 import {
@@ -41,12 +42,16 @@ export function AttemptReview({
   questions,
   embedded = false,
   anchorPrefix,
+  showDifficultActions = false,
 }: {
   attempt: QuizAttempt;
   questions: readonly ReviewQuestion[];
   embedded?: boolean;
   anchorPrefix?: string;
+  showDifficultActions?: boolean;
 }) {
+  const { state, dispatch } = useAppState();
+
   return (
     <section
       className={styles.reviewSection}
@@ -99,9 +104,22 @@ export function AttemptReview({
                 )}
               </span>
               <div className={styles.reviewContent}>
-                <span>
-                  {index + 1}. {question.year} 年・第 {question.questionNumber} 題
-                </span>
+                <div className={styles.reviewQuestionHeader}>
+                  <span>
+                    {index + 1}. {question.year} 年・第 {question.questionNumber} 題
+                  </span>
+                  {showDifficultActions ? (
+                    <DifficultButton
+                      active={state.difficultQuestionIds.includes(question.id)}
+                      onClick={() =>
+                        dispatch({
+                          type: 'toggle-difficult',
+                          questionId: question.id,
+                        })
+                      }
+                    />
+                  ) : null}
+                </div>
                 {question.content ? (
                   <div className={styles.reviewPrompt}>
                     <QuestionPrompt

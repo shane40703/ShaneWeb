@@ -212,6 +212,14 @@ describe('HistoryPage', () => {
     expect(review).toBeInTheDocument();
     expect(within(review).getByText(paperQuestions[0].text)).toBeInTheDocument();
     expect(within(review).getByText(paperQuestions[1].text)).toBeInTheDocument();
+    const difficultButtons = within(review).getAllByRole('button', {
+      name: '標記為難題',
+    });
+    expect(difficultButtons).toHaveLength(2);
+    fireEvent.click(difficultButtons[0]);
+    expect(
+      within(review).getByRole('button', { name: '取消難題標記' }),
+    ).toBeInTheDocument();
   });
 
   it('keeps local history usable when one subject bank fails to load', async () => {
