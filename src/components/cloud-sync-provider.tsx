@@ -68,6 +68,20 @@ export function parseCloudNote(data: DocumentData): SyncedNote | null {
     : null;
 }
 
+export function parseCloudDifficultSettings(
+  data: DocumentData,
+): string[] | null {
+  if (!Array.isArray(data.questionIds)) return null;
+  return [
+    ...new Set(
+      data.questionIds.filter(
+        (questionId: unknown): questionId is string =>
+          typeof questionId === 'string',
+      ),
+    ),
+  ].sort();
+}
+
 export function CloudSyncProvider({ children }: { children: ReactNode }) {
   const { state, dispatch, hydrated } = useAppState();
   const [user, setUser] = useState<User | null>(null);
@@ -153,22 +167,18 @@ export function CloudSyncProvider({ children }: { children: ReactNode }) {
 
         const difficultSnapshot = await getDoc(difficult);
         if (!active) return;
-        const remoteDifficult = difficultSnapshot.exists() &&
-          Array.isArray(difficultSnapshot.data().questionIds)
-          ? difficultSnapshot.data().questionIds.filter(
-              (id: unknown): id is string => typeof id === 'string',
-            )
-          : [];
-        const mergedDifficult = [
-          ...new Set([...localDifficult.current, ...remoteDifficult]),
-        ].sort();
-        dispatch({ type: 'set-difficult', questionIds: mergedDifficult });
-        await setDoc(difficult, {
-          questionIds: mergedDifficult,
-          updatedAt: new Date().toISOString(),
-          syncedAt: serverTimestamp(),
-        });
-        syncedDifficultSignature.current = JSON.stringify(mergedDifficult);
+        const difficultQuestionIds = difficultSnapshot.exists()
+          ? (parseCloudDifficultSettings(difficultSnapshot.data()) ?? [])
+          : [...new Set(localDifficult.current)].sort();
+        dispatch({ type: 'set-difficult', questionIds: difficultQuestionIds });
+        if (!difficultSnapshot.exists()) {
+          await setDoc(difficult, {
+            questionIds: difficultQuestionIds,
+            updatedAt: new Date().toISOString(),
+            syncedAt: serverTimestamp(),
+          });
+        }
+        syncedDifficultSignature.current = JSON.stringify(difficultQuestionIds);
 
         await Promise.all(
           localAttempts.current.map((attempt) =>
@@ -261,11 +271,8 @@ export function CloudSyncProvider({ children }: { children: ReactNode }) {
           difficult,
           (snapshot) => {
             if (!snapshot.exists()) return;
-            const questionIds = Array.isArray(snapshot.data().questionIds)
-              ? snapshot.data().questionIds.filter(
-                  (id: unknown): id is string => typeof id === 'string',
-                ).sort()
-              : [];
+            const questionIds =
+              parseCloudDifficultSettings(snapshot.data()) ?? [];
             const signature = JSON.stringify(questionIds);
             syncedDifficultSignature.current = signature;
             dispatch({ type: 'set-difficult', questionIds });

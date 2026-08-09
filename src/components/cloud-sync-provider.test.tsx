@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   CloudSyncProvider,
+  parseCloudDifficultSettings,
   parseCloudNote,
   useCloudSync,
 } from '@/components/cloud-sync-provider';
@@ -55,5 +56,20 @@ describe('CloudSyncProvider', () => {
       updatedAt: '2026-08-06T10:00:00.000Z',
     });
     expect(parseCloudNote({ questionId: 'law-114-01' })).toBeNull();
+  });
+
+  it('normalizes the cloud difficult-question list', () => {
+    expect(
+      parseCloudDifficultSettings({
+        questionIds: [
+          'law-114-02',
+          'law-114-01',
+          'law-114-02',
+          42,
+          null,
+        ],
+      }),
+    ).toEqual(['law-114-01', 'law-114-02']);
+    expect(parseCloudDifficultSettings({ questionIds: 'law-114-01' })).toBeNull();
   });
 });
