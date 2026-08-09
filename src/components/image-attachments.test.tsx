@@ -1,8 +1,9 @@
-import { fireEvent, render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   appendImageFiles,
   AttachmentGallery,
+  ImageAttachments,
 } from '@/components/image-attachments';
 
 const image = {
@@ -12,6 +13,8 @@ const image = {
   dataUrl:
     'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
 };
+
+afterEach(cleanup);
 
 describe('AttachmentGallery', () => {
   it('opens an in-page lightbox instead of an image hyperlink', () => {
@@ -28,6 +31,22 @@ describe('AttachmentGallery', () => {
       screen.getAllByRole('button', { name: '關閉放大圖片' })[1],
     );
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+});
+
+describe('ImageAttachments', () => {
+  it('opens an attached note image without removing it', () => {
+    const onChange = vi.fn();
+    render(<ImageAttachments images={[image]} onChange={onChange} />);
+
+    fireEvent.click(
+      screen.getByRole('button', { name: '放大圖片 詳解示意圖.png' }),
+    );
+
+    expect(
+      screen.getByRole('dialog', { name: '放大檢視 詳解示意圖.png' }),
+    ).toBeInTheDocument();
+    expect(onChange).not.toHaveBeenCalled();
   });
 });
 

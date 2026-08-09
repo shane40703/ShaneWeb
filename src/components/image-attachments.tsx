@@ -1,11 +1,7 @@
 import Image from 'next/image';
-import { type ChangeEvent, useEffect, useId, useState } from 'react';
-import {
-  IconPhotoPlus,
-  IconTrash,
-  IconX,
-  IconZoomIn,
-} from '@tabler/icons-react';
+import { type ChangeEvent, useId, useState } from 'react';
+import { IconPhotoPlus, IconTrash } from '@tabler/icons-react';
+import { ImageLightbox } from '@/components/image-lightbox';
 import type { ImageAttachment } from '@/lib/types';
 import styles from './image-attachments.module.css';
 
@@ -114,8 +110,14 @@ export function ImageAttachments({
                 unoptimized
                 sizes="120px"
               />
+              <ImageLightbox
+                src={image.dataUrl}
+                alt={image.name}
+                triggerClassName={styles.previewZoom}
+              />
               <button
                 type="button"
+                className={styles.previewRemove}
                 aria-label={`移除圖片 ${image.name}`}
                 onClick={() =>
                   onChange(images.filter((candidate) => candidate.id !== image.id))
@@ -136,83 +138,25 @@ export function AttachmentGallery({
 }: {
   images: readonly ImageAttachment[];
 }) {
-  const [selectedImage, setSelectedImage] = useState<ImageAttachment>();
-
-  useEffect(() => {
-    if (!selectedImage) return;
-    const previousOverflow = document.body.style.overflow;
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setSelectedImage(undefined);
-    };
-    document.body.style.overflow = 'hidden';
-    window.addEventListener('keydown', closeOnEscape);
-    return () => {
-      document.body.style.overflow = previousOverflow;
-      window.removeEventListener('keydown', closeOnEscape);
-    };
-  }, [selectedImage]);
-
   if (!images.length) return null;
   return (
-    <>
-      <div className={styles.gallery}>
-        {images.map((image) => (
-          <button
-            type="button"
-            key={image.id}
-            aria-label={`放大圖片 ${image.name}`}
-            onClick={() => setSelectedImage(image)}
-          >
-            <Image
-              src={image.dataUrl}
-              alt={image.name}
-              fill
-              unoptimized
-              sizes="(max-width: 600px) 45vw, 220px"
-            />
-            <span aria-hidden="true">
-              <IconZoomIn size={18} stroke={2} />
-            </span>
-          </button>
-        ))}
-      </div>
-      {selectedImage ? (
-        <div
-          className={styles.lightbox}
-          role="dialog"
-          aria-modal="true"
-          aria-label={`放大檢視 ${selectedImage.name}`}
-        >
-          <button
-            type="button"
-            className={styles.lightboxBackdrop}
-            aria-label="關閉放大圖片"
-            onClick={() => setSelectedImage(undefined)}
+    <div className={styles.gallery}>
+      {images.map((image) => (
+        <figure key={image.id}>
+          <Image
+            src={image.dataUrl}
+            alt={image.name}
+            fill
+            unoptimized
+            sizes="(max-width: 600px) 45vw, 220px"
           />
-          <div className={styles.lightboxContent}>
-            <button
-              type="button"
-              className={styles.lightboxClose}
-              aria-label="關閉放大圖片"
-              onClick={() => setSelectedImage(undefined)}
-              autoFocus
-            >
-              <IconX size={22} stroke={2} aria-hidden="true" />
-            </button>
-            <div className={styles.lightboxImage}>
-              <Image
-                src={selectedImage.dataUrl}
-                alt={selectedImage.name}
-                fill
-                unoptimized
-                sizes="92vw"
-                priority
-              />
-            </div>
-            <span>{selectedImage.name}</span>
-          </div>
-        </div>
-      ) : null}
-    </>
+          <ImageLightbox
+            src={image.dataUrl}
+            alt={image.name}
+            triggerClassName={styles.galleryZoom}
+          />
+        </figure>
+      ))}
+    </div>
   );
 }

@@ -319,6 +319,7 @@ export function NotesPage({
                       key={item.id}
                       ariaLabel={`第 ${item.questionNumber} 題`}
                       active={item.id === currentQuestion.id}
+                      difficult={state.difficultQuestionIds.includes(item.id)}
                       noted={hasNote}
                       onClick={() => navigateTo(item.id)}
                     >
@@ -330,6 +331,7 @@ export function NotesPage({
             </div>
             <footer className={styles.noteLegend}>
               <span><i />有筆記</span>
+              <span data-tone="difficult"><i />難題</span>
             </footer>
           </section>
           <section className={styles.savedNotes}>

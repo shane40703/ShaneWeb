@@ -72,6 +72,7 @@ export function ImageLightbox({
                     src={src}
                     alt={alt}
                     fill
+                    unoptimized={src.startsWith('data:')}
                     sizes="94vw"
                     priority
                   />

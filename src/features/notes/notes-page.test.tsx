@@ -260,4 +260,19 @@ describe('NotesPage question loading', () => {
     expect(await screen.findByText('114・法規・第 1 題')).toBeInTheDocument();
     expect(screen.queryByText('114・環控・第 1 題')).not.toBeInTheDocument();
   });
+
+  it('shows difficult status on the note question navigator', async () => {
+    const state = createDefaultState();
+    state.difficultQuestionIds = [lawQuestion.id];
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+
+    render(page());
+
+    expect(
+      await screen.findByRole('button', {
+        name: '第 1 題（已標記難題）',
+      }),
+    ).toBeInTheDocument();
+    expect(screen.getByText('難題')).toBeInTheDocument();
+  });
 });
