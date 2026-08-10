@@ -78,7 +78,7 @@ describe('CategoryAdminPage', () => {
     ).toBeInTheDocument();
   });
 
-  it('allows a non-law subject to replace its category with a new name', async () => {
+  it('allows a non-law subject to save multiple custom categories', async () => {
     const environmentSummary: QuestionSummary = {
       ...summary,
       id: 'env-114-01',
@@ -115,6 +115,11 @@ describe('CategoryAdminPage', () => {
     expect(
       screen.queryByRole('button', { name: '移除分類 其他' }),
     ).not.toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText('輸入或選擇題目分類'), {
+      target: { value: '第二環控分類' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: '新增分類' }));
+    expect(screen.getByText('第二環控分類')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: '驗證並儲存' }));
 
     await waitFor(() => expect(fetchMock).toHaveBeenCalledOnce());
@@ -123,7 +128,7 @@ describe('CategoryAdminPage', () => {
       expect.objectContaining({
         body: JSON.stringify({
           questionId: environmentSummary.id,
-          classifications: ['新環控分類'],
+          classifications: ['新環控分類', '第二環控分類'],
         }),
       }),
     );

@@ -583,12 +583,13 @@ export async function updateQuestionClassification(
         : primaryTopics[0];
     }
   } else {
-    if (uniqueClassifications.length !== 1) {
-      throw new Error('此科目只能選擇一個題目分類');
-    }
-    const classification = uniqueClassifications[0];
     const analysisCategories = analysisCategoryCatalog[subject];
-    const classificationTopics = analysisCategories[classification];
+    const classification = uniqueClassifications.find((candidate) =>
+      Object.hasOwn(analysisCategories, candidate),
+    );
+    const classificationTopics = classification
+      ? analysisCategories[classification]
+      : undefined;
     if (classificationTopics?.length) {
       topic = classificationTopics.includes(currentTopic)
         ? currentTopic
@@ -598,7 +599,7 @@ export async function updateQuestionClassification(
       )?.[0];
       if (!primaryMatch) throw new Error('題目分類無法對應至題庫主分類');
       primaryCategory = primaryMatch;
-    } else if (classificationTopics) {
+    } else if (classification && classificationTopics) {
       const currentClassification =
         Object.entries(analysisCategories).find(([, topics]) =>
           topics.includes(currentTopic),

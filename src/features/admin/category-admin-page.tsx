@@ -90,11 +90,12 @@ export function CategoryAdminPage({
   function addClassification(classification: string) {
     const normalized = classification.trim();
     if (!normalized) return;
-    setClassifications((current) =>
-      subjectId === 'law'
-        ? [...new Set([...current, normalized])]
-        : [normalized],
-    );
+    setClassifications((current) => [
+      ...new Set([
+        ...(current.length === 1 && current[0] === '其他' ? [] : current),
+        normalized,
+      ]),
+    ]);
     setClassificationInput('');
   }
 
@@ -309,7 +310,7 @@ export function CategoryAdminPage({
               <p className={styles.questionText}>{selectedQuestion.text}</p>
               <div className={styles.editorFields}>
                 <label>
-                  題目分類{selectedQuestion.subject === 'law' ? '（可複選）' : '（單選）'}
+                  題目分類（可複選）
                   <span className={styles.classificationPicker}>
                     <input
                       aria-label="輸入或選擇題目分類"
