@@ -1,5 +1,6 @@
 import {
   fireEvent,
+  cleanup,
   render,
   screen,
   waitFor,
@@ -32,6 +33,7 @@ const updatedQuestion: Question = {
 };
 
 afterEach(() => {
+  cleanup();
   vi.unstubAllGlobals();
 });
 
@@ -74,5 +76,56 @@ describe('CategoryAdminPage', () => {
     expect(
       await screen.findByText('分類已驗證並寫回題庫 meta.json。'),
     ).toBeInTheDocument();
+  });
+
+  it('allows a non-law subject to replace its category with a new name', async () => {
+    const environmentSummary: QuestionSummary = {
+      ...summary,
+      id: 'env-114-01',
+      subject: 'env',
+      primaryCategory: '其他',
+      topic: '其他',
+      tags: ['其他'],
+      path: '/questions/env/114/01',
+    };
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        question: {
+          ...updatedQuestion,
+          ...environmentSummary,
+          relatedLaws: ['新環控分類'],
+        },
+      }),
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    render(<CategoryAdminPage questions={[environmentSummary]} />);
+    fireEvent.change(screen.getByLabelText('科目'), {
+      target: { value: 'env' },
+    });
+    fireEvent.change(screen.getByLabelText('作者編輯金鑰'), {
+      target: { value: 'author-key' },
+    });
+    fireEvent.change(screen.getByLabelText('輸入或選擇題目分類'), {
+      target: { value: '新環控分類' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: '新增分類' }));
+    expect(screen.getByText('新環控分類')).toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: '移除分類 其他' }),
+    ).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: '驗證並儲存' }));
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledOnce());
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/admin/classification',
+      expect.objectContaining({
+        body: JSON.stringify({
+          questionId: environmentSummary.id,
+          classifications: ['新環控分類'],
+        }),
+      }),
+    );
   });
 });

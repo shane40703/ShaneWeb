@@ -589,8 +589,7 @@ export async function updateQuestionClassification(
     const classification = uniqueClassifications[0];
     const analysisCategories = analysisCategoryCatalog[subject];
     const classificationTopics = analysisCategories[classification];
-    if (!classificationTopics) throw new Error('題目分類不在此科目的分類目錄');
-    if (classificationTopics.length) {
+    if (classificationTopics?.length) {
       topic = classificationTopics.includes(currentTopic)
         ? currentTopic
         : classificationTopics[0];
@@ -599,7 +598,7 @@ export async function updateQuestionClassification(
       )?.[0];
       if (!primaryMatch) throw new Error('題目分類無法對應至題庫主分類');
       primaryCategory = primaryMatch;
-    } else {
+    } else if (classificationTopics) {
       const currentClassification =
         Object.entries(analysisCategories).find(([, topics]) =>
           topics.includes(currentTopic),
@@ -623,8 +622,7 @@ export async function updateQuestionClassification(
     topic,
     tags: nextTags,
   };
-  if (subject === 'law') nextMeta.relatedLaws = uniqueClassifications;
-  else delete nextMeta.relatedLaws;
+  nextMeta.relatedLaws = uniqueClassifications;
 
   const parsedMeta = parseQuestionMeta(metaPath, nextMeta, subject);
   await writeFile(metaPath, `${JSON.stringify(nextMeta, null, 2)}\n`, 'utf8');

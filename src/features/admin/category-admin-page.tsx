@@ -309,59 +309,40 @@ export function CategoryAdminPage({
               <p className={styles.questionText}>{selectedQuestion.text}</p>
               <div className={styles.editorFields}>
                 <label>
-                  題目分類{selectedQuestion.subject === 'law' ? '（可複選）' : ''}
-                  {selectedQuestion.subject === 'law' ? (
-                    <span className={styles.classificationPicker}>
-                      <input
-                        aria-label="輸入或選擇題目分類"
-                        list="law-classification-options"
-                        value={classificationInput}
-                        onChange={(event) =>
-                          setClassificationInput(event.target.value)
-                        }
-                        onKeyDown={(event) => {
-                          if (event.key !== 'Enter') return;
-                          event.preventDefault();
-                          addClassification(classificationInput);
-                        }}
-                        placeholder="選擇既有分類或輸入新法規名稱"
-                      />
-                      <datalist id="law-classification-options">
-                        {classificationOptions
-                          .filter(
-                            (classification) =>
-                              !classifications.includes(classification),
-                          )
-                          .map((classification) => (
-                            <option value={classification} key={classification} />
-                          ))}
-                      </datalist>
-                      <Button
-                        type="button"
-                        disabled={!classificationInput.trim()}
-                        onClick={() => addClassification(classificationInput)}
-                      >
-                        新增分類
-                      </Button>
-                    </span>
-                  ) : (
-                    <select
-                      aria-label="新增題目分類"
-                      value=""
-                      onChange={(event) => addClassification(event.target.value)}
+                  題目分類{selectedQuestion.subject === 'law' ? '（可複選）' : '（單選）'}
+                  <span className={styles.classificationPicker}>
+                    <input
+                      aria-label="輸入或選擇題目分類"
+                      list="classification-options"
+                      value={classificationInput}
+                      onChange={(event) =>
+                        setClassificationInput(event.target.value)
+                      }
+                      onKeyDown={(event) => {
+                        if (event.key !== 'Enter') return;
+                        event.preventDefault();
+                        addClassification(classificationInput);
+                      }}
+                      placeholder="選擇既有分類或輸入新分類名稱"
+                    />
+                    <datalist id="classification-options">
+                      {classificationOptions
+                        .filter(
+                          (classification) =>
+                            !classifications.includes(classification),
+                        )
+                        .map((classification) => (
+                          <option value={classification} key={classification} />
+                        ))}
+                    </datalist>
+                    <Button
+                      type="button"
+                      disabled={!classificationInput.trim()}
+                      onClick={() => addClassification(classificationInput)}
                     >
-                      <option value="">請選擇分類</option>
-                      {classificationOptions.map((classification) => (
-                        <option
-                          value={classification}
-                          key={classification}
-                          disabled={classifications.includes(classification)}
-                        >
-                          {classification}
-                        </option>
-                      ))}
-                    </select>
-                  )}
+                      新增分類
+                    </Button>
+                  </span>
                 </label>
                 <div className={styles.classificationTags} aria-label="目前題目分類">
                   {classifications.length ? (
