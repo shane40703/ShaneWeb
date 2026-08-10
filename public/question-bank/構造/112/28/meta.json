@@ -1,8 +1,8 @@
 {
-  "primaryCategory": "永續建築",
-  "topic": "基地與景觀",
+  "primaryCategory": "材料",
+  "topic": "材料",
   "tags": [
-    "基地與景觀"
+    "材料"
   ],
   "answerKey": {
     "kind": "accepted",
@@ -13,5 +13,6 @@
   "provenance": {
     "kind": "official",
     "page": 3
-  }
+  },
+  "relatedLaws": []
 }

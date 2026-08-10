@@ -1,8 +1,8 @@
 {
-  "primaryCategory": "施工程序",
-  "topic": "工地施工",
+  "primaryCategory": "構法",
+  "topic": "基礎工程",
   "tags": [
-    "工地施工"
+    "基礎工程"
   ],
   "answerKey": {
     "kind": "accepted",
@@ -13,5 +13,6 @@
   "provenance": {
     "kind": "official",
     "page": 3
-  }
+  },
+  "relatedLaws": []
 }

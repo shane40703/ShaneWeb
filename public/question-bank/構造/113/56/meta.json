@@ -1,8 +1,8 @@
 {
-  "primaryCategory": "材料",
-  "topic": "金屬材料",
+  "primaryCategory": "施工程序",
+  "topic": "裝修施工",
   "tags": [
-    "金屬材料"
+    "裝修施工"
   ],
   "answerKey": {
     "kind": "accepted",
@@ -18,5 +18,6 @@
     "question-02.png": {
       "alt": "第 56 題題幹引用圖示、PDF 題目區含嵌入圖片附圖"
     }
-  }
+  },
+  "relatedLaws": []
 }

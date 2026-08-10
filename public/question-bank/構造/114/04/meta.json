@@ -1,8 +1,8 @@
 {
-  "primaryCategory": "構法",
-  "topic": "防火與隔音",
+  "primaryCategory": "材料",
+  "topic": "材料",
   "tags": [
-    "防火與隔音"
+    "材料"
   ],
   "answerKey": {
     "kind": "accepted",
@@ -13,5 +13,9 @@
   "provenance": {
     "kind": "official",
     "page": 1
-  }
+  },
+  "relatedLaws": [
+    "裝修工程",
+    "耐燃材料"
+  ]
 }

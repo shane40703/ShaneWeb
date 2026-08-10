@@ -1,8 +1,8 @@
 {
-  "primaryCategory": "材料",
-  "topic": "材料",
+  "primaryCategory": "構法",
+  "topic": "基礎工程",
   "tags": [
-    "材料"
+    "基礎工程"
   ],
   "answerKey": {
     "kind": "accepted",
@@ -13,5 +13,6 @@
   "provenance": {
     "kind": "official",
     "page": 1
-  }
+  },
+  "relatedLaws": []
 }

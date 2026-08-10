@@ -1,8 +1,8 @@
 {
-  "primaryCategory": "材料",
-  "topic": "材料",
+  "primaryCategory": "永續建築",
+  "topic": "低碳與綠建築",
   "tags": [
-    "材料"
+    "低碳與綠建築"
   ],
   "answerKey": {
     "kind": "accepted",
@@ -13,5 +13,6 @@
   "provenance": {
     "kind": "official",
     "page": 1
-  }
+  },
+  "relatedLaws": []
 }

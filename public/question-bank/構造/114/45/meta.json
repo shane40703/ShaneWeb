@@ -1,8 +1,8 @@
 {
-  "primaryCategory": "施工程序",
-  "topic": "裝修施工",
+  "primaryCategory": "構法",
+  "topic": "砌體與隔間",
   "tags": [
-    "裝修施工"
+    "砌體與隔間"
   ],
   "answerKey": {
     "kind": "accepted",
@@ -13,5 +13,8 @@
   "provenance": {
     "kind": "official",
     "page": 6
-  }
+  },
+  "relatedLaws": [
+    "磚構造"
+  ]
 }

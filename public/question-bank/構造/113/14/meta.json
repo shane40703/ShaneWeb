@@ -1,8 +1,8 @@
 {
   "primaryCategory": "構法",
-  "topic": "砌體與隔間",
+  "topic": "帷幕牆與外牆",
   "tags": [
-    "砌體與隔間"
+    "帷幕牆與外牆"
   ],
   "answerKey": {
     "kind": "accepted",
@@ -13,5 +13,6 @@
   "provenance": {
     "kind": "official",
     "page": 3
-  }
+  },
+  "relatedLaws": []
 }

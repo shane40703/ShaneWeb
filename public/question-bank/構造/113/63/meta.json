@@ -1,8 +1,8 @@
 {
-  "primaryCategory": "工程管理",
-  "topic": "品質與安全",
+  "primaryCategory": "施工程序",
+  "topic": "混凝土施工",
   "tags": [
-    "品質與安全"
+    "混凝土施工"
   ],
   "answerKey": {
     "kind": "accepted",
@@ -13,5 +13,8 @@
   "provenance": {
     "kind": "official",
     "page": 10
-  }
+  },
+  "relatedLaws": [
+    "混凝土構造"
+  ]
 }

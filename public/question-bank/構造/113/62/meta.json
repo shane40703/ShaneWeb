@@ -1,8 +1,8 @@
 {
-  "primaryCategory": "材料",
-  "topic": "材料",
+  "primaryCategory": "施工程序",
+  "topic": "鋼構施工",
   "tags": [
-    "材料"
+    "鋼構施工"
   ],
   "answerKey": {
     "kind": "accepted",
@@ -13,5 +13,8 @@
   "provenance": {
     "kind": "official",
     "page": 10
-  }
+  },
+  "relatedLaws": [
+    "鋼構造"
+  ]
 }

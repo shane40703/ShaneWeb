@@ -1,8 +1,8 @@
 {
-  "primaryCategory": "構法",
-  "topic": "砌體與隔間",
+  "primaryCategory": "材料",
+  "topic": "材料",
   "tags": [
-    "砌體與隔間"
+    "材料"
   ],
   "answerKey": {
     "kind": "accepted",
@@ -13,5 +13,6 @@
   "provenance": {
     "kind": "official",
     "page": 2
-  }
+  },
+  "relatedLaws": []
 }

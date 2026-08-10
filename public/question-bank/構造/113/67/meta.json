@@ -1,8 +1,8 @@
 {
-  "primaryCategory": "施工程序",
-  "topic": "工地施工",
+  "primaryCategory": "構法",
+  "topic": "木構造",
   "tags": [
-    "工地施工"
+    "木構造"
   ],
   "answerKey": {
     "kind": "accepted",
@@ -13,5 +13,8 @@
   "provenance": {
     "kind": "official",
     "page": 11
-  }
+  },
+  "relatedLaws": [
+    "木構造"
+  ]
 }

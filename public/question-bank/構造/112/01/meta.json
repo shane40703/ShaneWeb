@@ -1,8 +1,8 @@
 {
-  "primaryCategory": "施工程序",
-  "topic": "鋼構施工",
+  "primaryCategory": "構法",
+  "topic": "木構造",
   "tags": [
-    "鋼構施工"
+    "木構造"
   ],
   "answerKey": {
     "kind": "accepted",
@@ -18,5 +18,8 @@
     "question-02.png": {
       "alt": "第 1 題PDF 題目區含嵌入圖片附圖"
     }
-  }
+  },
+  "relatedLaws": [
+    "木構造"
+  ]
 }

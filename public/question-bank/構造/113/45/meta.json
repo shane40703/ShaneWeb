@@ -1,8 +1,8 @@
 {
   "primaryCategory": "施工程序",
-  "topic": "工地施工",
+  "topic": "裝修施工",
   "tags": [
-    "工地施工"
+    "裝修施工"
   ],
   "answerKey": {
     "kind": "accepted",
@@ -13,5 +13,6 @@
   "provenance": {
     "kind": "official",
     "page": 6
-  }
+  },
+  "relatedLaws": []
 }
