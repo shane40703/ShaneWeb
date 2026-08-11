@@ -15,6 +15,14 @@ describe('shared discussion parsing', () => {
         questionId: 'law-114-01',
         type: 'explanation',
         content: '共享詳解',
+        images: [
+          {
+            id: 'image-1',
+            name: '詳解.png',
+            type: 'image/png',
+            dataUrl: 'https://storage.example.com/detail.png',
+          },
+        ],
         authorId: 'user-1',
         authorName: '匿名使用者',
         createdAt: timestamp,
@@ -27,7 +35,12 @@ describe('shared discussion parsing', () => {
       createdAt: '2026-08-05T08:00:00.000Z',
       likes: 0,
       replies: [],
-      images: [],
+      images: [
+        expect.objectContaining({
+          name: '詳解.png',
+          dataUrl: 'https://storage.example.com/detail.png',
+        }),
+      ],
     });
   });
 

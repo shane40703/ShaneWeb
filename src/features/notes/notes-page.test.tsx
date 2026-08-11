@@ -163,7 +163,7 @@ describe('NotesPage question loading', () => {
 
   it('keeps an unsaved default-question draft when the full bank becomes ready', async () => {
     const view = render(page({ questionBankStatus: 'loading' }));
-    const editor = await screen.findByLabelText('我的筆記');
+    const editor = await screen.findByLabelText<HTMLTextAreaElement>('我的筆記');
     fireEvent.change(editor, { target: { value: '尚未儲存的草稿' } });
 
     view.rerender(
@@ -190,6 +190,19 @@ describe('NotesPage question loading', () => {
     expect(
       screen.getByRole('region', { name: '題目選項' }),
     ).toBeInTheDocument();
+  });
+
+  it('enlarges the editor and wraps selected text as bold', async () => {
+    render(page());
+    const editor = await screen.findByLabelText<HTMLTextAreaElement>('我的筆記');
+    fireEvent.change(editor, { target: { value: '重要法條' } });
+    editor.setSelectionRange(0, 4);
+
+    fireEvent.click(
+      screen.getByRole('button', { name: '將選取文字設為粗體' }),
+    );
+
+    expect(editor).toHaveValue('**重要法條**');
   });
 
   it('keeps an unsaved draft through a bank error and retry', async () => {

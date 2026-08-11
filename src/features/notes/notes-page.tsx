@@ -1,7 +1,8 @@
 import { useRouter } from 'next/router';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   IconAlertCircle,
+  IconBold,
   IconHelpCircle,
   IconLoader2,
   IconNotebook,
@@ -38,6 +39,22 @@ import styles from './notes-page.module.css';
 
 function valueOf(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;
+}
+
+function boldSelection(
+  textarea: HTMLTextAreaElement | null,
+  value: string,
+  onChange: (value: string) => void,
+) {
+  if (!textarea) return;
+  const start = textarea.selectionStart;
+  const end = textarea.selectionEnd;
+  const selected = value.slice(start, end) || '粗體文字';
+  onChange(`${value.slice(0, start)}**${selected}**${value.slice(end)}`);
+  requestAnimationFrame(() => {
+    textarea.focus();
+    textarea.setSelectionRange(start + 2, start + 2 + selected.length);
+  });
 }
 
 interface NoteDraft {
@@ -369,6 +386,7 @@ function NoteEditor({
   const { state, dispatch } = useAppState();
   const { notify } = useToast();
   const discussion = useDiscussionPublisher(question.id);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const hasSavedNote = Boolean(
     state.notes[question.id]?.trim() || state.noteImages[question.id]?.length,
   );
@@ -389,9 +407,7 @@ function NoteEditor({
       await discussion.publish('explanation', trimmed, images);
       notify(
         '已分享至詳解與討論',
-        discussion.enabled && images.length
-          ? '文字已共享；筆記圖片目前僅保存在自己的裝置。'
-          : undefined,
+        discussion.enabled && images.length ? '文字與圖片已同步共享。' : undefined,
       );
     } catch (reason) {
       notify(
@@ -429,8 +445,23 @@ function NoteEditor({
         heading={null}
         ariaLabel="題目選項"
       />
-      <label htmlFor="question-note">我的筆記</label>
+      <div className={styles.noteToolbar}>
+        <label htmlFor="question-note">我的筆記</label>
+        <button
+          type="button"
+          aria-label="將選取文字設為粗體"
+          onClick={() =>
+            boldSelection(textareaRef.current, content, (nextContent) =>
+              onChange({ content: nextContent, images }),
+            )
+          }
+        >
+          <IconBold size={16} stroke={2.4} aria-hidden="true" />
+          粗體
+        </button>
+      </div>
       <textarea
+        ref={textareaRef}
         id="question-note"
         value={content}
         onChange={(event) =>

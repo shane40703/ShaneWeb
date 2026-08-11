@@ -13,6 +13,7 @@ import {
   type DocumentData,
   type Unsubscribe,
 } from 'firebase/firestore';
+import { getDownloadURL, ref, uploadString } from 'firebase/storage';
 import { useCloudSync } from '@/components/cloud-sync-provider';
 import {
   firebaseConfigurationAvailable,
@@ -60,7 +61,24 @@ export function parseCloudDiscussionPost(id: string, data: DocumentData) {
     questionId: data.questionId as QuestionId,
     type: data.type as DiscussionPostType,
     content: data.content,
-    images: [],
+    images: Array.isArray(data.images)
+      ? data.images.flatMap((image: unknown) => {
+          if (
+            !image ||
+            typeof image !== 'object' ||
+            !('id' in image) ||
+            !('name' in image) ||
+            !('type' in image) ||
+            !('dataUrl' in image) ||
+            typeof image.id !== 'string' ||
+            typeof image.name !== 'string' ||
+            typeof image.type !== 'string' ||
+            typeof image.dataUrl !== 'string' ||
+            !image.dataUrl.startsWith('https://')
+          ) return [];
+          return [{ id: image.id, name: image.name, type: image.type, dataUrl: image.dataUrl }];
+        })
+      : [],
     createdAt: timestampToIso(data.createdAt),
     likes: 0,
     replies: [],
@@ -96,12 +114,8 @@ export function useDiscussionPublisher(questionId: QuestionId) {
       images: DiscussionPost['images'] = [],
     ) => {
       const trimmed = content.trim();
-      if (!trimmed) {
-        throw new Error(
-          images.length
-            ? '共享投稿目前只支援文字；圖片已保留在使用者筆記。'
-            : '請先輸入要分享的內容。',
-        );
+      if (!trimmed && !images.length) {
+        throw new Error('請先輸入要分享的內容或加入圖片。');
       }
       if (!enabled) {
         const now = new Date().toISOString();
@@ -125,10 +139,24 @@ export function useDiscussionPublisher(questionId: QuestionId) {
       if (!firebase) throw new Error('Firebase 尚未完成設定。');
       const user = firebase.auth.currentUser;
       if (!user) throw new Error('請先使用 Google 登入後再分享。');
-      await addDoc(collection(firebase.db, 'discussionPosts'), {
+      const postRef = doc(collection(firebase.db, 'discussionPosts'));
+      const uploadedImages = await Promise.all(
+        images.map(async (image) => {
+          const imageRef = ref(
+            firebase.storage,
+            `discussion-images/${user.uid}/${postRef.id}/${image.id}`,
+          );
+          await uploadString(imageRef, image.dataUrl, 'data_url', {
+            contentType: image.type,
+          });
+          return { ...image, dataUrl: await getDownloadURL(imageRef) };
+        }),
+      );
+      await setDoc(postRef, {
         questionId,
         type,
         content: trimmed,
+        images: uploadedImages,
         authorId: user.uid,
         authorName: '匿名使用者',
         createdAt: serverTimestamp(),

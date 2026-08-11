@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import {
+  IconArrowRight,
+  IconChevronUp,
   IconChevronDown,
   IconHistory,
   IconLoader2,
@@ -105,6 +107,26 @@ export function HistoryPage({
     (attempt) => attempt.subject === activeSubjectFilter,
   );
   const yearGroups = groupAttemptsByYear(filteredAttempts);
+  const availablePaperYears =
+    activeSubjectFilter && activeSubjectFilter !== 'mixed'
+      ? [...new Set(
+          questions
+            .filter((question) => question.subject === activeSubjectFilter)
+            .map((question) => question.year),
+        )].sort((left, right) => right - left)
+      : [];
+  const completedPaperYears = new Set(
+    filteredAttempts.flatMap((attempt) =>
+      attempt.mode === 'paper' && attempt.year !== null ? [attempt.year] : [],
+    ),
+  );
+  const nextPaperYear = availablePaperYears.find(
+    (year) => !completedPaperYears.has(year),
+  );
+  const repeatPaperYear = availablePaperYears.length
+    ? availablePaperYears[filteredAttempts.length % availablePaperYears.length]
+    : undefined;
+  const continuationYear = nextPaperYear ?? repeatPaperYear;
   const mixedCount = state.attempts.filter(
     (attempt) => attempt.subject === 'mixed',
   ).length;
@@ -478,6 +500,14 @@ export function HistoryPage({
                                   reviewLabel="完整作答紀錄"
                                 />
                               ) : null}
+                              <button
+                                type="button"
+                                className={styles.collapseResult}
+                                onClick={() => toggleAttemptView(attempt.id, activeAttemptView)}
+                              >
+                                <IconChevronUp size={16} stroke={2} aria-hidden="true" />
+                                收起作答結果
+                              </button>
                               <div
                                 className={styles.attemptResultContent}
                                 id={`${attemptViewId}-${activeAttemptView}-panel`}
@@ -562,6 +592,38 @@ export function HistoryPage({
                   </div>
                 </details>
               ))}
+              {activeSubjectFilter &&
+              activeSubjectFilter !== 'mixed' &&
+              continuationYear ? (
+                <section className={styles.continueCard}>
+                  <div>
+                    <span>NEXT PAPER</span>
+                    <h2>
+                      {nextPaperYear
+                        ? `繼續作答 ${continuationYear} 年`
+                        : '已完成所有年度'}
+                    </h2>
+                    <p>
+                      {nextPaperYear
+                        ? `接著完成${getSubject(activeSubjectFilter)?.name ?? '目前科目'} ${continuationYear} 年試題。`
+                        : '所有收錄年度都已作答，可隨機再練習一個年度。'}
+                    </p>
+                  </div>
+                  <Button
+                    variant="primary"
+                    render={
+                      <Link
+                        href={`/papers?subject=${activeSubjectFilter}&year=${continuationYear}`}
+                      />
+                    }
+                  >
+                    {nextPaperYear
+                      ? `繼續作答 ${continuationYear} 年`
+                      : '隨機再做一年題目'}
+                    <IconArrowRight size={17} stroke={2} aria-hidden="true" />
+                  </Button>
+                </section>
+              ) : null}
             </div>
           ) : (
             <EmptyState

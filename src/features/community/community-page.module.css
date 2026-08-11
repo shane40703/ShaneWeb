@@ -62,6 +62,7 @@
 
 .composeCard { padding: 22px; position: sticky; top: 92px; display: grid; gap: 16px; }
 .composeCard textarea { padding: 12px; resize: vertical; line-height: 1.6; }
+.post p a, .replies p a { color: var(--primary-strong); overflow-wrap: anywhere; text-decoration: underline; text-underline-offset: 2px; }
 .composeCard > p { margin: -4px 0 0; color: var(--muted); font-size: 10px; line-height: 1.6; }
 
 @media (max-width: 950px) {

@@ -20,6 +20,7 @@ import {
 } from '@/components/content/content';
 import { DifficultButton } from '@/components/difficult-button';
 import { QuestionAnswerPanel } from '@/components/question-answer-panel';
+import { RichText } from '@/components/rich-text';
 import {
   QuestionNumberPicker,
   QuestionSelector,
@@ -356,14 +357,14 @@ export function CommunityPage({
                       {formatDateTime(post.createdAt)}
                     </time>
                   </header>
-                  {post.content ? <p>{post.content}</p> : null}
+                  {post.content ? <p><RichText>{post.content}</RichText></p> : null}
                   <AttachmentGallery images={post.images} />
                   {post.replies.length ? (
                     <div className={styles.replies}>
                       {post.replies.map((reply) => (
                         <div key={reply.id}>
                           <span>匿名回覆・{formatDateTime(reply.createdAt)}</span>
-                          <p>{reply.content}</p>
+                          <p><RichText>{reply.content}</RichText></p>
                           {shared.user && reply.authorId === shared.user.uid ? (
                             <Button
                               variant="ghost"
@@ -521,7 +522,7 @@ export function CommunityPage({
           </Button>
           <p>
             {shared.enabled
-              ? '共享投稿會公開顯示給所有使用者；目前僅支援文字內容。'
+              ? '共享投稿會公開顯示給所有使用者，支援文字與最多 4 張圖片。'
               : 'Firebase 尚未設定，投稿內容僅儲存在這台裝置。'}
           </p>
         </form>

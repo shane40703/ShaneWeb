@@ -30,10 +30,11 @@ NEXT_PUBLIC_FIREBASE_APP_ID=...
 
 ```powershell
 firebase use --add
-firebase deploy --only firestore:rules
+firebase deploy --only firestore:rules,storage
 ```
 
 也可以把根目錄 `firestore.rules` 的內容貼到 Firebase Console 的 Firestore Rules 並發布。
+若使用詳解圖片，還需將根目錄 `storage.rules` 貼到 Firebase Console 的 Storage Rules 並發布。
 
 ## 4. 設定網域
 

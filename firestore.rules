@@ -90,7 +90,7 @@ service cloud.firestore {
       function validPost() {
         return request.resource.data.keys().hasOnly([
           'questionId', 'type', 'content', 'authorId', 'authorName',
-          'createdAt', 'deleted'
+          'images', 'createdAt', 'deleted'
         ])
         && request.resource.data.questionId is string
         && request.resource.data.questionId.size() <= 80
@@ -98,8 +98,12 @@ service cloud.firestore {
           'explanation', 'supplement', 'question', 'correction'
         ]
         && request.resource.data.content is string
-        && request.resource.data.content.size() >= 1
+        && request.resource.data.content.size() >= 0
         && request.resource.data.content.size() <= 5000
+        && request.resource.data.images is list
+        && request.resource.data.images.size() <= 4
+        && (request.resource.data.content.size() >= 1
+          || request.resource.data.images.size() >= 1)
         && request.resource.data.authorId == request.auth.uid
         && request.resource.data.authorName == '匿名使用者'
         && request.resource.data.createdAt is timestamp

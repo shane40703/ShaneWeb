@@ -1,7 +1,8 @@
 import Link from 'next/link';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import {
   IconChevronDown,
+  IconBold,
   IconCircleCheck,
   IconMessages,
   IconMinus,
@@ -162,6 +163,7 @@ function ReviewNoteEditor({ question }: { question: ReviewQuestion }) {
   const { state, dispatch } = useAppState();
   const { notify } = useToast();
   const discussion = useDiscussionPublisher(question.id);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [content, setContent] = useState(state.notes[question.id] ?? '');
   const [images, setImages] = useState<ImageAttachment[]>(
     state.noteImages[question.id] ?? [],
@@ -193,9 +195,7 @@ function ReviewNoteEditor({ question }: { question: ReviewQuestion }) {
       await discussion.publish('explanation', trimmed, images);
       notify(
         '筆記已分享至詳解與討論',
-        discussion.enabled && images.length
-          ? '文字已共享；筆記圖片目前僅保存在自己的裝置。'
-          : undefined,
+        discussion.enabled && images.length ? '文字與圖片已同步共享。' : undefined,
       );
     } catch (reason) {
       notify(
@@ -214,7 +214,27 @@ function ReviewNoteEditor({ question }: { question: ReviewQuestion }) {
         </span>
         <small>登入後同步文字筆記・圖片保存在本機</small>
       </header>
+      <button
+        type="button"
+        className={styles.boldButton}
+        aria-label={`將第 ${question.questionNumber} 題選取文字設為粗體`}
+        onClick={() => {
+          const textarea = textareaRef.current;
+          if (!textarea) return;
+          const start = textarea.selectionStart;
+          const end = textarea.selectionEnd;
+          const selected = content.slice(start, end) || '粗體文字';
+          setContent(`${content.slice(0, start)}**${selected}**${content.slice(end)}`);
+          requestAnimationFrame(() => {
+            textarea.focus();
+            textarea.setSelectionRange(start + 2, start + 2 + selected.length);
+          });
+        }}
+      >
+        <IconBold size={15} stroke={2.4} aria-hidden="true" /> 粗體
+      </button>
       <textarea
+        ref={textareaRef}
         aria-label={`第 ${question.questionNumber} 題筆記內容`}
         value={content}
         onChange={(event) => setContent(event.target.value)}
@@ -234,7 +254,7 @@ function ReviewNoteEditor({ question }: { question: ReviewQuestion }) {
             );
           });
         }}
-        rows={3}
+        rows={7}
         placeholder="在檢討答案時記下法條、公式或易錯觀念，也可以直接貼上截圖…"
       />
       <ImageAttachments

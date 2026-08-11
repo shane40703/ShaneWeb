@@ -207,6 +207,15 @@ describe('HistoryPage', () => {
     expect(
       within(review).getByRole('button', { name: '取消難題標記' }),
     ).toBeInTheDocument();
+    fireEvent.click(
+      within(openedAttempt!).getByRole('button', { name: '收起作答結果' }),
+    );
+    expect(
+      within(openedAttempt!).queryByRole('region', { name: '完整作答紀錄' }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /繼續作答 113 年/ }),
+    ).toHaveAttribute('href', '/papers?subject=law&year=113');
   });
 
   it('keeps local history usable when one subject bank fails to load', async () => {
