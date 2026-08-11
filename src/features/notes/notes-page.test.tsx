@@ -199,10 +199,16 @@ describe('NotesPage question loading', () => {
     editor.setSelectionRange(0, 4);
 
     fireEvent.click(
-      screen.getByRole('button', { name: '將選取文字設為粗體' }),
+      screen.getByRole('button', { name: '切換選取文字的粗體格式' }),
     );
 
     expect(editor).toHaveValue('**重要法條**');
+
+    editor.setSelectionRange(2, 6);
+    fireEvent.click(
+      screen.getByRole('button', { name: '切換選取文字的粗體格式' }),
+    );
+    expect(editor).toHaveValue('重要法條');
   });
 
   it('keeps an unsaved draft through a bank error and retry', async () => {

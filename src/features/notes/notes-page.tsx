@@ -32,6 +32,7 @@ import type { QuestionBankStatus } from '@/lib/question-bank-client';
 import { parseQuestionId } from '@/lib/question-path';
 import { getSubject, years } from '@/question-bank/catalog';
 import { useDiscussionPublisher } from '@/lib/shared-discussions';
+import { toggleBoldFormatting } from '@/lib/text-formatting';
 import type { ImageAttachment, Question, SubjectId } from '@/lib/types';
 import { useClientReady } from '@/lib/use-client-ready';
 import { useAppState } from '@/state/app-state';
@@ -49,11 +50,11 @@ function boldSelection(
   if (!textarea) return;
   const start = textarea.selectionStart;
   const end = textarea.selectionEnd;
-  const selected = value.slice(start, end) || '粗體文字';
-  onChange(`${value.slice(0, start)}**${selected}**${value.slice(end)}`);
+  const result = toggleBoldFormatting(value, start, end);
+  onChange(result.value);
   requestAnimationFrame(() => {
     textarea.focus();
-    textarea.setSelectionRange(start + 2, start + 2 + selected.length);
+    textarea.setSelectionRange(result.selectionStart, result.selectionEnd);
   });
 }
 
@@ -449,7 +450,7 @@ function NoteEditor({
         <label htmlFor="question-note">我的筆記</label>
         <button
           type="button"
-          aria-label="將選取文字設為粗體"
+          aria-label="切換選取文字的粗體格式"
           onClick={() =>
             boldSelection(textareaRef.current, content, (nextContent) =>
               onChange({ content: nextContent, images }),

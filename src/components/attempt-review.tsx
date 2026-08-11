@@ -22,6 +22,7 @@ import {
   isQuestionCorrect,
 } from '@/lib/study';
 import { useDiscussionPublisher } from '@/lib/shared-discussions';
+import { toggleBoldFormatting } from '@/lib/text-formatting';
 import type { ImageAttachment, Question, QuizAttempt } from '@/lib/types';
 import { useAppState } from '@/state/app-state';
 import styles from './attempt-review.module.css';
@@ -217,17 +218,17 @@ function ReviewNoteEditor({ question }: { question: ReviewQuestion }) {
       <button
         type="button"
         className={styles.boldButton}
-        aria-label={`將第 ${question.questionNumber} 題選取文字設為粗體`}
+        aria-label={`切換第 ${question.questionNumber} 題選取文字的粗體格式`}
         onClick={() => {
           const textarea = textareaRef.current;
           if (!textarea) return;
           const start = textarea.selectionStart;
           const end = textarea.selectionEnd;
-          const selected = content.slice(start, end) || '粗體文字';
-          setContent(`${content.slice(0, start)}**${selected}**${content.slice(end)}`);
+          const result = toggleBoldFormatting(content, start, end);
+          setContent(result.value);
           requestAnimationFrame(() => {
             textarea.focus();
-            textarea.setSelectionRange(start + 2, start + 2 + selected.length);
+            textarea.setSelectionRange(result.selectionStart, result.selectionEnd);
           });
         }}
       >
