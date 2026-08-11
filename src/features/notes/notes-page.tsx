@@ -388,6 +388,7 @@ function NoteEditor({
   const { notify } = useToast();
   const discussion = useDiscussionPublisher(question.id);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [sharing, setSharing] = useState(false);
   const hasSavedNote = Boolean(
     state.notes[question.id]?.trim() || state.noteImages[question.id]?.length,
   );
@@ -398,12 +399,14 @@ function NoteEditor({
   }
 
   async function shareNote() {
+    if (sharing) return;
     const trimmed = content.trim();
     if (!trimmed && !images.length) {
       notify('尚無可分享的筆記');
       return;
     }
     dispatch({ type: 'save-note', questionId: question.id, content, images });
+    setSharing(true);
     try {
       await discussion.publish('explanation', trimmed, images);
       notify(
@@ -415,6 +418,8 @@ function NoteEditor({
         '分享失敗',
         reason instanceof Error ? reason.message : '請稍後再試。',
       );
+    } finally {
+      setSharing(false);
     }
   }
 
@@ -509,7 +514,9 @@ function NoteEditor({
               onConfirm={deleteNote}
             />
           ) : null}
-          <Button onClick={() => void shareNote()}>分享至詳解與討論</Button>
+          <Button disabled={sharing} onClick={() => void shareNote()}>
+            {sharing ? '正在分享…' : '分享至詳解與討論'}
+          </Button>
           <Button variant="primary" onClick={saveNote}>儲存筆記</Button>
         </div>
       </div>

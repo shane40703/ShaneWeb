@@ -140,18 +140,25 @@ export function useDiscussionPublisher(questionId: QuestionId) {
       const user = firebase.auth.currentUser;
       if (!user) throw new Error('請先使用 Google 登入後再分享。');
       const postRef = doc(collection(firebase.db, 'discussionPosts'));
-      const uploadedImages = await Promise.all(
-        images.map(async (image) => {
-          const imageRef = ref(
-            firebase.storage,
-            `discussion-images/${user.uid}/${postRef.id}/${image.id}`,
-          );
-          await uploadString(imageRef, image.dataUrl, 'data_url', {
-            contentType: image.type,
-          });
-          return { ...image, dataUrl: await getDownloadURL(imageRef) };
-        }),
-      );
+      let uploadedImages: DiscussionPost['images'];
+      try {
+        uploadedImages = await Promise.all(
+          images.map(async (image) => {
+            const imageRef = ref(
+              firebase.storage,
+              `discussion-images/${user.uid}/${postRef.id}/${image.id}`,
+            );
+            await uploadString(imageRef, image.dataUrl, 'data_url', {
+              contentType: image.type,
+            });
+            return { ...image, dataUrl: await getDownloadURL(imageRef) };
+          }),
+        );
+      } catch {
+        throw new Error(
+          '圖片上傳失敗，請確認 Firebase Storage 已啟用，且正式環境已部署 Storage Rules。',
+        );
+      }
       await setDoc(postRef, {
         questionId,
         type,

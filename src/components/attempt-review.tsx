@@ -165,6 +165,7 @@ function ReviewNoteEditor({ question }: { question: ReviewQuestion }) {
   const { notify } = useToast();
   const discussion = useDiscussionPublisher(question.id);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [sharing, setSharing] = useState(false);
   const [content, setContent] = useState(state.notes[question.id] ?? '');
   const [images, setImages] = useState<ImageAttachment[]>(
     state.noteImages[question.id] ?? [],
@@ -181,6 +182,7 @@ function ReviewNoteEditor({ question }: { question: ReviewQuestion }) {
   }
 
   async function shareNote() {
+    if (sharing) return;
     const trimmed = content.trim();
     if (!trimmed && !images.length) {
       notify('尚無可分享的筆記');
@@ -192,6 +194,7 @@ function ReviewNoteEditor({ question }: { question: ReviewQuestion }) {
       content,
       images,
     });
+    setSharing(true);
     try {
       await discussion.publish('explanation', trimmed, images);
       notify(
@@ -203,6 +206,8 @@ function ReviewNoteEditor({ question }: { question: ReviewQuestion }) {
         '分享失敗',
         reason instanceof Error ? reason.message : '請稍後再試。',
       );
+    } finally {
+      setSharing(false);
     }
   }
 
@@ -264,9 +269,9 @@ function ReviewNoteEditor({ question }: { question: ReviewQuestion }) {
         label="上傳筆記圖片"
       />
       <footer>
-        <Button onClick={() => void shareNote()}>
+        <Button disabled={sharing} onClick={() => void shareNote()}>
           <IconMessages size={16} stroke={2} aria-hidden="true" />
-          分享至詳解與討論
+          {sharing ? '正在分享…' : '分享至詳解與討論'}
         </Button>
         <Button variant="primary" onClick={saveNote}>儲存筆記</Button>
       </footer>
