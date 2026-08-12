@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import { useRef, useState } from 'react';
 import {
   IconChevronDown,
@@ -16,12 +15,17 @@ import {
 } from '@/components/image-attachments';
 import { DifficultButton } from '@/components/difficult-button';
 import { QuestionAnswerPanel } from '@/components/question-answer-panel';
+import { AttachmentGallery } from '@/components/image-attachments';
+import { RichText } from '@/components/rich-text';
 import { Button, useToast } from '@/components/ui/ui';
 import {
   formatCorrectAnswer,
   isQuestionCorrect,
 } from '@/lib/study';
-import { useDiscussionPublisher } from '@/lib/shared-discussions';
+import {
+  useDiscussionPublisher,
+  useSharedDiscussions,
+} from '@/lib/shared-discussions';
 import { toggleBoldFormatting } from '@/lib/text-formatting';
 import type { ImageAttachment, Question, QuizAttempt } from '@/lib/types';
 import { useAppState } from '@/state/app-state';
@@ -131,13 +135,7 @@ export function AttemptReview({
                   <b>標準答案：{formatCorrectAnswer(question)}</b>
                 </p>
               </div>
-              <Link
-                className={styles.reviewDiscussionLink}
-                href={`/community?question=${question.id}`}
-              >
-                前往詳解與討論
-                <IconMessages size={15} stroke={2} aria-hidden="true" />
-              </Link>
+              <ReviewDiscussion question={question} />
               <details className={styles.reviewOptions}>
                 <summary>
                   <span>檢視完整選項與筆記</span>
@@ -157,6 +155,49 @@ export function AttemptReview({
         })}
       </div>
     </section>
+  );
+}
+
+function ReviewDiscussion({ question }: { question: ReviewQuestion }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <section className={styles.reviewDiscussion}>
+      <button type="button" onClick={() => setOpen((current) => !current)}>
+        {open ? '收合詳解與討論' : '顯示詳解與討論'}
+        <IconMessages size={15} stroke={2} aria-hidden="true" />
+      </button>
+      {open ? <ReviewDiscussionContent question={question} /> : null}
+    </section>
+  );
+}
+
+function ReviewDiscussionContent({ question }: { question: ReviewQuestion }) {
+  const shared = useSharedDiscussions(question.id);
+  const hasExplanation = Boolean(question.explanation?.trim());
+
+  if (shared.loading) return <p>正在載入詳解與討論…</p>;
+  if (shared.error) return <p>{shared.error}</p>;
+  if (!hasExplanation && !shared.posts.length) {
+    return <p>尚未有詳解或討論。</p>;
+  }
+
+  return (
+    <div className={styles.reviewDiscussionContent}>
+      {hasExplanation ? (
+        <article>
+          <strong>題目詳解</strong>
+          <p><RichText>{question.explanation!}</RichText></p>
+        </article>
+      ) : null}
+      {shared.posts.map((post) => (
+        <article key={post.id}>
+          <strong>使用者討論</strong>
+          {post.content ? <p><RichText>{post.content}</RichText></p> : null}
+          <AttachmentGallery images={post.images} />
+        </article>
+      ))}
+    </div>
   );
 }
 

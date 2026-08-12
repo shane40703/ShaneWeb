@@ -1,6 +1,7 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AttemptReview } from '@/components/attempt-review';
+import { CloudSyncProvider } from '@/components/cloud-sync-provider';
 import { ToastProvider } from '@/components/ui/ui';
 import type { QuizAttempt } from '@/lib/types';
 import { AppStateProvider, useAppState } from '@/state/app-state';
@@ -68,10 +69,12 @@ describe('AttemptReview', () => {
     render(
       <ToastProvider>
         <AppStateProvider>
-          <AttemptReview
-            attempt={attempt}
-            questions={questions}
-          />
+          <CloudSyncProvider>
+            <AttemptReview
+              attempt={attempt}
+              questions={questions}
+            />
+          </CloudSyncProvider>
         </AppStateProvider>
       </ToastProvider>,
     );
@@ -85,14 +88,17 @@ describe('AttemptReview', () => {
     expect(screen.getByText(/你的答案：A/)).toHaveTextContent('標準答案：C');
     expect(screen.getAllByText('選項 D')).toHaveLength(2);
     expect(screen.queryByText('官方題目詳解')).not.toBeInTheDocument();
-    expect(screen.queryByText('目前尚無詳解。')).not.toBeInTheDocument();
     expect(screen.queryByText('查看題目')).not.toBeInTheDocument();
     expect(
       screen.queryByRole('link', { name: '查看第 1 題' }),
     ).not.toBeInTheDocument();
-    expect(
-      screen.getAllByRole('link', { name: '前往詳解與討論' })[0],
-    ).toHaveAttribute('href', '/community?question=law-114-01');
+    const discussionButtons = screen.getAllByRole('button', {
+      name: '顯示詳解與討論',
+    });
+    fireEvent.click(discussionButtons[0]);
+    expect(screen.getByText('官方題目詳解')).toBeInTheDocument();
+    fireEvent.click(discussionButtons[1]);
+    expect(screen.getByText('尚未有詳解或討論。')).toBeInTheDocument();
     expect(
       screen.getByRole('region', { name: '第 1 題使用者筆記' }),
     ).toBeInTheDocument();
@@ -107,8 +113,10 @@ describe('AttemptReview', () => {
     render(
       <ToastProvider>
         <AppStateProvider>
-          <AttemptReview attempt={attempt} questions={questions.slice(0, 1)} />
-          <DiscussionProbe />
+          <CloudSyncProvider>
+            <AttemptReview attempt={attempt} questions={questions.slice(0, 1)} />
+            <DiscussionProbe />
+          </CloudSyncProvider>
         </AppStateProvider>
       </ToastProvider>,
     );

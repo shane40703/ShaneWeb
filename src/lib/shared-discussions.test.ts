@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   parseCloudDiscussionPost,
   parseCloudDiscussionReply,
+  withUploadTimeout,
 } from '@/lib/shared-discussions';
 
 const timestamp = {
@@ -9,6 +10,12 @@ const timestamp = {
 };
 
 describe('shared discussion parsing', () => {
+  it('stops waiting when an image upload does not finish', async () => {
+    await expect(withUploadTimeout(new Promise(() => undefined), 1)).rejects.toThrow(
+      '圖片上傳逾時',
+    );
+  });
+
   it('accepts a published text post and normalizes its public fields', () => {
     expect(
       parseCloudDiscussionPost('post-1', {

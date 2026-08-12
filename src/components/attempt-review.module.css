@@ -122,13 +122,17 @@
   color: var(--text);
 }
 
-.reviewDiscussionLink {
+.reviewDiscussion {
+  grid-column: 2 / -1;
+}
+
+.reviewDiscussion > button {
+  width: 100%;
   min-height: 42px;
   padding: 0 14px;
   display: inline-flex;
   align-items: center;
   justify-content: space-between;
-  grid-column: 2 / -1;
   gap: 10px;
   border-left: 4px solid var(--primary);
   border-radius: 0 11px 11px 0;
@@ -136,11 +140,38 @@
   color: var(--primary-strong);
   font-size: 12px;
   font-weight: 800;
-  text-decoration: none;
+  border: 0;
+  cursor: pointer;
 }
 
-.reviewDiscussionLink:hover {
-  text-decoration: underline;
+.reviewDiscussion > button:hover {
+  filter: brightness(0.98);
+}
+
+.reviewDiscussion > p {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.reviewDiscussionContent {
+  margin-top: 10px;
+  display: grid;
+  gap: 8px;
+}
+
+.reviewDiscussionContent article {
+  padding: 12px;
+  display: grid;
+  gap: 7px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+}
+
+.reviewDiscussionContent article > strong {
+  color: var(--primary-strong);
+  font-size: 12px;
 }
 
 .reviewNote {

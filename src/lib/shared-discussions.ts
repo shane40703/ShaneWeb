@@ -27,6 +27,27 @@ import type {
 } from '@/lib/types';
 import { useAppState } from '@/state/app-state';
 
+const IMAGE_UPLOAD_TIMEOUT_MS = 30_000;
+
+export function withUploadTimeout<T>(operation: Promise<T>, timeoutMs = IMAGE_UPLOAD_TIMEOUT_MS) {
+  return new Promise<T>((resolve, reject) => {
+    const timeout = window.setTimeout(
+      () => reject(new Error('圖片上傳逾時，請確認網路連線與 Firebase Storage 設定。')),
+      timeoutMs,
+    );
+    operation.then(
+      (result) => {
+        window.clearTimeout(timeout);
+        resolve(result);
+      },
+      (reason) => {
+        window.clearTimeout(timeout);
+        reject(reason);
+      },
+    );
+  });
+}
+
 export interface SharedDiscussionPost extends DiscussionPost {
   authorId?: string;
   authorName?: string;
@@ -148,13 +169,21 @@ export function useDiscussionPublisher(questionId: QuestionId) {
               firebase.storage,
               `discussion-images/${user.uid}/${postRef.id}/${image.id}`,
             );
-            await uploadString(imageRef, image.dataUrl, 'data_url', {
-              contentType: image.type,
-            });
-            return { ...image, dataUrl: await getDownloadURL(imageRef) };
+            await withUploadTimeout(
+              uploadString(imageRef, image.dataUrl, 'data_url', {
+                contentType: image.type,
+              }),
+            );
+            return {
+              ...image,
+              dataUrl: await withUploadTimeout(getDownloadURL(imageRef)),
+            };
           }),
         );
-      } catch {
+      } catch (reason) {
+        if (reason instanceof Error && reason.message.includes('上傳逾時')) {
+          throw reason;
+        }
         throw new Error(
           '圖片上傳失敗，請確認 Firebase Storage 已啟用，且正式環境已部署 Storage Rules。',
         );
