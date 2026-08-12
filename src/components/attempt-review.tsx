@@ -83,6 +83,7 @@ export function AttemptReview({
             <article
               key={question.id}
               id={anchorPrefix ? `${anchorPrefix}-${question.id}` : undefined}
+              data-question-id={question.id}
               data-result={result}
             >
               <span

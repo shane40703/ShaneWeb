@@ -93,6 +93,7 @@ describe('QuizPage progress presentation', () => {
   beforeEach(() => {
     window.localStorage.clear();
     window.scrollTo = vi.fn();
+    Element.prototype.scrollIntoView = vi.fn();
     mocks.dispatch.mockReset();
     mocks.reportPersistence.mockReset();
     mocks.replace.mockReset();
@@ -252,5 +253,11 @@ describe('QuizPage progress presentation', () => {
     expect(
       screen.getByRole('region', { name: '完整作答紀錄' }),
     ).toBeInTheDocument();
+    expect(
+      screen.getByRole('link', { name: '查看第 43 題結果' }),
+    ).toHaveAttribute('aria-current', 'step');
+    expect(Element.prototype.scrollIntoView).toHaveBeenCalledWith({
+      block: 'nearest',
+    });
   });
 });

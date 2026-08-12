@@ -106,6 +106,8 @@ export function QuizPage({ question, paper }: StaticQuestionPageProps) {
   const [checkedSingleQuestionId, setCheckedSingleQuestionId] =
     useState<string | null>(null);
   const resultViewRef = useRef<HTMLDivElement | null>(null);
+  const resultNumberListRef = useRef<HTMLDivElement | null>(null);
+  const [visibleResultQuestionId, setVisibleResultQuestionId] = useState<string>();
   const routeHydrated = useClientReady();
   const pendingRandomSessionId = useRef<string | null>(null);
   const subject = getSubject(question.subject);
@@ -173,13 +175,19 @@ export function QuizPage({ question, paper }: StaticQuestionPageProps) {
     isRandomMode && randomQuestions.some((item) => item.id === question.id);
   const currentQuizQuestion = questionById.get(question.id);
   const currentQuestionPath = currentQuizQuestion?.path;
-  const paperQuestions = isRandomQuiz
-    ? randomQuestions
-    : isSingleQuestion
-      ? currentQuizQuestion
-        ? [currentQuizQuestion]
-        : []
-      : paper;
+  const paperQuestions = useMemo(
+    () =>
+      isRandomQuiz
+        ? randomQuestions
+        : isSingleQuestion
+          ? currentQuizQuestion
+            ? [currentQuizQuestion]
+            : []
+          : paper,
+    [currentQuizQuestion, isRandomQuiz, isSingleQuestion, paper, randomQuestions],
+  );
+  const activeResultQuestionId =
+    visibleResultQuestionId ?? paperQuestions[0]?.id;
   const quizProgressScope = useMemo(() => {
     if (!routeHydrated || !router.isReady) return null;
     if (isRandomQuiz) {
@@ -320,6 +328,37 @@ export function QuizPage({ question, paper }: StaticQuestionPageProps) {
     }, 1000);
     return () => window.clearInterval(timer);
   }, [attempt, question.id, quizProgressScope, singleAnswerChecked]);
+
+  useEffect(() => {
+    if (!attempt || resultView !== 'review' || !paperQuestions.length) return;
+    if (typeof IntersectionObserver === 'undefined') return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort(
+            (left, right) =>
+              Math.abs(left.boundingClientRect.top - 110) -
+              Math.abs(right.boundingClientRect.top - 110),
+          )[0];
+        const questionId = visible?.target.getAttribute('data-question-id');
+        if (questionId) setVisibleResultQuestionId(questionId);
+      },
+      { rootMargin: '-90px 0px -55% 0px', threshold: [0, 0.1] },
+    );
+    document
+      .querySelectorAll<HTMLElement>('[id^="result-question-"][data-question-id]')
+      .forEach((element) => observer.observe(element));
+    return () => observer.disconnect();
+  }, [attempt, paperQuestions, resultView]);
+
+  useEffect(() => {
+    if (!activeResultQuestionId) return;
+    resultNumberListRef.current
+      ?.querySelector<HTMLElement>('[aria-current="step"]')
+      ?.scrollIntoView({ block: 'nearest' });
+  }, [activeResultQuestionId, attempt, resultView]);
 
   function updateQuizProgress(action: QuizProgressAction) {
     if (!quizProgressScope) return;
@@ -521,7 +560,7 @@ export function QuizPage({ question, paper }: StaticQuestionPageProps) {
                       {attempt.correctCount}/{paperQuestions.length}
                     </strong>
                   </header>
-                  <div className={styles.questionNumbers}>
+                  <div className={styles.questionNumbers} ref={resultNumberListRef}>
                     <QuestionNumberGrid>
                       {paperQuestions.map((item) => {
                         const itemDifficult =
@@ -536,7 +575,7 @@ export function QuizPage({ question, paper }: StaticQuestionPageProps) {
                             key={item.id}
                             href={`#result-question-${item.id}`}
                             ariaLabel={`查看第 ${item.questionNumber} 題結果`}
-                            active={false}
+                            active={activeResultQuestionId === item.id}
                             answered={itemSelected !== undefined}
                             difficult={itemDifficult}
                             wrong={itemWrong}
