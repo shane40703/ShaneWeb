@@ -55,6 +55,10 @@ export interface SharedDiscussionPost extends DiscussionPost {
   ownedByCurrentUser?: boolean;
 }
 
+export interface DiscussionPublishResult {
+  imagesShared: boolean;
+}
+
 function timestampToIso(value: unknown) {
   if (
     value &&
@@ -154,14 +158,14 @@ export function useDiscussionPublisher(questionId: QuestionId) {
             reported: false,
           },
         });
-        return;
+        return { imagesShared: true } satisfies DiscussionPublishResult;
       }
       const firebase = getFirebaseServices();
       if (!firebase) throw new Error('Firebase 尚未完成設定。');
       const user = firebase.auth.currentUser;
       if (!user) throw new Error('請先使用 Google 登入後再分享。');
       const postRef = doc(collection(firebase.db, 'discussionPosts'));
-      let uploadedImages: DiscussionPost['images'];
+      let uploadedImages: DiscussionPost['images'] = [];
       try {
         uploadedImages = await Promise.all(
           images.map(async (image) => {
@@ -180,12 +184,14 @@ export function useDiscussionPublisher(questionId: QuestionId) {
             };
           }),
         );
-      } catch (reason) {
-        if (reason instanceof Error && reason.message.includes('上傳逾時')) {
-          throw reason;
-        }
+      } catch {
+        // Firebase Storage may be unavailable on the Spark plan. The original
+        // images remain in the local note while the text is still published.
+        uploadedImages = [];
+      }
+      if (!trimmed && images.length && !uploadedImages.length) {
         throw new Error(
-          '圖片上傳失敗，請確認 Firebase Storage 已啟用，且正式環境已部署 Storage Rules。',
+          '目前方案無法共享圖片。請加入文字後再分享；圖片仍會保存在本機筆記。',
         );
       }
       await setDoc(postRef, {
@@ -198,6 +204,9 @@ export function useDiscussionPublisher(questionId: QuestionId) {
         createdAt: serverTimestamp(),
         deleted: false,
       });
+      return {
+        imagesShared: images.length === 0 || uploadedImages.length === images.length,
+      } satisfies DiscussionPublishResult;
     },
     [dispatch, enabled, questionId],
   );

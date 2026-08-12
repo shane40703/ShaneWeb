@@ -408,10 +408,14 @@ function NoteEditor({
     dispatch({ type: 'save-note', questionId: question.id, content, images });
     setSharing(true);
     try {
-      await discussion.publish('explanation', trimmed, images);
+      const result = await discussion.publish('explanation', trimmed, images);
       notify(
         '已分享至詳解與討論',
-        discussion.enabled && images.length ? '文字與圖片已同步共享。' : undefined,
+        discussion.enabled && images.length
+          ? result.imagesShared
+            ? '文字與圖片已同步共享。'
+            : '文字已共享；圖片僅保存在本機筆記。'
+          : undefined,
       );
     } catch (reason) {
       notify(
