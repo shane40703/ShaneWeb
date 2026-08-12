@@ -34,6 +34,7 @@ function question(id: string, subject: SubjectId): Question {
 }
 
 const lawQuestion = question('law-114-01', 'law');
+const environmentQuestion = question('env-114-01', 'env');
 
 function renderPage(
   props: Partial<React.ComponentProps<typeof CommunityPage>> = {},
@@ -123,6 +124,36 @@ describe('CommunityPage question loading', () => {
     expect(
       screen.queryByRole('link', { name: '返回作答頁' }),
     ).not.toBeInTheDocument();
+  });
+
+  it('remembers a subject click while its questions are still loading', () => {
+    const view = renderPage({ questionBankStatus: 'loading' });
+
+    fireEvent.click(screen.getByRole('button', { name: /建築環境控制/ }));
+    expect(screen.getByRole('button', { name: /建築環境控制/ })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    expect(router.replace).not.toHaveBeenCalled();
+
+    view.rerender(
+      <ToastProvider>
+        <AppStateProvider>
+          <CloudSyncProvider>
+            <CommunityPage
+              questions={[lawQuestion, environmentQuestion]}
+              questionBankStatus="ready"
+            />
+          </CloudSyncProvider>
+        </AppStateProvider>
+      </ToastProvider>,
+    );
+
+    expect(router.replace).toHaveBeenCalledWith(
+      { pathname: '/community', query: { question: environmentQuestion.id } },
+      undefined,
+      { shallow: true, scroll: false },
+    );
   });
 
   it('waits for the router before treating an absent query as the default question', () => {

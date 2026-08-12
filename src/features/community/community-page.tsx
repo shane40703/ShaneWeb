@@ -1,4 +1,4 @@
-import { type FormEvent, useState } from 'react';
+import { type FormEvent, useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import {
   IconArrowLeft,
@@ -91,8 +91,25 @@ export function CommunityPage({
   const [postType, setPostType] = useState<DiscussionPostType>('explanation');
   const [postContent, setPostContent] = useState('');
   const [replyDrafts, setReplyDrafts] = useState<Record<string, string>>({});
+  const [pendingSubject, setPendingSubject] = useState<SubjectId | null>(null);
   const shared = useSharedDiscussions(currentQuestion?.id ?? 'unavailable');
   const discussionQuestionIds = useDiscussionQuestionIds();
+
+  useEffect(() => {
+    if (!pendingSubject) return;
+    const first = questions
+      .filter((question) => question.subject === pendingSubject)
+      .sort(
+        (left, right) =>
+          right.year - left.year || left.questionNumber - right.questionNumber,
+    )[0];
+    if (!first) return;
+    void router.replace(
+      { pathname: '/community', query: { question: first.id } },
+      undefined,
+      { shallow: true, scroll: false },
+    );
+  }, [pendingSubject, questions, router]);
 
   if (
     routeHydrated &&
@@ -177,7 +194,12 @@ export function CommunityPage({
         (left, right) =>
           right.year - left.year || left.questionNumber - right.questionNumber,
       )[0];
-    if (first) navigateTo(first.id);
+    if (first) {
+      setPendingSubject(null);
+      navigateTo(first.id);
+      return;
+    }
+    setPendingSubject(subjectId);
   }
 
   function selectYear(year: SelectorYear) {
@@ -250,7 +272,7 @@ export function CommunityPage({
       inert={!routeHydrated || !hydrated}
     >
       <QuestionSelector
-        subjectId={currentQuestion.subject}
+        subjectId={pendingSubject ?? currentQuestion.subject}
         year={currentQuestion.year}
         yearOptions={years.map((year) => ({
           value: year,
