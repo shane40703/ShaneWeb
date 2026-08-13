@@ -443,12 +443,12 @@ function NoteEditor({
       <div className={styles.questionMeta}>
         <Tag>{question.year} 年</Tag>
         <Tag tone="green">{getSubject(question.subject)?.name}</Tag>
-        <Tag tone="purple">第 {question.questionNumber} 題</Tag>
         {question.source.kind === 'sample' ? (
           <Tag tone="purple">示範題</Tag>
         ) : null}
       </div>
       <QuestionSourceLine question={question} />
+      <h2 className={styles.questionNumber}>第 {question.questionNumber} 題</h2>
       <QuestionPrompt question={question} />
       <QuestionAnswerPanel
         question={question}

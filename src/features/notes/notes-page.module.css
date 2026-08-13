@@ -7,6 +7,7 @@
 .editor { padding: 24px; display: grid; gap: 18px; }
 .questionMeta { display: flex; gap: 7px; flex-wrap: wrap; }
 .editor h2 { margin: 0; font-size: 20px; line-height: 1.65; }
+.editor > .questionNumber { color: var(--primary-strong); font-size: 17px; line-height: 1.3; }
 .editor label { color: var(--muted); font-size: 12px; font-weight: 800; }
 .editor textarea { width: 100%; min-height: 360px; padding: 16px; border: 1px solid var(--control-line); border-radius: 13px; background: var(--surface-2); color: var(--text); font-size: 15px; line-height: 1.75; resize: vertical; }
 .noteToolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; }

@@ -183,7 +183,9 @@ describe('NotesPage question loading', () => {
 
     const source = await screen.findByText('示範題・非完整官方試卷資料');
     const prompt = screen.getByText('law-114-01 題幹');
-    expect(source.nextElementSibling).toContainElement(prompt);
+    const questionNumber = screen.getByRole('heading', { name: '第 1 題' });
+    expect(source.nextElementSibling).toBe(questionNumber);
+    expect(questionNumber.nextElementSibling).toContainElement(prompt);
     expect(
       screen.queryByRole('heading', { name: '題目選項' }),
     ).not.toBeInTheDocument();
