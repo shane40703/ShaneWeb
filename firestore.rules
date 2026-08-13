@@ -112,13 +112,19 @@ service cloud.firestore {
 
       allow read: if true;
       allow create: if signedIn() && validPost();
-      allow update: if ownsPost()
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
-          'content', 'deleted', 'deletedAt'
-        ])
-        && request.resource.data.content == ''
-        && request.resource.data.deleted == true
-        && request.resource.data.deletedAt is timestamp;
+      allow update: if ownsPost() && (
+        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['content'])
+          && request.resource.data.content is string
+          && request.resource.data.content.size() >= 1
+          && request.resource.data.content.size() <= 5000
+          && request.resource.data.deleted == false)
+        || (request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'content', 'deleted', 'deletedAt'
+          ])
+          && request.resource.data.content == ''
+          && request.resource.data.deleted == true
+          && request.resource.data.deletedAt is timestamp)
+      );
       allow delete: if false;
 
       match /replies/{replyId} {

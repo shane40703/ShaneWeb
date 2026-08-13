@@ -177,6 +177,12 @@ describe('appReducer', () => {
     };
     let state = appReducer(createDefaultState(), { type: 'add-discussion-post', post });
     state = appReducer(state, {
+      type: 'edit-discussion-post',
+      postId: post.id,
+      content: '修改後的內容',
+    });
+    expect(state.discussionPosts[0].content).toBe('修改後的內容');
+    state = appReducer(state, {
       type: 'like-discussion-post',
       postId: post.id,
     });

@@ -113,8 +113,8 @@ describe('CommunityPage question loading', () => {
     renderPage({ questionBankStatus: 'loading' });
 
     const prompt = screen.getByText('law-114-01 題幹');
-    const source = screen.getByText('示範題・非完整官方試卷資料');
-    expect(source.nextElementSibling).toContainElement(prompt);
+    expect(prompt).toBeInTheDocument();
+    expect(screen.getByText('示範題・非完整官方試卷資料')).toBeInTheDocument();
     expect(
       screen.getByRole('button', { name: '標記為難題' }),
     ).toBeInTheDocument();
@@ -187,5 +187,24 @@ describe('CommunityPage question loading', () => {
     expect(
       screen.getByText('Firebase 尚未設定，投稿內容僅儲存在這台裝置。'),
     ).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: '編輯' }));
+    fireEvent.change(screen.getByLabelText('編輯投稿內容'), {
+      target: { value: '修改後的本機投稿' },
+    });
+    expect(screen.getByLabelText('編輯投稿內容')).toHaveValue('修改後的本機投稿');
+  });
+
+  it('shows the question number and supports bold formatting in the composer', () => {
+    renderPage();
+
+    expect(screen.getByRole('heading', { name: '第 1 題' })).toBeInTheDocument();
+    const textarea = screen.getByLabelText('內容') as HTMLTextAreaElement;
+    fireEvent.change(textarea, { target: { value: '粗體內容' } });
+    textarea.setSelectionRange(0, 4);
+    fireEvent.click(
+      screen.getByRole('button', { name: '切換投稿選取文字的粗體格式' }),
+    );
+    expect(textarea).toHaveValue('**粗體內容**');
   });
 });

@@ -84,6 +84,8 @@ describe('AttemptReview', () => {
     ).toBeInTheDocument();
     expect(screen.getByText('第一題')).toBeInTheDocument();
     expect(screen.getByText('第二題')).toBeInTheDocument();
+    expect(screen.queryByText('1. 114 年・第 1 題')).not.toBeInTheDocument();
+    expect(screen.getByText('114 年・第 1 題')).toBeInTheDocument();
     expect(screen.getByText(/你的答案：B/)).toHaveTextContent('標準答案：B');
     expect(screen.getByText(/你的答案：A/)).toHaveTextContent('標準答案：C');
     expect(screen.getAllByText('選項 D')).toHaveLength(2);

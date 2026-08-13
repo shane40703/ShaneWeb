@@ -371,7 +371,9 @@ export function useSharedDiscussions(questionId: QuestionId) {
 
   const posts = useMemo<SharedDiscussionPost[]>(() => {
     if (!enabled) {
-      return state.discussionPosts.filter((post) => post.questionId === questionId);
+      return state.discussionPosts
+        .filter((post) => post.questionId === questionId)
+        .map((post) => ({ ...post, ownedByCurrentUser: true }));
     }
     return cloudPosts
       .filter((post) => post.questionId === questionId)
@@ -504,6 +506,24 @@ export function useSharedDiscussions(questionId: QuestionId) {
     [dispatch, enabled, requireUser],
   );
 
+  const editPost = useCallback(
+    async (postId: string, content: string) => {
+      const trimmed = content.trim();
+      if (!trimmed) throw new Error('投稿內容不可為空白。');
+      if (!enabled) {
+        dispatch({ type: 'edit-discussion-post', postId, content: trimmed });
+        return;
+      }
+      requireUser();
+      const firebase = getFirebaseServices();
+      if (!firebase) return;
+      await updateDoc(doc(firebase.db, 'discussionPosts', postId), {
+        content: trimmed,
+      });
+    },
+    [dispatch, enabled, requireUser],
+  );
+
   const deletePost = useCallback(
     async (postId: string) => {
       if (!enabled) {
@@ -549,6 +569,7 @@ export function useSharedDiscussions(questionId: QuestionId) {
     addReply,
     toggleLike,
     reportPost,
+    editPost,
     deletePost,
     deleteReply,
   };

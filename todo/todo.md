@@ -10,5 +10,12 @@
 - [x] ![alt text](image-7.png) 放大逐題作答結果中的題號資訊
 - [x] ![alt text](image-8.png) 右側題號索引跟隨目前檢視的題目並自動捲動
 
-#1.34
-![alt text](image-9.png) 使用者討論文字刪除，直接顯示內容就好
+## 1.34 - 2026-08-13
+
+狀態：已實作待審核
+
+- [x] ![alt text](image-9.png) 使用者討論文字刪除，直接顯示內容就好
+- [x] ![alt text](image-10.png) 第 16 題題號重複，可刪除
+- [x] ![alt text](image-11.png) 詳解與討論題目前要有題號
+- [x] ![alt text](image-12.png) 詳解討論的解題觀念分享欄位移到共享內容下面大一點，且也支援粗體
+- [x] ![alt text](image-13.png) 自己放的詳解支援編輯內容

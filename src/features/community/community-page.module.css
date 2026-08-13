@@ -20,6 +20,7 @@
 .questionCard > header { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 .tags { display: flex; gap: 7px; flex-wrap: wrap; }
 .questionCard > h2 { max-width: 1000px; margin: 25px 0; font-size: clamp(20px, 2.2vw, 29px); line-height: 1.6; }
+.questionCard > .questionNumber { margin: 0; color: var(--primary-strong); font-size: 17px; line-height: 1.3; }
 
 .questionNavigation { margin-top: 6px; padding-top: 18px; display: flex; align-items: center; justify-content: space-between; gap: 10px; border-top: 1px solid var(--line); }
 .questionNavigator { max-height: calc(100vh - 112px); padding: 20px; position: sticky; top: 92px; overflow-y: auto; }
@@ -62,6 +63,11 @@
 
 .composeCard { padding: 22px; display: grid; gap: 16px; }
 .composeCard textarea { padding: 12px; resize: vertical; line-height: 1.6; }
+.boldButton { width: fit-content; min-height: 34px; padding: 0 10px; display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--control-line); border-radius: 9px; background: var(--surface); color: var(--text-soft); font: inherit; font-size: 12px; font-weight: 800; cursor: pointer; }
+.boldButton:hover { border-color: var(--primary); color: var(--primary-strong); }
+.editPost { margin: 15px 0; display: grid; gap: 8px; }
+.editPost textarea { width: 100%; min-height: 150px; padding: 12px; border: 1px solid var(--control-line); border-radius: 11px; background: var(--surface); color: var(--text); line-height: 1.7; resize: vertical; }
+.editPost > div { display: flex; gap: 8px; justify-content: flex-end; }
 .post p a, .replies p a { color: var(--primary-strong); overflow-wrap: anywhere; text-decoration: underline; text-underline-offset: 2px; }
 .composeCard > p { margin: -4px 0 0; color: var(--muted); font-size: 10px; line-height: 1.6; }
 

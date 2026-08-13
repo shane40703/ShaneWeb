@@ -1,14 +1,16 @@
-import { type FormEvent, useEffect, useState } from 'react';
+import { type FormEvent, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/router';
 import {
   IconArrowLeft,
   IconArrowRight,
   IconAlertCircle,
+  IconBold,
   IconHeart,
   IconHelpCircle,
   IconLoader2,
   IconMessageCircle,
   IconNotebook,
+  IconPencil,
   IconTrash,
 } from '@tabler/icons-react';
 import { AttachmentGallery } from '@/components/image-attachments';
@@ -41,6 +43,7 @@ import type {
 } from '@/lib/types';
 import type { QuestionBankStatus } from '@/lib/question-bank-client';
 import { formatDateTime } from '@/lib/study';
+import { toggleBoldFormatting } from '@/lib/text-formatting';
 import {
   useDiscussionQuestionIds,
   useSharedDiscussions,
@@ -90,7 +93,10 @@ export function CommunityPage({
     : questions[0];
   const [postType, setPostType] = useState<DiscussionPostType>('explanation');
   const [postContent, setPostContent] = useState('');
+  const postTextareaRef = useRef<HTMLTextAreaElement>(null);
   const [replyDrafts, setReplyDrafts] = useState<Record<string, string>>({});
+  const [editingPostId, setEditingPostId] = useState<string | null>(null);
+  const [editingContent, setEditingContent] = useState('');
   const [pendingSubject, setPendingSubject] = useState<SubjectId | null>(null);
   const shared = useSharedDiscussions(currentQuestion?.id ?? 'unavailable');
   const discussionQuestionIds = useDiscussionQuestionIds();
@@ -266,6 +272,17 @@ export function CommunityPage({
     }
   }
 
+  async function saveEditedPost(postId: string) {
+    try {
+      await shared.editPost(postId, editingContent);
+      setEditingPostId(null);
+      setEditingContent('');
+      notify('投稿已更新');
+    } catch (reason) {
+      notify('編輯失敗', reason instanceof Error ? reason.message : '請稍後再試。');
+    }
+  }
+
   return (
     <div
       className={styles.interactionGuard}
@@ -302,6 +319,7 @@ export function CommunityPage({
             />
           </header>
           <QuestionSourceLine question={currentQuestion} />
+          <h2 className={styles.questionNumber}>第 {currentQuestion.questionNumber} 題</h2>
           <QuestionPrompt question={currentQuestion} />
           <QuestionAnswerPanel
             question={currentQuestion}
@@ -352,7 +370,29 @@ export function CommunityPage({
                         {formatDateTime(post.createdAt)}
                       </time>
                     </header>
-                    {post.content ? <p><RichText>{post.content}</RichText></p> : null}
+                    {editingPostId === post.id ? (
+                      <div className={styles.editPost}>
+                        <textarea
+                          aria-label="編輯投稿內容"
+                          value={editingContent}
+                          onChange={(event) => setEditingContent(event.target.value)}
+                          rows={7}
+                        />
+                        <div>
+                          <Button onClick={() => void saveEditedPost(post.id)}>
+                            儲存修改
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            onClick={() => setEditingPostId(null)}
+                          >
+                            取消
+                          </Button>
+                        </div>
+                      </div>
+                    ) : post.content ? (
+                      <p><RichText>{post.content}</RichText></p>
+                    ) : null}
                     <AttachmentGallery images={post.images} />
                     {post.replies.length ? (
                       <div className={styles.replies}>
@@ -418,23 +458,35 @@ export function CommunityPage({
                         {post.reported ? '已檢舉' : '檢舉'}
                       </Button>
                       {post.ownedByCurrentUser ? (
-                        <ConfirmDialog
-                          trigger={
-                            <Button variant="danger">
-                              <IconTrash size={16} stroke={2} aria-hidden="true" />
-                              刪除
-                            </Button>
-                          }
-                          title="刪除這則共享投稿？"
-                          description="刪除後所有使用者都不會再看到這則內容。"
-                          confirmLabel="確認刪除"
-                          onConfirm={() =>
-                            void runPostAction(
-                              () => shared.deletePost(post.id),
-                              '刪除失敗',
-                            )
-                          }
-                        />
+                        <>
+                          <Button
+                            variant="ghost"
+                            onClick={() => {
+                              setEditingPostId(post.id);
+                              setEditingContent(post.content);
+                            }}
+                          >
+                            <IconPencil size={16} stroke={2} aria-hidden="true" />
+                            編輯
+                          </Button>
+                          <ConfirmDialog
+                            trigger={
+                              <Button variant="danger">
+                                <IconTrash size={16} stroke={2} aria-hidden="true" />
+                                刪除
+                              </Button>
+                            }
+                            title="刪除這則共享投稿？"
+                            description="刪除後所有使用者都不會再看到這則內容。"
+                            confirmLabel="確認刪除"
+                            onConfirm={() =>
+                              void runPostAction(
+                                () => shared.deletePost(post.id),
+                                '刪除失敗',
+                              )
+                            }
+                          />
+                        </>
                       ) : null}
                     </div>
                     <form
@@ -499,11 +551,33 @@ export function CommunityPage({
               onValueChange={setPostType}
             />
             <label htmlFor="post-content">內容</label>
+            <button
+              type="button"
+              className={styles.boldButton}
+              aria-label="切換投稿選取文字的粗體格式"
+              onClick={() => {
+                const textarea = postTextareaRef.current;
+                if (!textarea) return;
+                const result = toggleBoldFormatting(
+                  postContent,
+                  textarea.selectionStart,
+                  textarea.selectionEnd,
+                );
+                setPostContent(result.value);
+                requestAnimationFrame(() => {
+                  textarea.focus();
+                  textarea.setSelectionRange(result.selectionStart, result.selectionEnd);
+                });
+              }}
+            >
+              <IconBold size={16} stroke={2.4} aria-hidden="true" /> 粗體
+            </button>
             <textarea
+              ref={postTextareaRef}
               id="post-content"
               value={postContent}
               onChange={(event) => setPostContent(event.target.value)}
-              rows={8}
+              rows={12}
               placeholder="請清楚描述你的詳解、補充、提問或勘誤…"
               disabled={shared.enabled && !shared.user}
             />

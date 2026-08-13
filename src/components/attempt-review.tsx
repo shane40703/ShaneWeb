@@ -66,7 +66,7 @@ export function AttemptReview({
         <strong>共 {questions.length} 題</strong>
       </header>
       <div className={styles.reviewList}>
-        {questions.map((question, index) => {
+        {questions.map((question) => {
           const selected = attempt.answers[question.id];
           const selectedAnswer =
             selected === undefined
@@ -107,7 +107,7 @@ export function AttemptReview({
               <div className={styles.reviewContent}>
                 <div className={styles.reviewQuestionHeader}>
                   <span>
-                    {index + 1}. {question.year} 年・第 {question.questionNumber} 題
+                    {question.year} 年・第 {question.questionNumber} 題
                   </span>
                   {showDifficultActions ? (
                     <DifficultButton
@@ -193,7 +193,6 @@ function ReviewDiscussionContent({ question }: { question: ReviewQuestion }) {
       ) : null}
       {shared.posts.map((post) => (
         <article key={post.id}>
-          <strong>使用者討論</strong>
           {post.content ? <p><RichText>{post.content}</RichText></p> : null}
           <AttachmentGallery images={post.images} />
         </article>

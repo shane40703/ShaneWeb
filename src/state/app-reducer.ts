@@ -31,6 +31,7 @@ export type AppAction =
     }
   | { type: 'merge-notes'; notes: SyncedNote[] }
   | { type: 'add-discussion-post'; post: DiscussionPost }
+  | { type: 'edit-discussion-post'; postId: string; content: string }
   | { type: 'like-discussion-post'; postId: string }
   | { type: 'report-discussion-post'; postId: string }
   | { type: 'add-discussion-reply'; postId: string; reply: DiscussionReply }
@@ -139,6 +140,13 @@ export function appReducer(state: AppState, action: AppAction): AppState {
     }
     case 'add-discussion-post':
       return { ...state, discussionPosts: [action.post, ...state.discussionPosts] };
+    case 'edit-discussion-post':
+      return {
+        ...state,
+        discussionPosts: state.discussionPosts.map((post) =>
+          post.id === action.postId ? { ...post, content: action.content } : post,
+        ),
+      };
     case 'like-discussion-post': {
       const alreadyLiked = state.likedDiscussionPostIds.includes(action.postId);
       return {
