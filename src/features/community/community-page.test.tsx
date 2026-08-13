@@ -170,6 +170,14 @@ describe('CommunityPage question loading', () => {
   it('keeps local text posting available when Firebase is not configured', async () => {
     renderPage();
 
+    const navigator = screen.getByRole('complementary', {
+      name: '詳解討論題號導覽',
+    });
+    const contentColumn = screen.getByRole('main');
+    expect(navigator).not.toHaveTextContent('分享解題觀念');
+    expect(contentColumn).toHaveTextContent('共享內容');
+    expect(contentColumn).toHaveTextContent('分享解題觀念');
+
     fireEvent.change(screen.getByLabelText('內容'), {
       target: { value: '本機備援投稿' },
     });

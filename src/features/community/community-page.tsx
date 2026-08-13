@@ -283,8 +283,9 @@ export function CommunityPage({
         ariaLabel="題目選擇"
       />
 
-      <div className={styles.questionLayout}>
-        <section className={styles.questionCard}>
+      <div className={styles.communityLayout}>
+        <main className={styles.contentColumn}>
+          <section className={styles.questionCard}>
           <header>
             <div className={styles.tags}>
               <Tag tone="green">{subject?.name}</Tag>
@@ -327,7 +328,200 @@ export function CommunityPage({
               下一題 <IconArrowRight size={17} stroke={2} aria-hidden="true" />
             </Button>
           </footer>
-        </section>
+          </section>
+
+          <section className={styles.postsCard}>
+            <header className={styles.sectionHeader}>
+              <div>
+                <span>DISCUSSION</span>
+                <h2>共享內容</h2>
+              </div>
+              <strong>{posts.length} 則</strong>
+            </header>
+            {shared.error ? <p role="alert">{shared.error}</p> : null}
+            {shared.loading ? <p role="status">正在載入共享投稿…</p> : null}
+            {posts.length ? (
+              <div className={styles.postList}>
+                {posts.map((post) => (
+                  <article className={styles.post} key={post.id}>
+                    <header>
+                      <Tag tone={post.type === 'correction' ? 'orange' : 'purple'}>
+                        {postTypeLabels[post.type]}
+                      </Tag>
+                      <time dateTime={post.createdAt}>
+                        {formatDateTime(post.createdAt)}
+                      </time>
+                    </header>
+                    {post.content ? <p><RichText>{post.content}</RichText></p> : null}
+                    <AttachmentGallery images={post.images} />
+                    {post.replies.length ? (
+                      <div className={styles.replies}>
+                        {post.replies.map((reply) => (
+                          <div key={reply.id}>
+                            <span>匿名回覆・{formatDateTime(reply.createdAt)}</span>
+                            <p><RichText>{reply.content}</RichText></p>
+                            {shared.user && reply.authorId === shared.user.uid ? (
+                              <Button
+                                variant="ghost"
+                                onClick={() =>
+                                  void runPostAction(
+                                    () => shared.deleteReply(post.id, reply.id),
+                                    '刪除回覆失敗',
+                                  )
+                                }
+                              >
+                                刪除回覆
+                              </Button>
+                            ) : null}
+                          </div>
+                        ))}
+                      </div>
+                    ) : null}
+                    <div className={styles.postActions}>
+                      <Button
+                        variant="ghost"
+                        aria-pressed={
+                          shared.enabled
+                            ? Boolean(post.likedByCurrentUser)
+                            : state.likedDiscussionPostIds.includes(post.id)
+                        }
+                        onClick={() =>
+                          void runPostAction(
+                            () =>
+                              shared.toggleLike(
+                                post.id,
+                                shared.enabled
+                                  ? Boolean(post.likedByCurrentUser)
+                                  : state.likedDiscussionPostIds.includes(post.id),
+                              ),
+                            '無法更新按讚',
+                          )
+                        }
+                      >
+                        <IconHeart size={17} stroke={2} aria-hidden="true" /> 讚{' '}
+                        {post.likes}
+                      </Button>
+                      <Button variant="ghost" onClick={() => savePostToNote(post)}>
+                        <IconNotebook size={17} stroke={2} aria-hidden="true" />
+                        加入我的筆記
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        disabled={post.reported}
+                        onClick={() =>
+                          void runPostAction(
+                            () => shared.reportPost(post.id),
+                            '無法送出檢舉',
+                          )
+                        }
+                      >
+                        {post.reported ? '已檢舉' : '檢舉'}
+                      </Button>
+                      {post.ownedByCurrentUser ? (
+                        <ConfirmDialog
+                          trigger={
+                            <Button variant="danger">
+                              <IconTrash size={16} stroke={2} aria-hidden="true" />
+                              刪除
+                            </Button>
+                          }
+                          title="刪除這則共享投稿？"
+                          description="刪除後所有使用者都不會再看到這則內容。"
+                          confirmLabel="確認刪除"
+                          onConfirm={() =>
+                            void runPostAction(
+                              () => shared.deletePost(post.id),
+                              '刪除失敗',
+                            )
+                          }
+                        />
+                      ) : null}
+                    </div>
+                    <form
+                      className={styles.replyForm}
+                      onSubmit={(event) => addReply(post.id, event)}
+                    >
+                      <label htmlFor={`reply-${post.id}`}>回覆這則內容</label>
+                      <div>
+                        <input
+                          id={`reply-${post.id}`}
+                          value={replyDrafts[post.id] ?? ''}
+                          onChange={(event) =>
+                            setReplyDrafts((current) => ({
+                              ...current,
+                              [post.id]: event.target.value,
+                            }))
+                          }
+                          placeholder={
+                            shared.enabled && !shared.user
+                              ? '請先登入後再回覆'
+                              : '輸入匿名回覆'
+                          }
+                          disabled={shared.enabled && !shared.user}
+                        />
+                        <Button
+                          type="submit"
+                          disabled={shared.enabled && !shared.user}
+                        >
+                          回覆
+                        </Button>
+                      </div>
+                    </form>
+                  </article>
+                ))}
+              </div>
+            ) : (
+              <EmptyState
+                icon={IconMessageCircle}
+                title="還沒有內容"
+                description="成為第一個留下詳解或提問的人。"
+              />
+            )}
+          </section>
+
+          <form className={styles.composeCard} onSubmit={addPost}>
+            <span className={styles.composeEyebrow}>共享投稿</span>
+            <h2>分享解題觀念</h2>
+            {shared.enabled && !shared.user ? (
+              <Button
+                type="button"
+                variant="primary"
+                fullWidth
+                onClick={() => void shared.signIn()}
+              >
+                使用 Google 登入後投稿
+              </Button>
+            ) : null}
+            <SimpleSelect
+              label="投稿類型"
+              value={postType}
+              options={postTypeOptions}
+              onValueChange={setPostType}
+            />
+            <label htmlFor="post-content">內容</label>
+            <textarea
+              id="post-content"
+              value={postContent}
+              onChange={(event) => setPostContent(event.target.value)}
+              rows={8}
+              placeholder="請清楚描述你的詳解、補充、提問或勘誤…"
+              disabled={shared.enabled && !shared.user}
+            />
+            <Button
+              type="submit"
+              variant="primary"
+              fullWidth
+              disabled={shared.enabled && !shared.user}
+            >
+              送出共享投稿
+            </Button>
+            <p>
+              {shared.enabled
+                ? '共享投稿會公開顯示給所有使用者；免費方案僅共享文字，圖片保存在本機筆記。'
+                : 'Firebase 尚未設定，投稿內容僅儲存在這台裝置。'}
+            </p>
+          </form>
+        </main>
 
         <aside className={styles.questionNavigator} aria-label="詳解討論題號導覽">
           <header>
@@ -354,200 +548,6 @@ export function CommunityPage({
             showStatusLegend
           />
         </aside>
-      </div>
-
-      <div className={styles.discussionLayout}>
-        <section className={styles.postsCard}>
-          <header className={styles.sectionHeader}>
-            <div>
-              <span>DISCUSSION</span>
-              <h2>共享內容</h2>
-            </div>
-            <strong>{posts.length} 則</strong>
-          </header>
-          {shared.error ? <p role="alert">{shared.error}</p> : null}
-          {shared.loading ? <p role="status">正在載入共享投稿…</p> : null}
-          {posts.length ? (
-            <div className={styles.postList}>
-              {posts.map((post) => (
-                <article className={styles.post} key={post.id}>
-                  <header>
-                    <Tag tone={post.type === 'correction' ? 'orange' : 'purple'}>
-                      {postTypeLabels[post.type]}
-                    </Tag>
-                    <time dateTime={post.createdAt}>
-                      {formatDateTime(post.createdAt)}
-                    </time>
-                  </header>
-                  {post.content ? <p><RichText>{post.content}</RichText></p> : null}
-                  <AttachmentGallery images={post.images} />
-                  {post.replies.length ? (
-                    <div className={styles.replies}>
-                      {post.replies.map((reply) => (
-                        <div key={reply.id}>
-                          <span>匿名回覆・{formatDateTime(reply.createdAt)}</span>
-                          <p><RichText>{reply.content}</RichText></p>
-                          {shared.user && reply.authorId === shared.user.uid ? (
-                            <Button
-                              variant="ghost"
-                              onClick={() =>
-                                void runPostAction(
-                                  () => shared.deleteReply(post.id, reply.id),
-                                  '刪除回覆失敗',
-                                )
-                              }
-                            >
-                              刪除回覆
-                            </Button>
-                          ) : null}
-                        </div>
-                      ))}
-                    </div>
-                  ) : null}
-                  <div className={styles.postActions}>
-                    <Button
-                      variant="ghost"
-                      aria-pressed={
-                        shared.enabled
-                          ? Boolean(post.likedByCurrentUser)
-                          : state.likedDiscussionPostIds.includes(post.id)
-                      }
-                      onClick={() =>
-                        void runPostAction(
-                          () =>
-                            shared.toggleLike(
-                              post.id,
-                              shared.enabled
-                                ? Boolean(post.likedByCurrentUser)
-                                : state.likedDiscussionPostIds.includes(post.id),
-                            ),
-                          '無法更新按讚',
-                        )
-                      }
-                    >
-                      <IconHeart size={17} stroke={2} aria-hidden="true" /> 讚{' '}
-                      {post.likes}
-                    </Button>
-                    <Button variant="ghost" onClick={() => savePostToNote(post)}>
-                      <IconNotebook size={17} stroke={2} aria-hidden="true" />
-                      加入我的筆記
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      disabled={post.reported}
-                      onClick={() =>
-                        void runPostAction(
-                          () => shared.reportPost(post.id),
-                          '無法送出檢舉',
-                        )
-                      }
-                    >
-                      {post.reported ? '已檢舉' : '檢舉'}
-                    </Button>
-                    {post.ownedByCurrentUser ? (
-                      <ConfirmDialog
-                        trigger={
-                          <Button variant="danger">
-                            <IconTrash size={16} stroke={2} aria-hidden="true" />
-                            刪除
-                          </Button>
-                        }
-                        title="刪除這則共享投稿？"
-                        description="刪除後所有使用者都不會再看到這則內容。"
-                        confirmLabel="確認刪除"
-                        onConfirm={() =>
-                          void runPostAction(
-                            () => shared.deletePost(post.id),
-                            '刪除失敗',
-                          )
-                        }
-                      />
-                    ) : null}
-                  </div>
-                  <form
-                    className={styles.replyForm}
-                    onSubmit={(event) => addReply(post.id, event)}
-                  >
-                    <label htmlFor={`reply-${post.id}`}>回覆這則內容</label>
-                    <div>
-                      <input
-                        id={`reply-${post.id}`}
-                        value={replyDrafts[post.id] ?? ''}
-                        onChange={(event) =>
-                          setReplyDrafts((current) => ({
-                            ...current,
-                            [post.id]: event.target.value,
-                          }))
-                        }
-                        placeholder={
-                          shared.enabled && !shared.user
-                            ? '請先登入後再回覆'
-                            : '輸入匿名回覆'
-                        }
-                        disabled={shared.enabled && !shared.user}
-                      />
-                      <Button
-                        type="submit"
-                        disabled={shared.enabled && !shared.user}
-                      >
-                        回覆
-                      </Button>
-                    </div>
-                  </form>
-                </article>
-              ))}
-            </div>
-          ) : (
-            <EmptyState
-              icon={IconMessageCircle}
-              title="還沒有內容"
-              description="成為第一個留下詳解或提問的人。"
-            />
-          )}
-        </section>
-
-        <form className={styles.composeCard} onSubmit={addPost}>
-          <span className={styles.composeEyebrow}>共享投稿</span>
-          <h2>分享解題觀念</h2>
-          {shared.enabled && !shared.user ? (
-            <Button
-              type="button"
-              variant="primary"
-              fullWidth
-              onClick={() => void shared.signIn()}
-            >
-              使用 Google 登入後投稿
-            </Button>
-          ) : null}
-          <SimpleSelect
-            label="投稿類型"
-            value={postType}
-            options={postTypeOptions}
-            onValueChange={setPostType}
-          />
-          <label htmlFor="post-content">內容</label>
-          <textarea
-            id="post-content"
-            value={postContent}
-            onChange={(event) => setPostContent(event.target.value)}
-            rows={8}
-            placeholder="請清楚描述你的詳解、補充、提問或勘誤…"
-            disabled={shared.enabled && !shared.user}
-          />
-          <Button
-            type="submit"
-            variant="primary"
-            fullWidth
-            disabled={shared.enabled && !shared.user}
-          >
-            送出共享投稿
-          </Button>
-          <p>
-            {shared.enabled
-              ? '共享投稿會公開顯示給所有使用者，支援文字與最多 4 張圖片。'
-              : 'Firebase 尚未設定，投稿內容僅儲存在這台裝置。'}
-          </p>
-        </form>
       </div>
     </div>
   );
