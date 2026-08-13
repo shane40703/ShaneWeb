@@ -59,6 +59,33 @@ export interface DiscussionPublishResult {
   imagesShared: boolean;
 }
 
+export function createCloudDiscussionPostData({
+  questionId,
+  type,
+  content,
+  images,
+  authorId,
+  createdAt,
+}: {
+  questionId: QuestionId;
+  type: DiscussionPostType;
+  content: string;
+  images: DiscussionPost['images'];
+  authorId: string;
+  createdAt: unknown;
+}) {
+  return {
+    questionId,
+    type,
+    content,
+    images,
+    authorId,
+    authorName: '匿名使用者',
+    createdAt,
+    deleted: false,
+  };
+}
+
 function timestampToIso(value: unknown) {
   if (
     value &&
@@ -194,16 +221,14 @@ export function useDiscussionPublisher(questionId: QuestionId) {
           '目前方案無法共享圖片。請加入文字後再分享；圖片仍會保存在本機筆記。',
         );
       }
-      await setDoc(postRef, {
+      await setDoc(postRef, createCloudDiscussionPostData({
         questionId,
         type,
         content: trimmed,
         images: uploadedImages,
         authorId: user.uid,
-        authorName: '匿名使用者',
         createdAt: serverTimestamp(),
-        deleted: false,
-      });
+      }));
       return {
         imagesShared: images.length === 0 || uploadedImages.length === images.length,
       } satisfies DiscussionPublishResult;
@@ -399,15 +424,14 @@ export function useSharedDiscussions(questionId: QuestionId) {
       const activeUser = requireUser();
       const firebase = getFirebaseServices();
       if (!firebase) return;
-      await addDoc(collection(firebase.db, 'discussionPosts'), {
+      await addDoc(collection(firebase.db, 'discussionPosts'), createCloudDiscussionPostData({
         questionId,
         type,
         content: trimmed,
+        images: [],
         authorId: activeUser.uid,
-        authorName: '匿名使用者',
         createdAt: serverTimestamp(),
-        deleted: false,
-      });
+      }));
     },
     [dispatch, enabled, questionId, requireUser],
   );

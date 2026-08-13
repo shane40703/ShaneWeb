@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  createCloudDiscussionPostData,
   parseCloudDiscussionPost,
   parseCloudDiscussionReply,
   withUploadTimeout,
@@ -10,6 +11,28 @@ const timestamp = {
 };
 
 describe('shared discussion parsing', () => {
+  it('includes the images field required by Firestore rules for text posts', () => {
+    expect(
+      createCloudDiscussionPostData({
+        questionId: 'law-114-01',
+        type: 'explanation',
+        content: '純文字詳解',
+        images: [],
+        authorId: 'user-1',
+        createdAt: timestamp,
+      }),
+    ).toEqual({
+      questionId: 'law-114-01',
+      type: 'explanation',
+      content: '純文字詳解',
+      images: [],
+      authorId: 'user-1',
+      authorName: '匿名使用者',
+      createdAt: timestamp,
+      deleted: false,
+    });
+  });
+
   it('stops waiting when an image upload does not finish', async () => {
     await expect(withUploadTimeout(new Promise(() => undefined), 1)).rejects.toThrow(
       '圖片上傳逾時',
