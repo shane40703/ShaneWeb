@@ -9,3 +9,6 @@
 
 - [x] ![alt text](image-7.png) 放大逐題作答結果中的題號資訊
 - [x] ![alt text](image-8.png) 右側題號索引跟隨目前檢視的題目並自動捲動
+
+#1.34
+![alt text](image-9.png) 使用者討論文字刪除，直接顯示內容就好
