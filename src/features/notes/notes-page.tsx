@@ -19,6 +19,7 @@ import {
   Tag,
 } from '@/components/content/content';
 import { QuestionAnswerPanel } from '@/components/question-answer-panel';
+import { RichText } from '@/components/rich-text';
 import {
   QuestionSelector,
   type SelectorYear,
@@ -496,6 +497,12 @@ function NoteEditor({
         rows={12}
         placeholder="記下法條、公式、易錯觀念或解題步驟，也可以直接貼上截圖…"
       />
+      {content.trim() ? (
+        <section className={styles.notePreview} aria-label="筆記格式預覽">
+          <span>格式預覽</span>
+          <p><RichText>{content}</RichText></p>
+        </section>
+      ) : null}
       <ImageAttachments
         images={images}
         onChange={(nextImages) => onChange({ content, images: nextImages })}

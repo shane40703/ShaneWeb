@@ -205,6 +205,9 @@ describe('NotesPage question loading', () => {
     );
 
     expect(editor).toHaveValue('**重要法條**');
+    const preview = screen.getByRole('region', { name: '筆記格式預覽' });
+    expect(preview).toHaveTextContent('重要法條');
+    expect(screen.getByText('重要法條', { selector: 'strong' })).toBeInTheDocument();
 
     editor.setSelectionRange(2, 6);
     fireEvent.click(

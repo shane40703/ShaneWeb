@@ -45,7 +45,7 @@
   gap: 10px;
 }
 
-.reviewList article {
+.reviewList > article {
   scroll-margin-top: 104px;
   padding: 16px 18px;
   display: grid;
@@ -58,11 +58,11 @@
   background: var(--surface);
 }
 
-.reviewList article[data-result='correct'] {
+.reviewList > article[data-result='correct'] {
   border-left-color: var(--success);
 }
 
-.reviewList article[data-result='wrong'] {
+.reviewList > article[data-result='wrong'] {
   border-left-color: var(--danger);
 }
 
@@ -265,7 +265,7 @@
 }
 
 @media (max-width: 600px) {
-  .reviewList article {
+  .reviewList > article {
     padding: 14px;
   }
 
