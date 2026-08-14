@@ -132,4 +132,27 @@ describe('AttemptReview', () => {
       '從對答案分享的詳解',
     );
   });
+
+  it('previews bold formatting in the review note editor', () => {
+    render(
+      <ToastProvider>
+        <AppStateProvider>
+          <CloudSyncProvider>
+            <AttemptReview attempt={attempt} questions={questions.slice(0, 1)} />
+          </CloudSyncProvider>
+        </AppStateProvider>
+      </ToastProvider>,
+    );
+
+    const editor = screen.getByLabelText<HTMLTextAreaElement>('第 1 題筆記內容');
+    fireEvent.change(editor, { target: { value: '建築物最大容許給水壓力' } });
+    editor.setSelectionRange(3, 7);
+    fireEvent.click(
+      screen.getByRole('button', { name: '切換第 1 題選取文字的粗體格式' }),
+    );
+
+    const preview = screen.getByRole('region', { name: '第 1 題筆記格式預覽' });
+    expect(preview).toHaveTextContent('建築物最大容許給水壓力');
+    expect(screen.getByText('最大容許', { selector: 'strong' })).toBeInTheDocument();
+  });
 });

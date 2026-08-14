@@ -308,6 +308,15 @@ function ReviewNoteEditor({ question }: { question: ReviewQuestion }) {
         rows={7}
         placeholder="在檢討答案時記下法條、公式或易錯觀念，也可以直接貼上截圖…"
       />
+      {content.trim() ? (
+        <section
+          className={styles.reviewNotePreview}
+          aria-label={`第 ${question.questionNumber} 題筆記格式預覽`}
+        >
+          <span>格式預覽</span>
+          <p><RichText>{content}</RichText></p>
+        </section>
+      ) : null}
       <ImageAttachments
         images={images}
         onChange={setImages}
