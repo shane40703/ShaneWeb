@@ -7,6 +7,7 @@ import {
 } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DifficultPage } from '@/features/difficult/difficult-page';
+import { ToastProvider } from '@/components/ui/ui';
 import { createDefaultState, STORAGE_KEY } from '@/lib/study';
 import type { Question, SubjectId } from '@/lib/types';
 import { AppStateProvider } from '@/state/app-state';
@@ -86,9 +87,11 @@ function renderPage(
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 
   return render(
-    <AppStateProvider>
-      <DifficultPage questions={questions} {...props} />
-    </AppStateProvider>,
+    <ToastProvider>
+      <AppStateProvider>
+        <DifficultPage questions={questions} {...props} />
+      </AppStateProvider>
+    </ToastProvider>,
   );
 }
 
@@ -173,6 +176,13 @@ describe('DifficultPage', () => {
         name: '第 1 題詳解',
       }),
     ).toHaveTextContent('目前尚無詳解。');
+
+    const noteEditor = within(unexplainedQuestion!).getByRole('textbox');
+    fireEvent.change(noteEditor, { target: { value: '難題**詳解**' } });
+    const preview = within(unexplainedQuestion!).getByRole('region', {
+      name: '第 1 題筆記格式預覽',
+    });
+    expect(within(preview).getByText('詳解').tagName).toBe('STRONG');
   });
 
   it('keeps difficult toggling and the empty state', async () => {

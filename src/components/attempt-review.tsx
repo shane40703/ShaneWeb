@@ -31,7 +31,7 @@ import type { ImageAttachment, Question, QuizAttempt } from '@/lib/types';
 import { useAppState } from '@/state/app-state';
 import styles from './attempt-review.module.css';
 
-type ReviewQuestion = Pick<
+export type ReviewQuestion = Pick<
   Question,
   'id' | 'year' | 'questionNumber' | 'text' | 'options' | 'answerKey'
 > &
@@ -201,7 +201,7 @@ function ReviewDiscussionContent({ question }: { question: ReviewQuestion }) {
   );
 }
 
-function ReviewNoteEditor({ question }: { question: ReviewQuestion }) {
+export function ReviewNoteEditor({ question }: { question: ReviewQuestion }) {
   const { state, dispatch } = useAppState();
   const { notify } = useToast();
   const discussion = useDiscussionPublisher(question.id);

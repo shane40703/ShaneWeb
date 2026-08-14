@@ -6,6 +6,7 @@ import {
   QuestionSourceLine,
 } from '@/components/content/content';
 import { QuestionAnswerPanel } from '@/components/question-answer-panel';
+import { ReviewNoteEditor } from '@/components/attempt-review';
 import {
   IconBulb,
   IconLoader2,
@@ -220,6 +221,9 @@ export function DifficultPage({
                                           '目前尚無詳解。'}
                                       </p>
                                     </section>
+                                    <div className={styles.noteEditor}>
+                                      <ReviewNoteEditor question={question} />
+                                    </div>
                                   </div>
                                 </details>
                               </article>
