@@ -93,6 +93,7 @@ describe('QuizPage progress presentation', () => {
   beforeEach(() => {
     window.localStorage.clear();
     window.scrollTo = vi.fn();
+    window.matchMedia = vi.fn().mockReturnValue({ matches: true });
     Element.prototype.scrollIntoView = vi.fn();
     mocks.dispatch.mockReset();
     mocks.reportPersistence.mockReset();
@@ -259,5 +260,27 @@ describe('QuizPage progress presentation', () => {
     expect(Element.prototype.scrollIntoView).toHaveBeenCalledWith({
       block: 'nearest',
     });
+  });
+
+  it('does not pull the page back to the result map on mobile', () => {
+    window.matchMedia = vi.fn().mockReturnValue({ matches: false });
+    mocks.router.query = {
+      mode: 'random',
+      questions: currentQuestion.id,
+      quizSession: 'test-session',
+    };
+
+    render(
+      <ToastProvider>
+        <QuizPage question={currentQuestion} paper={paper} />
+      </ToastProvider>,
+    );
+    fireEvent.click(screen.getByText('選項 A').closest('label')!);
+    fireEvent.click(screen.getByRole('button', { name: '對答案' }));
+
+    expect(
+      screen.getByRole('link', { name: '查看第 43 題結果' }),
+    ).toHaveAttribute('aria-current', 'step');
+    expect(Element.prototype.scrollIntoView).not.toHaveBeenCalled();
   });
 });

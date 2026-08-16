@@ -355,6 +355,10 @@ export function QuizPage({ question, paper }: StaticQuestionPageProps) {
 
   useEffect(() => {
     if (!activeResultQuestionId) return;
+    if (
+      typeof window.matchMedia !== 'function' ||
+      !window.matchMedia('(min-width: 1121px)').matches
+    ) return;
     resultNumberListRef.current
       ?.querySelector<HTMLElement>('[aria-current="step"]')
       ?.scrollIntoView({ block: 'nearest' });
