@@ -270,7 +270,26 @@
 
 @media (max-width: 600px) {
   .reviewList > article {
+    position: relative;
     padding: 14px;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .reviewStatus {
+    position: absolute;
+    top: 16px;
+    left: 14px;
+  }
+
+  .reviewQuestionHeader {
+    min-height: 22px;
+    padding-left: 28px;
+  }
+
+  .reviewDiscussion,
+  .reviewNote,
+  .reviewOptions {
+    grid-column: 1 / -1;
   }
 
   .reviewContent p {

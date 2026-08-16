@@ -359,4 +359,22 @@
   }
 
   .continueCard { align-items: stretch; flex-direction: column; }
+
+  .yearGroupContent {
+    padding: 8px;
+  }
+
+  .attemptList {
+    padding: 8px;
+  }
+
+  .attempt {
+    padding: 12px 8px;
+  }
+
+  .attemptResultPanel {
+    padding: 8px 0;
+    border-inline: 0;
+    border-radius: 0;
+  }
 }
