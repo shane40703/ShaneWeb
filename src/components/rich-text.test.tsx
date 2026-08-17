@@ -21,4 +21,16 @@ describe('RichText', () => {
     expect(screen.getByText('下標').tagName).toBe('SUB');
     expect(screen.getByText('紅字')).toHaveClass(/red/);
   });
+
+  it('renders nested red and superscript formatting together', () => {
+    render(<p><RichText>!!0.75m^2^!! 與 ^!!3!!^</RichText></p>);
+
+    const firstSuperscript = screen.getByText('2');
+    expect(firstSuperscript.tagName).toBe('SUP');
+    expect(firstSuperscript.closest('span')).toHaveClass(/red/);
+
+    const redInsideSuperscript = screen.getByText('3');
+    expect(redInsideSuperscript).toHaveClass(/red/);
+    expect(redInsideSuperscript.closest('sup')).toBeInTheDocument();
+  });
 });

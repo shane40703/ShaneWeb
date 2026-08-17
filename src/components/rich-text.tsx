@@ -18,15 +18,23 @@ export function RichText({ children }: { children: string }) {
         </a>,
       );
     } else if (token.startsWith('**')) {
-      parts.push(<strong key={`${index}-${token}`}>{token.slice(2, -2)}</strong>);
+      parts.push(
+        <strong key={`${index}-${token}`}>
+          <RichText>{token.slice(2, -2)}</RichText>
+        </strong>,
+      );
     } else if (token.startsWith('!!')) {
-      parts.push(<span className={styles.red} key={`${index}-${token}`}>{token.slice(2, -2)}</span>);
+      parts.push(
+        <span className={styles.red} key={`${index}-${token}`}>
+          <RichText>{token.slice(2, -2)}</RichText>
+        </span>,
+      );
     } else if (token.startsWith('_')) {
-      parts.push(<em key={`${index}-${token}`}>{token.slice(1, -1)}</em>);
+      parts.push(<em key={`${index}-${token}`}><RichText>{token.slice(1, -1)}</RichText></em>);
     } else if (token.startsWith('^')) {
-      parts.push(<sup key={`${index}-${token}`}>{token.slice(1, -1)}</sup>);
+      parts.push(<sup key={`${index}-${token}`}><RichText>{token.slice(1, -1)}</RichText></sup>);
     } else {
-      parts.push(<sub key={`${index}-${token}`}>{token.slice(1, -1)}</sub>);
+      parts.push(<sub key={`${index}-${token}`}><RichText>{token.slice(1, -1)}</RichText></sub>);
     }
     cursor = index + token.length;
   }
