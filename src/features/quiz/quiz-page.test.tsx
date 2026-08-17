@@ -9,9 +9,11 @@ const mocks = vi.hoisted(() => ({
   reportPersistence: vi.fn(),
   replace: vi.fn(),
   retry: vi.fn(),
+  attempts: [] as Array<Record<string, unknown>>,
   router: {
     isReady: true,
     query: {} as Record<string, string | undefined>,
+    pathname: '/questions/[subject]/[year]/[number]',
     replace: vi.fn(),
   },
 }));
@@ -37,7 +39,7 @@ vi.mock('@/state/app-state', () => ({
     state: {
       answers: {},
       difficultQuestionIds: [],
-      attempts: [],
+      attempts: mocks.attempts,
       notes: {},
       noteImages: {},
       discussionPosts: [],
@@ -45,6 +47,7 @@ vi.mock('@/state/app-state', () => ({
     },
     dispatch: mocks.dispatch,
     reportPersistence: mocks.reportPersistence,
+    hydrated: true,
   }),
 }));
 
@@ -99,6 +102,7 @@ describe('QuizPage progress presentation', () => {
     mocks.reportPersistence.mockReset();
     mocks.replace.mockReset();
     mocks.retry.mockReset();
+    mocks.attempts = [];
     mocks.router.query = {};
     mocks.router.replace = mocks.replace;
   });
@@ -282,5 +286,34 @@ describe('QuizPage progress presentation', () => {
       screen.getByRole('link', { name: '查看第 43 題結果' }),
     ).toHaveAttribute('aria-current', 'step');
     expect(Element.prototype.scrollIntoView).not.toHaveBeenCalled();
+  });
+
+  it('restores a submitted paper review from the URL attempt id', () => {
+    mocks.router.query = { reviewAttempt: 'attempt-review' };
+    mocks.attempts = [{
+      id: 'attempt-review',
+      mode: 'paper',
+      subject: 'law',
+      year: 114,
+      startedAt: '2026-08-17T00:00:00.000Z',
+      submittedAt: '2026-08-17T00:10:00.000Z',
+      elapsedSeconds: 600,
+      questionIds: paper.map((item) => item.id),
+      answers: { [currentQuestion.id]: 0, [nextQuestion.id]: 1 },
+      correctCount: 1,
+      wrongCount: 1,
+      unansweredCount: 0,
+    }];
+
+    render(
+      <ToastProvider>
+        <QuizPage question={currentQuestion} paper={paper} />
+      </ToastProvider>,
+    );
+
+    expect(
+      screen.getByRole('region', { name: '完整作答紀錄' }),
+    ).toBeInTheDocument();
+    expect(screen.getByText('1 / 2 題答對')).toBeInTheDocument();
   });
 });

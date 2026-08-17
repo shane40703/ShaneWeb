@@ -243,6 +243,20 @@ export function readQuizProgress(scope: string) {
   return parseStoredQuizProgress(readStoredValue(QUIZ_PROGRESS_STORAGE_KEY))[scope] ?? {};
 }
 
+/** Returns the first unfinished question in a saved paper, or its last question
+ * when every answer was selected but the paper was never submitted. */
+export function getPaperResumeQuestionId(
+  progress: QuizProgressByQuestion,
+  questionIds: readonly QuestionId[],
+) {
+  if (!questionIds.some((questionId) => progress[questionId])) return null;
+  return (
+    questionIds.find(
+      (questionId) => progress[questionId]?.selected === undefined,
+    ) ?? questionIds.at(-1) ?? null
+  );
+}
+
 export function writeQuizProgress(scope: string, progress: QuizProgressByQuestion) {
   const progressByScope = parseStoredQuizProgress(
     readStoredValue(QUIZ_PROGRESS_STORAGE_KEY),

@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   createQuizProgressScope,
   createQuizQuestionSearch,
+  getPaperResumeQuestionId,
   getQuizElapsedSeconds,
   parseStoredQuizProgress,
   QUIZ_PROGRESS_STORAGE_KEY,
@@ -333,6 +334,29 @@ describe('quiz progress persistence', () => {
 });
 
 describe('quiz progress scopes and navigation', () => {
+  it('resumes at the first unfinished paper question', () => {
+    const progress = {
+      'law-114-01': {
+        selected: 1,
+        elapsedSeconds: 4,
+        startedAt: '2026-08-17T00:00:00.000Z',
+      },
+      'law-114-02': {
+        elapsedSeconds: 2,
+        startedAt: '2026-08-17T00:01:00.000Z',
+      },
+    };
+
+    expect(
+      getPaperResumeQuestionId(progress, [
+        'law-114-01',
+        'law-114-02',
+        'law-114-03',
+      ]),
+    ).toBe('law-114-02');
+    expect(getPaperResumeQuestionId({}, ['law-114-01'])).toBeNull();
+  });
+
   it('uses stable but separate scopes for paper, single, and random quizzes', () => {
     expect(
       createQuizProgressScope({ mode: 'paper', subject: 'law', year: 114 }),

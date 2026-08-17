@@ -8,6 +8,12 @@ import {
 import { subjects, years } from '@/question-bank/catalog';
 import { isSubjectId, parseYear } from '@/lib/study';
 import type { QuestionSummary, SubjectId } from '@/lib/types';
+import { useClientReady } from '@/lib/use-client-ready';
+import {
+  createQuizProgressScope,
+  getPaperResumeQuestionId,
+  readQuizProgress,
+} from '@/features/quiz/quiz-state';
 import styles from './papers-page.module.css';
 
 function valueOf(value: string | string[] | undefined) {
@@ -16,6 +22,7 @@ function valueOf(value: string | string[] | undefined) {
 
 export function PapersPage({ questions }: { questions: QuestionSummary[] }) {
   const router = useRouter();
+  const clientReady = useClientReady();
   const querySubject = valueOf(router.query.subject);
   const subjectId: SubjectId = isSubjectId(querySubject) ? querySubject : 'law';
   const availableYears = years.filter((year) =>
@@ -33,6 +40,21 @@ export function PapersPage({ questions }: { questions: QuestionSummary[] }) {
         question.year === year,
     )
     .sort((left, right) => left.questionNumber - right.questionNumber);
+  const progressScope = createQuizProgressScope({
+    mode: 'paper',
+    subject: subjectId,
+    year,
+  });
+  const resumeQuestionId =
+    clientReady && progressScope
+      ? getPaperResumeQuestionId(
+          readQuizProgress(progressScope),
+          paperQuestions.map((item) => item.id),
+        )
+      : null;
+  const resumeQuestion = paperQuestions.find(
+    (item) => item.id === resumeQuestionId,
+  );
 
   function updateSelection(nextSubject: SubjectId, nextYear: number) {
     void router.replace(
@@ -77,8 +99,11 @@ export function PapersPage({ questions }: { questions: QuestionSummary[] }) {
       }
       action={
         paperQuestions[0] ? (
-          <Link className={styles.startButton} href={paperQuestions[0].path}>
-            開始作答
+          <Link
+            className={styles.startButton}
+            href={(resumeQuestion ?? paperQuestions[0]).path}
+          >
+            {resumeQuestion ? '繼續作答' : '開始作答'}
             <IconArrowRight size={16} stroke={2} aria-hidden="true" />
           </Link>
         ) : (

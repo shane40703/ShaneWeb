@@ -96,12 +96,12 @@ function createRandomQuizSessionId() {
 
 export function QuizPage({ question, paper }: StaticQuestionPageProps) {
   const router = useRouter();
-  const { state, dispatch, reportPersistence } = useAppState();
+  const { state, dispatch, hydrated, reportPersistence } = useAppState();
   const [progressState, progressDispatch] = useReducer(scopedQuizProgressReducer, {
     scope: null,
     progress: EMPTY_PROGRESS,
   });
-  const [attempt, setAttempt] = useState<QuizAttempt | null>(null);
+  const [submittedAttempt, setSubmittedAttempt] = useState<QuizAttempt | null>(null);
   const [resultView, setResultView] = useState<ResultView>('review');
   const [checkedSingleQuestionId, setCheckedSingleQuestionId] =
     useState<string | null>(null);
@@ -138,6 +138,10 @@ export function QuizPage({ question, paper }: StaticQuestionPageProps) {
   const queryRandomSessionId =
     typeof router.query.quizSession === 'string' && router.query.quizSession
       ? router.query.quizSession
+      : null;
+  const reviewAttemptId =
+    typeof router.query.reviewAttempt === 'string'
+      ? router.query.reviewAttempt
       : null;
 
   const paperById = useMemo(() => new Map(paper.map((item) => [item.id, item])), [paper]);
@@ -298,6 +302,21 @@ export function QuizPage({ question, paper }: StaticQuestionPageProps) {
     });
   }, [quizProgressScope]);
 
+  // The result view normally lives in component state. Keeping its attempt id
+  // in the URL lets browser Back restore the same review after visiting the
+  // full discussion page or another route.
+  const restoredAttempt =
+    hydrated && reviewAttemptId && !isRandomQuiz
+      ? state.attempts.find(
+          (item) =>
+            item.id === reviewAttemptId &&
+            item.mode === 'paper' &&
+            item.subject === question.subject &&
+            item.year === question.year,
+        ) ?? null
+      : null;
+  const attempt = submittedAttempt ?? restoredAttempt;
+
   // Holds the last persisted map; on the first render it is the reducer's own
   // initial value, which keeps an empty map from overwriting stored drafts.
   const persistedProgress = useRef<ScopedQuizProgressState | null>(null);
@@ -424,7 +443,17 @@ export function QuizPage({ question, paper }: StaticQuestionPageProps) {
       questionIds: paperQuestions.map((item) => item.id),
     });
     setResultView('review');
-    setAttempt(nextAttempt);
+    setSubmittedAttempt(nextAttempt);
+    if (!isRandomQuiz) {
+      void router.replace(
+        {
+          pathname: router.pathname,
+          query: { ...router.query, reviewAttempt: nextAttempt.id },
+        },
+        undefined,
+        { shallow: true, scroll: false },
+      );
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
