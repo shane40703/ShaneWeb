@@ -4,7 +4,6 @@ import {
   IconArrowLeft,
   IconArrowRight,
   IconAlertCircle,
-  IconBold,
   IconHeart,
   IconHelpCircle,
   IconLoader2,
@@ -23,6 +22,7 @@ import {
 import { DifficultButton } from '@/components/difficult-button';
 import { QuestionAnswerPanel } from '@/components/question-answer-panel';
 import { RichText } from '@/components/rich-text';
+import { TextFormattingToolbar } from '@/components/text-formatting-toolbar';
 import {
   QuestionNumberPicker,
   QuestionSelector,
@@ -42,8 +42,7 @@ import type {
   SubjectId,
 } from '@/lib/types';
 import type { QuestionBankStatus } from '@/lib/question-bank-client';
-import { formatDateTime } from '@/lib/study';
-import { toggleBoldFormatting } from '@/lib/text-formatting';
+import { formatDateTime, getQuestionDisplayCategories } from '@/lib/study';
 import {
   useDiscussionQuestionIds,
   useSharedDiscussions,
@@ -94,6 +93,7 @@ export function CommunityPage({
   const [postType, setPostType] = useState<DiscussionPostType>('explanation');
   const [postContent, setPostContent] = useState('');
   const postTextareaRef = useRef<HTMLTextAreaElement>(null);
+  const editingTextareaRef = useRef<HTMLTextAreaElement>(null);
   const [replyDrafts, setReplyDrafts] = useState<Record<string, string>>({});
   const [editingPostId, setEditingPostId] = useState<string | null>(null);
   const [editingContent, setEditingContent] = useState('');
@@ -307,6 +307,9 @@ export function CommunityPage({
             <div className={styles.tags}>
               <Tag tone="green">{subject?.name}</Tag>
               <Tag>{currentQuestion.year} 年</Tag>
+              {getQuestionDisplayCategories(currentQuestion).map((category) => (
+                <Tag tone="orange" key={category}>{category}</Tag>
+              ))}
               {currentQuestion.source.kind === 'sample' ? (
                 <Tag tone="purple">示範題</Tag>
               ) : null}
@@ -372,7 +375,14 @@ export function CommunityPage({
                     </header>
                     {editingPostId === post.id ? (
                       <div className={styles.editPost}>
+                        <TextFormattingToolbar
+                          textareaRef={editingTextareaRef}
+                          value={editingContent}
+                          onChange={setEditingContent}
+                          ariaContext="編輯投稿"
+                        />
                         <textarea
+                          ref={editingTextareaRef}
                           aria-label="編輯投稿內容"
                           value={editingContent}
                           onChange={(event) => setEditingContent(event.target.value)}
@@ -551,27 +561,12 @@ export function CommunityPage({
               onValueChange={setPostType}
             />
             <label htmlFor="post-content">內容</label>
-            <button
-              type="button"
-              className={styles.boldButton}
-              aria-label="切換投稿選取文字的粗體格式"
-              onClick={() => {
-                const textarea = postTextareaRef.current;
-                if (!textarea) return;
-                const result = toggleBoldFormatting(
-                  postContent,
-                  textarea.selectionStart,
-                  textarea.selectionEnd,
-                );
-                setPostContent(result.value);
-                requestAnimationFrame(() => {
-                  textarea.focus();
-                  textarea.setSelectionRange(result.selectionStart, result.selectionEnd);
-                });
-              }}
-            >
-              <IconBold size={16} stroke={2.4} aria-hidden="true" /> 粗體
-            </button>
+            <TextFormattingToolbar
+              textareaRef={postTextareaRef}
+              value={postContent}
+              onChange={setPostContent}
+              ariaContext="投稿"
+            />
             <textarea
               ref={postTextareaRef}
               id="post-content"

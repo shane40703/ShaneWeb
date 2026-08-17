@@ -2,14 +2,15 @@ import { useRouter } from 'next/router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   IconAlertCircle,
-  IconBold,
   IconHelpCircle,
   IconLoader2,
   IconNotebook,
+  IconPencil,
   IconTrash,
 } from '@tabler/icons-react';
 import {
   appendImageFiles,
+  AttachmentGallery,
   ImageAttachments,
 } from '@/components/image-attachments';
 import {
@@ -20,6 +21,7 @@ import {
 } from '@/components/content/content';
 import { QuestionAnswerPanel } from '@/components/question-answer-panel';
 import { RichText } from '@/components/rich-text';
+import { TextFormattingToolbar } from '@/components/text-formatting-toolbar';
 import {
   QuestionSelector,
   type SelectorYear,
@@ -33,7 +35,7 @@ import type { QuestionBankStatus } from '@/lib/question-bank-client';
 import { parseQuestionId } from '@/lib/question-path';
 import { getSubject, years } from '@/question-bank/catalog';
 import { useDiscussionPublisher } from '@/lib/shared-discussions';
-import { toggleBoldFormatting } from '@/lib/text-formatting';
+import { getQuestionDisplayCategories } from '@/lib/study';
 import type { ImageAttachment, Question, SubjectId } from '@/lib/types';
 import { useClientReady } from '@/lib/use-client-ready';
 import { useAppState } from '@/state/app-state';
@@ -41,22 +43,6 @@ import styles from './notes-page.module.css';
 
 function valueOf(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;
-}
-
-function boldSelection(
-  textarea: HTMLTextAreaElement | null,
-  value: string,
-  onChange: (value: string) => void,
-) {
-  if (!textarea) return;
-  const start = textarea.selectionStart;
-  const end = textarea.selectionEnd;
-  const result = toggleBoldFormatting(value, start, end);
-  onChange(result.value);
-  requestAnimationFrame(() => {
-    textarea.focus();
-    textarea.setSelectionRange(result.selectionStart, result.selectionEnd);
-  });
 }
 
 interface NoteDraft {
@@ -296,7 +282,7 @@ export function NotesPage({
       {questionSelector}
       <div className={styles.layout}>
         <NoteEditor
-          key={currentQuestion.id}
+          key={`${currentQuestion.id}-${hydrated ? 'ready' : 'hydrating'}`}
           question={currentQuestion}
           content={activeDraft?.content ?? state.notes[currentQuestion.id] ?? ''}
           images={activeDraft?.images ?? state.noteImages[currentQuestion.id] ?? []}
@@ -393,9 +379,11 @@ function NoteEditor({
   const hasSavedNote = Boolean(
     state.notes[question.id]?.trim() || state.noteImages[question.id]?.length,
   );
+  const [editing, setEditing] = useState(!hasSavedNote);
 
   function saveNote() {
     dispatch({ type: 'save-note', questionId: question.id, content, images });
+    setEditing(!(content.trim() || images.length));
     notify(content.trim() || images.length ? '筆記已儲存' : '筆記已刪除');
   }
 
@@ -436,6 +424,7 @@ function NoteEditor({
       images: [],
     });
     onChange({ content: '', images: [] });
+    setEditing(true);
     notify('筆記已刪除');
   }
 
@@ -444,6 +433,9 @@ function NoteEditor({
       <div className={styles.questionMeta}>
         <Tag>{question.year} 年</Tag>
         <Tag tone="green">{getSubject(question.subject)?.name}</Tag>
+        {getQuestionDisplayCategories(question).map((category) => (
+          <Tag tone="orange" key={category}>{category}</Tag>
+        ))}
         {question.source.kind === 'sample' ? (
           <Tag tone="purple">示範題</Tag>
         ) : null}
@@ -456,58 +448,50 @@ function NoteEditor({
         heading={null}
         ariaLabel="題目選項"
       />
-      <div className={styles.noteToolbar}>
-        <label htmlFor="question-note">我的筆記</label>
-        <button
-          type="button"
-          aria-label="切換選取文字的粗體格式"
-          onClick={() =>
-            boldSelection(textareaRef.current, content, (nextContent) =>
-              onChange({ content: nextContent, images }),
-            )
-          }
-        >
-          <IconBold size={16} stroke={2.4} aria-hidden="true" />
-          粗體
-        </button>
-      </div>
-      <textarea
-        ref={textareaRef}
-        id="question-note"
-        value={content}
-        onChange={(event) =>
-          onChange({ content: event.target.value, images })
-        }
-        onPaste={(event) => {
-          const files = [...event.clipboardData.files].filter((file) =>
-            file.type.startsWith('image/'),
-          );
-          if (!files.length) return;
-          event.preventDefault();
-          void appendImageFiles(images, files).then((result) => {
-            onChange({ content, images: result.images });
-            notify(
-              result.images.length > images.length
-                ? '已貼上筆記圖片'
-                : '無法貼上圖片',
-              result.error || undefined,
-            );
-          });
-        }}
-        rows={12}
-        placeholder="記下法條、公式、易錯觀念或解題步驟，也可以直接貼上截圖…"
-      />
-      {content.trim() ? (
-        <section className={styles.notePreview} aria-label="筆記格式預覽">
-          <span>格式預覽</span>
-          <p><RichText>{content}</RichText></p>
+      {editing ? (
+        <>
+          <div className={styles.noteToolbar}>
+            <label htmlFor="question-note">我的筆記</label>
+            <TextFormattingToolbar
+              textareaRef={textareaRef}
+              value={content}
+              onChange={(nextContent) => onChange({ content: nextContent, images })}
+            />
+          </div>
+          <textarea
+            ref={textareaRef}
+            id="question-note"
+            value={content}
+            onChange={(event) => onChange({ content: event.target.value, images })}
+            onPaste={(event) => {
+              const files = [...event.clipboardData.files].filter((file) =>
+                file.type.startsWith('image/'),
+              );
+              if (!files.length) return;
+              event.preventDefault();
+              void appendImageFiles(images, files).then((result) => {
+                onChange({ content, images: result.images });
+                notify(
+                  result.images.length > images.length ? '已貼上筆記圖片' : '無法貼上圖片',
+                  result.error || undefined,
+                );
+              });
+            }}
+            rows={12}
+            placeholder="記下法條、公式、易錯觀念或解題步驟，也可以直接貼上截圖…"
+          />
+          <ImageAttachments
+            images={images}
+            onChange={(nextImages) => onChange({ content, images: nextImages })}
+            label="上傳筆記圖片"
+          />
+        </>
+      ) : (
+        <section className={styles.noteResult} aria-label="已儲存筆記內容">
+          {content.trim() ? <p><RichText>{content}</RichText></p> : null}
+          <AttachmentGallery images={images} />
         </section>
-      ) : null}
-      <ImageAttachments
-        images={images}
-        onChange={(nextImages) => onChange({ content, images: nextImages })}
-        label="上傳筆記圖片"
-      />
+      )}
       <div className={styles.editorFooter}>
         <span>{content.length} 字</span>
         <div>
@@ -528,7 +512,14 @@ function NoteEditor({
           <Button disabled={sharing} onClick={() => void shareNote()}>
             {sharing ? '正在分享…' : '分享至詳解與討論'}
           </Button>
-          <Button variant="primary" onClick={saveNote}>儲存筆記</Button>
+          {editing ? (
+            <Button variant="primary" onClick={saveNote}>儲存筆記</Button>
+          ) : (
+            <Button variant="primary" onClick={() => setEditing(true)}>
+              <IconPencil size={16} stroke={2} aria-hidden="true" />
+              編輯筆記
+            </Button>
+          )}
         </div>
       </div>
     </section>

@@ -1,0 +1,5 @@
+.toolbar { display: flex; flex-wrap: wrap; gap: 6px; }
+.toolbar button { min-height: 34px; padding: 0 9px; display: inline-flex; align-items: center; gap: 5px; border: 1px solid var(--control-line); border-radius: 9px; background: var(--surface-2); color: var(--text-soft); font: inherit; font-size: 12px; font-weight: 800; cursor: pointer; }
+.toolbar button:hover { border-color: var(--primary); color: var(--primary-strong); }
+.toolbar button > span { font-size: 11px; }
+.toolbar button[data-format='red'] { color: var(--danger); }

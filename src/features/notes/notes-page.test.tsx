@@ -4,6 +4,7 @@ import {
   render,
   screen,
   waitFor,
+  within,
 } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ToastProvider } from '@/components/ui/ui';
@@ -192,9 +193,10 @@ describe('NotesPage question loading', () => {
     expect(
       screen.getByRole('region', { name: '題目選項' }),
     ).toBeInTheDocument();
+    expect(screen.getByText('測試分類')).toBeInTheDocument();
   });
 
-  it('enlarges the editor and wraps selected text as bold', async () => {
+  it('offers rich formatting without a separate preview', async () => {
     render(page());
     const editor = await screen.findByLabelText<HTMLTextAreaElement>('我的筆記');
     fireEvent.change(editor, { target: { value: '重要法條' } });
@@ -205,15 +207,36 @@ describe('NotesPage question loading', () => {
     );
 
     expect(editor).toHaveValue('**重要法條**');
-    const preview = screen.getByRole('region', { name: '筆記格式預覽' });
-    expect(preview).toHaveTextContent('重要法條');
-    expect(screen.getByText('重要法條', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByRole('region', { name: '筆記格式預覽' })).not.toBeInTheDocument();
+    for (const format of ['斜體', '上標', '下標', '紅字']) {
+      expect(screen.getByRole('button', { name: `切換選取文字的${format}格式` })).toBeInTheDocument();
+    }
 
     editor.setSelectionRange(2, 6);
     fireEvent.click(
       screen.getByRole('button', { name: '切換選取文字的粗體格式' }),
     );
     expect(editor).toHaveValue('重要法條');
+  });
+
+  it('renders formatting after the note is saved and returns to editing on demand', async () => {
+    render(page());
+    const editor = await screen.findByLabelText<HTMLTextAreaElement>('我的筆記');
+    fireEvent.change(editor, { target: { value: '**重點** _補充_ ^2^ ~3~ !!注意!!' } });
+    fireEvent.click(screen.getByRole('button', { name: '儲存筆記' }));
+
+    const result = await screen.findByRole('region', { name: '已儲存筆記內容' });
+    expect(within(result).getByText('重點').tagName).toBe('STRONG');
+    expect(within(result).getByText('補充').tagName).toBe('EM');
+    expect(within(result).getByText('2').tagName).toBe('SUP');
+    expect(within(result).getByText('3').tagName).toBe('SUB');
+    expect(within(result).getByText('注意')).toHaveClass(/red/);
+    expect(screen.queryByLabelText('我的筆記')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: '編輯筆記' }));
+    expect(await screen.findByLabelText('我的筆記')).toHaveValue(
+      '**重點** _補充_ ^2^ ~3~ !!注意!!',
+    );
   });
 
   it('keeps an unsaved draft through a bank error and retry', async () => {
@@ -258,7 +281,7 @@ describe('NotesPage question loading', () => {
 
     render(page());
 
-    expect(await screen.findByLabelText('我的筆記')).toHaveValue('要刪除的筆記');
+    expect(await screen.findByRole('region', { name: '已儲存筆記內容' })).toHaveTextContent('要刪除的筆記');
     fireEvent.click(screen.getByRole('button', { name: '刪除筆記' }));
     fireEvent.click(
       await screen.findByRole('button', { name: '確認刪除' }),

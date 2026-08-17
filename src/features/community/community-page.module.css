@@ -63,8 +63,6 @@
 
 .composeCard { padding: 22px; display: grid; gap: 16px; }
 .composeCard textarea { padding: 12px; resize: vertical; line-height: 1.6; }
-.boldButton { width: fit-content; min-height: 34px; padding: 0 10px; display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--control-line); border-radius: 9px; background: var(--surface); color: var(--text-soft); font: inherit; font-size: 12px; font-weight: 800; cursor: pointer; }
-.boldButton:hover { border-color: var(--primary); color: var(--primary-strong); }
 .editPost { margin: 15px 0; display: grid; gap: 8px; }
 .editPost textarea { width: 100%; min-height: 150px; padding: 12px; border: 1px solid var(--control-line); border-radius: 11px; background: var(--surface); color: var(--text); line-height: 1.7; resize: vertical; }
 .editPost > div { display: flex; gap: 8px; justify-content: flex-end; }

@@ -12,4 +12,13 @@ describe('RichText', () => {
       'https://example.com/rule',
     );
   });
+
+  it('renders italic, superscript, subscript, and red notation', () => {
+    render(<p><RichText>_斜體_ ^上標^ ~下標~ !!紅字!!</RichText></p>);
+
+    expect(screen.getByText('斜體').tagName).toBe('EM');
+    expect(screen.getByText('上標').tagName).toBe('SUP');
+    expect(screen.getByText('下標').tagName).toBe('SUB');
+    expect(screen.getByText('紅字')).toHaveClass(/red/);
+  });
 });
