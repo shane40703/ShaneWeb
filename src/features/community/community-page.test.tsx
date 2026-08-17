@@ -64,6 +64,12 @@ describe('CommunityPage question loading', () => {
     router.replace.mockReset();
   });
 
+  it('shows the current question category beside its subject and year', () => {
+    renderPage();
+
+    expect(screen.getByText('測試分類')).toBeInTheDocument();
+  });
+
   it('does not expose a fallback question while a deep link is loading', () => {
     router.query = { question: 'env-114-01' };
 

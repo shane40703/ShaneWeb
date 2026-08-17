@@ -179,10 +179,16 @@ describe('DifficultPage', () => {
 
     const noteEditor = within(unexplainedQuestion!).getByRole('textbox');
     fireEvent.change(noteEditor, { target: { value: '難題**詳解**' } });
-    const preview = within(unexplainedQuestion!).getByRole('region', {
-      name: '第 1 題筆記格式預覽',
-    });
-    expect(within(preview).getByText('詳解').tagName).toBe('STRONG');
+    expect(
+      within(unexplainedQuestion!).queryByRole('region', {
+        name: '第 1 題筆記格式預覽',
+      }),
+    ).not.toBeInTheDocument();
+    expect(
+      within(unexplainedQuestion!).getByRole('button', {
+        name: '切換第 1 題選取文字的斜體格式',
+      }),
+    ).toBeInTheDocument();
   });
 
   it('keeps difficult toggling and the empty state', async () => {

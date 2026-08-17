@@ -1,7 +1,6 @@
 import { useRef, useState } from 'react';
 import {
   IconChevronDown,
-  IconBold,
   IconCircleCheck,
   IconMessages,
   IconMinus,
@@ -17,6 +16,7 @@ import { DifficultButton } from '@/components/difficult-button';
 import { QuestionAnswerPanel } from '@/components/question-answer-panel';
 import { AttachmentGallery } from '@/components/image-attachments';
 import { RichText } from '@/components/rich-text';
+import { TextFormattingToolbar } from '@/components/text-formatting-toolbar';
 import { Button, useToast } from '@/components/ui/ui';
 import {
   formatCorrectAnswer,
@@ -26,7 +26,6 @@ import {
   useDiscussionPublisher,
   useSharedDiscussions,
 } from '@/lib/shared-discussions';
-import { toggleBoldFormatting } from '@/lib/text-formatting';
 import type { ImageAttachment, Question, QuizAttempt } from '@/lib/types';
 import { useAppState } from '@/state/app-state';
 import styles from './attempt-review.module.css';
@@ -265,25 +264,12 @@ export function ReviewNoteEditor({ question }: { question: ReviewQuestion }) {
         </span>
         <small>登入後同步文字筆記・圖片保存在本機</small>
       </header>
-      <button
-        type="button"
-        className={styles.boldButton}
-        aria-label={`切換第 ${question.questionNumber} 題選取文字的粗體格式`}
-        onClick={() => {
-          const textarea = textareaRef.current;
-          if (!textarea) return;
-          const start = textarea.selectionStart;
-          const end = textarea.selectionEnd;
-          const result = toggleBoldFormatting(content, start, end);
-          setContent(result.value);
-          requestAnimationFrame(() => {
-            textarea.focus();
-            textarea.setSelectionRange(result.selectionStart, result.selectionEnd);
-          });
-        }}
-      >
-        <IconBold size={15} stroke={2.4} aria-hidden="true" /> 粗體
-      </button>
+      <TextFormattingToolbar
+        textareaRef={textareaRef}
+        value={content}
+        onChange={setContent}
+        ariaContext={`第 ${question.questionNumber} 題`}
+      />
       <textarea
         ref={textareaRef}
         aria-label={`第 ${question.questionNumber} 題筆記內容`}
@@ -308,15 +294,6 @@ export function ReviewNoteEditor({ question }: { question: ReviewQuestion }) {
         rows={7}
         placeholder="在檢討答案時記下法條、公式或易錯觀念，也可以直接貼上截圖…"
       />
-      {content.trim() ? (
-        <section
-          className={styles.reviewNotePreview}
-          aria-label={`第 ${question.questionNumber} 題筆記格式預覽`}
-        >
-          <span>格式預覽</span>
-          <p><RichText>{content}</RichText></p>
-        </section>
-      ) : null}
       <ImageAttachments
         images={images}
         onChange={setImages}

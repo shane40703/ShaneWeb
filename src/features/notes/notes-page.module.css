@@ -10,12 +10,7 @@
 .editor > .questionNumber { color: var(--primary-strong); font-size: 17px; line-height: 1.3; }
 .editor label { color: var(--muted); font-size: 12px; font-weight: 800; }
 .editor textarea { width: 100%; min-height: 360px; padding: 16px; border: 1px solid var(--control-line); border-radius: 13px; background: var(--surface-2); color: var(--text); font-size: 15px; line-height: 1.75; resize: vertical; }
-.notePreview { padding: 14px 16px; display: grid; gap: 8px; border: 1px solid var(--line); border-radius: 13px; background: var(--surface-2); }
-.notePreview > span { color: var(--primary-strong); font-size: 11px; font-weight: 850; letter-spacing: .06em; }
-.notePreview > p { margin: 0; line-height: 1.75; white-space: pre-wrap; overflow-wrap: anywhere; }
-.noteToolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.noteToolbar button { min-height: 34px; padding: 0 10px; display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--control-line); border-radius: 9px; background: var(--surface-2); color: var(--text-soft); font: inherit; font-size: 12px; font-weight: 800; cursor: pointer; }
-.noteToolbar button:hover { border-color: var(--primary); color: var(--primary-strong); }
+.noteToolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
 .editorFooter { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .editorFooter span { color: var(--muted); font-size: 11px; }
 .editorFooter > div { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }

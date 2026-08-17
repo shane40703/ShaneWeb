@@ -133,7 +133,7 @@ describe('AttemptReview', () => {
     );
   });
 
-  it('previews bold formatting in the review note editor', () => {
+  it('formats review notes without a separate preview', () => {
     render(
       <ToastProvider>
         <AppStateProvider>
@@ -151,8 +151,8 @@ describe('AttemptReview', () => {
       screen.getByRole('button', { name: '切換第 1 題選取文字的粗體格式' }),
     );
 
-    const preview = screen.getByRole('region', { name: '第 1 題筆記格式預覽' });
-    expect(preview).toHaveTextContent('建築物最大容許給水壓力');
-    expect(screen.getByText('最大容許', { selector: 'strong' })).toBeInTheDocument();
+    expect(editor).toHaveValue('建築物**最大容許**給水壓力');
+    expect(screen.queryByRole('region', { name: '第 1 題筆記格式預覽' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '切換第 1 題選取文字的紅字格式' })).toBeInTheDocument();
   });
 });

@@ -192,9 +192,10 @@ describe('NotesPage question loading', () => {
     expect(
       screen.getByRole('region', { name: '題目選項' }),
     ).toBeInTheDocument();
+    expect(screen.getByText('測試分類')).toBeInTheDocument();
   });
 
-  it('enlarges the editor and wraps selected text as bold', async () => {
+  it('offers rich formatting without a separate preview', async () => {
     render(page());
     const editor = await screen.findByLabelText<HTMLTextAreaElement>('我的筆記');
     fireEvent.change(editor, { target: { value: '重要法條' } });
@@ -205,9 +206,10 @@ describe('NotesPage question loading', () => {
     );
 
     expect(editor).toHaveValue('**重要法條**');
-    const preview = screen.getByRole('region', { name: '筆記格式預覽' });
-    expect(preview).toHaveTextContent('重要法條');
-    expect(screen.getByText('重要法條', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByRole('region', { name: '筆記格式預覽' })).not.toBeInTheDocument();
+    for (const format of ['斜體', '上標', '下標', '紅字']) {
+      expect(screen.getByRole('button', { name: `切換選取文字的${format}格式` })).toBeInTheDocument();
+    }
 
     editor.setSelectionRange(2, 6);
     fireEvent.click(

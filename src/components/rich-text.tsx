@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
+import styles from './rich-text.module.css';
 
-const tokenPattern = /(https?:\/\/[^\s<]+|\*\*[^*\n]+\*\*)/g;
+const tokenPattern = /(https?:\/\/[^\s<]+|\*\*[^*\n]+\*\*|!![^!\n]+!!|_[^_\n]+_|\^[^^\n]+\^|~[^~\n]+~)/g;
 
 export function RichText({ children }: { children: string }) {
   const parts: ReactNode[] = [];
@@ -16,8 +17,16 @@ export function RichText({ children }: { children: string }) {
           {token}
         </a>,
       );
-    } else {
+    } else if (token.startsWith('**')) {
       parts.push(<strong key={`${index}-${token}`}>{token.slice(2, -2)}</strong>);
+    } else if (token.startsWith('!!')) {
+      parts.push(<span className={styles.red} key={`${index}-${token}`}>{token.slice(2, -2)}</span>);
+    } else if (token.startsWith('_')) {
+      parts.push(<em key={`${index}-${token}`}>{token.slice(1, -1)}</em>);
+    } else if (token.startsWith('^')) {
+      parts.push(<sup key={`${index}-${token}`}>{token.slice(1, -1)}</sup>);
+    } else {
+      parts.push(<sub key={`${index}-${token}`}>{token.slice(1, -1)}</sub>);
     }
     cursor = index + token.length;
   }

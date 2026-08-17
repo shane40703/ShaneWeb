@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { toggleBoldFormatting } from '@/lib/text-formatting';
+import { toggleBoldFormatting, toggleTextFormatting } from '@/lib/text-formatting';
 
 describe('toggleBoldFormatting', () => {
   it('adds bold markers around selected text', () => {
@@ -24,5 +24,19 @@ describe('toggleBoldFormatting', () => {
       selectionStart: 3,
       selectionEnd: 5,
     });
+  });
+});
+
+describe('toggleTextFormatting', () => {
+  it.each([
+    ['italic', '_文字_'],
+    ['superscript', '^文字^'],
+    ['subscript', '~文字~'],
+    ['red', '!!文字!!'],
+  ] as const)('toggles %s markers', (format, marked) => {
+    const added = toggleTextFormatting('文字', 0, 2, format);
+    expect(added.value).toBe(marked);
+    expect(toggleTextFormatting(added.value, added.selectionStart, added.selectionEnd, format).value)
+      .toBe('文字');
   });
 });
