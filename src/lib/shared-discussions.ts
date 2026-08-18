@@ -4,6 +4,7 @@ import {
   collection,
   deleteDoc,
   doc,
+  getDocs,
   onSnapshot,
   query,
   serverTimestamp,
@@ -156,7 +157,7 @@ export function parseCloudDiscussionReply(id: string, data: DocumentData) {
 }
 
 export function useDiscussionPublisher(questionId: QuestionId) {
-  const { dispatch } = useAppState();
+  const { state, dispatch } = useAppState();
   const enabled = firebaseConfigurationAvailable();
 
   const publish = useCallback(
@@ -170,6 +171,20 @@ export function useDiscussionPublisher(questionId: QuestionId) {
         throw new Error('請先輸入要分享的內容或加入圖片。');
       }
       if (!enabled) {
+        const existingPost = type === 'explanation'
+          ? state.discussionPosts.find(
+              (post) => post.questionId === questionId && post.type === type,
+            )
+          : undefined;
+        if (existingPost) {
+          dispatch({
+            type: 'edit-discussion-post',
+            postId: existingPost.id,
+            content: trimmed,
+            images,
+          });
+          return { imagesShared: true } satisfies DiscussionPublishResult;
+        }
         const now = new Date().toISOString();
         dispatch({
           type: 'add-discussion-post',
@@ -191,7 +206,16 @@ export function useDiscussionPublisher(questionId: QuestionId) {
       if (!firebase) throw new Error('Firebase 尚未完成設定。');
       const user = firebase.auth.currentUser;
       if (!user) throw new Error('請先使用 Google 登入後再分享。');
-      const postRef = doc(collection(firebase.db, 'discussionPosts'));
+      const existingPosts = type === 'explanation'
+        ? (await getDocs(query(
+            collection(firebase.db, 'discussionPosts'),
+            where('questionId', '==', questionId),
+          ))).docs.filter((item) => {
+            const data = item.data();
+            return data.authorId === user.uid && data.type === type && data.deleted !== true;
+          })
+        : [];
+      const postRef = existingPosts[0]?.ref ?? doc(collection(firebase.db, 'discussionPosts'));
       let uploadedImages: DiscussionPost['images'] = [];
       try {
         uploadedImages = await Promise.all(
@@ -221,19 +245,30 @@ export function useDiscussionPublisher(questionId: QuestionId) {
           '目前方案無法共享圖片。請加入文字後再分享；圖片仍會保存在本機筆記。',
         );
       }
-      await setDoc(postRef, createCloudDiscussionPostData({
-        questionId,
-        type,
-        content: trimmed,
-        images: uploadedImages,
-        authorId: user.uid,
-        createdAt: serverTimestamp(),
-      }));
+      if (existingPosts.length) {
+        await updateDoc(postRef, { content: trimmed, images: uploadedImages });
+        await Promise.all(
+          existingPosts.slice(1).map((item) => updateDoc(item.ref, {
+            content: '',
+            deleted: true,
+            deletedAt: serverTimestamp(),
+          })),
+        );
+      } else {
+        await setDoc(postRef, createCloudDiscussionPostData({
+          questionId,
+          type,
+          content: trimmed,
+          images: uploadedImages,
+          authorId: user.uid,
+          createdAt: serverTimestamp(),
+        }));
+      }
       return {
         imagesShared: images.length === 0 || uploadedImages.length === images.length,
       } satisfies DiscussionPublishResult;
     },
-    [dispatch, enabled, questionId],
+    [dispatch, enabled, questionId, state.discussionPosts],
   );
 
   return { publish, enabled };

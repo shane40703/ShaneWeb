@@ -180,8 +180,15 @@ describe('appReducer', () => {
       type: 'edit-discussion-post',
       postId: post.id,
       content: '修改後的內容',
+      images: [{
+        id: 'replacement-image',
+        name: 'replacement.png',
+        type: 'image/png',
+        dataUrl: 'data:image/png;base64,dGVzdA==',
+      }],
     });
     expect(state.discussionPosts[0].content).toBe('修改後的內容');
+    expect(state.discussionPosts[0].images[0]?.id).toBe('replacement-image');
     state = appReducer(state, {
       type: 'like-discussion-post',
       postId: post.id,

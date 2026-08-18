@@ -49,7 +49,7 @@ const attempt: QuizAttempt = {
 function DiscussionProbe() {
   const { state } = useAppState();
   return (
-    <output aria-label="共享詳解狀態">
+    <output aria-label="共享詳解狀態" data-count={state.discussionPosts.length}>
       {state.discussionPosts.map((post) => post.content).join('、')}
     </output>
   );
@@ -131,6 +131,16 @@ describe('AttemptReview', () => {
     expect(await screen.findByLabelText('共享詳解狀態')).toHaveTextContent(
       '從對答案分享的詳解',
     );
+
+    fireEvent.change(screen.getByLabelText('第 1 題筆記內容'), {
+      target: { value: '修正後的詳解' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /分享至詳解與討論/ }));
+
+    const result = await screen.findByLabelText('共享詳解狀態');
+    expect(result).toHaveTextContent('修正後的詳解');
+    expect(result).not.toHaveTextContent('從對答案分享的詳解');
+    expect(result).toHaveAttribute('data-count', '1');
   });
 
   it('formats review notes without a separate preview', () => {

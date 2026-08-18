@@ -200,6 +200,7 @@ describe('NotesPage question loading', () => {
     render(page());
     const editor = await screen.findByLabelText<HTMLTextAreaElement>('我的筆記');
     fireEvent.change(editor, { target: { value: '重要法條' } });
+    editor.scrollTop = 160;
     editor.setSelectionRange(0, 4);
 
     fireEvent.click(
@@ -207,6 +208,7 @@ describe('NotesPage question loading', () => {
     );
 
     expect(editor).toHaveValue('**重要法條**');
+    await waitFor(() => expect(editor.scrollTop).toBe(160));
     expect(screen.queryByRole('region', { name: '筆記格式預覽' })).not.toBeInTheDocument();
     for (const format of ['斜體', '上標', '下標', '紅字']) {
       expect(screen.getByRole('button', { name: `切換選取文字的${format}格式` })).toBeInTheDocument();

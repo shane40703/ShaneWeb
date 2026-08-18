@@ -31,7 +31,12 @@ export type AppAction =
     }
   | { type: 'merge-notes'; notes: SyncedNote[] }
   | { type: 'add-discussion-post'; post: DiscussionPost }
-  | { type: 'edit-discussion-post'; postId: string; content: string }
+  | {
+      type: 'edit-discussion-post';
+      postId: string;
+      content: string;
+      images?: ImageAttachment[];
+    }
   | { type: 'like-discussion-post'; postId: string }
   | { type: 'report-discussion-post'; postId: string }
   | { type: 'add-discussion-reply'; postId: string; reply: DiscussionReply }
@@ -144,7 +149,9 @@ export function appReducer(state: AppState, action: AppAction): AppState {
       return {
         ...state,
         discussionPosts: state.discussionPosts.map((post) =>
-          post.id === action.postId ? { ...post, content: action.content } : post,
+          post.id === action.postId
+            ? { ...post, content: action.content, images: action.images ?? post.images }
+            : post,
         ),
       };
     case 'like-discussion-post': {

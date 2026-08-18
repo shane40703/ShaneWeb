@@ -32,6 +32,8 @@ export function TextFormattingToolbar({
           onClick={() => {
             const textarea = textareaRef.current;
             if (!textarea) return;
+            const scrollTop = textarea.scrollTop;
+            const scrollLeft = textarea.scrollLeft;
             const result = toggleTextFormatting(
               value,
               textarea.selectionStart,
@@ -40,8 +42,10 @@ export function TextFormattingToolbar({
             );
             onChange(result.value);
             requestAnimationFrame(() => {
-              textarea.focus();
+              textarea.focus({ preventScroll: true });
               textarea.setSelectionRange(result.selectionStart, result.selectionEnd);
+              textarea.scrollTop = scrollTop;
+              textarea.scrollLeft = scrollLeft;
             });
           }}
         >
