@@ -21,6 +21,7 @@ import {
 } from '@/components/content/content';
 import { QuestionAnswerPanel } from '@/components/question-answer-panel';
 import { RichText } from '@/components/rich-text';
+import { SimilarQuestions } from '@/components/similar-questions';
 import { TextFormattingToolbar } from '@/components/text-formatting-toolbar';
 import {
   QuestionSelector,
@@ -284,6 +285,7 @@ export function NotesPage({
         <NoteEditor
           key={`${currentQuestion.id}-${hydrated ? 'ready' : 'hydrating'}`}
           question={currentQuestion}
+          questions={questions}
           content={activeDraft?.content ?? state.notes[currentQuestion.id] ?? ''}
           images={activeDraft?.images ?? state.noteImages[currentQuestion.id] ?? []}
           onChange={(draft) =>
@@ -362,11 +364,13 @@ export function NotesPage({
 
 function NoteEditor({
   question,
+  questions,
   content,
   images,
   onChange,
 }: {
   question: Question;
+  questions: readonly Question[];
   content: string;
   images: ImageAttachment[];
   onChange: (draft: NoteDraft) => void;
@@ -522,6 +526,7 @@ function NoteEditor({
           )}
         </div>
       </div>
+      <SimilarQuestions question={question} questions={questions} basePath="/notes" />
     </section>
   );
 }

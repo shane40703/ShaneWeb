@@ -36,6 +36,25 @@ export type ReviewQuestion = Pick<
 > &
   Partial<Pick<Question, 'content' | 'explanation'>>;
 
+export function countWrongAttemptsThrough(
+  currentAttempt: QuizAttempt,
+  question: ReviewQuestion,
+  attempts: readonly QuizAttempt[],
+) {
+  const candidates = attempts.some((candidate) => candidate.id === currentAttempt.id)
+    ? attempts
+    : [...attempts, currentAttempt];
+  return candidates.filter((candidate) => {
+    if (
+      candidate.subject !== currentAttempt.subject ||
+      candidate.year !== currentAttempt.year ||
+      candidate.submittedAt > currentAttempt.submittedAt
+    ) return false;
+    const selected = candidate.answers[question.id];
+    return selected !== undefined && !isQuestionCorrect(question, selected);
+  }).length;
+}
+
 export function AttemptReview({
   attempt,
   questions,
@@ -78,6 +97,9 @@ export function AttemptReview({
               : questionCorrect
                 ? 'correct'
                 : 'wrong';
+          const wrongAttemptCount = result === 'wrong'
+            ? countWrongAttemptsThrough(attempt, question, state.attempts)
+            : 0;
           return (
             <article
               key={question.id}
@@ -108,6 +130,9 @@ export function AttemptReview({
                   <span>
                     {question.year} 年・第 {question.questionNumber} 題
                   </span>
+                  {wrongAttemptCount >= 2 ? (
+                    <strong className={styles.repeatWrong}>已答錯 {wrongAttemptCount} 次</strong>
+                  ) : null}
                   {showDifficultActions ? (
                     <DifficultButton
                       active={state.difficultQuestionIds.includes(question.id)}

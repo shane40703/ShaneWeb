@@ -22,6 +22,7 @@ import {
 import { DifficultButton } from '@/components/difficult-button';
 import { QuestionAnswerPanel } from '@/components/question-answer-panel';
 import { RichText } from '@/components/rich-text';
+import { SimilarQuestions } from '@/components/similar-questions';
 import { TextFormattingToolbar } from '@/components/text-formatting-toolbar';
 import {
   QuestionNumberPicker,
@@ -590,6 +591,11 @@ export function CommunityPage({
                 : 'Firebase 尚未設定，投稿內容僅儲存在這台裝置。'}
             </p>
           </form>
+          <SimilarQuestions
+            question={currentQuestion}
+            questions={questions}
+            basePath="/community"
+          />
         </main>
 
         <aside className={styles.questionNavigator} aria-label="詳解討論題號導覽">

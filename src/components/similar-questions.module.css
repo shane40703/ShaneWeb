@@ -1,0 +1,11 @@
+.panel { padding: 17px; display: grid; gap: 13px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface-2); }
+.panel > header { display: flex; align-items: center; gap: 9px; color: var(--primary-strong); }
+.panel > header div { display: grid; gap: 2px; }
+.panel > header span { color: var(--muted); font-size: 10px; font-weight: 800; letter-spacing: .08em; }
+.panel > header strong { font-size: 14px; }
+.links { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.links a { min-width: 0; padding: 11px 12px; display: grid; gap: 4px; border: 1px solid var(--control-line); border-radius: 10px; background: var(--surface); color: var(--text); text-decoration: none; }
+.links a:hover { border-color: var(--primary); background: var(--primary-soft); }
+.links a span { color: var(--primary-strong); font-size: 10px; font-weight: 800; }
+.links a strong { overflow: hidden; font-size: 12px; font-weight: 650; line-height: 1.45; text-overflow: ellipsis; white-space: nowrap; }
+@media (max-width: 620px) { .links { grid-template-columns: 1fr; } }

@@ -196,6 +196,28 @@ describe('NotesPage question loading', () => {
     expect(screen.getByText('測試分類')).toBeInTheDocument();
   });
 
+  it('shows similar law questions by precise topic below the note', async () => {
+    const current = {
+      ...lawQuestion,
+      text: '防火區劃的防火門規定',
+      content: [{ kind: 'text' as const, text: '防火區劃的防火門規定' }],
+    };
+    const similar = {
+      ...lawQuestion,
+      id: 'law-113-02',
+      year: 113,
+      questionNumber: 2,
+      text: '防火牆的防火區劃規定',
+      content: [{ kind: 'text' as const, text: '防火牆的防火區劃規定' }],
+    };
+    render(page({ questions: [current, similar] }));
+
+    const panel = await screen.findByRole('region', { name: '類似題目' });
+    expect(panel).toHaveTextContent('防火區劃與防火間隔');
+    expect(within(panel).getByRole('link', { name: /113 年・第 2 題/ }))
+      .toHaveAttribute('href', '/notes?question=law-113-02');
+  });
+
   it('offers rich formatting without a separate preview', async () => {
     render(page());
     const editor = await screen.findByLabelText<HTMLTextAreaElement>('我的筆記');

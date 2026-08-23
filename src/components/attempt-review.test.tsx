@@ -1,6 +1,6 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { AttemptReview } from '@/components/attempt-review';
+import { AttemptReview, countWrongAttemptsThrough } from '@/components/attempt-review';
 import { CloudSyncProvider } from '@/components/cloud-sync-provider';
 import { ToastProvider } from '@/components/ui/ui';
 import type { QuizAttempt } from '@/lib/types';
@@ -63,6 +63,14 @@ describe('AttemptReview', () => {
     vi.stubEnv('NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN', '');
     vi.stubEnv('NEXT_PUBLIC_FIREBASE_PROJECT_ID', '');
     vi.stubEnv('NEXT_PUBLIC_FIREBASE_APP_ID', '');
+  });
+
+  it('counts repeated wrong answers only through the selected same-year attempt', () => {
+    const current = { ...attempt, id: 'attempt-2', submittedAt: '2026-07-26T00:01:00.000Z' };
+    const later = { ...attempt, id: 'attempt-3', submittedAt: '2026-07-27T00:01:00.000Z' };
+    const otherYear = { ...attempt, id: 'attempt-other-year', year: 113 };
+    expect(countWrongAttemptsThrough(current, questions[1], [attempt, current, later, otherYear]))
+      .toBe(2);
   });
 
   it('renders every answer and its complete options', () => {
