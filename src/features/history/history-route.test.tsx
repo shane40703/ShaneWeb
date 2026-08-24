@@ -76,10 +76,10 @@ describe('history route question loading', () => {
   it('retains successful subject questions and retries only failed subjects', () => {
     render(<HistoryRoute />);
 
-    expect(mocks.useSubjectQuestions).toHaveBeenNthCalledWith(1, ['law']);
-    expect(mocks.useSubjectQuestions).toHaveBeenNthCalledWith(2, ['env']);
-    expect(mocks.useSubjectQuestions).toHaveBeenNthCalledWith(3, []);
-    expect(mocks.useSubjectQuestions).toHaveBeenNthCalledWith(4, []);
+    expect(mocks.useSubjectQuestions).toHaveBeenNthCalledWith(1, ['law'], [114]);
+    expect(mocks.useSubjectQuestions).toHaveBeenNthCalledWith(2, ['env'], [114]);
+    expect(mocks.useSubjectQuestions).toHaveBeenNthCalledWith(3, [], []);
+    expect(mocks.useSubjectQuestions).toHaveBeenNthCalledWith(4, [], []);
     expect(screen.getByText('law-114-01')).toBeInTheDocument();
     expect(screen.getByText('ready')).toBeInTheDocument();
     expect(screen.getByText('error')).toBeInTheDocument();

@@ -94,4 +94,36 @@ describe('useSubjectQuestions', () => {
     expect(peak).toBe(1);
     expect(fetchMock).toHaveBeenCalledTimes(13);
   });
+
+  it('keeps successful years visible and retries only a failed year', async () => {
+    let failedOnce = false;
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      const year = Number(
+        new URL(String(input), 'https://example.test').searchParams.get('year'),
+      );
+      if (year === 113 && !failedOnce) {
+        failedOnce = true;
+        return { ok: false, status: 503 } as Response;
+      }
+      return {
+        ok: true,
+        json: async () => year === 114 ? [question('structure-114-01', 'structure')] : [],
+      } as Response;
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const { result } = renderHook(() => useSubjectQuestions(['structure']));
+
+    await waitFor(() => expect(result.current.status).toBe('error'));
+    expect(result.current.questions.map((item) => item.id)).toEqual([
+      'structure-114-01',
+    ]);
+
+    result.current.retry();
+    await waitFor(() => expect(result.current.status).toBe('ready'));
+    expect(result.current.questions.map((item) => item.id)).toEqual([
+      'structure-114-01',
+    ]);
+    expect(fetchMock).toHaveBeenCalledTimes(14);
+  });
 });

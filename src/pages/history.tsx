@@ -1,7 +1,7 @@
 import Head from 'next/head';
 import { HistoryPage } from '@/features/history/history-page';
 import { useSubjectQuestions } from '@/lib/question-bank-client';
-import { subjectsOfQuestionIds } from '@/lib/question-path';
+import { parseQuestionId, subjectsOfQuestionIds } from '@/lib/question-path';
 import { useAppState } from '@/state/app-state';
 
 /**
@@ -15,15 +15,29 @@ export default function HistoryRoute() {
   const attemptedSubjects = hydrated
     ? subjectsOfQuestionIds(attemptedQuestionIds)
     : [];
-  const lawBank = useSubjectQuestions(attemptedSubjects.includes('law') ? ['law'] : []);
+  const attemptedYears = (subject: 'law' | 'env' | 'construction' | 'structure') => [
+    ...new Set(
+      attemptedQuestionIds.flatMap((questionId) => {
+        const parsed = parseQuestionId(questionId);
+        return parsed?.subject === subject ? [parsed.year] : [];
+      }),
+    ),
+  ];
+  const lawBank = useSubjectQuestions(
+    attemptedSubjects.includes('law') ? ['law'] : [],
+    attemptedYears('law'),
+  );
   const environmentBank = useSubjectQuestions(
     attemptedSubjects.includes('env') ? ['env'] : [],
+    attemptedYears('env'),
   );
   const constructionBank = useSubjectQuestions(
     attemptedSubjects.includes('construction') ? ['construction'] : [],
+    attemptedYears('construction'),
   );
   const structureBank = useSubjectQuestions(
     attemptedSubjects.includes('structure') ? ['structure'] : [],
+    attemptedYears('structure'),
   );
   const banks = [lawBank, environmentBank, constructionBank, structureBank];
   const bankBySubject = {
