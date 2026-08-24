@@ -16,7 +16,7 @@ import {
 } from '@/components/result-view-tabs';
 import { Button, ConfirmDialog, useToast } from '@/components/ui/ui';
 import { WrongCategoryAnalysis } from '@/components/wrong-category-analysis';
-import { getSubject, subjects } from '@/question-bank/catalog';
+import { getSubject, subjects, years as paperYears } from '@/question-bank/catalog';
 import type { QuestionBankStatus } from '@/lib/question-bank-client';
 import { parseQuestionId, questionPathFromId } from '@/lib/question-path';
 import {
@@ -109,11 +109,7 @@ export function HistoryPage({
   const yearGroups = groupAttemptsByYear(filteredAttempts);
   const availablePaperYears =
     activeSubjectFilter && activeSubjectFilter !== 'mixed'
-      ? [...new Set(
-          questions
-            .filter((question) => question.subject === activeSubjectFilter)
-            .map((question) => question.year),
-        )].sort((left, right) => right - left)
+      ? paperYears
       : [];
   const completedPaperYears = new Set(
     filteredAttempts.flatMap((attempt) =>

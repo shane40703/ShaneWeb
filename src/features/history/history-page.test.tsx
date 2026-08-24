@@ -218,6 +218,41 @@ describe('HistoryPage', () => {
     ).toHaveAttribute('href', '/papers?subject=law&year=113');
   });
 
+  it('continues with unattempted catalog years even when only attempted banks are loaded', async () => {
+    const state = createDefaultState();
+    state.attempts = Array.from({ length: 10 }, (_, index) => 114 - index).map(
+      (year) => {
+        const question = questions.find(
+          (candidate) => candidate.subject === 'law' && candidate.year === year,
+        )!;
+        return createAttempt({
+          mode: 'paper',
+          source: [question],
+          answers: { [question.id]: acceptedAnswer(question) },
+          startedAt: `2026-07-${String(year - 90).padStart(2, '0')}T00:00:00.000Z`,
+          elapsedSeconds: 60,
+        });
+      },
+    );
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    const loadedQuestion = questions.find(
+      (question) => question.subject === 'law' && question.year === 105,
+    )!;
+
+    render(
+      <ToastProvider>
+        <AppStateProvider>
+          <HistoryPage questions={[loadedQuestion]} />
+        </AppStateProvider>
+      </ToastProvider>,
+    );
+
+    expect(
+      await screen.findByRole('button', { name: /繼續作答 104 年/ }),
+    ).toHaveAttribute('href', '/papers?subject=law&year=104');
+    expect(screen.queryByText('已完成所有年度')).not.toBeInTheDocument();
+  });
+
   it('keeps local history usable when one subject bank fails to load', async () => {
     const lawAttempt = createAttempt({
       mode: 'paper',
