@@ -89,7 +89,7 @@ describe('NotesPage question loading', () => {
     );
 
     await waitFor(() => {
-      expect(requestQuestionBank).toHaveBeenCalledWith('env');
+      expect(requestQuestionBank).toHaveBeenCalledWith('env', 114);
     });
     expect(
       screen.getByRole('heading', { name: '正在載入題目' }),

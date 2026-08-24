@@ -63,7 +63,7 @@ export function NotesPage({
   questions: Question[];
   questionBankStatus?: QuestionBankStatus;
   questionBankStatuses?: Partial<Record<SubjectId, NotesQuestionBankStatus>>;
-  onRequestQuestionBank?: (subjectId: SubjectId) => void;
+  onRequestQuestionBank?: (subjectId: SubjectId, year?: number) => void;
   onRetryQuestionBank?: (subjectId: SubjectId) => void;
 }) {
   const router = useRouter();
@@ -114,10 +114,14 @@ export function NotesPage({
     ) {
       return;
     }
-    onRequestQuestionBank?.(requestedSubject);
+    onRequestQuestionBank?.(
+      requestedSubject,
+      requestedQuestionId ? parseQuestionId(requestedQuestionId)?.year : undefined,
+    );
   }, [
     onRequestQuestionBank,
     requestedQuestion,
+    requestedQuestionId,
     requestedSubject,
     routeHydrated,
     unresolvedStatus,

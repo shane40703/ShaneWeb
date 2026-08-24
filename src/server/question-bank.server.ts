@@ -767,7 +767,10 @@ export async function loadQuestion(entry: QuestionEntry): Promise<Question> {
 
 async function loadQuestions(entries: readonly QuestionEntry[]) {
   const questions: Question[] = [];
-  const concurrency = 4;
+  // A paper contains up to 80 questions and several small files per question.
+  // Reading only four questions at a time can exceed a production function's
+  // execution window even though the resulting payload is reasonably small.
+  const concurrency = 16;
   for (let index = 0; index < entries.length; index += concurrency) {
     questions.push(
       ...(await Promise.all(

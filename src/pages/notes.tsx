@@ -28,16 +28,28 @@ export default function NotesRoute({
 }: InferGetStaticPropsType<typeof getStaticProps>) {
   const initialSubject = initialQuestions[0]?.subject ?? allSubjectIds[0];
   const [requestedSubjects, setRequestedSubjects] = useState<SubjectId[]>([]);
+  const [requestedYears, setRequestedYears] = useState<
+    Partial<Record<SubjectId, number[] | null>>
+  >({});
   const shouldLoad = (subjectId: SubjectId) =>
     subjectId !== initialSubject && requestedSubjects.includes(subjectId);
 
-  const lawBank = useSubjectQuestions(shouldLoad('law') ? ['law'] : []);
-  const environmentBank = useSubjectQuestions(shouldLoad('env') ? ['env'] : []);
+  const yearsFor = (subjectId: SubjectId) => requestedYears[subjectId] ?? undefined;
+  const lawBank = useSubjectQuestions(
+    shouldLoad('law') ? ['law'] : [],
+    yearsFor('law'),
+  );
+  const environmentBank = useSubjectQuestions(
+    shouldLoad('env') ? ['env'] : [],
+    yearsFor('env'),
+  );
   const constructionBank = useSubjectQuestions(
     shouldLoad('construction') ? ['construction'] : [],
+    yearsFor('construction'),
   );
   const structureBank = useSubjectQuestions(
     shouldLoad('structure') ? ['structure'] : [],
+    yearsFor('structure'),
   );
   const bankBySubject = {
     law: lawBank,
@@ -71,11 +83,21 @@ export default function NotesRoute({
           : 'idle',
     ]),
   ) as Record<SubjectId, NotesQuestionBankStatus>;
-  const requestQuestionBank = useCallback((subjectId: SubjectId) => {
+  const requestQuestionBank = useCallback((subjectId: SubjectId, year?: number) => {
     if (subjectId === initialSubject) return;
     setRequestedSubjects((current) =>
       current.includes(subjectId) ? current : [...current, subjectId],
     );
+    setRequestedYears((current) => {
+      const existing = current[subjectId];
+      if (year === undefined || existing === null) {
+        return existing === null
+          ? current
+          : { ...current, [subjectId]: null };
+      }
+      if (existing?.includes(year)) return current;
+      return { ...current, [subjectId]: [...(existing ?? []), year] };
+    });
   }, [initialSubject]);
   function retryQuestionBank(subjectId: SubjectId) {
     bankBySubject[subjectId].retry();

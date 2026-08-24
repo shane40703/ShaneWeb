@@ -20,7 +20,7 @@ vi.mock('@/features/notes/notes-page', () => ({
   }: {
     questions: Array<{ id: string }>;
     questionBankStatuses: Record<string, string>;
-    onRequestQuestionBank: (subjectId: SubjectId) => void;
+    onRequestQuestionBank: (subjectId: SubjectId, year?: number) => void;
   }) => (
     <div>
       <span data-testid="questions">
@@ -31,6 +31,9 @@ vi.mock('@/features/notes/notes-page', () => ({
       </span>
       <button type="button" onClick={() => onRequestQuestionBank('env')}>
         載入環控
+      </button>
+      <button type="button" onClick={() => onRequestQuestionBank('env', 114)}>
+        載入環控 114 年
       </button>
     </div>
   ),
@@ -72,10 +75,10 @@ describe('notes route question loading', () => {
   it('does not request any API-backed subject until it is needed', () => {
     render(<NotesRoute initialQuestions={[lawQuestion]} />);
 
-    expect(mocks.useSubjectQuestions).toHaveBeenNthCalledWith(1, []);
-    expect(mocks.useSubjectQuestions).toHaveBeenNthCalledWith(2, []);
-    expect(mocks.useSubjectQuestions).toHaveBeenNthCalledWith(3, []);
-    expect(mocks.useSubjectQuestions).toHaveBeenNthCalledWith(4, []);
+    expect(mocks.useSubjectQuestions).toHaveBeenNthCalledWith(1, [], undefined);
+    expect(mocks.useSubjectQuestions).toHaveBeenNthCalledWith(2, [], undefined);
+    expect(mocks.useSubjectQuestions).toHaveBeenNthCalledWith(3, [], undefined);
+    expect(mocks.useSubjectQuestions).toHaveBeenNthCalledWith(4, [], undefined);
     expect(screen.getByTestId('questions')).toHaveTextContent(lawQuestion.id);
     expect(screen.getByTestId('environment-status')).toHaveTextContent('idle');
   });
@@ -94,5 +97,18 @@ describe('notes route question loading', () => {
       `${lawQuestion.id},${environmentQuestion.id}`,
     );
     expect(screen.getByTestId('environment-status')).toHaveTextContent('ready');
+  });
+
+  it('loads only the requested year when opening a saved note', () => {
+    render(<NotesRoute initialQuestions={[lawQuestion]} />);
+
+    fireEvent.click(screen.getByRole('button', { name: '載入環控 114 年' }));
+
+    expect(
+      mocks.useSubjectQuestions.mock.calls.some(
+        ([subjectIds, requestedYears]) =>
+          subjectIds[0] === 'env' && requestedYears?.[0] === 114,
+      ),
+    ).toBe(true);
   });
 });
