@@ -51,16 +51,21 @@ export function DifficultPage({
   onRetryQuestionBank?: (subject: SubjectId) => void;
 }) {
   const { state, dispatch, hydrated } = useAppState();
-  const [subjectFilter, setSubjectFilter] = useState<'all' | SubjectId>('all');
+  const [subjectFilter, setSubjectFilter] = useState<SubjectId>();
   const difficultQuestions = questions.filter((question) =>
     state.difficultQuestionIds.includes(question.id),
   );
-  const filteredDifficultQuestions =
-    subjectFilter === 'all'
-      ? difficultQuestions
-      : difficultQuestions.filter(
-          (question) => question.subject === subjectFilter,
-        );
+  const availableSubjects = subjects.filter((subject) =>
+    difficultQuestions.some((question) => question.subject === subject.id),
+  );
+  const activeSubjectFilter = availableSubjects.some(
+    (subject) => subject.id === subjectFilter,
+  )
+    ? subjectFilter
+    : availableSubjects[0]?.id;
+  const filteredDifficultQuestions = difficultQuestions.filter(
+    (question) => question.subject === activeSubjectFilter,
+  );
   const subjectGroups = groupDifficultQuestions(filteredDifficultQuestions);
   const difficultSubjects = subjectsOfQuestionIds(state.difficultQuestionIds);
   const loadingSubjects = difficultSubjects.filter(
@@ -126,14 +131,7 @@ export function DifficultPage({
               role="group"
               aria-label="難題科目分類"
             >
-              <button
-                type="button"
-                aria-pressed={subjectFilter === 'all'}
-                onClick={() => setSubjectFilter('all')}
-              >
-                全部 <span>{difficultQuestions.length}</span>
-              </button>
-              {subjects.map((subject) => {
+              {availableSubjects.map((subject) => {
                 const count = difficultQuestions.filter(
                   (question) => question.subject === subject.id,
                 ).length;
@@ -142,8 +140,7 @@ export function DifficultPage({
                   <button
                     key={subject.id}
                     type="button"
-                    aria-pressed={subjectFilter === subject.id}
-                    disabled={!count}
+                    aria-pressed={activeSubjectFilter === subject.id}
                     onClick={() => setSubjectFilter(subject.id)}
                   >
                     {subject.name} <span>{count}</span>

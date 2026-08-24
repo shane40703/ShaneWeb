@@ -108,7 +108,7 @@ describe('DifficultPage', () => {
     await screen.findByRole('heading', { name: '建築法規與實務' });
     expect(
       screen.getAllByRole('heading', { level: 2 }).map((heading) => heading.textContent),
-    ).toEqual(['建築法規與實務', '建築環境控制', '建築構造與施工']);
+    ).toEqual(['建築法規與實務']);
 
     const lawGroup = screen
       .getByRole('heading', { name: '建築法規與實務' })
@@ -131,10 +131,17 @@ describe('DifficultPage', () => {
     ]);
 
     const filters = screen.getByRole('group', { name: '難題科目分類' });
-    expect(within(filters).getByRole('button', { name: '全部 5' })).toHaveAttribute(
+    expect(within(filters).queryByRole('button', { name: /全部/ })).not.toBeInTheDocument();
+    expect(within(filters).getByRole('button', { name: '建築法規與實務 3' })).toHaveAttribute(
       'aria-pressed',
       'true',
     );
+    expect(
+      screen.getByRole('heading', { name: '建築法規與實務' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole('heading', { name: '建築構造與施工' }),
+    ).not.toBeInTheDocument();
     fireEvent.click(
       within(filters).getByRole('button', { name: '建築環境控制 1' }),
     );

@@ -185,6 +185,10 @@ export function AttemptReview({
 
 function ReviewDiscussion({ question }: { question: ReviewQuestion }) {
   const [open, setOpen] = useState(false);
+  // Start the question-specific listener as soon as the review row is shown.
+  // Waiting until the accordion opens makes a fast empty snapshot look like
+  // there is no discussion and forces the user to interact elsewhere first.
+  const shared = useSharedDiscussions(question.id);
 
   return (
     <section className={styles.reviewDiscussion}>
@@ -192,13 +196,18 @@ function ReviewDiscussion({ question }: { question: ReviewQuestion }) {
         {open ? '收合詳解與討論' : '顯示詳解與討論'}
         <IconMessages size={15} stroke={2} aria-hidden="true" />
       </button>
-      {open ? <ReviewDiscussionContent question={question} /> : null}
+      {open ? <ReviewDiscussionContent question={question} shared={shared} /> : null}
     </section>
   );
 }
 
-function ReviewDiscussionContent({ question }: { question: ReviewQuestion }) {
-  const shared = useSharedDiscussions(question.id);
+function ReviewDiscussionContent({
+  question,
+  shared,
+}: {
+  question: ReviewQuestion;
+  shared: ReturnType<typeof useSharedDiscussions>;
+}) {
   const hasExplanation = Boolean(question.explanation?.trim());
 
   if (shared.loading) return <p>正在載入詳解與討論…</p>;

@@ -461,7 +461,11 @@ export function CloudSyncProvider({ children }: { children: ReactNode }) {
 }
 
 export function useCloudSync() {
-  const context = useContext(CloudSyncContext);
+  const context = useOptionalCloudSync();
   if (!context) throw new Error('useCloudSync must be used within CloudSyncProvider');
   return context;
+}
+
+export function useOptionalCloudSync() {
+  return useContext(CloudSyncContext);
 }

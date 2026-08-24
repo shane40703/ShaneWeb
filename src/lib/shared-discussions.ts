@@ -15,7 +15,7 @@ import {
   type Unsubscribe,
 } from 'firebase/firestore';
 import { getDownloadURL, ref, uploadString } from 'firebase/storage';
-import { useCloudSync } from '@/components/cloud-sync-provider';
+import { useOptionalCloudSync } from '@/components/cloud-sync-provider';
 import {
   firebaseConfigurationAvailable,
   getFirebaseServices,
@@ -310,7 +310,9 @@ export function useDiscussionQuestionIds() {
 
 export function useSharedDiscussions(questionId: QuestionId) {
   const { state, dispatch } = useAppState();
-  const { user, signIn } = useCloudSync();
+  const cloud = useOptionalCloudSync();
+  const user = cloud?.user ?? null;
+  const signIn = cloud?.signIn ?? (async () => {});
   const enabled = firebaseConfigurationAvailable();
   const [cloudPosts, setCloudPosts] = useState<SharedDiscussionPost[]>([]);
   const [repliesByPost, setRepliesByPost] = useState<
