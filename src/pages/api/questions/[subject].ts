@@ -1,17 +1,15 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { loadSubjectQuestions } from '@/server/question-bank.server';
 import { isSubjectId } from '@/lib/study';
-import type { Question } from '@/lib/types';
 import { years } from '@/question-bank/catalog';
 
 /**
- * Serves one subject's questions so pages can load the bank on demand instead of
- * inlining it into every prerendered page. The bank only changes on redeploy, so
- * the response is safe to cache hard.
+ * Keeps old bookmarked/API URLs working without bundling the entire question
+ * bank into a serverless function. Current clients request the static file
+ * directly from the deployment CDN.
  */
 export default async function handler(
   request: NextApiRequest,
-  response: NextApiResponse<Question[] | { error: string }>,
+  response: NextApiResponse<{ error: string }>,
 ) {
   const raw = request.query.subject;
   const subject = Array.isArray(raw) ? raw[0] : raw;
@@ -27,9 +25,9 @@ export default async function handler(
     response.status(400).json({ error: 'invalid year' });
     return;
   }
-  response.setHeader(
-    'Cache-Control',
-    'public, max-age=300, s-maxage=86400, stale-while-revalidate=604800',
-  );
-  response.status(200).json(await loadSubjectQuestions(subject, year));
+  if (year === undefined) {
+    response.status(400).json({ error: 'year is required' });
+    return;
+  }
+  response.redirect(307, `/question-data/${subject}/${year}.json`);
 }

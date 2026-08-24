@@ -579,7 +579,7 @@ test('question-bank failures never expose an unrelated editable question', async
 }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop');
 
-  await page.route('**/api/questions/**', async (route) => {
+  await page.route('**/question-data/**', async (route) => {
     await route.abort();
   });
 
@@ -618,7 +618,7 @@ test('one failed subject does not hide difficult questions from other subjects',
       }),
     );
   });
-  await page.route('**/api/questions/env', async (route) => {
+  await page.route('**/question-data/env/**', async (route) => {
     await route.abort();
   });
 
@@ -695,7 +695,7 @@ test('a partial random bank cannot create links that truncate the set', async ({
   const questionBankReady = new Promise<void>((resolve) => {
     releaseQuestionBank = resolve;
   });
-  await page.route('**/api/questions/law', async (route) => {
+  await page.route('**/question-data/law/**', async (route) => {
     await questionBankReady;
     await route.continue();
   });

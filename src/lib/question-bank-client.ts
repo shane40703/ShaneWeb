@@ -29,7 +29,7 @@ function fetchSubjectYear(subject: SubjectId, year: number) {
   const cached = subjectYearRequests.get(key);
   if (cached) return cached;
 
-  const request = fetch(`/api/questions/${subject}?year=${year}`).then(
+  const request = fetch(`/question-data/${subject}/${year}.json`).then(
     async (response) => {
       if (!response.ok) throw new Error(`題庫載入失敗（${response.status}）`);
       return (await response.json()) as Question[];

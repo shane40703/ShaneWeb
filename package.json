@@ -3,7 +3,10 @@
   "version": "2.0.0",
   "private": true,
   "scripts": {
+    "generate:question-data": "tsx scripts/generate-question-data.ts",
+    "predev": "npm run generate:question-data",
     "dev": "next dev",
+    "prebuild": "npm run generate:question-data",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
@@ -34,6 +37,7 @@
     "eslint": "^9.39.3",
     "eslint-config-next": "16.2.11",
     "jsdom": "^27.4.0",
+    "tsx": "^4.23.12",
     "typescript": "^5.9.3",
     "vitest": "4.1.10"
   },

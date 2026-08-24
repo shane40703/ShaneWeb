@@ -43,8 +43,9 @@ describe('useSubjectQuestions', () => {
     };
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
       const url = String(input);
-      const subject = url.match(/\/api\/questions\/([^?]+)/)?.[1] as SubjectId;
-      const year = Number(new URL(url, 'https://example.test').searchParams.get('year'));
+      const match = url.match(/\/question-data\/([^/]+)\/(\d+)\.json/);
+      const subject = match?.[1] as SubjectId;
+      const year = Number(match?.[2]);
       return {
         ok: true,
         json: async () =>
@@ -99,7 +100,7 @@ describe('useSubjectQuestions', () => {
     let failedOnce = false;
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
       const year = Number(
-        new URL(String(input), 'https://example.test').searchParams.get('year'),
+        String(input).match(/\/(\d+)\.json$/)?.[1],
       );
       if (year === 113 && !failedOnce) {
         failedOnce = true;
