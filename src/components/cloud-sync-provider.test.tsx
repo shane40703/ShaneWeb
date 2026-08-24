@@ -2,8 +2,10 @@ import { render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   CloudSyncProvider,
+  getFirebaseSignInErrorMessage,
   parseCloudDifficultSettings,
   parseCloudNote,
+  shouldRetrySignInWithRedirect,
   useCloudSync,
 } from '@/components/cloud-sync-provider';
 
@@ -71,5 +73,19 @@ describe('CloudSyncProvider', () => {
       }),
     ).toEqual(['law-114-01', 'law-114-02']);
     expect(parseCloudDifficultSettings({ questionIds: 'law-114-01' })).toBeNull();
+  });
+
+  it('reports actionable Google sign-in errors', () => {
+    expect(getFirebaseSignInErrorMessage({ code: 'auth/unauthorized-domain' }))
+      .toContain('Authorized domains');
+    expect(getFirebaseSignInErrorMessage({ code: 'auth/operation-not-allowed' }))
+      .toContain('啟用 Google 登入');
+    expect(getFirebaseSignInErrorMessage({ code: 'auth/network-request-failed' }))
+      .toContain('檢查網路');
+  });
+
+  it('falls back to redirect for environments that cannot open a popup', () => {
+    expect(shouldRetrySignInWithRedirect({ code: 'auth/popup-blocked' })).toBe(true);
+    expect(shouldRetrySignInWithRedirect({ code: 'auth/popup-closed-by-user' })).toBe(false);
   });
 });

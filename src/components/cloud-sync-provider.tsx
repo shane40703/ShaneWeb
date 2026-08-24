@@ -11,6 +11,7 @@ import {
   GoogleAuthProvider,
   onAuthStateChanged,
   signInWithPopup,
+  signInWithRedirect,
   signOut,
   type User,
 } from 'firebase/auth';
@@ -48,6 +49,40 @@ interface CloudSyncContextValue {
 }
 
 const CloudSyncContext = createContext<CloudSyncContextValue | null>(null);
+
+function firebaseAuthErrorCode(reason: unknown) {
+  return reason && typeof reason === 'object' && 'code' in reason &&
+    typeof reason.code === 'string'
+    ? reason.code
+    : '';
+}
+
+export function shouldRetrySignInWithRedirect(reason: unknown) {
+  return [
+    'auth/popup-blocked',
+    'auth/operation-not-supported-in-this-environment',
+    'auth/web-storage-unsupported',
+  ].includes(firebaseAuthErrorCode(reason));
+}
+
+export function getFirebaseSignInErrorMessage(reason: unknown) {
+  switch (firebaseAuthErrorCode(reason)) {
+    case 'auth/unauthorized-domain':
+      return '目前網域尚未加入 Firebase Authorized domains。';
+    case 'auth/operation-not-allowed':
+      return 'Firebase 尚未啟用 Google 登入方式。';
+    case 'auth/popup-closed-by-user':
+    case 'auth/cancelled-popup-request':
+      return 'Google 登入視窗已關閉，尚未完成登入。';
+    case 'auth/network-request-failed':
+      return '無法連線至 Google 登入服務，請檢查網路後重試。';
+    case 'auth/invalid-api-key':
+    case 'auth/api-key-not-valid.-please-pass-a-valid-api-key.':
+      return 'Firebase API Key 設定無效，請檢查正式環境變數。';
+    default:
+      return 'Google 登入未完成，請允許彈出式視窗後重試。';
+  }
+}
 
 function cloudAttempt(data: unknown): QuizAttempt | null {
   if (!data || typeof data !== 'object') return null;
@@ -388,9 +423,19 @@ export function CloudSyncProvider({ children }: { children: ReactNode }) {
     setError('');
     try {
       await signInWithPopup(firebase.auth, new GoogleAuthProvider());
-    } catch {
+    } catch (reason) {
+      if (shouldRetrySignInWithRedirect(reason)) {
+        try {
+          await signInWithRedirect(firebase.auth, new GoogleAuthProvider());
+          return;
+        } catch (redirectReason) {
+          setStatus('signed-out');
+          setError(getFirebaseSignInErrorMessage(redirectReason));
+          return;
+        }
+      }
       setStatus('signed-out');
-      setError('Google 登入未完成，請確認彈出視窗未被封鎖。');
+      setError(getFirebaseSignInErrorMessage(reason));
     }
   }, []);
 

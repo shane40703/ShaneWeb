@@ -242,20 +242,25 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <IconLogout size={14} stroke={2} aria-hidden="true" />
               </button>
             ) : (
-              <button
-                type="button"
-                className={styles.cloudAccountButton}
-                onClick={() => void cloud.signIn()}
-                disabled={cloud.status === 'syncing'}
-                title={cloud.error || '登入後可跨裝置同步已完成的作答紀錄'}
-              >
-                {cloud.status === 'syncing' ? (
-                  <IconLoader2 size={16} stroke={2} aria-hidden="true" />
-                ) : (
-                  <IconCloud size={16} stroke={2} aria-hidden="true" />
-                )}
-                <span>{cloud.status === 'syncing' ? '登入中' : '同步作答'}</span>
-              </button>
+              <div className={styles.cloudSignIn}>
+                <button
+                  type="button"
+                  className={styles.cloudAccountButton}
+                  onClick={() => void cloud.signIn()}
+                  disabled={cloud.status === 'syncing'}
+                  title={cloud.error || '登入後可跨裝置同步已完成的作答紀錄'}
+                >
+                  {cloud.status === 'syncing' ? (
+                    <IconLoader2 size={16} stroke={2} aria-hidden="true" />
+                  ) : (
+                    <IconCloud size={16} stroke={2} aria-hidden="true" />
+                  )}
+                  <span>{cloud.status === 'syncing' ? '登入中' : '同步作答'}</span>
+                </button>
+                {cloud.error ? (
+                  <span className={styles.cloudError} role="alert">{cloud.error}</span>
+                ) : null}
+              </div>
             )}
           </div>
         </header>
