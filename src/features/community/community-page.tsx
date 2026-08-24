@@ -132,7 +132,7 @@ export function CommunityPage({
     );
   }
 
-  if (questionBankStatus === 'error') {
+  if (questionBankStatus === 'error' && !currentQuestion) {
     return (
       <EmptyState
         icon={IconAlertCircle}

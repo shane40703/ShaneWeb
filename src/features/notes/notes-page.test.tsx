@@ -153,13 +153,13 @@ describe('NotesPage question loading', () => {
     expect(screen.queryByLabelText('我的筆記')).not.toBeInTheDocument();
   });
 
-  it('does not hide unavailable-subject notes behind the default law editor', () => {
+  it('keeps the available default-subject note usable after a partial load error', () => {
     render(page({ questionBankStatus: 'error' }));
 
     expect(
-      screen.getByRole('heading', { name: '題庫載入失敗' }),
-    ).toBeInTheDocument();
-    expect(screen.queryByLabelText('我的筆記')).not.toBeInTheDocument();
+      screen.queryByRole('heading', { name: '題庫載入失敗' }),
+    ).not.toBeInTheDocument();
+    expect(screen.getByLabelText('我的筆記')).toBeInTheDocument();
   });
 
   it('keeps an unsaved default-question draft when the full bank becomes ready', async () => {
@@ -263,8 +263,7 @@ describe('NotesPage question loading', () => {
     );
   });
 
-  it('keeps an unsaved draft through a bank error and retry', async () => {
-    const retry = vi.fn();
+  it('keeps an unsaved draft usable through a partial bank error', async () => {
     const view = render(page({ questionBankStatus: 'loading' }));
     fireEvent.change(await screen.findByLabelText('我的筆記'), {
       target: { value: '等待重試的草稿' },
@@ -273,12 +272,12 @@ describe('NotesPage question loading', () => {
     view.rerender(
       page({
         questionBankStatus: 'error',
-        onRetryQuestionBank: retry,
       }),
     );
 
-    fireEvent.click(screen.getByRole('button', { name: '重新載入' }));
-    expect(retry).toHaveBeenCalledOnce();
+    expect(screen.queryByRole('heading', { name: '題庫載入失敗' }))
+      .not.toBeInTheDocument();
+    expect(screen.getByLabelText('我的筆記')).toHaveValue('等待重試的草稿');
 
     view.rerender(
       page({

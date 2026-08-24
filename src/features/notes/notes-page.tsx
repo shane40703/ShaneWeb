@@ -155,7 +155,11 @@ export function NotesPage({
     );
   }
 
-  if (unresolvedStatus === 'error') {
+  if (
+    unresolvedStatus === 'error' &&
+    !currentQuestion &&
+    !pendingSubjectHasQuestions
+  ) {
     return (
       <EmptyState
         icon={IconAlertCircle}

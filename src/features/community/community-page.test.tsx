@@ -104,13 +104,13 @@ describe('CommunityPage question loading', () => {
     expect(screen.queryByText('law-114-01 題幹')).not.toBeInTheDocument();
   });
 
-  it('does not silently expose an incomplete bank when another subject fails', () => {
+  it('keeps an available question usable when another subject fails', () => {
     renderPage({ questionBankStatus: 'error' });
 
     expect(
-      screen.getByRole('heading', { name: '題庫載入失敗' }),
-    ).toBeInTheDocument();
-    expect(screen.queryByText('law-114-01 題幹')).not.toBeInTheDocument();
+      screen.queryByRole('heading', { name: '題庫載入失敗' }),
+    ).not.toBeInTheDocument();
+    expect(screen.getByText('law-114-01 題幹')).toBeInTheDocument();
   });
 
   it('uses a matching prerendered law question while the rest of the bank loads', () => {

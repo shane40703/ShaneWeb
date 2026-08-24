@@ -23,7 +23,14 @@ export default function CommunityRoute({
   initialQuestions,
 }: InferGetStaticPropsType<typeof getStaticProps>) {
   const bank = useSubjectQuestions(allSubjectIds);
-  const questions = bank.status === 'ready' ? bank.questions : initialQuestions;
+  const questions = [
+    ...new Map(
+      [...initialQuestions, ...bank.questions].map((question) => [
+        question.id,
+        question,
+      ]),
+    ).values(),
+  ];
 
   return (
     <>
