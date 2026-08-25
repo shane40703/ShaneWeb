@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   createCloudDiscussionPostData,
+  createCloudDiscussionPostUpdateData,
+  deduplicateAuthorExplanations,
   parseCloudDiscussionPost,
   parseCloudDiscussionReply,
   withUploadTimeout,
@@ -31,6 +33,36 @@ describe('shared discussion parsing', () => {
       createdAt: timestamp,
       deleted: false,
     });
+  });
+
+  it('updates legacy text explanations without requiring image permissions', () => {
+    expect(createCloudDiscussionPostUpdateData('修正詳解', [], [])).toEqual({
+      content: '修正詳解',
+    });
+    expect(
+      createCloudDiscussionPostUpdateData('修正圖文', [], [{ id: 'old-image' }]),
+    ).toEqual({ content: '修正圖文', images: [] });
+  });
+
+  it('shows only the newest explanation from the same author', () => {
+    const base = {
+      questionId: 'law-114-01',
+      type: 'explanation' as const,
+      content: '新版',
+      images: [],
+      createdAt: '2026-08-25T00:00:00.000Z',
+      likes: 0,
+      replies: [],
+      reported: false,
+      authorId: 'user-1',
+    };
+    expect(
+      deduplicateAuthorExplanations([
+        { ...base, id: 'new' },
+        { ...base, id: 'old', content: '舊版' },
+        { ...base, id: 'other', authorId: 'user-2' },
+      ]).map((post) => post.id),
+    ).toEqual(['new', 'other']);
   });
 
   it('stops waiting when an image upload does not finish', async () => {

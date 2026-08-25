@@ -60,6 +60,29 @@ export interface DiscussionPublishResult {
   imagesShared: boolean;
 }
 
+export function createCloudDiscussionPostUpdateData(
+  content: string,
+  images: DiscussionPost['images'],
+  existingImages: unknown,
+) {
+  return (!Array.isArray(existingImages) || existingImages.length === 0) && images.length === 0
+    ? { content }
+    : { content, images };
+}
+
+export function deduplicateAuthorExplanations<T extends SharedDiscussionPost>(
+  posts: T[],
+) {
+  const seen = new Set<string>();
+  return posts.filter((post) => {
+    if (post.type !== 'explanation' || !post.authorId) return true;
+    const key = `${post.questionId}:${post.authorId}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
 export function createCloudDiscussionPostData({
   questionId,
   type,
@@ -215,7 +238,18 @@ export function useDiscussionPublisher(questionId: QuestionId) {
             return data.authorId === user.uid && data.type === type && data.deleted !== true;
           })
         : [];
-      const postRef = existingPosts[0]?.ref ?? doc(collection(firebase.db, 'discussionPosts'));
+      const sortedExistingPosts = existingPosts.sort((left, right) => {
+        const leftCreatedAt = left.data().createdAt;
+        const rightCreatedAt = right.data().createdAt;
+        const leftMillis = typeof leftCreatedAt?.toMillis === 'function'
+          ? leftCreatedAt.toMillis()
+          : 0;
+        const rightMillis = typeof rightCreatedAt?.toMillis === 'function'
+          ? rightCreatedAt.toMillis()
+          : 0;
+        return rightMillis - leftMillis;
+      });
+      const postRef = sortedExistingPosts[0]?.ref ?? doc(collection(firebase.db, 'discussionPosts'));
       let uploadedImages: DiscussionPost['images'] = [];
       try {
         uploadedImages = await Promise.all(
@@ -245,14 +279,14 @@ export function useDiscussionPublisher(questionId: QuestionId) {
           '目前方案無法共享圖片。請加入文字後再分享；圖片仍會保存在本機筆記。',
         );
       }
-      if (existingPosts.length) {
-        await updateDoc(postRef, { content: trimmed, images: uploadedImages });
-        await Promise.all(
-          existingPosts.slice(1).map((item) => updateDoc(item.ref, {
-            content: '',
-            deleted: true,
-            deletedAt: serverTimestamp(),
-          })),
+      if (sortedExistingPosts.length) {
+        await updateDoc(
+          postRef,
+          createCloudDiscussionPostUpdateData(
+            trimmed,
+            uploadedImages,
+            sortedExistingPosts[0].data().images,
+          ),
         );
       } else {
         await setDoc(postRef, createCloudDiscussionPostData({
@@ -336,12 +370,12 @@ export function useSharedDiscussions(questionId: QuestionId) {
     return onSnapshot(
       postsQuery,
       (snapshot) => {
-        const posts = snapshot.docs
+        const posts = deduplicateAuthorExplanations(snapshot.docs
           .flatMap((item) => {
             const post = parseCloudDiscussionPost(item.id, item.data());
             return post ? [post] : [];
           })
-          .sort((left, right) => right.createdAt.localeCompare(left.createdAt));
+          .sort((left, right) => right.createdAt.localeCompare(left.createdAt)));
         setCloudPosts(posts);
         setLoadedQuestionId(questionId);
         setError('');

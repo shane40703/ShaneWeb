@@ -325,7 +325,7 @@ export function ReviewNoteEditor({ question }: { question: ReviewQuestion }) {
             );
           });
         }}
-        rows={7}
+        rows={4}
         placeholder="在檢討答案時記下法條、公式或易錯觀念，也可以直接貼上截圖…"
       />
       <ImageAttachments

@@ -44,6 +44,11 @@
   margin-top: 0;
 }
 
+.resultReviewLayout .questionNumbers {
+  max-height: none;
+  overflow: visible;
+}
+
 .resultReviewLayout > section {
   margin-top: 0;
 }
