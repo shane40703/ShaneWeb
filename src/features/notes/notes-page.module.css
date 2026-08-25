@@ -22,7 +22,7 @@
 .numberNavigator > header span { color: var(--primary-strong); font-size: 10px; font-weight: 850; letter-spacing: .12em; }
 .numberNavigator > header h2 { margin: 4px 0 0; font-size: 18px; }
 .numberNavigator > header strong { min-width: 44px; min-height: 31px; padding-inline: 8px; display: grid; place-items: center; border-radius: 10px; background: var(--primary-soft); color: var(--primary-strong); font-size: 11px; }
-.questionNumbers { padding: 17px 19px; max-height: 250px; overflow-y: auto; }
+.questionNumbers { padding: 17px 19px; overflow: visible; }
 .noteLegend { padding: 11px 19px; border-top: 1px solid var(--line); color: var(--muted); font-size: 10px; display: flex; gap: 14px; }
 .noteLegend span { display: inline-flex; align-items: center; gap: 6px; }
 .noteLegend i { width: 9px; height: 9px; display: block; border: 2px solid var(--surface); border-radius: 50%; background: var(--purple); box-shadow: 0 0 0 1px color-mix(in srgb, var(--purple) 25%, transparent); }
