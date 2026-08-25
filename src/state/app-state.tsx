@@ -5,9 +5,15 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useRef,
   useReducer,
 } from 'react';
 import { appReducer, type AppAction } from '@/state/app-reducer';
+import {
+  readStoredNoteImages,
+  stateWithoutNoteImages,
+  writeStoredNoteImages,
+} from '@/lib/note-image-storage';
 import { readStoredValue, writeStoredValue } from '@/lib/storage';
 import type { StorageWriteResult } from '@/lib/storage';
 import { createDefaultState, parseStoredState, STORAGE_KEY } from '@/lib/study';
@@ -27,6 +33,7 @@ const AppStateContext = createContext<AppStateContextValue | null>(null);
 interface ProviderState {
   data: AppState;
   hydrated: boolean;
+  noteImagesHydrated: boolean;
   persistenceBySource: Record<string, StorageWriteResult>;
 }
 
@@ -36,6 +43,10 @@ type ProviderAction =
       type: 'persistence-result';
       source: string;
       result: StorageWriteResult;
+    }
+  | {
+      type: 'note-images-hydrated';
+      noteImages: AppState['noteImages'];
     };
 
 function providerReducer(current: ProviderState, action: ProviderAction): ProviderState {
@@ -49,6 +60,16 @@ function providerReducer(current: ProviderState, action: ProviderAction): Provid
             [action.source]: action.result,
           },
         };
+  }
+  if (action.type === 'note-images-hydrated') {
+    return {
+      ...current,
+      data: {
+        ...current.data,
+        noteImages: { ...action.noteImages, ...current.data.noteImages },
+      },
+      noteImagesHydrated: true,
+    };
   }
   return {
     ...current,
@@ -67,9 +88,11 @@ function aggregatePersistence(
 }
 
 export function AppStateProvider({ children }: { children: ReactNode }) {
+  const saveSequence = useRef(0);
   const [store, dispatch] = useReducer(providerReducer, undefined, () => ({
     data: createDefaultState(),
     hydrated: false,
+    noteImagesHydrated: false,
     persistenceBySource: {
       'app-state': 'saved' as StorageWriteResult,
     },
@@ -82,20 +105,52 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   );
 
   useEffect(() => {
-    dispatch({
-      type: 'hydrate',
-      state: parseStoredState(readStoredValue(STORAGE_KEY)),
-    });
+    let cancelled = false;
+    const localState = parseStoredState(readStoredValue(STORAGE_KEY));
+    dispatch({ type: 'hydrate', state: localState });
+    void readStoredNoteImages()
+      .then(async (storedImages) => {
+        const indexedImages = storedImages === null
+          ? null
+          : parseStoredState(JSON.stringify({ noteImages: storedImages })).noteImages;
+        if (storedImages === null && Object.keys(localState.noteImages).length) {
+          await writeStoredNoteImages(localState.noteImages);
+        }
+        if (!cancelled) {
+          dispatch({
+            type: 'note-images-hydrated',
+            noteImages: indexedImages ?? localState.noteImages,
+          });
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          dispatch({
+            type: 'note-images-hydrated',
+            noteImages: localState.noteImages,
+          });
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
-    if (!store.hydrated) return;
-    dispatch({
-      type: 'persistence-result',
-      source: 'app-state',
-      result: writeStoredValue(STORAGE_KEY, JSON.stringify(store.data)),
-    });
-  }, [store.data, store.hydrated]);
+    if (!store.hydrated || !store.noteImagesHydrated) return;
+    const sequence = ++saveSequence.current;
+    void writeStoredNoteImages(store.data.noteImages)
+      .then(() => writeStoredValue(
+        STORAGE_KEY,
+        JSON.stringify(stateWithoutNoteImages(store.data)),
+      ))
+      .catch(() => writeStoredValue(STORAGE_KEY, JSON.stringify(store.data)))
+      .then((result) => {
+        if (sequence === saveSequence.current) {
+          dispatch({ type: 'persistence-result', source: 'app-state', result });
+        }
+      });
+  }, [store.data, store.hydrated, store.noteImagesHydrated]);
 
   return (
     <AppStateContext.Provider
