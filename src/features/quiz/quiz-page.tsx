@@ -106,7 +106,6 @@ export function QuizPage({ question, paper }: StaticQuestionPageProps) {
   const [checkedSingleQuestionId, setCheckedSingleQuestionId] =
     useState<string | null>(null);
   const resultViewRef = useRef<HTMLDivElement | null>(null);
-  const resultNumberListRef = useRef<HTMLDivElement | null>(null);
   const [visibleResultQuestionId, setVisibleResultQuestionId] = useState<string>();
   const routeHydrated = useClientReady();
   const pendingRandomSessionId = useRef<string | null>(null);
@@ -372,17 +371,6 @@ export function QuizPage({ question, paper }: StaticQuestionPageProps) {
     return () => observer.disconnect();
   }, [attempt, paperQuestions, resultView]);
 
-  useEffect(() => {
-    if (!activeResultQuestionId) return;
-    if (
-      typeof window.matchMedia !== 'function' ||
-      !window.matchMedia('(min-width: 1121px)').matches
-    ) return;
-    resultNumberListRef.current
-      ?.querySelector<HTMLElement>('[aria-current="step"]')
-      ?.scrollIntoView({ block: 'nearest' });
-  }, [activeResultQuestionId, attempt, resultView]);
-
   function updateQuizProgress(action: QuizProgressAction) {
     if (!quizProgressScope) return;
     progressDispatch({
@@ -593,7 +581,7 @@ export function QuizPage({ question, paper }: StaticQuestionPageProps) {
                       {attempt.correctCount}/{paperQuestions.length}
                     </strong>
                   </header>
-                  <div className={styles.questionNumbers} ref={resultNumberListRef}>
+                  <div className={styles.questionNumbers}>
                     <QuestionNumberGrid>
                       {paperQuestions.map((item) => {
                         const itemDifficult =

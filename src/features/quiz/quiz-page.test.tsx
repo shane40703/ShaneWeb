@@ -261,9 +261,7 @@ describe('QuizPage progress presentation', () => {
     expect(
       screen.getByRole('link', { name: '查看第 43 題結果' }),
     ).toHaveAttribute('aria-current', 'step');
-    expect(Element.prototype.scrollIntoView).toHaveBeenCalledWith({
-      block: 'nearest',
-    });
+    expect(Element.prototype.scrollIntoView).not.toHaveBeenCalled();
   });
 
   it('does not pull the page back to the result map on mobile', () => {
