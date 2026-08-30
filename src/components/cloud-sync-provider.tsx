@@ -17,6 +17,7 @@ import {
 } from 'firebase/auth';
 import {
   collection,
+  deleteDoc,
   doc,
   getDoc,
   getDocs,
@@ -265,7 +266,14 @@ export function CloudSyncProvider({ children }: { children: ReactNode }) {
           attempts,
           (nextSnapshot) => {
             const incoming = nextSnapshot.docChanges().flatMap((change) => {
-              if (change.type === 'removed') return [];
+              if (change.type === 'removed') {
+                syncedAttemptIds.current.delete(change.doc.id);
+                dispatch({
+                  type: 'remove-synced-attempt',
+                  attemptId: change.doc.id,
+                });
+                return [];
+              }
               const attempt = cloudAttempt(change.doc.data());
               if (attempt) syncedAttemptIds.current.add(attempt.id);
               return attempt ? [attempt] : [];
@@ -336,8 +344,36 @@ export function CloudSyncProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const firebase = getFirebaseServices();
     if (!firebase || !user || readyUserId !== user.uid) return;
+    if (!state.deletedAttemptIds.length) return;
+
+    void Promise.resolve()
+      .then(() => {
+        setStatus('syncing');
+        return Promise.all(
+          state.deletedAttemptIds.map((attemptId) =>
+            deleteDoc(
+              doc(firebase.db, 'users', user.uid, 'attempts', attemptId),
+            ).then(() => {
+              syncedAttemptIds.current.delete(attemptId);
+              dispatch({ type: 'confirm-attempt-deletion', attemptId });
+            }),
+          ),
+        );
+      })
+      .then(() => setStatus('synced'))
+      .catch(() => {
+        setError('紀錄已從本機移除，恢復連線後請重新登入以刪除雲端紀錄。');
+        setStatus('error');
+      });
+  }, [dispatch, readyUserId, state.deletedAttemptIds, user]);
+
+  useEffect(() => {
+    const firebase = getFirebaseServices();
+    if (!firebase || !user || readyUserId !== user.uid) return;
     const unsynced = state.attempts.filter(
-      (attempt) => !syncedAttemptIds.current.has(attempt.id),
+      (attempt) =>
+        !state.deletedAttemptIds.includes(attempt.id) &&
+        !syncedAttemptIds.current.has(attempt.id),
     );
     if (!unsynced.length) return;
 
@@ -356,7 +392,7 @@ export function CloudSyncProvider({ children }: { children: ReactNode }) {
         setError('最新作答仍保存在本機，恢復連線後請重新登入同步。');
         setStatus('error');
       });
-  }, [readyUserId, state.attempts, user]);
+  }, [readyUserId, state.attempts, state.deletedAttemptIds, user]);
 
   useEffect(() => {
     const firebase = getFirebaseServices();

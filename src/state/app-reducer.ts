@@ -22,6 +22,8 @@ export type AppAction =
   | { type: 'save-attempt'; attempt: QuizAttempt; results: Record<string, boolean> }
   | { type: 'merge-attempts'; attempts: QuizAttempt[] }
   | { type: 'delete-attempt'; attemptId: string }
+  | { type: 'remove-synced-attempt'; attemptId: string }
+  | { type: 'confirm-attempt-deletion'; attemptId: string }
   | {
       type: 'save-note';
       questionId: string;
@@ -95,14 +97,17 @@ export function appReducer(state: AppState, action: AppAction): AppState {
         ...state,
         answers,
         attempts: [action.attempt, ...state.attempts].slice(0, 100),
+        deletedAttemptIds: state.deletedAttemptIds.filter(
+          (attemptId) => attemptId !== action.attempt.id,
+        ),
       };
     }
     case 'merge-attempts': {
+      const deletedAttemptIds = new Set(state.deletedAttemptIds);
       const attempts = new Map(
-        [...state.attempts, ...action.attempts].map((attempt) => [
-          attempt.id,
-          attempt,
-        ]),
+        [...state.attempts, ...action.attempts]
+          .filter((attempt) => !deletedAttemptIds.has(attempt.id))
+          .map((attempt) => [attempt.id, attempt]),
       );
       return {
         ...state,
@@ -117,6 +122,26 @@ export function appReducer(state: AppState, action: AppAction): AppState {
       return {
         ...state,
         attempts: state.attempts.filter((attempt) => attempt.id !== action.attemptId),
+        deletedAttemptIds: [
+          action.attemptId,
+          ...state.deletedAttemptIds.filter(
+            (attemptId) => attemptId !== action.attemptId,
+          ),
+        ].slice(0, 100),
+      };
+    case 'confirm-attempt-deletion':
+      return {
+        ...state,
+        deletedAttemptIds: state.deletedAttemptIds.filter(
+          (attemptId) => attemptId !== action.attemptId,
+        ),
+      };
+    case 'remove-synced-attempt':
+      return {
+        ...state,
+        attempts: state.attempts.filter(
+          (attempt) => attempt.id !== action.attemptId,
+        ),
       };
     case 'save-note': {
       const notes = { ...state.notes };
