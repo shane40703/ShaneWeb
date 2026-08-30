@@ -156,6 +156,7 @@ export type QuizProgressScopeInput =
       mode: 'random';
       questionIds: readonly QuestionId[];
       sessionId: string | null;
+      shuffleOptions?: boolean;
     };
 
 /**
@@ -179,9 +180,37 @@ export function createQuizQuestionSearch(input: QuizProgressScopeInput): string 
   const sessionSearch = input.sessionId
     ? `&quizSession=${encodeURIComponent(input.sessionId)}`
     : '';
+  const shuffleSearch = input.shuffleOptions ? '&shuffleOptions=1' : '';
   return `?mode=random&questions=${encodeURIComponent(
     input.questionIds.join(','),
-  )}${sessionSearch}`;
+  )}${sessionSearch}${shuffleSearch}`;
+}
+
+/** Stable per-session order, while answer state continues using canonical indexes. */
+export function createShuffledOptionOrder(length: number, seed: string) {
+  const order = Array.from({ length }, (_, index) => index);
+  if (length < 2) return order;
+
+  let state = 2166136261;
+  for (let index = 0; index < seed.length; index += 1) {
+    state ^= seed.charCodeAt(index);
+    state = Math.imul(state, 16777619);
+  }
+  const random = () => {
+    state += 0x6d2b79f5;
+    let value = state;
+    value = Math.imul(value ^ (value >>> 15), value | 1);
+    value ^= value + Math.imul(value ^ (value >>> 7), value | 61);
+    return ((value ^ (value >>> 14)) >>> 0) / 4294967296;
+  };
+  for (let index = length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(random() * (index + 1));
+    [order[index], order[swapIndex]] = [order[swapIndex], order[index]];
+  }
+  if (order.every((value, index) => value === index)) {
+    order.push(order.shift()!);
+  }
+  return order;
 }
 
 function isQuestionProgress(value: unknown): value is QuizQuestionProgress {

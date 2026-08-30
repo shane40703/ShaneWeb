@@ -24,6 +24,7 @@ export function RandomPage({ questions }: { questions: QuestionSummary[] }) {
   const [toYearValue, setToYearValue] = useState<number>();
   const [categoryValue, setCategoryValue] = useState('all');
   const [countValue, setCountValue] = useState(10);
+  const [shuffleOptions, setShuffleOptions] = useState(false);
   const subject = subjects.find((item) => item.id === subjectId) ?? subjects[0];
   const availableYears = years.filter((year) =>
     questions.some(
@@ -95,6 +96,7 @@ export function RandomPage({ questions }: { questions: QuestionSummary[] }) {
       query: {
         mode: 'random',
         questions: picked.map((question) => question.id).join(','),
+        ...(shuffleOptions ? { shuffleOptions: '1' } : {}),
       },
     });
   }
@@ -223,6 +225,17 @@ export function RandomPage({ questions }: { questions: QuestionSummary[] }) {
                 </button>
               ))}
             </div>
+            <label className={styles.shuffleChoice}>
+              <input
+                type="checkbox"
+                checked={shuffleOptions}
+                onChange={(event) => setShuffleOptions(event.target.checked)}
+              />
+              <span>
+                <strong>打亂選項</strong>
+                <small>每題選項順序隨機排列，同一題組內保持不變。</small>
+              </span>
+            </label>
           </div>
         </section>
       </div>

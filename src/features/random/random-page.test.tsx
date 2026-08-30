@@ -99,4 +99,18 @@ describe('RandomPage', () => {
     };
     expect(destination.query.questions).toBe('law-114-01');
   });
+
+  it('adds the option-shuffle choice to the created random set', () => {
+    router.push.mockReset();
+    render(<RandomPage questions={[
+      question('law-114-01', 1, '建築法', '建築法'),
+    ]} />);
+
+    fireEvent.click(screen.getByRole('checkbox', { name: /打亂選項/ }));
+    fireEvent.click(screen.getByRole('button', { name: '抽出題組' }));
+
+    expect(router.push).toHaveBeenCalledWith(expect.objectContaining({
+      query: expect.objectContaining({ shuffleOptions: '1' }),
+    }));
+  });
 });
