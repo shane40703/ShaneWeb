@@ -31,7 +31,7 @@ import styles from './app-shell.module.css';
 
 const persistenceMessages = {
   'quota-exceeded':
-    '瀏覽器儲存空間已滿，最新的作答、筆記或配色沒有存檔。請刪除部分筆記圖片後再試一次。',
+    '瀏覽器儲存空間已滿，最新的作答、筆記或配色沒有存檔。請清除不需要的舊紀錄後再試一次。',
   unavailable:
     '這個瀏覽器不允許本機儲存，重新整理後作答紀錄、筆記與配色不會保留。',
 } as const;

@@ -157,6 +157,7 @@ export interface AppState {
   answers: Record<QuestionId, AnswerRecord>;
   difficultQuestionIds: QuestionId[];
   attempts: QuizAttempt[];
+  deletedAttemptIds: string[];
   notes: Record<QuestionId, string>;
   noteUpdatedAt: Record<QuestionId, string>;
   noteImages: Record<QuestionId, ImageAttachment[]>;

@@ -20,6 +20,7 @@ export function createDefaultState(): AppState {
     answers: {},
     difficultQuestionIds: [],
     attempts: [],
+    deletedAttemptIds: [],
     notes: {},
     noteUpdatedAt: {},
     noteImages: {},
@@ -167,12 +168,17 @@ export function parseStoredState(raw: string | null): AppState {
     typeof value === 'number' && [14, 16, 18, 20, 22, 24].includes(value)
       ? value
       : 18;
+  const deletedAttemptIds = [
+    ...new Set(keepValidItems(state.deletedAttemptIds, isQuestionId)),
+  ];
   return {
     answers: keepValidEntries(state.answers, isAnswerRecord),
     difficultQuestionIds: keepValidItems(state.difficultQuestionIds, isQuestionId),
     attempts: keepValidItems(state.attempts, isQuizAttempt).filter(
-      (attempt) => attempt.mode === 'paper',
+      (attempt) =>
+        attempt.mode === 'paper' && !deletedAttemptIds.includes(attempt.id),
     ),
+    deletedAttemptIds,
     notes: keepValidEntries(state.notes, isNoteContent),
     noteUpdatedAt: keepValidEntries(state.noteUpdatedAt, isNoteContent),
     noteImages: keepValidEntries(state.noteImages, isImageAttachmentList),

@@ -161,6 +161,19 @@ describe('appReducer', () => {
       attemptId: first.id,
     });
     expect(state.attempts.map((entry) => entry.id)).toEqual([second.id]);
+    expect(state.deletedAttemptIds).toEqual([first.id]);
+
+    state = appReducer(state, {
+      type: 'merge-attempts',
+      attempts: [first],
+    });
+    expect(state.attempts.map((entry) => entry.id)).toEqual([second.id]);
+
+    state = appReducer(state, {
+      type: 'confirm-attempt-deletion',
+      attemptId: first.id,
+    });
+    expect(state.deletedAttemptIds).toEqual([]);
   });
 
   it('supports discussion likes, replies, and reports', () => {

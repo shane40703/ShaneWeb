@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   createQuizProgressScope,
   createQuizQuestionSearch,
+  createShuffledOptionOrder,
   getPaperResumeQuestionId,
   getQuizElapsedSeconds,
   parseStoredQuizProgress,
@@ -16,6 +17,17 @@ import {
 afterEach(() => {
   vi.restoreAllMocks();
   window.localStorage.clear();
+});
+
+describe('shuffled option order', () => {
+  it('is stable, complete, and never leaves a multi-option question unchanged', () => {
+    const first = createShuffledOptionOrder(4, 'session-1:law-114-01');
+    const second = createShuffledOptionOrder(4, 'session-1:law-114-01');
+
+    expect(first).toEqual(second);
+    expect([...first].sort()).toEqual([0, 1, 2, 3]);
+    expect(first).not.toEqual([0, 1, 2, 3]);
+  });
 });
 
 describe('quizProgressReducer', () => {

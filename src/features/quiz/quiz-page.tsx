@@ -52,6 +52,7 @@ import { useAppState } from '@/state/app-state';
 import {
   createQuizProgressScope,
   createQuizQuestionSearch,
+  createShuffledOptionOrder,
   getQuizElapsedSeconds,
   readQuizProgress,
   scopedQuizProgressReducer,
@@ -106,7 +107,6 @@ export function QuizPage({ question, paper }: StaticQuestionPageProps) {
   const [checkedSingleQuestionId, setCheckedSingleQuestionId] =
     useState<string | null>(null);
   const resultViewRef = useRef<HTMLDivElement | null>(null);
-  const resultNumberListRef = useRef<HTMLDivElement | null>(null);
   const [visibleResultQuestionId, setVisibleResultQuestionId] = useState<string>();
   const routeHydrated = useClientReady();
   const pendingRandomSessionId = useRef<string | null>(null);
@@ -135,6 +135,8 @@ export function QuizPage({ question, paper }: StaticQuestionPageProps) {
     router.query.questions,
   ]);
   const isRandomMode = randomQuestionIds.length > 0;
+  const shuffleOptions =
+    isRandomMode && router.query.shuffleOptions === '1';
   const queryRandomSessionId =
     typeof router.query.quizSession === 'string' && router.query.quizSession
       ? router.query.quizSession
@@ -224,6 +226,23 @@ export function QuizPage({ question, paper }: StaticQuestionPageProps) {
   const progress = progressByQuestion[question.id];
   const selected = progress?.selected;
   const eliminatedOptions = progress?.eliminatedOptions ?? [];
+  const optionOrder = useMemo(
+    () => shuffleOptions && queryRandomSessionId
+      ? createShuffledOptionOrder(
+          question.options.length,
+          `${queryRandomSessionId}:${question.id}`,
+        )
+      : question.options.map((_, index) => index),
+    [queryRandomSessionId, question.id, question.options, shuffleOptions],
+  );
+  const displayedOptions = optionOrder.map((index) => question.options[index]);
+  const displayedSelected = selected === undefined
+    ? undefined
+    : optionOrder.indexOf(selected);
+  const displayedEliminatedOptions = eliminatedOptions.flatMap((option) => {
+    const displayedIndex = optionOrder.indexOf(option);
+    return displayedIndex < 0 ? [] : [displayedIndex];
+  });
   const elapsedSeconds = getQuizElapsedSeconds(
     progressByQuestion,
     paperQuestions.map((item) => item.id),
@@ -234,6 +253,7 @@ export function QuizPage({ question, paper }: StaticQuestionPageProps) {
         mode: 'random',
         questionIds: randomQuestionIds,
         sessionId: queryRandomSessionId,
+        shuffleOptions,
       })
     : isSingleQuestion
       ? createQuizQuestionSearch({ mode: 'single', questionId: question.id })
@@ -276,6 +296,7 @@ export function QuizPage({ question, paper }: StaticQuestionPageProps) {
           mode: 'random',
           questions: randomQuestionIds.join(','),
           quizSession: sessionId,
+          ...(shuffleOptions ? { shuffleOptions: '1' } : {}),
         },
       },
       undefined,
@@ -289,6 +310,7 @@ export function QuizPage({ question, paper }: StaticQuestionPageProps) {
     routeHydrated,
     router,
     router.isReady,
+    shuffleOptions,
   ]);
 
   // Drafts survive a refresh or an accidental back-navigation within this
@@ -371,17 +393,6 @@ export function QuizPage({ question, paper }: StaticQuestionPageProps) {
       .forEach((element) => observer.observe(element));
     return () => observer.disconnect();
   }, [attempt, paperQuestions, resultView]);
-
-  useEffect(() => {
-    if (!activeResultQuestionId) return;
-    if (
-      typeof window.matchMedia !== 'function' ||
-      !window.matchMedia('(min-width: 1121px)').matches
-    ) return;
-    resultNumberListRef.current
-      ?.querySelector<HTMLElement>('[aria-current="step"]')
-      ?.scrollIntoView({ block: 'nearest' });
-  }, [activeResultQuestionId, attempt, resultView]);
 
   function updateQuizProgress(action: QuizProgressAction) {
     if (!quizProgressScope) return;
@@ -593,7 +604,7 @@ export function QuizPage({ question, paper }: StaticQuestionPageProps) {
                       {attempt.correctCount}/{paperQuestions.length}
                     </strong>
                   </header>
-                  <div className={styles.questionNumbers} ref={resultNumberListRef}>
+                  <div className={styles.questionNumbers}>
                     <QuestionNumberGrid>
                       {paperQuestions.map((item) => {
                         const itemDifficult =
@@ -687,23 +698,23 @@ export function QuizPage({ question, paper }: StaticQuestionPageProps) {
             <div className={styles.answerColumn}>
               <OptionGroup
                 label="請選擇答案"
-                options={question.options}
-                value={selected}
+                options={displayedOptions}
+                value={displayedSelected}
                 disabled={!quizProgressScope || singleAnswerChecked}
-                eliminatedValues={eliminatedOptions}
+                eliminatedValues={displayedEliminatedOptions}
                 onValueChange={(value) =>
                   updateQuizProgress({
                     type: 'select-answer',
                     questionId: question.id,
-                    selected: value,
+                    selected: optionOrder[value],
                     startedAt: new Date().toISOString(),
                   })
                 }
-                onToggleEliminated={(option) =>
+                onToggleEliminated={(displayedOption) =>
                   updateQuizProgress({
                     type: 'toggle-eliminated-option',
                     questionId: question.id,
-                    option,
+                    option: optionOrder[displayedOption],
                     startedAt: new Date().toISOString(),
                   })
                 }

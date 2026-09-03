@@ -41,6 +41,7 @@
 }
 
 .resultReviewLayout .questionNavigator {
+  position: static;
   margin-top: 0;
 }
 

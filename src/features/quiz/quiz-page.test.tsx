@@ -156,6 +156,35 @@ describe('QuizPage progress presentation', () => {
     ).toHaveLength(1);
   });
 
+  it('shuffles displayed options but saves the canonical answer index', () => {
+    mocks.router.query = {
+      mode: 'random',
+      questions: currentQuestion.id,
+      quizSession: 'shuffle-session',
+      shuffleOptions: '1',
+    };
+
+    render(
+      <ToastProvider>
+        <QuizPage question={currentQuestion} paper={paper} />
+      </ToastProvider>,
+    );
+
+    const optionTexts = [
+      ...screen.getByRole('radiogroup', { name: '請選擇答案' })
+        .querySelectorAll('label > span:last-child'),
+    ].map((element) => element.textContent);
+    expect(optionTexts).not.toEqual(['選項 A', '選項 B', '選項 C', '選項 D']);
+
+    fireEvent.click(screen.getByText('選項 A').closest('label')!);
+    fireEvent.click(screen.getByRole('button', { name: '對答案' }));
+
+    const saveAttempt = mocks.dispatch.mock.calls.find(
+      ([action]) => action.type === 'save-attempt',
+    )?.[0];
+    expect(saveAttempt.attempt.answers[currentQuestion.id]).toBe(0);
+  });
+
   it('shows only the source question number in single-question mode', () => {
     mocks.router.query = { mode: 'single' };
 
@@ -261,9 +290,7 @@ describe('QuizPage progress presentation', () => {
     expect(
       screen.getByRole('link', { name: '查看第 43 題結果' }),
     ).toHaveAttribute('aria-current', 'step');
-    expect(Element.prototype.scrollIntoView).toHaveBeenCalledWith({
-      block: 'nearest',
-    });
+    expect(Element.prototype.scrollIntoView).not.toHaveBeenCalled();
   });
 
   it('does not pull the page back to the result map on mobile', () => {
