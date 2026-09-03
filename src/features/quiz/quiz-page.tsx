@@ -590,6 +590,7 @@ export function QuizPage({ question, paper }: StaticQuestionPageProps) {
                   attempt={attempt}
                   questions={paperQuestions}
                   anchorPrefix="result-question"
+                  showDifficultActions
                 />
                 <aside
                   className={styles.questionNavigator}

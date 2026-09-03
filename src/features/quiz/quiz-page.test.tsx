@@ -231,6 +231,11 @@ describe('QuizPage progress presentation', () => {
     expect(
       screen.getByRole('region', { name: '完整作答紀錄' }),
     ).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: '標記為難題' }));
+    expect(mocks.dispatch).toHaveBeenCalledWith({
+      type: 'toggle-difficult',
+      questionId: currentQuestion.id,
+    });
     fireEvent.click(
       screen.getByRole('button', { name: '錯題統計結果' }),
     );

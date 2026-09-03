@@ -3,6 +3,7 @@ import {
   fireEvent,
   render,
   screen,
+  waitFor,
   within,
 } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -153,20 +154,33 @@ describe('DifficultPage', () => {
     ).not.toBeInTheDocument();
   });
 
-  it('marks correct options accessibly and shows only the explanation panel', async () => {
+  it('retries difficult questions without repeating the prompt', async () => {
     renderPage(['law-114-01', 'law-113-01']);
 
     await screen.findByRole('heading', { name: '建築法規與實務' });
-    const summaries = screen.getAllByText('查看完整題目與選項');
+    const summaries = screen.getAllByText('查看選項、作答與詳解');
 
     fireEvent.click(summaries[0]);
     const explainedQuestion = summaries[0].closest('article');
     expect(explainedQuestion).not.toBeNull();
-    expect(
-      within(explainedQuestion!).getByRole('listitem', {
-        name: '正確選項 B：law-114-01 B',
-      }),
-    ).toHaveAttribute('data-accepted', 'true');
+    expect(within(explainedQuestion!).getAllByText('law-114-01 題幹')).toHaveLength(1);
+    fireEvent.click(within(explainedQuestion!).getByText('law-114-01 B').closest('label')!);
+    fireEvent.click(within(explainedQuestion!).getByRole('button', { name: '檢查答案' }));
+    expect(within(explainedQuestion!).getByRole('status')).toHaveTextContent(
+      '答對了，已掌握這題',
+    );
+    expect(within(explainedQuestion!).getByRole('status')).toHaveTextContent(
+      '標準答案：B',
+    );
+    await waitFor(() => {
+      const stored = JSON.parse(window.localStorage.getItem(STORAGE_KEY)!);
+      expect(stored.answers['law-114-01']).toMatchObject({
+        selected: 1,
+        correct: true,
+      });
+    });
+    fireEvent.click(within(explainedQuestion!).getByRole('button', { name: '重新作答' }));
+    expect(within(explainedQuestion!).queryByRole('status')).not.toBeInTheDocument();
     expect(
       within(explainedQuestion!).getByRole('region', {
         name: '第 1 題詳解',

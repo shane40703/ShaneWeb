@@ -35,6 +35,11 @@
 .fullQuestion > summary svg { transition: transform 150ms ease; }
 .fullQuestion[open] > summary svg { transform: rotate(180deg); }
 .fullQuestion > div { padding: 24px; display: grid; gap: 16px; border-top: 1px solid var(--line); background: var(--surface); }
+.practicePanel { display: grid; gap: 12px; }
+.practiceResult { padding: 12px 14px; display: flex; align-items: center; gap: 8px; border: 1px solid color-mix(in srgb, var(--success) 40%, var(--line)); border-radius: 11px; background: var(--success-soft); color: var(--success); }
+.practiceResult[data-result='wrong'] { border-color: color-mix(in srgb, var(--danger) 40%, var(--line)); background: var(--danger-soft); color: var(--danger); }
+.practiceResult span { margin-left: auto; color: var(--text-soft); font-size: 12px; }
+.practiceActions { display: flex; justify-content: flex-end; }
 .explanationPanel { margin-top: 4px; padding: 16px; display: grid; gap: 7px; border: 1px solid color-mix(in srgb, var(--primary) 28%, var(--line)); border-radius: 13px; background: var(--primary-soft); }
 .explanationPanel span { color: var(--primary-strong); font-size: 11px; font-weight: 850; letter-spacing: .06em; }
 .explanationPanel p { margin: 0; color: var(--text-soft); font-size: 14px; line-height: 1.75; white-space: pre-line; }
@@ -49,4 +54,6 @@
   .subjectHeader h2 { font-size: 18px; }
   .yearHeader { padding-inline: 14px; }
   .questionList { padding: 10px; }
+  .practiceResult { align-items: flex-start; flex-wrap: wrap; }
+  .practiceResult span { width: 100%; margin-left: 28px; }
 }

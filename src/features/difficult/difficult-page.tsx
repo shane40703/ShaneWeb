@@ -2,20 +2,20 @@ import { useState } from 'react';
 import {
   EmptyState,
   QuestionCard,
-  QuestionPrompt,
-  QuestionSourceLine,
 } from '@/components/content/content';
-import { QuestionAnswerPanel } from '@/components/question-answer-panel';
 import { ReviewNoteEditor } from '@/components/attempt-review';
 import {
   IconBulb,
+  IconCircleCheck,
   IconLoader2,
   IconChevronDown,
   IconPlugConnectedX,
+  IconX,
 } from '@tabler/icons-react';
-import { Button } from '@/components/ui/ui';
+import { Button, OptionGroup } from '@/components/ui/ui';
 import type { QuestionBankStatus } from '@/lib/question-bank-client';
 import { subjectsOfQuestionIds } from '@/lib/question-path';
+import { formatCorrectAnswer, isQuestionCorrect } from '@/lib/study';
 import type { Question, SubjectId } from '@/lib/types';
 import { subjects } from '@/question-bank/catalog';
 import { useAppState } from '@/state/app-state';
@@ -39,6 +39,74 @@ function groupDifficultQuestions(questions: Question[]) {
 
     return [{ subject, questions: subjectQuestions, yearGroups }];
   });
+}
+
+function DifficultQuestionPractice({ question }: { question: Question }) {
+  const { dispatch } = useAppState();
+  const [selected, setSelected] = useState<number>();
+  const [checked, setChecked] = useState(false);
+  const correct = checked && isQuestionCorrect(question, selected);
+
+  function checkAnswer() {
+    if (selected === undefined) return;
+    dispatch({
+      type: 'save-answer',
+      questionId: question.id,
+      selected,
+      correct: isQuestionCorrect(question, selected),
+      answeredAt: new Date().toISOString(),
+    });
+    setChecked(true);
+  }
+
+  return (
+    <section
+      className={styles.practicePanel}
+      aria-label={`第 ${question.questionNumber} 題重新作答`}
+    >
+      <OptionGroup
+        label={`第 ${question.questionNumber} 題請選擇答案`}
+        options={question.options}
+        value={selected}
+        disabled={checked}
+        onValueChange={(value) => {
+          setSelected(value);
+          setChecked(false);
+        }}
+      />
+      {checked ? (
+        <div className={styles.practiceResult} data-result={correct ? 'correct' : 'wrong'} role="status">
+          {correct ? (
+            <IconCircleCheck size={20} stroke={2.3} aria-hidden="true" />
+          ) : (
+            <IconX size={20} stroke={2.3} aria-hidden="true" />
+          )}
+          <strong>{correct ? '答對了，已掌握這題' : '答錯了，再複習一次'}</strong>
+          <span>標準答案：{formatCorrectAnswer(question)}</span>
+        </div>
+      ) : null}
+      <div className={styles.practiceActions}>
+        {checked ? (
+          <Button
+            onClick={() => {
+              setSelected(undefined);
+              setChecked(false);
+            }}
+          >
+            重新作答
+          </Button>
+        ) : (
+          <Button
+            variant="primary"
+            disabled={selected === undefined}
+            onClick={checkAnswer}
+          >
+            檢查答案
+          </Button>
+        )}
+      </div>
+    </section>
+  );
 }
 
 export function DifficultPage({
@@ -193,7 +261,7 @@ export function DifficultPage({
                                 />
                                 <details className={styles.fullQuestion}>
                                   <summary>
-                                    <span>查看完整題目與選項</span>
+                                    <span>查看選項、作答與詳解</span>
                                     <IconChevronDown
                                       size={18}
                                       stroke={2}
@@ -201,13 +269,7 @@ export function DifficultPage({
                                     />
                                   </summary>
                                   <div>
-                                    <QuestionSourceLine question={question} />
-                                    <QuestionPrompt question={question} />
-                                    <QuestionAnswerPanel
-                                      question={question}
-                                      heading={null}
-                                      ariaLabel={`第 ${question.questionNumber} 題完整選項`}
-                                    />
+                                    <DifficultQuestionPractice question={question} />
                                     <section
                                       className={styles.explanationPanel}
                                       aria-label={`第 ${question.questionNumber} 題詳解`}
