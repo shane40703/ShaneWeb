@@ -70,6 +70,11 @@ export function createCloudDiscussionPostUpdateData(
     : { content, images };
 }
 
+export function isFirestorePermissionDenied(reason: unknown) {
+  if (!reason || typeof reason !== 'object' || !('code' in reason)) return false;
+  return reason.code === 'permission-denied' || reason.code === 'firestore/permission-denied';
+}
+
 export function deduplicateAuthorExplanations<T extends SharedDiscussionPost>(
   posts: T[],
 ) {
@@ -280,14 +285,30 @@ export function useDiscussionPublisher(questionId: QuestionId) {
         );
       }
       if (sortedExistingPosts.length) {
-        await updateDoc(
-          postRef,
-          createCloudDiscussionPostUpdateData(
-            trimmed,
-            uploadedImages,
-            sortedExistingPosts[0].data().images,
-          ),
-        );
+        try {
+          await updateDoc(
+            postRef,
+            createCloudDiscussionPostUpdateData(
+              trimmed,
+              uploadedImages,
+              sortedExistingPosts[0].data().images,
+            ),
+          );
+        } catch (reason) {
+          if (!isFirestorePermissionDenied(reason)) throw reason;
+          // Some deployed projects still use the older rules that allowed
+          // creating posts but not editing them. Publish a newer replacement;
+          // readers deduplicate author explanations and show this latest copy.
+          const replacementRef = doc(collection(firebase.db, 'discussionPosts'));
+          await setDoc(replacementRef, createCloudDiscussionPostData({
+            questionId,
+            type,
+            content: trimmed,
+            images: uploadedImages,
+            authorId: user.uid,
+            createdAt: serverTimestamp(),
+          }));
+        }
       } else {
         await setDoc(postRef, createCloudDiscussionPostData({
           questionId,

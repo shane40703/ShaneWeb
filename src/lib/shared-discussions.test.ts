@@ -3,6 +3,7 @@ import {
   createCloudDiscussionPostData,
   createCloudDiscussionPostUpdateData,
   deduplicateAuthorExplanations,
+  isFirestorePermissionDenied,
   parseCloudDiscussionPost,
   parseCloudDiscussionReply,
   withUploadTimeout,
@@ -63,6 +64,13 @@ describe('shared discussion parsing', () => {
         { ...base, id: 'other', authorId: 'user-2' },
       ]).map((post) => post.id),
     ).toEqual(['new', 'other']);
+  });
+
+  it('retries rejected legacy updates as replacement posts only for permissions', () => {
+    expect(isFirestorePermissionDenied({ code: 'permission-denied' })).toBe(true);
+    expect(isFirestorePermissionDenied({ code: 'firestore/permission-denied' })).toBe(true);
+    expect(isFirestorePermissionDenied({ code: 'unavailable' })).toBe(false);
+    expect(isFirestorePermissionDenied(new Error('network'))).toBe(false);
   });
 
   it('stops waiting when an image upload does not finish', async () => {
