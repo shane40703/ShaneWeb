@@ -46,6 +46,7 @@ export interface Question {
   primaryCategory: string;
   tags: readonly string[];
   relatedLaws?: readonly string[];
+  fineTopic?: string;
   text: string;
   content: readonly QuestionContentBlock[];
   options: readonly string[];
@@ -63,6 +64,7 @@ export interface QuestionSummary {
   topic: string;
   tags: readonly string[];
   relatedLaws?: readonly string[];
+  fineTopic?: string;
   text: string;
   path: string;
 }
@@ -76,6 +78,7 @@ export type QuizQuestion = Pick<
   | 'topic'
   | 'primaryCategory'
   | 'relatedLaws'
+  | 'fineTopic'
   | 'text'
   | 'content'
   | 'options'

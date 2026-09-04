@@ -26,6 +26,7 @@ const updatedQuestion: Question = {
   primaryCategory: '建築技術規則',
   topic: '建築技術規則',
   relatedLaws: ['建築法', '建築技術規則'],
+  fineTopic: '建造執照與使用執照',
   content: [{ kind: 'text', text: summary.text }],
   options: ['A', 'B', 'C', 'D'],
   answerKey: { kind: 'accepted', options: [0] },
@@ -55,6 +56,9 @@ describe('CategoryAdminPage', () => {
       target: { value: '新訂測試法規' },
     });
     fireEvent.click(screen.getByRole('button', { name: '新增分類' }));
+    fireEvent.change(screen.getByLabelText('類似題目細分考點'), {
+      target: { value: '建造執照與使用執照' },
+    });
     expect(screen.getByText('新訂測試法規')).toBeInTheDocument();
     expect(screen.queryByLabelText('主分類')).not.toBeInTheDocument();
     expect(screen.queryByLabelText('主題')).not.toBeInTheDocument();
@@ -70,11 +74,29 @@ describe('CategoryAdminPage', () => {
         body: JSON.stringify({
           questionId: summary.id,
           classifications: ['建築法', '新訂測試法規'],
+          fineTopic: '建造執照與使用執照',
         }),
       }),
     );
     expect(
       await screen.findByText('分類已驗證並寫回題庫 meta.json。'),
+    ).toBeInTheDocument();
+  });
+
+  it('lists law questions that still need a manual similar-question topic', () => {
+    render(
+      <CategoryAdminPage
+        questions={[
+          summary,
+          { ...summary, id: 'law-114-02', questionNumber: 2, fineTopic: '防火區劃' },
+        ]}
+      />,
+    );
+
+    expect(screen.getByText('1 題')).toBeInTheDocument();
+    expect(screen.getAllByText('測試題幹')).toHaveLength(2);
+    expect(
+      screen.getByRole('option', { name: '類似題目尚未人工分類' }),
     ).toBeInTheDocument();
   });
 

@@ -15,7 +15,7 @@ import { getQuestionDisplayCategories } from '@/lib/study';
 import type { Question, QuestionSummary, SubjectId } from '@/lib/types';
 import styles from './category-admin-page.module.css';
 
-type ReviewFilter = 'needs-review' | 'all';
+type ReviewFilter = 'needs-review' | 'fine-topic' | 'all';
 
 function needsReview(question: QuestionSummary) {
   return (
@@ -34,7 +34,7 @@ export function CategoryAdminPage({
   const [subjectId, setSubjectId] = useState<SubjectId>('law');
   const [year, setYear] = useState<number | 'all'>('all');
   const [reviewFilter, setReviewFilter] =
-    useState<ReviewFilter>('needs-review');
+    useState<ReviewFilter>('fine-topic');
   const [search, setSearch] = useState('');
   const [selectedId, setSelectedId] = useState<string>();
   const filteredQuestions = useMemo(() => {
@@ -44,7 +44,10 @@ export function CategoryAdminPage({
         question.subject === subjectId &&
         (year === 'all' || question.year === year) &&
         (reviewFilter === 'all' ||
-          needsReview(question) ||
+          (reviewFilter === 'needs-review' && needsReview(question)) ||
+          (reviewFilter === 'fine-topic' &&
+            question.subject === 'law' &&
+            !question.fineTopic) ||
           question.id === selectedId) &&
         (!query ||
           question.id.toLocaleLowerCase('zh-TW').includes(query) ||
@@ -65,8 +68,21 @@ export function CategoryAdminPage({
       left.localeCompare(right, 'zh-Hant'),
     );
   }, [questions, subjectId]);
+  const fineTopicOptions = useMemo(
+    () =>
+      [
+        ...new Set(
+          questions
+            .map((question) => question.fineTopic)
+            .filter((topic): topic is string => Boolean(topic)),
+        ),
+      ]
+        .sort((left, right) => left.localeCompare(right, 'zh-Hant')),
+    [questions],
+  );
   const [classifications, setClassifications] = useState<string[]>([]);
   const [classificationInput, setClassificationInput] = useState('');
+  const [fineTopic, setFineTopic] = useState('');
   const [authorKey, setAuthorKey] = useState('');
   const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState<
@@ -84,6 +100,7 @@ export function CategoryAdminPage({
     editedQuestionId.current = selectedQuestion.id;
     setClassifications(getQuestionDisplayCategories(selectedQuestion));
     setClassificationInput('');
+    setFineTopic(selectedQuestion.fineTopic ?? '');
     setStatus(undefined);
   }, [selectedQuestion]);
 
@@ -122,6 +139,7 @@ export function CategoryAdminPage({
         body: JSON.stringify({
           questionId: selectedQuestion.id,
           classifications,
+          ...(selectedQuestion.subject === 'law' ? { fineTopic } : {}),
         }),
       });
       const body = (await response.json()) as
@@ -141,6 +159,7 @@ export function CategoryAdminPage({
                 topic: updated.topic,
                 tags: updated.tags,
                 relatedLaws: updated.relatedLaws,
+                fineTopic: updated.fineTopic,
               }
             : question,
         ),
@@ -196,7 +215,11 @@ export function CategoryAdminPage({
           <select
             value={subjectId}
             onChange={(event) => {
-              setSubjectId(event.target.value as SubjectId);
+              const nextSubject = event.target.value as SubjectId;
+              setSubjectId(nextSubject);
+              if (nextSubject !== 'law' && reviewFilter === 'fine-topic') {
+                setReviewFilter('needs-review');
+              }
               setSelectedId(undefined);
             }}
           >
@@ -238,6 +261,9 @@ export function CategoryAdminPage({
             }}
           >
             <option value="needs-review">待檢核／未明確分類</option>
+            {subjectId === 'law' ? (
+              <option value="fine-topic">類似題目尚未人工分類</option>
+            ) : null}
             <option value="all">全部題目</option>
           </select>
         </label>
@@ -363,6 +389,26 @@ export function CategoryAdminPage({
                     <p>尚未選擇分類</p>
                   )}
                 </div>
+                {selectedQuestion.subject === 'law' ? (
+                  <label>
+                    類似題目細分考點
+                    <input
+                      aria-label="類似題目細分考點"
+                      list="fine-topic-options"
+                      value={fineTopic}
+                      onChange={(event) => setFineTopic(event.target.value)}
+                      placeholder="例如：防火區劃與防火間隔"
+                    />
+                    <datalist id="fine-topic-options">
+                      {fineTopicOptions.map((topic) => (
+                        <option value={topic} key={topic} />
+                      ))}
+                    </datalist>
+                    <small className={styles.fieldHint}>
+                      填入完全相同考點的題目會互相配對；留空則暫時使用關鍵字自動判斷。
+                    </small>
+                  </label>
+                ) : null}
               </div>
               <footer>
                 {status ? (

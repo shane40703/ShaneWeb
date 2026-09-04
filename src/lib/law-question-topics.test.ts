@@ -38,4 +38,13 @@ describe('law question fine topics', () => {
     expect(getSimilarLawQuestions(current, [current, similar, unrelated]).questions)
       .toEqual([similar]);
   });
+
+  it('prefers a manually assigned fine topic over keyword detection', () => {
+    const manual = {
+      ...lawQuestion('manual', 114, '防火區劃的防火門規定'),
+      fineTopic: '人工指定考點',
+    };
+
+    expect(getLawQuestionFineTopic(manual)).toBe('人工指定考點');
+  });
 });

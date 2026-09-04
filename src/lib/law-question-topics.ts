@@ -65,6 +65,7 @@ function searchableText(question: Pick<Question, 'text' | 'options'>) {
 
 export function getLawQuestionFineTopic(question: Question) {
   if (question.subject !== 'law') return null;
+  if (question.fineTopic?.trim()) return question.fineTopic.trim();
   const source = searchableText(question);
   return topicRules.find((rule) => rule.pattern.test(source))?.label ?? null;
 }

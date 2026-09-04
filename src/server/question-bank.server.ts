@@ -37,6 +37,7 @@ interface RuntimeQuestionMeta {
   topic: string;
   tags: readonly string[];
   relatedLaws?: readonly string[];
+  fineTopic?: string;
   answerKey: SourceAnswerKey;
   provenance: QuestionProvenance;
   images?: Readonly<Record<string, { alt: string }>>;
@@ -167,6 +168,7 @@ function parseQuestionMeta(
       'topic',
       'tags',
       'relatedLaws',
+      'fineTopic',
       'answerKey',
       'provenance',
       'images',
@@ -197,6 +199,9 @@ function parseQuestionMeta(
     ...(meta.relatedLaws === undefined
       ? {}
       : { relatedLaws: stringArray(filePath, meta.relatedLaws, 'relatedLaws') }),
+    ...(meta.fineTopic === undefined
+      ? {}
+      : { fineTopic: stringValue(filePath, meta.fineTopic, 'fineTopic') }),
     answerKey: parseAnswerKey(filePath, meta.answerKey),
     provenance: parseProvenance(filePath, meta.provenance),
     ...(meta.images === undefined ? {} : { images: parseImages(filePath, meta.images) }),
@@ -476,6 +481,7 @@ async function discoverQuestionSummaries(
         topic: question.topic,
         tags: question.tags,
         ...(question.relatedLaws?.length ? { relatedLaws: question.relatedLaws } : {}),
+        ...(question.fineTopic ? { fineTopic: question.fineTopic } : {}),
         text: question.text,
         path: questionPath(entry.subject, entry.year, entry.questionNumber),
       };
@@ -533,6 +539,7 @@ async function readUtf8(filePath: string) {
 export interface QuestionClassificationUpdate {
   questionId: string;
   classifications: readonly string[];
+  fineTopic?: string;
 }
 
 function parseQuestionId(questionId: string) {
@@ -624,6 +631,11 @@ export async function updateQuestionClassification(
     tags: nextTags,
   };
   nextMeta.relatedLaws = uniqueClassifications;
+  if (update.fineTopic?.trim()) {
+    nextMeta.fineTopic = update.fineTopic.trim();
+  } else {
+    delete nextMeta.fineTopic;
+  }
 
   const parsedMeta = parseQuestionMeta(metaPath, nextMeta, subject);
   await writeFile(metaPath, `${JSON.stringify(nextMeta, null, 2)}\n`, 'utf8');
@@ -756,6 +768,7 @@ export async function loadQuestion(entry: QuestionEntry): Promise<Question> {
     primaryCategory: meta.primaryCategory,
     tags: meta.tags,
     ...(meta.relatedLaws?.length ? { relatedLaws: meta.relatedLaws } : {}),
+    ...(meta.fineTopic ? { fineTopic: meta.fineTopic } : {}),
     text: plainText.join('\n\n'),
     content,
     options,

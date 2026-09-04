@@ -40,6 +40,8 @@
 .editor > header a { display: inline-flex; align-items: center; gap: 6px; color: var(--primary-strong); font-size: 12px; font-weight: 800; text-decoration: none; }
 .questionText { margin: 0; padding: 16px; border-radius: 13px; background: var(--surface-2); font-size: 14px; font-weight: 700; line-height: 1.7; }
 .editorFields { display: grid; gap: 12px; }
+.editorFields > label > input { width: 100%; padding: 10px 12px; border: 1px solid var(--control-line); border-radius: 11px; background: var(--surface-2); color: var(--text); font: inherit; }
+.fieldHint { color: var(--muted); font-size: 11px; font-weight: 500; line-height: 1.5; }
 .classificationPicker { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
 .classificationPicker button { white-space: nowrap; }
 .classificationTags { min-height: 48px; padding: 10px; display: flex; align-items: center; align-content: center; gap: 8px; flex-wrap: wrap; border: 1px solid var(--line); border-radius: 12px; background: var(--surface-2); }

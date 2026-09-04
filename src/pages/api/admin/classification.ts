@@ -26,6 +26,9 @@ function readUpdate(value: unknown): QuestionClassificationUpdate | null {
   return {
     questionId,
     classifications: body.classifications as string[],
+    ...(typeof body.fineTopic === 'string'
+      ? { fineTopic: body.fineTopic.trim() }
+      : {}),
   };
 }
 

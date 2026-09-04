@@ -334,6 +334,7 @@ export function toQuizQuestion(question: Question): QuizQuestion {
     topic: question.topic,
     primaryCategory: question.primaryCategory,
     ...(question.relatedLaws ? { relatedLaws: question.relatedLaws } : {}),
+    ...(question.fineTopic ? { fineTopic: question.fineTopic } : {}),
     text: question.text,
     content: question.content,
     options: question.options,
