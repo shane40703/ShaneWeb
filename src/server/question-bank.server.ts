@@ -14,7 +14,7 @@ import {
   type SubjectId,
 } from '@/question-bank/schema';
 import { questionPath } from '@/lib/question-path';
-import { toQuizQuestion } from '@/lib/study';
+import { getQuestionDisplayCategories, toQuizQuestion } from '@/lib/study';
 import type { Question, QuestionSummary, QuizQuestion } from '@/lib/types';
 
 const bankRoot = path.join(process.cwd(), 'public/question-bank');
@@ -575,62 +575,73 @@ export async function updateQuestionClassification(
     .filter(Boolean);
   if (!classifications.length) throw new Error('至少需要一個題目分類');
   const uniqueClassifications = [...new Set(classifications)];
-
-  let primaryCategory = currentPrimaryCategory;
-  let topic = currentTopic;
-  if (subject === 'law') {
-    const primaryMatch = uniqueClassifications.find((classification) =>
-      Object.hasOwn(categoryCatalog.law, classification),
-    ) as keyof typeof categoryCatalog.law | undefined;
-    if (primaryMatch) {
-      primaryCategory = primaryMatch;
-      const primaryTopics = categoryCatalog.law[primaryMatch];
-      topic = primaryTopics.includes(currentTopic as never)
-        ? currentTopic
-        : primaryTopics[0];
-    }
-  } else {
-    const analysisCategories = analysisCategoryCatalog[subject];
-    const classification = uniqueClassifications.find((candidate) =>
-      Object.hasOwn(analysisCategories, candidate),
+  const currentClassifications = getQuestionDisplayCategories({
+    subject,
+    topic: currentTopic,
+    primaryCategory: currentPrimaryCategory,
+    relatedLaws: entry.meta.relatedLaws,
+  });
+  const classificationsChanged =
+    uniqueClassifications.length !== currentClassifications.length ||
+    uniqueClassifications.some(
+      (classification, index) => classification !== currentClassifications[index],
     );
-    const classificationTopics = classification
-      ? analysisCategories[classification]
-      : undefined;
-    if (classificationTopics?.length) {
-      topic = classificationTopics.includes(currentTopic)
-        ? currentTopic
-        : classificationTopics[0];
-      const primaryMatch = Object.entries(categoryCatalog[subject]).find(
-        ([, topics]) => (topics as readonly string[]).includes(topic),
-      )?.[0];
-      if (!primaryMatch) throw new Error('題目分類無法對應至題庫主分類');
-      primaryCategory = primaryMatch;
-    } else if (classification && classificationTopics) {
-      const currentClassification =
-        Object.entries(analysisCategories).find(([, topics]) =>
-          topics.includes(currentTopic),
-        )?.[0] ?? currentPrimaryCategory;
-      if (currentClassification !== classification) {
-        throw new Error('這個分類尚未設定可對應的題庫主題');
+
+  const nextMeta: Record<string, unknown> = { ...currentMeta };
+  if (classificationsChanged) {
+    let primaryCategory = currentPrimaryCategory;
+    let topic = currentTopic;
+    if (subject === 'law') {
+      const primaryMatch = uniqueClassifications.find((classification) =>
+        Object.hasOwn(categoryCatalog.law, classification),
+      ) as keyof typeof categoryCatalog.law | undefined;
+      if (primaryMatch) {
+        primaryCategory = primaryMatch;
+        const primaryTopics = categoryCatalog.law[primaryMatch];
+        topic = primaryTopics.includes(currentTopic as never)
+          ? currentTopic
+          : primaryTopics[0];
+      }
+    } else {
+      const analysisCategories = analysisCategoryCatalog[subject];
+      const classification = uniqueClassifications.find((candidate) =>
+        Object.hasOwn(analysisCategories, candidate),
+      );
+      const classificationTopics = classification
+        ? analysisCategories[classification]
+        : undefined;
+      if (classificationTopics?.length) {
+        topic = classificationTopics.includes(currentTopic)
+          ? currentTopic
+          : classificationTopics[0];
+        const primaryMatch = Object.entries(categoryCatalog[subject]).find(
+          ([, topics]) => (topics as readonly string[]).includes(topic),
+        )?.[0];
+        if (!primaryMatch) throw new Error('題目分類無法對應至題庫主分類');
+        primaryCategory = primaryMatch;
+      } else if (classification && classificationTopics) {
+        const currentClassification =
+          Object.entries(analysisCategories).find(([, topics]) =>
+            topics.includes(currentTopic),
+          )?.[0] ?? currentPrimaryCategory;
+        if (currentClassification !== classification) {
+          throw new Error('這個分類尚未設定可對應的題庫主題');
+        }
       }
     }
+
+    const nextTags = [
+      ...new Set(
+        currentTags.map((tag) => (tag === currentTopic ? topic : tag)),
+      ),
+    ];
+    if (!nextTags.includes(topic)) nextTags.unshift(topic);
+
+    nextMeta.primaryCategory = primaryCategory;
+    nextMeta.topic = topic;
+    nextMeta.tags = nextTags;
+    nextMeta.relatedLaws = uniqueClassifications;
   }
-
-  const nextTags = [
-    ...new Set(
-      currentTags.map((tag) => (tag === currentTopic ? topic : tag)),
-    ),
-  ];
-  if (!nextTags.includes(topic)) nextTags.unshift(topic);
-
-  const nextMeta: Record<string, unknown> = {
-    ...currentMeta,
-    primaryCategory,
-    topic,
-    tags: nextTags,
-  };
-  nextMeta.relatedLaws = uniqueClassifications;
   if (update.fineTopic?.trim()) {
     nextMeta.fineTopic = update.fineTopic.trim();
   } else {
