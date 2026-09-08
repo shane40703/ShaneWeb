@@ -1,6 +1,7 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AnalysisPage } from '@/features/analysis/analysis-page';
+import { buildForecastRanking } from '@/features/analysis/detailed-trend-analysis';
 import type { QuestionSummary } from '@/lib/types';
 
 const router = vi.hoisted(() => ({
@@ -137,6 +138,9 @@ describe('AnalysisPage category quiz', () => {
     expect(screen.getByText('各年度精確出題數')).toBeInTheDocument();
     expect(screen.getAllByText('114 年・2 題')).not.toHaveLength(0);
     expect(screen.getByText('選取項目總標註')).toBeInTheDocument();
+    expect(screen.getByRole('table', { name: '115 年複習優先度' })).toBeInTheDocument();
+    expect(screen.getByText('115 年複習優先度')).toBeInTheDocument();
+    expect(screen.getByText(/不是命題機率/)).toBeInTheDocument();
   });
 
   it('can compare manually assigned fine topics', () => {
@@ -148,6 +152,7 @@ describe('AnalysisPage category quiz', () => {
     };
     const questions = [
       { ...question('law-114-01', 1), fineTopic: '防火區劃' },
+      { ...question('law-114-02', 2) },
       { ...question('law-113-01', 1), year: 113, fineTopic: '防火區劃' },
     ];
 
@@ -158,8 +163,26 @@ describe('AnalysisPage category quiz', () => {
     });
 
     expect(screen.getAllByText('防火區劃')).not.toHaveLength(0);
+    expect(screen.getByText('67% 資料覆蓋率')).toBeInTheDocument();
     expect(
       screen.getByRole('img', { name: /分類出題數量折線圖/ }),
     ).toBeInTheDocument();
+  });
+
+  it('ranks stable and rising topics with explainable forecast metrics', () => {
+    const ranking = buildForecastRanking(
+      [
+        { category: '穩定高頻', counts: [2, 2, 2, 3, 3, 4], total: 16 },
+        { category: '近期升溫', counts: [0, 0, 0, 0, 1, 3], total: 4 },
+        { category: '近期降溫', counts: [4, 4, 3, 1, 0, 0], total: 12 },
+      ],
+      [109, 110, 111, 112, 113, 114],
+    );
+
+    expect(ranking[0].category).toBe('穩定高頻');
+    expect(ranking[0].score).toBeGreaterThan(ranking[2].score);
+    expect(ranking.find((item) => item.category === '近期升溫')?.momentum).toBeGreaterThan(0);
+    expect(ranking.find((item) => item.category === '近期降溫')?.signal).toBe('近期降溫');
+    expect(ranking.every((item) => item.score >= 0 && item.score <= 100)).toBe(true);
   });
 });

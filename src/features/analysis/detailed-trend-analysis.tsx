@@ -6,10 +6,21 @@ import styles from './analysis-page.module.css';
 
 type TrendDimension = 'category' | 'fine-topic';
 
-interface TrendSeries {
+export interface TrendSeries {
   category: string;
   counts: number[];
   total: number;
+}
+
+export interface ForecastRow {
+  category: string;
+  score: number;
+  recentWeightedAverage: number;
+  appearanceRate: number;
+  momentum: number;
+  lastSeenYear?: number;
+  yearsWithoutAppearance: number | null;
+  signal: '高頻且穩定' | '近期升溫' | '穩定出題' | '近期降溫' | '久未出題' | '間歇出題';
 }
 
 const maxSelectedSeries = 6;
@@ -61,6 +72,98 @@ export function buildTrendSeries(
     .sort(
       (left, right) =>
         right.total - left.total || left.category.localeCompare(right.category, 'zh-Hant'),
+    );
+}
+
+function average(values: readonly number[]) {
+  return values.length
+    ? values.reduce((sum, value) => sum + value, 0) / values.length
+    : 0;
+}
+
+function clamp(value: number) {
+  return Math.min(1, Math.max(0, value));
+}
+
+export function buildForecastRanking(
+  series: readonly TrendSeries[],
+  years: readonly number[],
+  targetYear = 115,
+): ForecastRow[] {
+  if (!series.length || !years.length) return [];
+
+  const rawRows = series.map((item) => {
+    const recentWindowSize = Math.min(3, item.counts.length);
+    const recentCounts = item.counts.slice(-recentWindowSize);
+    const previousCounts = item.counts.slice(
+      Math.max(0, item.counts.length - recentWindowSize * 2),
+      item.counts.length - recentWindowSize,
+    );
+    const recentWeightTotal = recentCounts.reduce((sum, _, index) => sum + index + 1, 0);
+    const recentWeightedAverage = recentCounts.reduce(
+      (sum, count, index) => sum + count * (index + 1),
+      0,
+    ) / recentWeightTotal;
+    const momentum = previousCounts.length
+      ? average(recentCounts) - average(previousCounts)
+      : 0;
+    const stabilityCounts = item.counts.slice(-Math.min(5, item.counts.length));
+    const appearanceRate = stabilityCounts.filter((count) => count > 0).length
+      / stabilityCounts.length;
+    let lastSeenIndex = -1;
+    item.counts.forEach((count, index) => {
+      if (count > 0) lastSeenIndex = index;
+    });
+    const lastSeenYear = lastSeenIndex >= 0 ? years[lastSeenIndex] : undefined;
+
+    return {
+      category: item.category,
+      recentWeightedAverage,
+      appearanceRate,
+      momentum,
+      longTermAverage: item.total / years.length,
+      lastSeenYear,
+      yearsWithoutAppearance: lastSeenYear === undefined
+        ? null
+        : Math.max(0, targetYear - lastSeenYear - 1),
+    };
+  });
+  const maximumRecent = Math.max(1, ...rawRows.map((item) => item.recentWeightedAverage));
+  const maximumLongTerm = Math.max(1, ...rawRows.map((item) => item.longTermAverage));
+  const maximumMomentum = Math.max(1, ...rawRows.map((item) => Math.abs(item.momentum)));
+
+  return rawRows
+    .map((item) => {
+      const recentIndex = item.recentWeightedAverage / maximumRecent;
+      const baselineIndex = item.longTermAverage / maximumLongTerm;
+      const momentumIndex = clamp(0.5 + item.momentum / (maximumMomentum * 2));
+      const score = Math.round(
+        (recentIndex * 0.45
+          + item.appearanceRate * 0.25
+          + momentumIndex * 0.2
+          + baselineIndex * 0.1) * 100,
+      );
+      let signal: ForecastRow['signal'] = '間歇出題';
+      if (recentIndex >= 0.65 && item.appearanceRate >= 0.8) signal = '高頻且穩定';
+      else if (item.momentum >= 0.5) signal = '近期升溫';
+      else if (item.momentum <= -0.5) signal = '近期降溫';
+      else if (item.appearanceRate >= 0.8) signal = '穩定出題';
+      else if ((item.yearsWithoutAppearance ?? 0) >= 2) signal = '久未出題';
+
+      return {
+        category: item.category,
+        score,
+        recentWeightedAverage: Number(item.recentWeightedAverage.toFixed(1)),
+        appearanceRate: item.appearanceRate,
+        momentum: Number(item.momentum.toFixed(1)),
+        lastSeenYear: item.lastSeenYear,
+        yearsWithoutAppearance: item.yearsWithoutAppearance,
+        signal,
+      };
+    })
+    .sort(
+      (left, right) =>
+        right.score - left.score || left.category.localeCompare(right.category, 'zh-Hant'),
     );
 }
 
@@ -191,6 +294,17 @@ export function DetailedTrendAnalysis({
       change: (item.counts.at(-1) ?? 0) - (item.counts[0] ?? 0),
     }))
     .sort((left, right) => Math.abs(right.change) - Math.abs(left.change))[0];
+  const forecastYear = 115;
+  const forecastRows = buildForecastRanking(allSeries, years, forecastYear).slice(0, 10);
+  const scopedQuestions = questions.filter(
+    (question) => question.subject === subjectId && years.includes(question.year),
+  );
+  const classifiedQuestions = scopedQuestions.filter(
+    (question) => questionTrendCategories(question, subjectId, dimension).length > 0,
+  ).length;
+  const classificationCoverage = scopedQuestions.length
+    ? Math.round((classifiedQuestions / scopedQuestions.length) * 100)
+    : 0;
 
   function toggleCategory(category: string) {
     const isSelected = selectedCategories.includes(category);
@@ -210,7 +324,7 @@ export function DetailedTrendAnalysis({
           <IconChartLine size={20} stroke={2} aria-hidden="true" />
           <span>
             <strong>詳細趨勢分析</strong>
-            <small>跨年度比較分類出題數量與變化</small>
+            <small>跨年度比較與 115 年複習優先度</small>
           </span>
         </span>
         <b>
@@ -319,6 +433,71 @@ export function DetailedTrendAnalysis({
                     </tbody>
                   </table>
                 </div>
+
+                <section className={styles.forecastSection} aria-labelledby="forecast-heading">
+                  <header className={styles.forecastHeader}>
+                    <div>
+                      <span>115 FOCUS INDEX</span>
+                      <h3 id="forecast-heading">115 年複習優先度</h3>
+                    </div>
+                    <strong>{classificationCoverage}% 資料覆蓋率</strong>
+                  </header>
+                  <p className={styles.forecastNotice}>
+                    依歷年題數產生的複習排序，不是命題機率；修法、時事與命題政策仍須另外判斷。
+                  </p>
+                  <div className={styles.forecastMethod} aria-label="複習優先指數組成">
+                    <div><strong>45%</strong><span>近三年加權頻率</span></div>
+                    <div><strong>25%</strong><span>近五年出題覆蓋</span></div>
+                    <div><strong>20%</strong><span>近期升降趨勢</span></div>
+                    <div><strong>10%</strong><span>全期平均題數</span></div>
+                  </div>
+                  <div className={styles.forecastTable}>
+                    <table aria-label="115 年複習優先度">
+                      <thead>
+                        <tr>
+                          <th scope="col">排名／考點</th>
+                          <th scope="col">優先指數</th>
+                          <th scope="col">近三年加權</th>
+                          <th scope="col">近五年覆蓋</th>
+                          <th scope="col">近期動能</th>
+                          <th scope="col">最近出題</th>
+                          <th scope="col">判讀</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {forecastRows.map((item, index) => (
+                          <tr key={item.category}>
+                            <th scope="row">
+                              <span>{index + 1}</span>
+                              {item.category}
+                            </th>
+                            <td>
+                              <div className={styles.forecastScore}>
+                                <strong>{item.score}</strong>
+                                <i aria-hidden="true">
+                                  <b style={{ width: `${item.score}%` }} />
+                                </i>
+                              </div>
+                            </td>
+                            <td>{item.recentWeightedAverage} 題／年</td>
+                            <td>{Math.round(item.appearanceRate * 100)}%</td>
+                            <td data-tone={item.momentum > 0 ? 'up' : item.momentum < 0 ? 'down' : 'flat'}>
+                              {item.momentum > 0 ? '+' : ''}{item.momentum} 題／年
+                            </td>
+                            <td>
+                              {item.lastSeenYear
+                                ? `${item.lastSeenYear} 年${item.yearsWithoutAppearance
+                                  ? `（缺席 ${item.yearsWithoutAppearance} 年）`
+                                  : ''}`
+                                : '無紀錄'}
+                            </td>
+                            <td><span className={styles.forecastSignal}>{item.signal}</span></td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </section>
               </>
             ) : (
               <p className={styles.trendEmpty}>請至少勾選一個分類以顯示趨勢。</p>
