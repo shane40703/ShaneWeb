@@ -23,6 +23,7 @@ import {
   parseYear,
 } from '@/lib/study';
 import type { QuestionSummary, SubjectId } from '@/lib/types';
+import { DetailedTrendAnalysis } from './detailed-trend-analysis';
 import styles from './analysis-page.module.css';
 
 const chartColors = [
@@ -64,6 +65,13 @@ export function AnalysisPage({ questions }: { questions: QuestionSummary[] }) {
       : newestAvailableYear;
   const rangeStart = Math.min(fromYear, toYear);
   const rangeEnd = Math.max(fromYear, toYear);
+  const trendYears = [...availableYears]
+    .filter(
+      (candidateYear) =>
+        year !== 'all' ||
+        (candidateYear >= rangeStart && candidateYear <= rangeEnd),
+    )
+    .reverse();
   const source = questions.filter(
     (question) =>
       question.subject === subjectId &&
@@ -369,6 +377,13 @@ export function AnalysisPage({ questions }: { questions: QuestionSummary[] }) {
               </div>
             </div>
           </section>
+
+          <DetailedTrendAnalysis
+            questions={questions}
+            subjectId={subjectId}
+            years={trendYears}
+            colors={chartColors}
+          />
 
         </>
       ) : (

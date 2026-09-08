@@ -107,4 +107,59 @@ describe('AnalysisPage category quiz', () => {
       },
     });
   });
+
+  it('compares selected law categories across years with exact counts', () => {
+    router.query = {
+      subject: 'law',
+      year: 'all',
+      fromYear: '112',
+      toYear: '114',
+    };
+    const questions = [
+      question('law-114-01', 1),
+      question('law-114-02', 2),
+      { ...question('law-113-01', 1), year: 113 },
+      {
+        ...question('law-112-01', 1),
+        year: 112,
+        primaryCategory: '建築法',
+        topic: '建築法',
+        relatedLaws: ['建築法'],
+      },
+    ];
+
+    render(<AnalysisPage questions={questions} />);
+    fireEvent.click(screen.getByText('詳細趨勢分析'));
+
+    expect(
+      screen.getByRole('region', { name: '跨年度分類折線圖' }),
+    ).toBeInTheDocument();
+    expect(screen.getByText('各年度精確出題數')).toBeInTheDocument();
+    expect(screen.getAllByText('114 年・2 題')).not.toHaveLength(0);
+    expect(screen.getByText('選取項目總標註')).toBeInTheDocument();
+  });
+
+  it('can compare manually assigned fine topics', () => {
+    router.query = {
+      subject: 'law',
+      year: 'all',
+      fromYear: '113',
+      toYear: '114',
+    };
+    const questions = [
+      { ...question('law-114-01', 1), fineTopic: '防火區劃' },
+      { ...question('law-113-01', 1), year: 113, fineTopic: '防火區劃' },
+    ];
+
+    render(<AnalysisPage questions={questions} />);
+    fireEvent.click(screen.getByText('詳細趨勢分析'));
+    fireEvent.change(screen.getByLabelText('趨勢分析層級'), {
+      target: { value: 'fine-topic' },
+    });
+
+    expect(screen.getAllByText('防火區劃')).not.toHaveLength(0);
+    expect(
+      screen.getByRole('img', { name: /分類出題數量折線圖/ }),
+    ).toBeInTheDocument();
+  });
 });
