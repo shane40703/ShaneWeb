@@ -72,6 +72,52 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    match /users/{userId}/settings/interface {
+      function ownsInterfaceSettings() {
+        return request.auth != null && request.auth.uid == userId;
+      }
+
+      function validPalette(palette) {
+        return palette is map
+          && palette.keys().hasOnly([
+            'background', 'surface', 'text', 'muted', 'accent', 'border'
+          ])
+          && palette.keys().hasAll([
+            'background', 'surface', 'text', 'muted', 'accent', 'border'
+          ])
+          && palette.background is string
+          && palette.surface is string
+          && palette.text is string
+          && palette.muted is string
+          && palette.accent is string
+          && palette.border is string;
+      }
+
+      function validCustomPalettes() {
+        return request.resource.data.customPalettes is map
+          && request.resource.data.customPalettes.keys().hasOnly(['light', 'dark'])
+          && (!('light' in request.resource.data.customPalettes)
+            || validPalette(request.resource.data.customPalettes.light))
+          && (!('dark' in request.resource.data.customPalettes)
+            || validPalette(request.resource.data.customPalettes.dark));
+      }
+
+      allow read: if ownsInterfaceSettings();
+      allow create, update: if ownsInterfaceSettings()
+        && request.resource.data.keys().hasOnly([
+          'mode', 'customPalettes', 'questionFontSize', 'optionFontSize',
+          'updatedAt', 'syncedAt'
+        ])
+        && request.resource.data.mode in ['light', 'dark']
+        && validCustomPalettes()
+        && request.resource.data.questionFontSize in [14, 16, 18, 20, 22, 24]
+        && request.resource.data.optionFontSize in [14, 16, 18, 20, 22, 24]
+        && request.resource.data.updatedAt is string
+        && request.resource.data.updatedAt.size() <= 40
+        && request.resource.data.syncedAt is timestamp;
+      allow delete: if false;
+    }
+
     match /discussionPosts/{postId} {
       function signedIn() {
         return request.auth != null;

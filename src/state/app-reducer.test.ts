@@ -105,6 +105,19 @@ describe('appReducer', () => {
     expect(state.noteUpdatedAt['law-114-01']).toBeTruthy();
   });
 
+  it('replaces both reading preferences when account settings arrive', () => {
+    const state = appReducer(createDefaultState(), {
+      type: 'set-reading-preferences',
+      questionFontSize: 24,
+      optionFontSize: 16,
+    });
+
+    expect(state.readingPreferences).toEqual({
+      questionFontSize: 24,
+      optionFontSize: 16,
+    });
+  });
+
   it('replaces difficult questions with the deduplicated cloud list', () => {
     const state = appReducer(createDefaultState(), {
       type: 'set-difficult',

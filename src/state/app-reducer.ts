@@ -49,6 +49,11 @@ export type AppAction =
       target: 'question' | 'option';
       size: number;
     }
+  | {
+      type: 'set-reading-preferences';
+      questionFontSize: number;
+      optionFontSize: number;
+    }
   | { type: 'add-content-report'; report: ContentReport }
   | { type: 'delete-content-report'; reportId: string };
 
@@ -241,6 +246,14 @@ export function appReducer(state: AppState, action: AppAction): AppState {
           [action.target === 'question'
             ? 'questionFontSize'
             : 'optionFontSize']: action.size,
+        },
+      };
+    case 'set-reading-preferences':
+      return {
+        ...state,
+        readingPreferences: {
+          questionFontSize: action.questionFontSize,
+          optionFontSize: action.optionFontSize,
         },
       };
     case 'add-content-report':

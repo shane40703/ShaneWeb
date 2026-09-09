@@ -41,7 +41,7 @@ firebase deploy --only firestore:rules,storage
 - 在 Authentication > Settings > Authorized domains 加入正式網站網域。
 - 在 Vercel 專案的 Environment Variables 加入與 `.env.local` 相同的六個變數，然後重新部署。
 
-## 第一階段同步範圍
+## 同步範圍
 
 - 未登入：繼續保存於目前瀏覽器。
 - 第一次 Google 登入：合併本機與 Firestore 的歷屆試卷作答紀錄，依 `attempt.id` 去除重複。
@@ -49,7 +49,9 @@ firebase deploy --only firestore:rules,storage
 - 文字筆記依每題的 `updatedAt` 合併，較新的新增、修改或刪除會同步至其他登入裝置。
 - 筆記圖片目前仍只保存在本機；Data URL 不寫入 Firestore，以免超過文件大小限制。
 - 隨機出題紀錄原本就不保存，因此不會同步。
-- 難題標記以登入帳號的完整題號清單同步；閱讀設定與配色尚未納入同步。
+- 難題標記以登入帳號的完整題號清單同步。
+- 題目與選項字體大小、淺色／深色模式及自訂配色會跟隨登入帳號同步；帳號已有雲端設定時，以雲端版本套用到新裝置。
+- 「常錯題目」依已同步的歷屆試題交卷紀錄逐次累計，稍後答對不會刪除過去的答錯次數。
 
 ## 共享詳解與討論
 

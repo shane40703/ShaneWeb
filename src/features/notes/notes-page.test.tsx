@@ -345,4 +345,19 @@ describe('NotesPage question loading', () => {
     ).toBeInTheDocument();
     expect(screen.getByText('難題')).toBeInTheDocument();
   });
+
+  it('toggles the current question difficult marker from the note editor', async () => {
+    render(page());
+
+    fireEvent.click(
+      await screen.findByRole('button', { name: '標記為難題' }),
+    );
+
+    expect(
+      screen.getByRole('button', { name: '取消難題標記' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: '第 1 題（已標記難題）' }),
+    ).toBeInTheDocument();
+  });
 });

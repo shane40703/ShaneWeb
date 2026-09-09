@@ -13,6 +13,7 @@ import {
   AttachmentGallery,
   ImageAttachments,
 } from '@/components/image-attachments';
+import { DifficultButton } from '@/components/difficult-button';
 import {
   EmptyState,
   QuestionPrompt,
@@ -507,6 +508,15 @@ function NoteEditor({
       <div className={styles.editorFooter}>
         <span>{content.length} 字</span>
         <div>
+          <DifficultButton
+            active={state.difficultQuestionIds.includes(question.id)}
+            onClick={() =>
+              dispatch({
+                type: 'toggle-difficult',
+                questionId: question.id,
+              })
+            }
+          />
           {hasSavedNote ? (
             <ConfirmDialog
               trigger={

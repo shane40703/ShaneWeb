@@ -29,7 +29,7 @@ import { useAppState } from '@/state/app-state';
 
 type CustomThemePalettes = Partial<Record<ThemeMode, ThemePalette>>;
 
-interface ThemeContextValue {
+export interface ThemeContextValue {
   mode: ThemeMode;
   hydrated: boolean;
   palettes: Record<ThemeMode, ThemePalette>;
@@ -40,6 +40,10 @@ interface ThemeContextValue {
     palette: ThemePalette,
   ) => StorageWriteResult | 'invalid';
   resetPalette: (mode: ThemeMode) => StorageWriteResult;
+  replacePreferences: (
+    mode: ThemeMode,
+    customPalettes: Partial<Record<ThemeMode, ThemePalette>>,
+  ) => void;
 }
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
@@ -145,6 +149,39 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     [reportPersistence],
   );
 
+  const replacePreferences = useCallback(
+    (
+      nextMode: ThemeMode,
+      nextCustomPalettes: Partial<Record<ThemeMode, ThemePalette>>,
+    ) => {
+      const safePalettes: CustomThemePalettes = {};
+      for (const targetMode of ['light', 'dark'] as const) {
+        const palette = nextCustomPalettes[targetMode];
+        if (palette && validateThemePalette(targetMode, palette).valid) {
+          safePalettes[targetMode] = { ...palette };
+        }
+      }
+
+      modeRef.current = nextMode;
+      customPalettesRef.current = safePalettes;
+      setCurrentMode(nextMode);
+      setCustomPalettes(safePalettes);
+      applyThemeToDocument(nextMode, safePalettes[nextMode]);
+      reportPersistence(
+        'theme-mode',
+        writeStoredValue(THEME_MODE_STORAGE_KEY, nextMode),
+      );
+      reportPersistence(
+        'theme-colors',
+        writeStoredValue(
+          THEME_COLORS_STORAGE_KEY,
+          serializeStoredThemeColors(safePalettes),
+        ),
+      );
+    },
+    [reportPersistence],
+  );
+
   return (
     <ThemeContext.Provider
       value={{
@@ -155,6 +192,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         setMode,
         savePalette,
         resetPalette,
+        replacePreferences,
       }}
     >
       {children}
