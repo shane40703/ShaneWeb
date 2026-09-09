@@ -198,6 +198,21 @@ describe('AnalysisPage category quiz', () => {
     expect(screen.getByText('尚未選取比較分類')).toBeInTheDocument();
   });
 
+  it('keeps the trend chart compact and uses five automatic y-axis intervals', () => {
+    const questions = Array.from({ length: 27 }, (_, index) =>
+      question(`law-114-${String(index + 1).padStart(2, '0')}`, index + 1),
+    );
+
+    render(<AnalysisPage questions={questions} />);
+    fireEvent.click(screen.getByText('詳細趨勢分析'));
+
+    const chart = screen.getByRole('region', { name: '跨年度分類折線圖' });
+    const graphic = within(chart).getByRole('img');
+    expect(graphic).toHaveAttribute('viewBox', '0 0 820 320');
+    expect(within(chart).getByText('7')).toBeInTheDocument();
+    expect(within(chart).queryByText('27')).not.toBeInTheDocument();
+  });
+
   it('ranks stable and rising topics with explainable forecast metrics', () => {
     const ranking = buildForecastRanking(
       [

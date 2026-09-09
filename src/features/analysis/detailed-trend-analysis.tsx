@@ -170,22 +170,21 @@ export function buildForecastRanking(
 function LineChart({
   years,
   series,
-  maximum,
 }: {
   years: readonly number[];
   series: readonly (TrendSeries & { color: string })[];
-  maximum: number;
 }) {
   const width = 820;
-  const yMaximum = Math.max(1, maximum);
+  const height = 320;
   const margin = { top: 20, right: 24, bottom: 58, left: 62 };
-  const height = Math.max(320, yMaximum * 18 + margin.top + margin.bottom);
   const plotWidth = width - margin.left - margin.right;
   const plotHeight = height - margin.top - margin.bottom;
+  const maximum = Math.max(1, ...series.flatMap((item) => item.counts));
+  const roundedMaximum = Math.max(4, Math.ceil(maximum / 4) * 4);
   const x = (index: number) =>
     margin.left + (years.length === 1 ? plotWidth / 2 : (index / (years.length - 1)) * plotWidth);
-  const y = (value: number) => margin.top + plotHeight - (value / yMaximum) * plotHeight;
-  const ticks = Array.from({ length: yMaximum + 1 }, (_, value) => value);
+  const y = (value: number) => margin.top + plotHeight - (value / roundedMaximum) * plotHeight;
+  const ticks = [0, 1, 2, 3, 4].map((step) => (roundedMaximum / 4) * step);
   const chartLabel = `${years[0]} 年至 ${years.at(-1)} 年分類出題數量折線圖`;
 
   return (
@@ -342,8 +341,6 @@ export function DetailedTrendAnalysis({
   const classificationCoverage = scopedQuestions.length
     ? Math.round((classifiedQuestions / scopedQuestions.length) * 100)
     : 0;
-  const chartMaximum = Math.max(1, ...allSeries.flatMap((item) => item.counts));
-
   function changeFromYear(nextYear: number) {
     setTrendFromYear(nextYear);
     if (nextYear > trendToYear) setTrendToYear(nextYear);
@@ -482,7 +479,6 @@ export function DetailedTrendAnalysis({
               <LineChart
                 years={analysisYears}
                 series={selectedSeries}
-                maximum={chartMaximum}
               />
             </section>
 
