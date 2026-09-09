@@ -170,21 +170,23 @@ export function buildForecastRanking(
 function LineChart({
   years,
   series,
+  maximum,
 }: {
   years: readonly number[];
   series: readonly (TrendSeries & { color: string })[];
+  maximum: number;
 }) {
   const width = 820;
-  const height = 320;
-  const margin = { top: 20, right: 24, bottom: 42, left: 44 };
+  const yMaximum = Math.max(1, maximum);
+  const margin = { top: 20, right: 24, bottom: 58, left: 62 };
+  const height = Math.max(320, yMaximum * 18 + margin.top + margin.bottom);
   const plotWidth = width - margin.left - margin.right;
   const plotHeight = height - margin.top - margin.bottom;
-  const maximum = Math.max(1, ...series.flatMap((item) => item.counts));
-  const roundedMaximum = Math.max(4, Math.ceil(maximum / 4) * 4);
   const x = (index: number) =>
     margin.left + (years.length === 1 ? plotWidth / 2 : (index / (years.length - 1)) * plotWidth);
-  const y = (value: number) => margin.top + plotHeight - (value / roundedMaximum) * plotHeight;
-  const ticks = [0, 1, 2, 3, 4].map((step) => (roundedMaximum / 4) * step);
+  const y = (value: number) => margin.top + plotHeight - (value / yMaximum) * plotHeight;
+  const ticks = Array.from({ length: yMaximum + 1 }, (_, value) => value);
+  const chartLabel = `${years[0]} 年至 ${years.at(-1)} 年分類出題數量折線圖`;
 
   return (
     <div className={styles.trendChartScroll}>
@@ -192,7 +194,7 @@ function LineChart({
         className={styles.trendChart}
         viewBox={`0 0 ${width} ${height}`}
         role="img"
-        aria-label={`${years[0]} 年至 ${years.at(-1)} 年分類出題數量折線圖`}
+        aria-label={`${chartLabel}${series.length ? '' : '，尚未選擇分類'}`}
       >
         {ticks.map((tick) => (
           <g key={tick}>
@@ -211,13 +213,40 @@ function LineChart({
         {years.map((year, index) => (
           <text
             x={x(index)}
-            y={height - 14}
+            y={height - 30}
             textAnchor="middle"
             key={year}
           >
             {year}
           </text>
         ))}
+        <text
+          className={styles.trendAxisLabel}
+          x={margin.left + plotWidth / 2}
+          y={height - 8}
+          textAnchor="middle"
+        >
+          年份
+        </text>
+        <text
+          className={styles.trendAxisLabel}
+          x={16}
+          y={margin.top + plotHeight / 2}
+          textAnchor="middle"
+          transform={`rotate(-90 16 ${margin.top + plotHeight / 2})`}
+        >
+          出題數（題）
+        </text>
+        {!series.length ? (
+          <text
+            className={styles.trendChartEmpty}
+            x={margin.left + plotWidth / 2}
+            y={margin.top + plotHeight / 2}
+            textAnchor="middle"
+          >
+            勾選分類後顯示折線
+          </text>
+        ) : null}
         {series.map((item) => {
           const points = item.counts
             .map((count, index) => `${x(index)},${y(count)}`)
@@ -263,11 +292,19 @@ export function DetailedTrendAnalysis({
   colors: readonly string[];
 }) {
   const [dimension, setDimension] = useState<TrendDimension>('category');
+  const [trendFromYear, setTrendFromYear] = useState(years[0] ?? 0);
+  const [trendToYear, setTrendToYear] = useState(years.at(-1) ?? 0);
+  const rangeStart = Math.min(trendFromYear, trendToYear);
+  const rangeEnd = Math.max(trendFromYear, trendToYear);
+  const analysisYears = useMemo(
+    () => years.filter((year) => year >= rangeStart && year <= rangeEnd),
+    [rangeEnd, rangeStart, years],
+  );
   const selectionKey = `${subjectId}:${dimension}`;
   const [selectedByKey, setSelectedByKey] = useState<Record<string, string[]>>({});
   const allSeries = useMemo(
-    () => buildTrendSeries(questions, subjectId, years, dimension),
-    [dimension, questions, subjectId, years],
+    () => buildTrendSeries(questions, subjectId, analysisYears, dimension),
+    [analysisYears, dimension, questions, subjectId],
   );
   const storedSelection = selectedByKey[selectionKey];
   const selectedCategories = (storedSelection ?? allSeries.slice(0, 3).map((item) => item.category))
@@ -284,7 +321,7 @@ export function DetailedTrendAnalysis({
       item.counts.map((count, index) => ({
         category: item.category,
         count,
-        year: years[index],
+        year: analysisYears[index],
       })),
     )
     .sort((left, right) => right.count - left.count)[0];
@@ -295,9 +332,9 @@ export function DetailedTrendAnalysis({
     }))
     .sort((left, right) => Math.abs(right.change) - Math.abs(left.change))[0];
   const forecastYear = 115;
-  const forecastRows = buildForecastRanking(allSeries, years, forecastYear).slice(0, 10);
+  const forecastRows = buildForecastRanking(allSeries, analysisYears, forecastYear).slice(0, 10);
   const scopedQuestions = questions.filter(
-    (question) => question.subject === subjectId && years.includes(question.year),
+    (question) => question.subject === subjectId && analysisYears.includes(question.year),
   );
   const classifiedQuestions = scopedQuestions.filter(
     (question) => questionTrendCategories(question, subjectId, dimension).length > 0,
@@ -305,6 +342,17 @@ export function DetailedTrendAnalysis({
   const classificationCoverage = scopedQuestions.length
     ? Math.round((classifiedQuestions / scopedQuestions.length) * 100)
     : 0;
+  const chartMaximum = Math.max(1, ...allSeries.flatMap((item) => item.counts));
+
+  function changeFromYear(nextYear: number) {
+    setTrendFromYear(nextYear);
+    if (nextYear > trendToYear) setTrendToYear(nextYear);
+  }
+
+  function changeToYear(nextYear: number) {
+    setTrendToYear(nextYear);
+    if (nextYear < trendFromYear) setTrendFromYear(nextYear);
+  }
 
   function toggleCategory(category: string) {
     const isSelected = selectedCategories.includes(category);
@@ -337,21 +385,47 @@ export function DetailedTrendAnalysis({
           <div>
             <span>TREND ANALYSIS</span>
             <h2>跨年度命題趨勢</h2>
-            <p>{years[0]}～{years.at(-1)} 年；勾選最多 {maxSelectedSeries} 個項目進行比較。</p>
+            <p>{analysisYears[0]}～{analysisYears.at(-1)} 年；勾選最多 {maxSelectedSeries} 個項目進行比較。</p>
           </div>
-          {subjectId === 'law' ? (
-            <label>
-              分析層級
-              <select
-                aria-label="趨勢分析層級"
-                value={dimension}
-                onChange={(event) => setDimension(event.target.value as TrendDimension)}
-              >
-                <option value="category">法規分類</option>
-                <option value="fine-topic">人工細分考點</option>
-              </select>
-            </label>
-          ) : null}
+          <div className={styles.trendControls}>
+            {subjectId === 'law' ? (
+              <label>
+                分析層級
+                <select
+                  aria-label="趨勢分析層級"
+                  value={dimension}
+                  onChange={(event) => setDimension(event.target.value as TrendDimension)}
+                >
+                  <option value="category">法規分類</option>
+                  <option value="fine-topic">人工細分考點</option>
+                </select>
+              </label>
+            ) : null}
+            <fieldset className={styles.trendYearRange}>
+              <legend>趨勢年份區間</legend>
+              <label>
+                起始年度
+                <select
+                  aria-label="趨勢起始年度"
+                  value={rangeStart}
+                  onChange={(event) => changeFromYear(Number(event.target.value))}
+                >
+                  {years.map((year) => <option value={year} key={year}>{year} 年</option>)}
+                </select>
+              </label>
+              <span aria-hidden="true">至</span>
+              <label>
+                結束年度
+                <select
+                  aria-label="趨勢結束年度"
+                  value={rangeEnd}
+                  onChange={(event) => changeToYear(Number(event.target.value))}
+                >
+                  {years.map((year) => <option value={year} key={year}>{year} 年</option>)}
+                </select>
+              </label>
+            </fieldset>
+          </div>
         </header>
 
         {allSeries.length ? (
@@ -375,41 +449,45 @@ export function DetailedTrendAnalysis({
               })}
             </div>
 
+            <div className={styles.trendStats} data-empty={!selectedSeries.length || undefined}>
+              <div>
+                <span>選取項目總標註</span>
+                <strong>{selectedSeries.length ? `${selectedTotal} 題次` : '—'}</strong>
+              </div>
+              <div>
+                <span>最高單年出題量</span>
+                <strong>{peak ? `${peak.year} 年・${peak.count} 題` : '—'}</strong>
+                <small>{peak?.category || '尚未選取分類'}</small>
+              </div>
+              <div>
+                <span>首末年度變化最大</span>
+                <strong>
+                  {largestChange
+                    ? `${largestChange.change > 0 ? '+' : ''}${largestChange.change} 題`
+                    : '—'}
+                </strong>
+                <small>{largestChange?.category || '尚未選取分類'}</small>
+              </div>
+            </div>
+
+            <section className={styles.trendPanel} aria-label="跨年度分類折線圖">
+              <div className={styles.trendLegend}>
+                {selectedSeries.length ? selectedSeries.map((item) => (
+                  <span key={item.category}>
+                    <i style={{ background: item.color }} aria-hidden="true" />
+                    {item.category}
+                  </span>
+                )) : <span>尚未選取比較分類</span>}
+              </div>
+              <LineChart
+                years={analysisYears}
+                series={selectedSeries}
+                maximum={chartMaximum}
+              />
+            </section>
+
             {selectedSeries.length ? (
               <>
-                <div className={styles.trendStats}>
-                  <div>
-                    <span>選取項目總標註</span>
-                    <strong>{selectedTotal} 題次</strong>
-                  </div>
-                  <div>
-                    <span>最高單年出題量</span>
-                    <strong>{peak ? `${peak.year} 年・${peak.count} 題` : '—'}</strong>
-                    <small>{peak?.category}</small>
-                  </div>
-                  <div>
-                    <span>首末年度變化最大</span>
-                    <strong>
-                      {largestChange
-                        ? `${largestChange.change > 0 ? '+' : ''}${largestChange.change} 題`
-                        : '—'}
-                    </strong>
-                    <small>{largestChange?.category}</small>
-                  </div>
-                </div>
-
-                <section className={styles.trendPanel} aria-label="跨年度分類折線圖">
-                  <div className={styles.trendLegend}>
-                    {selectedSeries.map((item) => (
-                      <span key={item.category}>
-                        <i style={{ background: item.color }} aria-hidden="true" />
-                        {item.category}
-                      </span>
-                    ))}
-                  </div>
-                  <LineChart years={years} series={selectedSeries} />
-                </section>
-
                 <div className={styles.trendTable}>
                   <table>
                     <caption>各年度精確出題數</caption>
@@ -422,7 +500,7 @@ export function DetailedTrendAnalysis({
                       </tr>
                     </thead>
                     <tbody>
-                      {years.map((year, yearIndex) => (
+                      {analysisYears.map((year, yearIndex) => (
                         <tr key={year}>
                           <th scope="row">{year} 年</th>
                           {selectedSeries.map((item) => (
@@ -499,9 +577,7 @@ export function DetailedTrendAnalysis({
                   </div>
                 </section>
               </>
-            ) : (
-              <p className={styles.trendEmpty}>請至少勾選一個分類以顯示趨勢。</p>
-            )}
+            ) : null}
           </>
         ) : (
           <p className={styles.trendEmpty}>此分析層級目前沒有可用資料。</p>

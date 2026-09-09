@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AnalysisPage } from '@/features/analysis/analysis-page';
 import { buildForecastRanking } from '@/features/analysis/detailed-trend-analysis';
@@ -167,6 +167,35 @@ describe('AnalysisPage category quiz', () => {
     expect(
       screen.getByRole('img', { name: /分類出題數量折線圖/ }),
     ).toBeInTheDocument();
+  });
+
+  it('keeps an empty chart in place and filters its own year range', () => {
+    router.query = { subject: 'law', year: '114' };
+    const questions = [
+      question('law-114-01', 1),
+      { ...question('law-113-01', 1), year: 113 },
+      { ...question('law-112-01', 1), year: 112 },
+    ];
+
+    render(<AnalysisPage questions={questions} />);
+    fireEvent.click(screen.getByText('詳細趨勢分析'));
+    fireEvent.change(screen.getByLabelText('趨勢起始年度'), {
+      target: { value: '113' },
+    });
+
+    const chart = screen.getByRole('region', { name: '跨年度分類折線圖' });
+    expect(
+      within(chart).getByRole('img', { name: '113 年至 114 年分類出題數量折線圖' }),
+    ).toBeInTheDocument();
+    expect(within(chart).getByText('出題數（題）')).toBeInTheDocument();
+    expect(within(chart).getByText('年份')).toBeInTheDocument();
+    expect(within(chart).getByText('1')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('checkbox', { name: /建築技術規則/ }));
+
+    expect(screen.getByRole('region', { name: '跨年度分類折線圖' })).toBeInTheDocument();
+    expect(within(chart).getByText('勾選分類後顯示折線')).toBeInTheDocument();
+    expect(screen.getByText('尚未選取比較分類')).toBeInTheDocument();
   });
 
   it('ranks stable and rising topics with explainable forecast metrics', () => {

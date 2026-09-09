@@ -65,13 +65,7 @@ export function AnalysisPage({ questions }: { questions: QuestionSummary[] }) {
       : newestAvailableYear;
   const rangeStart = Math.min(fromYear, toYear);
   const rangeEnd = Math.max(fromYear, toYear);
-  const trendYears = [...availableYears]
-    .filter(
-      (candidateYear) =>
-        year !== 'all' ||
-        (candidateYear >= rangeStart && candidateYear <= rangeEnd),
-    )
-    .reverse();
+  const trendYears = [...availableYears].reverse();
   const source = questions.filter(
     (question) =>
       question.subject === subjectId &&
@@ -379,6 +373,7 @@ export function AnalysisPage({ questions }: { questions: QuestionSummary[] }) {
           </section>
 
           <DetailedTrendAnalysis
+            key={subjectId}
             questions={questions}
             subjectId={subjectId}
             years={trendYears}
