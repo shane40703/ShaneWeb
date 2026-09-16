@@ -35,7 +35,7 @@ export const subjects = [
 const subjectIds = subjects.map((subject) => subject.id);
 subjectIds satisfies readonly SubjectId[];
 
-export const years = Array.from({ length: 13 }, (_, index) => 114 - index);
+export const years = Array.from({ length: 15 }, (_, index) => 114 - index);
 
 export function getSubject(subjectId: string) {
   return subjects.find((subject) => subject.id === subjectId);

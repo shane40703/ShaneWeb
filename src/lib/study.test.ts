@@ -30,7 +30,7 @@ describe('question data', () => {
       expect(question.id).toBe(
         `${question.subject}-${question.year}-${String(question.questionNumber).padStart(2, '0')}`,
       );
-      expect(question.year).toBeGreaterThanOrEqual(102);
+      expect(question.year).toBeGreaterThanOrEqual(100);
       expect(question.year).toBeLessThanOrEqual(114);
       if (question.answerKey.kind === 'accepted') {
         expect(question.answerKey.options.length).toBeGreaterThan(0);
@@ -41,7 +41,7 @@ describe('question data', () => {
       }
       expect(question.primaryCategory.length).toBeGreaterThan(0);
     });
-    expect(questions).toHaveLength(3120);
+    expect(questions).toHaveLength(3600);
   });
 
   it('contains every official 113 question in all four subjects', () => {

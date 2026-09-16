@@ -1,0 +1,22 @@
+{
+  "primaryCategory": "構法",
+  "topic": "木構造",
+  "tags": [
+    "木構造"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "D"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 6
+  },
+  "images": {
+    "question-02.png": {
+      "alt": "第 36 題題幹引用圖示、PDF 題目區含向量圖形附圖"
+    }
+  }
+}

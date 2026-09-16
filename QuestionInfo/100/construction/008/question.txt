@@ -1,0 +1,8 @@
+8. 下圖所示H 型鋼尺寸之表示方法為下列何者？
+
+[圖片：images/figure1.png]
+
+A. B×H×t1×t2
+B. H×B×t1×t2
+C. H×t1×B×t2
+D. B×t1×H×t2

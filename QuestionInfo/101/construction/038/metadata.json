@@ -1,0 +1,19 @@
+{
+  "year": 101,
+  "subject": "construction",
+  "subjectName": "構造",
+  "questionNumber": 38,
+  "hasImage": true,
+  "imageFile": "images/figure1.png",
+  "imageReasons": [
+    "題幹文字疑似未完整擷取",
+    "題幹引用圖示",
+    "PDF 題目區含嵌入圖片"
+  ],
+  "sourcePages": [
+    7
+  ],
+  "warnings": [
+    "題幹文字疑似未完整擷取，請對照原 PDF"
+  ]
+}

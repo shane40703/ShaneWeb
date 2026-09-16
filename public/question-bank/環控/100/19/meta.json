@@ -1,0 +1,17 @@
+{
+  "primaryCategory": "設備",
+  "topic": "給排水",
+  "tags": [
+    "給排水"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "B"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 3
+  }
+}

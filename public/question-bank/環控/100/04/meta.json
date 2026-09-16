@@ -1,0 +1,22 @@
+{
+  "primaryCategory": "空氣",
+  "topic": "通風",
+  "tags": [
+    "通風"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "A"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 1
+  },
+  "images": {
+    "question-02.png": {
+      "alt": "第 4 題題幹引用圖示、PDF 題目區含向量圖形附圖"
+    }
+  }
+}
