@@ -43,7 +43,12 @@ import type {
   SubjectId,
 } from '@/lib/types';
 import type { QuestionBankStatus } from '@/lib/question-bank-client';
-import { formatDateTime, getQuestionDisplayCategories } from '@/lib/study';
+import {
+  comparePaperQuestionOrder,
+  formatDateTime,
+  formatQuestionNumberLabel,
+  getQuestionDisplayCategories,
+} from '@/lib/study';
 import {
   useDiscussionQuestionIds,
   useSharedDiscussions,
@@ -108,7 +113,7 @@ export function CommunityPage({
       .filter((question) => question.subject === pendingSubject)
       .sort(
         (left, right) =>
-          right.year - left.year || left.questionNumber - right.questionNumber,
+          right.year - left.year || comparePaperQuestionOrder(left, right),
     )[0];
     if (!first) return;
     void router.replace(
@@ -167,7 +172,7 @@ export function CommunityPage({
     .filter((question) => question.subject === currentQuestion.subject)
     .sort(
       (left, right) =>
-        right.year - left.year || left.questionNumber - right.questionNumber,
+        right.year - left.year || comparePaperQuestionOrder(left, right),
     );
   const availableYears = [
     ...new Set(subjectQuestions.map((question) => question.year)),
@@ -178,7 +183,7 @@ export function CommunityPage({
         question.subject === currentQuestion.subject &&
         question.year === currentQuestion.year,
     )
-    .sort((left, right) => left.questionNumber - right.questionNumber);
+    .sort(comparePaperQuestionOrder);
   const currentIndex = subjectQuestions.findIndex(
     (question) => question.id === currentQuestion.id,
   );
@@ -199,7 +204,7 @@ export function CommunityPage({
       .filter((question) => question.subject === subjectId)
       .sort(
         (left, right) =>
-          right.year - left.year || left.questionNumber - right.questionNumber,
+          right.year - left.year || comparePaperQuestionOrder(left, right),
       )[0];
     if (first) {
       setPendingSubject(null);
@@ -311,25 +316,34 @@ export function CommunityPage({
               {getQuestionDisplayCategories(currentQuestion).map((category) => (
                 <Tag tone="orange" key={category}>{category}</Tag>
               ))}
+              {currentQuestion.format === 'written' ? (
+                <Tag tone="purple">申論題</Tag>
+              ) : null}
               {currentQuestion.source.kind === 'sample' ? (
                 <Tag tone="purple">示範題</Tag>
               ) : null}
             </div>
-            <DifficultButton
-              active={difficult}
-              onClick={() =>
-                dispatch({ type: 'toggle-difficult', questionId: currentQuestion.id })
-              }
-            />
+            {currentQuestion.format !== 'written' ? (
+              <DifficultButton
+                active={difficult}
+                onClick={() =>
+                  dispatch({ type: 'toggle-difficult', questionId: currentQuestion.id })
+                }
+              />
+            ) : null}
           </header>
           <QuestionSourceLine question={currentQuestion} />
-          <h2 className={styles.questionNumber}>第 {currentQuestion.questionNumber} 題</h2>
+          <h2 className={styles.questionNumber}>
+            {formatQuestionNumberLabel(currentQuestion)}
+          </h2>
           <QuestionPrompt question={currentQuestion} />
-          <QuestionAnswerPanel
-            question={currentQuestion}
-            heading={null}
-            ariaLabel="題目選項"
-          />
+          {currentQuestion.format !== 'written' ? (
+            <QuestionAnswerPanel
+              question={currentQuestion}
+              heading={null}
+              ariaLabel="題目選項"
+            />
+          ) : null}
           <footer className={styles.questionNavigation}>
             <Button
               disabled={currentIndex <= 0}
@@ -613,7 +627,11 @@ export function CommunityPage({
             questions={paperQuestions.map((question) => ({
               id: question.id,
               questionNumber: question.questionNumber,
-              difficult: difficultQuestionIds.has(question.id),
+              label: formatQuestionNumberLabel(question, true),
+              ariaLabel: formatQuestionNumberLabel(question),
+              difficult:
+                question.format !== 'written' &&
+                difficultQuestionIds.has(question.id),
               hasContent:
                 Boolean(question.explanation?.trim()) ||
                 discussionQuestionIds.has(question.id),

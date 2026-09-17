@@ -24,7 +24,10 @@ export type QuestionContentBlock =
 
 export type AnswerKey =
   | { kind: 'accepted'; options: readonly number[] }
-  | { kind: 'all-credit' };
+  | { kind: 'all-credit' }
+  | { kind: 'written' };
+
+export type QuestionFormat = 'multiple-choice' | 'written';
 
 export type QuestionSource =
   | { kind: 'sample' }
@@ -39,6 +42,7 @@ export type QuestionSource =
 
 export interface Question {
   id: QuestionId;
+  format?: QuestionFormat;
   year: number;
   subject: SubjectId;
   questionNumber: number;
@@ -57,6 +61,7 @@ export interface Question {
 
 export interface QuestionSummary {
   id: string;
+  format?: QuestionFormat;
   subject: SubjectId;
   year: number;
   questionNumber: number;
@@ -72,6 +77,7 @@ export interface QuestionSummary {
 export type QuizQuestion = Pick<
   Question,
   | 'id'
+  | 'format'
   | 'subject'
   | 'year'
   | 'questionNumber'

@@ -120,6 +120,8 @@ export function QuestionNumberPicker({
   questions: readonly {
     id: string;
     questionNumber: number;
+    label?: ReactNode;
+    ariaLabel?: string;
     difficult?: boolean;
     hasContent?: boolean;
   }[];
@@ -134,13 +136,13 @@ export function QuestionNumberPicker({
         {questions.map((question) => (
           <QuestionNumberButton
             key={question.id}
-            ariaLabel={`第 ${question.questionNumber} 題`}
+            ariaLabel={question.ariaLabel ?? `第 ${question.questionNumber} 題`}
             active={question.id === value}
             difficult={question.difficult}
             hasContent={question.hasContent}
             onClick={() => onValueChange(question.id)}
           >
-            {question.questionNumber}
+            {question.label ?? question.questionNumber}
           </QuestionNumberButton>
         ))}
       </QuestionNumberGrid>

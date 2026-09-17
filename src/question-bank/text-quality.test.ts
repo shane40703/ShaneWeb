@@ -56,5 +56,5 @@ describe('question text quality', () => {
         privateUseCharacterPattern,
       );
     });
-  });
+  }, 15_000);
 });

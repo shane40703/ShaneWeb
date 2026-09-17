@@ -1,0 +1,20 @@
+{
+  "format": "written",
+  "primaryCategory": "力學",
+  "topic": "材料力學",
+  "tags": [
+    "材料力學"
+  ],
+  "answerKey": {
+    "kind": "written"
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 1
+  },
+  "images": {
+    "question-02.png": {
+      "alt": "106 年建築結構申論第 3 題附圖"
+    }
+  }
+}

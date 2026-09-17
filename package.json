@@ -12,6 +12,7 @@
     "lint": "eslint .",
     "import:113": "node scripts/import-113-question-bank.mjs",
     "import:question-bank": "node scripts/import-113-question-bank.mjs",
+    "import:written-questions": "node scripts/import-written-question-bank.mjs",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",

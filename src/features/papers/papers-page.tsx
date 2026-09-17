@@ -37,7 +37,16 @@ export function PapersPage({ questions }: { questions: QuestionSummary[] }) {
     .filter(
       (question) =>
         question.subject === subjectId &&
-        question.year === year,
+        question.year === year &&
+        question.format !== 'written',
+    )
+    .sort((left, right) => left.questionNumber - right.questionNumber);
+  const writtenQuestions = questions
+    .filter(
+      (question) =>
+        question.subject === subjectId &&
+        question.year === year &&
+        question.format === 'written',
     )
     .sort((left, right) => left.questionNumber - right.questionNumber);
   const progressScope = createQuizProgressScope({
@@ -95,17 +104,34 @@ export function PapersPage({ questions }: { questions: QuestionSummary[] }) {
       summary={
         <>
           已選 <strong>{subject.name} · {year} 年</strong>
+          {writtenQuestions.length ? (
+            <span className={styles.paperCounts}>
+              申論 {writtenQuestions.length} 題・選擇 {paperQuestions.length} 題
+            </span>
+          ) : null}
         </>
       }
       action={
-        paperQuestions[0] ? (
-          <Link
-            className={styles.startButton}
-            href={(resumeQuestion ?? paperQuestions[0]).path}
-          >
-            {resumeQuestion ? '繼續作答' : '開始作答'}
-            <IconArrowRight size={16} stroke={2} aria-hidden="true" />
-          </Link>
+        paperQuestions[0] || writtenQuestions[0] ? (
+          <div className={styles.actions}>
+            {writtenQuestions[0] ? (
+              <Link
+                className={styles.writtenButton}
+                href={writtenQuestions[0].path}
+              >
+                檢視申論題
+              </Link>
+            ) : null}
+            {paperQuestions[0] ? (
+              <Link
+                className={styles.startButton}
+                href={(resumeQuestion ?? paperQuestions[0]).path}
+              >
+                {resumeQuestion ? '繼續作答' : '開始作答'}
+                <IconArrowRight size={16} stroke={2} aria-hidden="true" />
+              </Link>
+            ) : null}
+          </div>
         ) : (
           <span className={styles.disabledAction} aria-disabled="true">
             尚未收錄

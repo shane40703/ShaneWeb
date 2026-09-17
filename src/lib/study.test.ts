@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { loadAllQuestions, loadQuizQuestions } from '@/server/question-bank.server';
+import {
+  loadAllQuestions,
+  loadQuizQuestions,
+  loadWrittenQuestions,
+} from '@/server/question-bank.server';
 import {
   createAttempt,
   createDefaultState,
@@ -97,6 +101,34 @@ describe('question data', () => {
     expect(
       quizQuestions.some((question) => question.explanation),
     ).toBe(false);
+  });
+
+  it('loads all 100–114 environmental-control and structure essay questions separately', async () => {
+    const environment = (
+      await Promise.all(
+        Array.from({ length: 15 }, (_, index) =>
+          loadWrittenQuestions('env', 100 + index),
+        ),
+      )
+    ).flat();
+    const structure = (
+      await Promise.all(
+        Array.from({ length: 15 }, (_, index) =>
+          loadWrittenQuestions('structure', 100 + index),
+        ),
+      )
+    ).flat();
+    const writtenQuestions = [...environment, ...structure];
+
+    expect(environment).toHaveLength(37);
+    expect(structure).toHaveLength(35);
+    expect(new Set(writtenQuestions.map((question) => question.id)).size).toBe(72);
+    writtenQuestions.forEach((question) => {
+      expect(question.format).toBe('written');
+      expect(question.answerKey).toEqual({ kind: 'written' });
+      expect(question.options).toEqual([]);
+      expect(question.path).toMatch(/\/written-\d{2}$/);
+    });
   });
 });
 

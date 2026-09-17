@@ -1,0 +1,20 @@
+{
+  "format": "written",
+  "primaryCategory": "鋼筋混凝土",
+  "topic": "鋼筋混凝土",
+  "tags": [
+    "鋼筋混凝土"
+  ],
+  "answerKey": {
+    "kind": "written"
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 1
+  },
+  "images": {
+    "question-02.png": {
+      "alt": "103 年建築結構申論第 2 題附圖"
+    }
+  }
+}

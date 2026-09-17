@@ -51,6 +51,9 @@ function parseAnswerInfo(content: string, source: string, year: number) {
 
 function runtimeAnswer(question: Pick<Question, 'answerKey'>) {
   if (question.answerKey.kind === 'all-credit') return 'ABCD';
+  if (question.answerKey.kind === 'written') {
+    throw new Error('申論題不應出現在選擇題答案驗證中');
+  }
   return question.answerKey.options
     .map((index) => ANSWER_LABELS[index])
     .join('');

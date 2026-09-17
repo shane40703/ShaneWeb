@@ -37,7 +37,11 @@ import type { QuestionBankStatus } from '@/lib/question-bank-client';
 import { parseQuestionId } from '@/lib/question-path';
 import { getSubject, years } from '@/question-bank/catalog';
 import { useDiscussionPublisher } from '@/lib/shared-discussions';
-import { getQuestionDisplayCategories } from '@/lib/study';
+import {
+  comparePaperQuestionOrder,
+  formatQuestionNumberLabel,
+  getQuestionDisplayCategories,
+} from '@/lib/study';
 import type { ImageAttachment, Question, SubjectId } from '@/lib/types';
 import { useClientReady } from '@/lib/use-client-ready';
 import { useAppState } from '@/state/app-state';
@@ -135,7 +139,7 @@ export function NotesPage({
       .sort(
         (left, right) =>
           right.year - left.year ||
-          left.questionNumber - right.questionNumber,
+          comparePaperQuestionOrder(left, right),
       )[0];
     if (!first) return;
     void Promise.resolve(navigateTo(first.id)).then(() => {
@@ -221,7 +225,7 @@ export function NotesPage({
         question.subject === currentQuestion.subject &&
         question.year === currentQuestion.year,
     )
-    .sort((left, right) => left.questionNumber - right.questionNumber);
+    .sort(comparePaperQuestionOrder);
   const noteIds = [
     ...new Set([...Object.keys(state.notes), ...Object.keys(state.noteImages)]),
   ];
@@ -251,7 +255,7 @@ export function NotesPage({
       .filter((question) => question.subject === subjectId)
       .sort(
         (left, right) =>
-          right.year - left.year || left.questionNumber - right.questionNumber,
+          right.year - left.year || comparePaperQuestionOrder(left, right),
       )[0];
     if (first) {
       void navigateTo(first.id);
@@ -333,13 +337,16 @@ export function NotesPage({
                   return (
                     <QuestionNumberButton
                       key={item.id}
-                      ariaLabel={`第 ${item.questionNumber} 題`}
+                      ariaLabel={formatQuestionNumberLabel(item)}
                       active={item.id === currentQuestion.id}
-                      difficult={state.difficultQuestionIds.includes(item.id)}
+                      difficult={
+                        item.format !== 'written' &&
+                        state.difficultQuestionIds.includes(item.id)
+                      }
                       noted={hasNote}
                       onClick={() => navigateTo(item.id)}
                     >
-                      {item.questionNumber}
+                      {formatQuestionNumberLabel(item, true)}
                     </QuestionNumberButton>
                   );
                 })}
@@ -354,9 +361,9 @@ export function NotesPage({
             <header><span>SAVED</span><h2>已儲存筆記</h2><strong>{visibleNoteEntries.length}</strong></header>
             {visibleNoteEntries.length ? (
               <div>
-                {visibleNoteEntries.map(({ id, subject, year, questionNumber, content, imageCount }) => (
+                {visibleNoteEntries.map(({ id, subject, year, format, questionNumber, content, imageCount }) => (
                   <button key={id} onClick={() => void navigateTo(id)} aria-current={id === currentQuestion.id}>
-                    <span>{year}・{getSubject(subject)?.shortName}・第 {questionNumber} 題</span>
+                    <span>{year}・{getSubject(subject)?.shortName}・{formatQuestionNumberLabel({ format, questionNumber })}</span>
                     <strong>{content || `圖片筆記 ${imageCount} 張`}</strong>
                   </button>
                 ))}
@@ -449,18 +456,25 @@ function NoteEditor({
         {getQuestionDisplayCategories(question).map((category) => (
           <Tag tone="orange" key={category}>{category}</Tag>
         ))}
+        {question.format === 'written' ? (
+          <Tag tone="purple">申論題</Tag>
+        ) : null}
         {question.source.kind === 'sample' ? (
           <Tag tone="purple">示範題</Tag>
         ) : null}
       </div>
       <QuestionSourceLine question={question} />
-      <h2 className={styles.questionNumber}>第 {question.questionNumber} 題</h2>
+      <h2 className={styles.questionNumber}>
+        {formatQuestionNumberLabel(question)}
+      </h2>
       <QuestionPrompt question={question} />
-      <QuestionAnswerPanel
-        question={question}
-        heading={null}
-        ariaLabel="題目選項"
-      />
+      {question.format !== 'written' ? (
+        <QuestionAnswerPanel
+          question={question}
+          heading={null}
+          ariaLabel="題目選項"
+        />
+      ) : null}
       {editing ? (
         <>
           <div className={styles.noteToolbar}>
@@ -508,15 +522,17 @@ function NoteEditor({
       <div className={styles.editorFooter}>
         <span>{content.length} 字</span>
         <div>
-          <DifficultButton
-            active={state.difficultQuestionIds.includes(question.id)}
-            onClick={() =>
-              dispatch({
-                type: 'toggle-difficult',
-                questionId: question.id,
-              })
-            }
-          />
+          {question.format !== 'written' ? (
+            <DifficultButton
+              active={state.difficultQuestionIds.includes(question.id)}
+              onClick={() =>
+                dispatch({
+                  type: 'toggle-difficult',
+                  questionId: question.id,
+                })
+              }
+            />
+          ) : null}
           {hasSavedNote ? (
             <ConfirmDialog
               trigger={

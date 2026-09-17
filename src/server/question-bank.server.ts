@@ -15,11 +15,16 @@ import {
 } from '@/question-bank/schema';
 import { questionPath } from '@/lib/question-path';
 import { getQuestionDisplayCategories, toQuizQuestion } from '@/lib/study';
-import type { Question, QuestionSummary, QuizQuestion } from '@/lib/types';
+import type {
+  Question,
+  QuestionFormat,
+  QuestionSummary,
+  QuizQuestion,
+} from '@/lib/types';
 
 const bankRoot = path.join(process.cwd(), 'public/question-bank');
 const yearDirectoryPattern = /^\d{3}$/;
-const questionDirectoryPattern = /^\d{2}$/;
+const questionDirectoryPattern = /^(?:\d{2}|written-\d{2})$/;
 const questionFilePattern = /^question-(\d{2})\.(txt|png|jpe?g|webp)$/;
 const questionImageFilePattern = /^question-\d{2}\.(png|jpe?g|webp)$/;
 const privateUseCharacterPattern = /[\uE000-\uF8FF]/u;
@@ -33,6 +38,7 @@ function bankEntries(entries: readonly Dirent[]) {
 }
 
 interface RuntimeQuestionMeta {
+  format: QuestionFormat;
   primaryCategory: string;
   topic: string;
   tags: readonly string[];
@@ -47,7 +53,9 @@ interface QuestionEntry {
   subject: SubjectId;
   subjectDirectory: string;
   year: number;
+  format: QuestionFormat;
   questionNumber: number;
+  entryName: string;
   directory: string;
   meta: RuntimeQuestionMeta;
   paper?: PaperMeta;
@@ -107,12 +115,16 @@ function stringArray(filePath: string, value: unknown, label: string) {
 function parseAnswerKey(filePath: string, value: unknown): SourceAnswerKey {
   const answerKey = objectValue(filePath, value, 'answerKey');
   const kind = stringValue(filePath, answerKey.kind, 'answerKey.kind');
+  if (kind === 'written') {
+    validateKeys(filePath, answerKey, ['kind'], ['kind']);
+    return { kind };
+  }
   if (kind === 'all-credit') {
     validateKeys(filePath, answerKey, ['kind'], ['kind']);
     return { kind };
   }
   if (kind !== 'accepted')
-    fail(filePath, 'answerKey.kind must be accepted or all-credit');
+    fail(filePath, 'answerKey.kind must be accepted, all-credit, or written');
   validateKeys(filePath, answerKey, ['kind', 'options'], ['kind', 'options']);
   const options = stringArray(filePath, answerKey.options, 'answerKey.options');
   if (!options.length) fail(filePath, 'answerKey.options must not be empty');
@@ -164,6 +176,7 @@ function parseQuestionMeta(
     filePath,
     meta,
     [
+      'format',
       'primaryCategory',
       'topic',
       'tags',
@@ -175,6 +188,21 @@ function parseQuestionMeta(
     ],
     ['primaryCategory', 'topic', 'tags', 'answerKey', 'provenance'],
   );
+
+  const formatValue = meta.format === undefined
+    ? 'multiple-choice'
+    : stringValue(filePath, meta.format, 'format');
+  if (formatValue !== 'multiple-choice' && formatValue !== 'written') {
+    fail(filePath, 'format must be multiple-choice or written');
+  }
+  const format: QuestionFormat = formatValue;
+  const answerKey = parseAnswerKey(filePath, meta.answerKey);
+  if (format === 'written' && answerKey.kind !== 'written') {
+    fail(filePath, 'written questions require answerKey.kind written');
+  }
+  if (format === 'multiple-choice' && answerKey.kind === 'written') {
+    fail(filePath, 'multiple-choice questions cannot use answerKey.kind written');
+  }
 
   const primaryCategory = stringValue(filePath, meta.primaryCategory, 'primaryCategory');
   const topic = stringValue(filePath, meta.topic, 'topic');
@@ -193,6 +221,7 @@ function parseQuestionMeta(
   }
 
   return {
+    format,
     primaryCategory,
     topic,
     tags,
@@ -202,7 +231,7 @@ function parseQuestionMeta(
     ...(meta.fineTopic === undefined
       ? {}
       : { fineTopic: stringValue(filePath, meta.fineTopic, 'fineTopic') }),
-    answerKey: parseAnswerKey(filePath, meta.answerKey),
+    answerKey,
     provenance: parseProvenance(filePath, meta.provenance),
     ...(meta.images === undefined ? {} : { images: parseImages(filePath, meta.images) }),
   } satisfies RuntimeQuestionMeta;
@@ -328,10 +357,18 @@ async function discoverYear(
       if (meta.provenance.kind === 'official' && !paper) {
         fail(metaPath, 'official questions require paper.json in the year directory');
       }
-      const questionNumber = Number(questionEntryName);
+      const format: QuestionFormat = questionEntryName.startsWith('written-')
+        ? 'written'
+        : 'multiple-choice';
+      if (meta.format !== format) {
+        fail(metaPath, `format ${meta.format} does not match directory ${questionEntryName}`);
+      }
+      const questionNumber = Number(
+        format === 'written' ? questionEntryName.slice('written-'.length) : questionEntryName,
+      );
       if (questionNumber <= 0)
         fail(directory, 'question number must be greater than zero');
-      if (paper && questionNumber > paper.totalQuestions) {
+      if (paper && format === 'multiple-choice' && questionNumber > paper.totalQuestions) {
         fail(
           metaPath,
           `question number exceeds paper totalQuestions ${paper.totalQuestions}`,
@@ -341,7 +378,9 @@ async function discoverYear(
         subject,
         subjectDirectory,
         year,
+        format,
         questionNumber,
+        entryName: questionEntryName,
         directory,
         meta,
         ...(paper ? { paper } : {}),
@@ -351,11 +390,12 @@ async function discoverYear(
 
   if (
     paper?.status === 'official-complete' &&
-    questions.length !== paper.totalQuestions
+    questions.filter((question) => question.format === 'multiple-choice').length !==
+      paper.totalQuestions
   ) {
     fail(
       path.join(yearDirectory, 'paper.json'),
-      `official-complete paper declares ${paper.totalQuestions} questions but found ${questions.length}`,
+      `official-complete paper declares ${paper.totalQuestions} multiple-choice questions but found ${questions.filter((question) => question.format === 'multiple-choice').length}`,
     );
   }
   return questions;
@@ -402,6 +442,7 @@ async function discoverQuestionEntries() {
     (left, right) =>
       (subjectOrder.get(left.subject) ?? 99) - (subjectOrder.get(right.subject) ?? 99) ||
       right.year - left.year ||
+      (left.format === 'written' ? 0 : 1) - (right.format === 'written' ? 0 : 1) ||
       left.questionNumber - right.questionNumber,
   );
 }
@@ -429,6 +470,7 @@ interface BankCache {
   fingerprint: string;
   entries: Promise<QuestionEntry[]>;
   summaries?: Promise<QuestionSummary[]>;
+  paperSummaries?: Promise<QuestionSummary[]>;
 }
 
 const watchesQuestionBank = process.env.NODE_ENV === 'development';
@@ -451,14 +493,16 @@ async function getQuestionEntries() {
 }
 
 function questionId(entry: QuestionEntry) {
-  return `${entry.subject}-${entry.year}-${String(entry.questionNumber).padStart(2, '0')}`;
+  const number = String(entry.questionNumber).padStart(2, '0');
+  return `${entry.subject}-${entry.year}-${entry.format === 'written' ? 'written-' : ''}${number}`;
 }
 
 function publicAssetPath(entry: QuestionEntry, fileName: string) {
-  return `/${['question-bank', entry.subjectDirectory, String(entry.year), String(entry.questionNumber).padStart(2, '0'), fileName].join('/')}`;
+  return `/${['question-bank', entry.subjectDirectory, String(entry.year), entry.entryName, fileName].join('/')}`;
 }
 
 function runtimeAnswerKey(answerKey: SourceAnswerKey) {
+  if (answerKey.kind === 'written') return { kind: 'written' as const };
   if (answerKey.kind === 'all-credit') return { kind: 'all-credit' as const };
   return {
     kind: 'accepted' as const,
@@ -474,6 +518,7 @@ async function discoverQuestionSummaries(
       const question = await loadQuestion(entry);
       return {
         id: question.id,
+        ...(question.format ? { format: question.format } : {}),
         subject: question.subject,
         year: question.year,
         questionNumber: question.questionNumber,
@@ -483,7 +528,12 @@ async function discoverQuestionSummaries(
         ...(question.relatedLaws?.length ? { relatedLaws: question.relatedLaws } : {}),
         ...(question.fineTopic ? { fineTopic: question.fineTopic } : {}),
         text: question.text,
-        path: questionPath(entry.subject, entry.year, entry.questionNumber),
+        path: questionPath(
+          entry.subject,
+          entry.year,
+          entry.questionNumber,
+          entry.format,
+        ),
       };
     }),
   );
@@ -491,8 +541,18 @@ async function discoverQuestionSummaries(
 
 export async function getQuestionSummaries(): Promise<QuestionSummary[]> {
   const cache = await getBankCache();
-  cache.summaries ??= cache.entries.then(discoverQuestionSummaries);
+  cache.summaries ??= cache.entries.then((entries) =>
+    discoverQuestionSummaries(
+      entries.filter((entry) => entry.format === 'multiple-choice'),
+    ),
+  );
   return cache.summaries;
+}
+
+export async function getPaperQuestionSummaries(): Promise<QuestionSummary[]> {
+  const cache = await getBankCache();
+  cache.paperSummaries ??= cache.entries.then(discoverQuestionSummaries);
+  return cache.paperSummaries;
 }
 
 export async function getQuestionStaticPaths() {
@@ -500,17 +560,23 @@ export async function getQuestionStaticPaths() {
     params: {
       subject: entry.subject,
       year: String(entry.year),
-      number: String(entry.questionNumber).padStart(2, '0'),
+      number: entry.entryName,
     },
   }));
 }
 
 export async function findQuestionEntry(subject: string, year: string, number: string) {
+  const writtenMatch = /^written-(\d+)$/.exec(number);
+  const normalizedNumber = writtenMatch
+    ? `written-${String(Number(writtenMatch[1])).padStart(2, '0')}`
+    : /^\d+$/.test(number)
+      ? String(Number(number)).padStart(2, '0')
+      : number;
   return (await getQuestionEntries()).find(
     (entry) =>
       entry.subject === subject &&
       entry.year === Number(year) &&
-      entry.questionNumber === Number(number),
+      entry.entryName === normalizedNumber,
   );
 }
 
@@ -704,7 +770,9 @@ export async function loadQuestion(entry: QuestionEntry): Promise<Question> {
 
   const allowedNames = new Set([
     'meta.json',
-    ...answerLabels.map((answer) => `${answer}.txt`),
+    ...(entry.format === 'multiple-choice'
+      ? answerLabels.map((answer) => `${answer}.txt`)
+      : []),
     'explanation.txt',
     ...contentFiles.map((file) => file.name),
   ]);
@@ -715,8 +783,10 @@ export async function loadQuestion(entry: QuestionEntry): Promise<Question> {
   }
 
   const options: string[] = [];
-  for (const answer of answerLabels) {
-    options.push(await readRequiredText(path.join(directory, `${answer}.txt`)));
+  if (entry.format === 'multiple-choice') {
+    for (const answer of answerLabels) {
+      options.push(await readRequiredText(path.join(directory, `${answer}.txt`)));
+    }
   }
   const content: Question['content'][number][] = [];
   const plainText: string[] = [];
@@ -772,6 +842,7 @@ export async function loadQuestion(entry: QuestionEntry): Promise<Question> {
 
   return {
     id: questionId(entry),
+    format: entry.format,
     year: entry.year,
     subject: entry.subject,
     questionNumber: entry.questionNumber,
@@ -806,7 +877,11 @@ async function loadQuestions(entries: readonly QuestionEntry[]) {
 }
 
 export async function loadAllQuestions() {
-  return loadQuestions(await getQuestionEntries());
+  return loadQuestions(
+    (await getQuestionEntries()).filter(
+      (entry) => entry.format === 'multiple-choice',
+    ),
+  );
 }
 
 export async function loadSubjectQuestions(
@@ -832,7 +907,24 @@ export async function loadQuizQuestions(
   year?: number,
 ): Promise<QuizQuestion[]> {
   const entries = (await getQuestionEntries()).filter(
-    (entry) => entry.subject === subject && (year === undefined || entry.year === year),
+    (entry) =>
+      entry.format === 'multiple-choice' &&
+      entry.subject === subject &&
+      (year === undefined || entry.year === year),
+  );
+  const questions = await loadQuestions(entries);
+  return questions.map(toQuizQuestion);
+}
+
+export async function loadWrittenQuestions(
+  subject: SubjectId,
+  year: number,
+): Promise<QuizQuestion[]> {
+  const entries = (await getQuestionEntries()).filter(
+    (entry) =>
+      entry.format === 'written' &&
+      entry.subject === subject &&
+      entry.year === year,
   );
   const questions = await loadQuestions(entries);
   return questions.map(toQuizQuestion);

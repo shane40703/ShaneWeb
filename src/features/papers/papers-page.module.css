@@ -1,4 +1,5 @@
 .startButton,
+.writtenButton,
 .disabledAction {
   min-height: 42px;
   padding: 0 20px;
@@ -17,6 +18,31 @@
   color: var(--on-primary);
   text-decoration: none;
   transition: background 150ms ease;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.writtenButton {
+  border: 1px solid var(--primary);
+  background: var(--surface);
+  color: var(--primary-strong);
+  text-decoration: none;
+}
+
+.writtenButton:hover {
+  background: var(--primary-soft);
+}
+
+.paperCounts {
+  margin-left: 10px;
+  color: var(--subtle-text);
+  font-size: 12px;
 }
 
 .startButton:hover {

@@ -10,6 +10,9 @@ public/question-bank/
 │   └── 114/
 │       ├── paper.json
 │       ├── source/paper.pdf
+│       ├── written-01/
+│       │   ├── meta.json
+│       │   └── question-01.txt
 │       └── 49/
 │           ├── meta.json
 │           ├── question-01.txt
@@ -30,10 +33,10 @@ public/question-bank/
 ## 題目檔案規則
 
 - 科目 ID 與資料夾由 `catalog.ts` 唯一對應，例如 `law` → `法規`。
-- 年度使用三位數民國年，題號資料夾使用兩位數。
+- 年度使用三位數民國年；選擇題資料夾使用兩位數，申論題使用 `written-NN`。
 - `subject`、`year`、`questionNumber` 由目錄路徑推導，不寫入 metadata。
 - 題幹檔名為 `question-NN.txt` 或 `question-NN.png|jpg|jpeg|webp`；文字與圖片依 `NN` 由小到大顯示，編號不可重複。
-- 每題必須有非空白的 `A.txt`、`B.txt`、`C.txt`、`D.txt`。
+- 選擇題必須有非空白的 `A.txt`、`B.txt`、`C.txt`、`D.txt`；申論題不放選項檔。
 - `explanation.txt` 可省略；存在時不可為空白。
 - 每題必須有 `meta.json`；官方年度可用 `paper.json` 記錄試卷、答案與更正答案來源。
 - 原始 PDF 可封存於年度的 `source/`。
@@ -84,6 +87,18 @@ public/question-bank/
 }
 ```
 
+申論題使用下列欄位，並在歷屆試題頁以唯讀方式呈現，不納入作答、計分、
+錯題與難題統計；使用者仍可針對同一題建立筆記及詳解討論：
+
+```json
+{
+  "format": "written",
+  "answerKey": {
+    "kind": "written"
+  }
+}
+```
+
 若公告為一律給分：
 
 ```json
@@ -113,6 +128,25 @@ npm run import:question-bank -- 100 101
 
 匯入器會同步四科、15 個年度的題目、選項、官方答案和附圖，並寫入正式試卷來源。
 既有題目的分類欄位會保留，方便在作者分類工具人工調整後重新匯入題目內容。
+
+## 環控與結構申論題
+
+100～114 年申論題的中繼資料位於 `WrittenQuestionInfo/{年度}/{environment|structure}`。
+若要從原始 PDF 重新擷取文字，可執行：
+
+```bash
+python scripts/extract-written-questions.py --input "C:/Users/pre-user/Desktop/題目新增" --output WrittenQuestionInfo --years 100-114
+```
+
+每題若需要附圖，會列在 `WrittenQuestionInfo/image_checklist.md`。請自行截圖後放入
+該題的 `images` 資料夾，再執行：
+
+```bash
+npm run import:written-questions -- 100-114
+```
+
+匯入器會建立 `written-NN` 題目並複製人工附圖，但不會改動同年度的選擇題。
+重新匯入時會保留既有申論題的人工分類欄位。
 
 ## 作者分類工具
 
