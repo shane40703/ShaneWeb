@@ -30,6 +30,7 @@ function question(
 }
 
 const lawQuestion = question('law-114-01', 'law', 114, 1);
+const olderLawQuestion = question('law-113-03', 'law', 113, 3);
 const environmentQuestion = question('env-113-02', 'env', 113, 2);
 
 function attempt(
@@ -62,6 +63,9 @@ const attempts = [
   attempt('law-2', 'law', 114, '2026-08-02T00:00:00.000Z', {
     [lawQuestion.id]: 0,
   }),
+  attempt('law-older', 'law', 113, '2026-08-02T12:00:00.000Z', {
+    [olderLawQuestion.id]: 0,
+  }),
   attempt('env-1', 'env', 113, '2026-08-03T00:00:00.000Z', {
     [environmentQuestion.id]: 3,
   }),
@@ -76,7 +80,7 @@ function renderPage(sourceAttempts = attempts) {
       <AppStateProvider>
         <WrongPage
           attempts={sourceAttempts}
-          questions={[lawQuestion, environmentQuestion]}
+          questions={[lawQuestion, olderLawQuestion, environmentQuestion]}
           questionBankStatuses={{ law: 'ready', env: 'ready' }}
         />
       </AppStateProvider>
@@ -93,15 +97,26 @@ describe('WrongPage', () => {
     renderPage();
 
     const summary = await screen.findByRole('region', { name: '常錯題目摘要' });
-    expect(summary).toHaveTextContent('錯題數2');
-    expect(summary).toHaveTextContent('累計答錯3');
+    expect(summary).toHaveTextContent('錯題數3');
+    expect(summary).toHaveTextContent('累計答錯4');
     expect(screen.getByText('累計答錯 2 次')).toBeInTheDocument();
 
-    const filters = screen.getByRole('group', { name: '常錯題目科目分類' });
-    expect(within(filters).getByRole('button', { name: '建築法規與實務 1' }))
+    const filters = screen.getByRole('region', {
+      name: '常錯題目科目與年度分類',
+    });
+    expect(within(filters).getByRole('button', { name: /建築法規與實務/ }))
       .toHaveAttribute('aria-pressed', 'true');
+    expect(within(filters).getByRole('button', { name: '114 年' }))
+      .toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByText('law-114-01 題幹')).toBeInTheDocument();
+    expect(screen.queryByText('law-113-03 題幹')).not.toBeInTheDocument();
+
+    fireEvent.click(within(filters).getByRole('button', { name: '113 年' }));
+    expect(screen.getByText('law-113-03 題幹')).toBeInTheDocument();
+    expect(screen.queryByText('law-114-01 題幹')).not.toBeInTheDocument();
+
     fireEvent.click(
-      within(filters).getByRole('button', { name: '建築環境控制 1' }),
+      within(filters).getByRole('button', { name: /建築環境控制/ }),
     );
     expect(screen.getByText('env-113-02 題幹')).toBeInTheDocument();
     expect(screen.getByText('累計答錯 1 次')).toBeInTheDocument();

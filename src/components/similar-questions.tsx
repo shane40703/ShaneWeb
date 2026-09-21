@@ -20,7 +20,7 @@ export function SimilarQuestions({
     <section className={styles.panel} aria-label="類似題目">
       <header>
         <IconArrowsShuffle size={18} stroke={2} aria-hidden="true" />
-        <div><span>細分考點</span><strong>{similar.topic}</strong></div>
+        <div><span>類似考題</span><strong>{similar.topic}</strong></div>
       </header>
       <div className={styles.links}>
         {similar.questions.map((candidate) => (

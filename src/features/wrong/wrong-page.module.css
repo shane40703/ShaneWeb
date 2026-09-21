@@ -1,5 +1,6 @@
 .panel { min-height: 420px; padding: 18px; border: 1px solid var(--line); border-radius: 20px; background: var(--surface); box-shadow: var(--shadow-sm); }
 .loadedContent { display: grid; gap: 16px; }
+.selector > section { margin-bottom: 0; }
 .bankNotice { padding: 14px 16px; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 12px; border: 1px solid color-mix(in srgb, var(--warning) 42%, var(--line)); border-radius: 14px; background: var(--warning-soft); color: var(--text-soft); }
 .bankNotice svg { color: var(--warning); }
 .bankNotice strong { display: block; color: var(--text); font-size: 14px; }

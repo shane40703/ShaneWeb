@@ -219,6 +219,8 @@ describe('NotesPage question loading', () => {
     render(page({ questions: [current, similar] }));
 
     const panel = await screen.findByRole('region', { name: '類似題目' });
+    expect(panel).toHaveTextContent('類似考題');
+    expect(panel).not.toHaveTextContent('細分考點');
     expect(panel).toHaveTextContent('防火區劃與防火間隔');
     expect(within(panel).getByRole('link', { name: /113 年・第 2 題/ }))
       .toHaveAttribute('href', '/notes?question=law-113-02');

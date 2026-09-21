@@ -23,6 +23,7 @@ export function QuestionSelector({
   yearOptions,
   onSubjectChange,
   onYearChange,
+  disabledSubjectIds = [],
   questionPicker,
   summary,
   action,
@@ -33,6 +34,7 @@ export function QuestionSelector({
   yearOptions: readonly SelectorYearOption[];
   onSubjectChange: (subjectId: SubjectId) => void;
   onYearChange: (year: SelectorYear) => void;
+  disabledSubjectIds?: readonly SubjectId[];
   questionPicker?: ReactNode;
   summary?: ReactNode;
   action?: ReactNode;
@@ -46,6 +48,7 @@ export function QuestionSelector({
           <div className={styles.subjectGrid}>
             {subjects.map((subject) => {
               const selected = subject.id === subjectId;
+              const disabled = disabledSubjectIds.includes(subject.id);
               return (
                 <button
                   key={subject.id}
@@ -53,6 +56,7 @@ export function QuestionSelector({
                   className={styles.subjectButton}
                   data-subject={subject.id}
                   aria-pressed={selected}
+                  disabled={disabled}
                   onClick={() => onSubjectChange(subject.id)}
                 >
                   {selected ? (

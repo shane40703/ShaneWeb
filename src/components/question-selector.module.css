@@ -41,9 +41,14 @@
   transition: border-color 150ms ease, background 150ms ease;
 }
 
-.subjectButton:hover {
+.subjectButton:hover:not(:disabled) {
   border-color: var(--line-strong);
   background: var(--surface-2);
+}
+
+.subjectButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
 }
 
 .subjectButton[aria-pressed='true'] {
