@@ -1,0 +1,20 @@
+{
+  "format": "written",
+  "primaryCategory": "光",
+  "topic": "照明",
+  "tags": [
+    "照明"
+  ],
+  "answerKey": {
+    "kind": "written"
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 1
+  },
+  "images": {
+    "question-02.png": {
+      "alt": "103 年建築環境控制申論第 2 題附圖"
+    }
+  }
+}

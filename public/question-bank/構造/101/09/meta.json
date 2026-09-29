@@ -1,0 +1,17 @@
+{
+  "primaryCategory": "材料",
+  "topic": "材料",
+  "tags": [
+    "材料"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "D"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 1
+  }
+}

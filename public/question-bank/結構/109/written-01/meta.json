@@ -1,0 +1,20 @@
+{
+  "format": "written",
+  "primaryCategory": "耐震",
+  "topic": "耐震設計",
+  "tags": [
+    "耐震設計"
+  ],
+  "answerKey": {
+    "kind": "written"
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 1
+  },
+  "images": {
+    "question-02.png": {
+      "alt": "109 年建築結構申論第 1 題附圖"
+    }
+  }
+}

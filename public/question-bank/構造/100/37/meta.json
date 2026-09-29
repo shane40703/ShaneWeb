@@ -1,0 +1,22 @@
+{
+  "primaryCategory": "構法",
+  "topic": "木構造",
+  "tags": [
+    "木構造"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "A"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 6
+  },
+  "images": {
+    "question-02.png": {
+      "alt": "第 37 題題幹引用圖示、PDF 題目區含嵌入圖片附圖"
+    }
+  }
+}

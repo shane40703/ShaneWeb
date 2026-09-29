@@ -27,6 +27,14 @@ const questions: QuestionSummary[] = [1, 2, 3].map((questionNumber) => ({
   path: `/questions/law/114/${questionNumber}`,
 }));
 
+const writtenQuestion: QuestionSummary = {
+  ...questions[0],
+  id: 'law-114-written-01',
+  format: 'written',
+  text: '申論題題幹',
+  path: '/questions/law/114/written-01',
+};
+
 afterEach(cleanup);
 
 describe('PapersPage resume action', () => {
@@ -67,6 +75,20 @@ describe('PapersPage resume action', () => {
     expect(screen.getByRole('link', { name: '繼續作答' })).toHaveAttribute(
       'href',
       questions[1].path,
+    );
+  });
+
+  it('offers a separate view-only entry for essay questions', () => {
+    render(<PapersPage questions={[...questions, writtenQuestion]} />);
+
+    expect(screen.getByRole('link', { name: '檢視申論題' })).toHaveAttribute(
+      'href',
+      writtenQuestion.path,
+    );
+    expect(screen.getByText('申論 1 題・選擇 3 題')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: '開始作答' })).toHaveAttribute(
+      'href',
+      questions[0].path,
     );
   });
 });

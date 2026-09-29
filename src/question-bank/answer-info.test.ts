@@ -5,7 +5,7 @@ import { loadAllQuestions } from '@/server/question-bank.server';
 import type { Question, SubjectId } from '@/lib/types';
 
 const ANSWER_LABELS = ['A', 'B', 'C', 'D'] as const;
-const YEARS = Array.from({ length: 13 }, (_, index) => 102 + index);
+const YEARS = Array.from({ length: 15 }, (_, index) => 100 + index);
 const answerInfoRoot = path.join(process.cwd(), 'AnswersInfo');
 const sourceBySubject: Record<SubjectId, string> = {
   construction: 'construction',
@@ -51,6 +51,9 @@ function parseAnswerInfo(content: string, source: string, year: number) {
 
 function runtimeAnswer(question: Pick<Question, 'answerKey'>) {
   if (question.answerKey.kind === 'all-credit') return 'ABCD';
+  if (question.answerKey.kind === 'written') {
+    throw new Error('申論題不應出現在選擇題答案驗證中');
+  }
   return question.answerKey.options
     .map((index) => ANSWER_LABELS[index])
     .join('');
@@ -107,8 +110,8 @@ describe('AnswersInfo contract', () => {
       comparedOfficial += 1;
     }
 
-    expect(questions).toHaveLength(3120);
-    expect(comparedOfficial).toBe(3120);
+    expect(questions).toHaveLength(3600);
+    expect(comparedOfficial).toBe(3600);
     expect(skippedSamples).toBe(0);
   }, 15_000);
 });

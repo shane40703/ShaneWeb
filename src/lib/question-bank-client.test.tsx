@@ -2,6 +2,7 @@ import { renderHook, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { useSubjectQuestions } from '@/lib/question-bank-client';
 import type { Question, SubjectId } from '@/lib/types';
+import { years } from '@/question-bank/catalog';
 
 function question(id: string, subject: SubjectId): Question {
   return {
@@ -74,7 +75,7 @@ describe('useSubjectQuestions', () => {
         'env-114-01',
       ]),
     );
-    expect(fetchMock).toHaveBeenCalledTimes(26);
+    expect(fetchMock).toHaveBeenCalledTimes(years.length * 2);
   });
 
   it('limits each subject to one in-flight year request', async () => {
@@ -93,7 +94,7 @@ describe('useSubjectQuestions', () => {
 
     await waitFor(() => expect(result.current.status).toBe('ready'));
     expect(peak).toBe(1);
-    expect(fetchMock).toHaveBeenCalledTimes(13);
+    expect(fetchMock).toHaveBeenCalledTimes(years.length);
   });
 
   it('keeps successful years visible and retries only a failed year', async () => {
@@ -125,6 +126,6 @@ describe('useSubjectQuestions', () => {
     expect(result.current.questions.map((item) => item.id)).toEqual([
       'structure-114-01',
     ]);
-    expect(fetchMock).toHaveBeenCalledTimes(14);
+    expect(fetchMock).toHaveBeenCalledTimes(years.length + 1);
   });
 });

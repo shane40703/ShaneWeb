@@ -9,6 +9,10 @@ import {
 } from '@tabler/icons-react';
 import { ReviewNoteEditor } from '@/components/attempt-review';
 import { EmptyState, QuestionCard } from '@/components/content/content';
+import {
+  QuestionSelector,
+  type SelectorYear,
+} from '@/components/question-selector';
 import { Button, OptionGroup } from '@/components/ui/ui';
 import type { QuestionBankStatus } from '@/lib/question-bank-client';
 import {
@@ -18,37 +22,11 @@ import {
   isSubjectId,
 } from '@/lib/study';
 import type { Question, QuizAttempt, SubjectId } from '@/lib/types';
-import {
-  getWrongQuestionStats,
-  type WrongQuestionStat,
-} from '@/lib/wrong-questions';
-import { subjects } from '@/question-bank/catalog';
+import { getWrongQuestionStats } from '@/lib/wrong-questions';
+import { subjects, years } from '@/question-bank/catalog';
 import { useAppState } from '@/state/app-state';
 import styles from './wrong-page.module.css';
 
-function groupWrongQuestions(stats: WrongQuestionStat[]) {
-  return subjects.flatMap((subject) => {
-    const subjectStats = stats.filter(
-      ({ question }) => question.subject === subject.id,
-    );
-    if (!subjectStats.length) return [];
-    const yearGroups = [
-      ...new Set(subjectStats.map(({ question }) => question.year)),
-    ]
-      .sort((left, right) => right - left)
-      .map((year) => ({
-        year,
-        stats: subjectStats
-          .filter(({ question }) => question.year === year)
-          .sort(
-            (left, right) =>
-              right.wrongCount - left.wrongCount ||
-              left.question.questionNumber - right.question.questionNumber,
-          ),
-      }));
-    return [{ subject, stats: subjectStats, yearGroups }];
-  });
-}
 function WrongQuestionPractice({ question }: { question: Question }) {
   const { dispatch } = useAppState();
   const [selected, setSelected] = useState<number>();
@@ -134,6 +112,7 @@ export function WrongPage({
 }) {
   const { state, dispatch, hydrated } = useAppState();
   const [subjectFilter, setSubjectFilter] = useState<SubjectId>();
+  const [yearFilter, setYearFilter] = useState<number>();
   const stats = getWrongQuestionStats(attempts, questions);
   const attemptedSubjects = [
     ...new Set(
@@ -156,10 +135,32 @@ export function WrongPage({
   )
     ? subjectFilter
     : availableSubjects[0]?.id;
-  const visibleStats = stats.filter(
+  const activeSubject = availableSubjects.find(
+    (subject) => subject.id === activeSubjectFilter,
+  );
+  const subjectStats = stats.filter(
     ({ question }) => question.subject === activeSubjectFilter,
   );
-  const groups = groupWrongQuestions(visibleStats);
+  const availableYears = years.filter((year) =>
+    subjectStats.some(({ question }) => question.year === year),
+  );
+  const activeYearFilter = yearFilter && availableYears.includes(yearFilter)
+    ? yearFilter
+    : availableYears[0];
+  const visibleStats = subjectStats
+    .filter(({ question }) => question.year === activeYearFilter)
+    .sort(
+      (left, right) =>
+        right.wrongCount - left.wrongCount ||
+        left.question.questionNumber - right.question.questionNumber,
+    );
+  const disabledSubjectIds = subjects
+    .filter((subject) => !availableSubjects.some((item) => item.id === subject.id))
+    .map((subject) => subject.id);
+
+  function changeYear(nextYear: SelectorYear) {
+    if (typeof nextYear === 'number') setYearFilter(nextYear);
+  }
 
   if (!hydrated) {
     return (
@@ -259,96 +260,76 @@ export function WrongPage({
               </div>
               <p>依已儲存的歷屆試題交卷紀錄統計；重新答對不會刪除過去的錯題次數。</p>
             </section>
-            <section
-              className={styles.subjectFilters}
-              role="group"
-              aria-label="常錯題目科目分類"
-            >
-              {availableSubjects.map((subject) => {
-                const subjectStats = stats.filter(
-                  ({ question }) => question.subject === subject.id,
-                );
-                return (
-                  <button
-                    key={subject.id}
-                    type="button"
-                    aria-pressed={activeSubjectFilter === subject.id}
-                    onClick={() => setSubjectFilter(subject.id)}
-                  >
-                    {subject.name} <span>{subjectStats.length}</span>
-                  </button>
-                );
-              })}
-            </section>
+            <div className={styles.selector}>
+              <QuestionSelector
+                subjectId={activeSubjectFilter ?? subjects[0].id}
+                year={activeYearFilter ?? years[0]}
+                yearOptions={years.map((year) => ({
+                  value: year,
+                  disabled: !availableYears.includes(year),
+                }))}
+                disabledSubjectIds={disabledSubjectIds}
+                onSubjectChange={setSubjectFilter}
+                onYearChange={changeYear}
+                ariaLabel="常錯題目科目與年度分類"
+              />
+            </div>
             <div className={styles.subjectList}>
-              {groups.map(({ subject, stats: subjectStats, yearGroups }) => (
+              {activeSubject && activeYearFilter ? (
                 <section
                   className={styles.subjectGroup}
-                  aria-labelledby={`wrong-subject-${subject.id}`}
-                  key={subject.id}
+                  aria-labelledby={`wrong-subject-${activeSubject.id}-${activeYearFilter}`}
                 >
                   <header className={styles.subjectHeader}>
-                    <h2 id={`wrong-subject-${subject.id}`}>{subject.name}</h2>
+                    <h2 id={`wrong-subject-${activeSubject.id}-${activeYearFilter}`}>
+                      {activeSubject.name} · {activeYearFilter} 年
+                    </h2>
                     <span>
-                      {subjectStats.length} 題・共答錯{' '}
-                      {subjectStats.reduce((total, item) => total + item.wrongCount, 0)} 次
+                      {visibleStats.length} 題・共答錯{' '}
+                      {visibleStats.reduce((total, item) => total + item.wrongCount, 0)} 次
                     </span>
                   </header>
-                  <div className={styles.yearList}>
-                    {yearGroups.map(({ year, stats: yearStats }) => (
-                      <section
-                        className={styles.yearGroup}
-                        aria-labelledby={`wrong-year-${subject.id}-${year}`}
-                        key={year}
-                      >
-                        <header className={styles.yearHeader}>
-                          <h3 id={`wrong-year-${subject.id}-${year}`}>{year} 年</h3>
-                          <span>{yearStats.length} 題</span>
-                        </header>
-                        <div className={styles.questionList}>
-                          {yearStats.map(({ question, wrongCount, lastWrongAt }) => (
-                            <article className={styles.wrongItem} key={question.id}>
-                              <div className={styles.wrongMeta}>
-                                <strong>累計答錯 {wrongCount} 次</strong>
-                                <span>最近答錯：{formatDateTime(lastWrongAt)}</span>
-                              </div>
-                              <QuestionCard
-                                question={question}
-                                difficult={state.difficultQuestionIds.includes(question.id)}
-                                onToggleDifficult={() =>
-                                  dispatch({
-                                    type: 'toggle-difficult',
-                                    questionId: question.id,
-                                  })
-                                }
-                              />
-                              <details className={styles.fullQuestion}>
-                                <summary>
-                                  <span>查看選項、重新作答與詳解</span>
-                                  <IconChevronDown size={18} stroke={2} aria-hidden="true" />
-                                </summary>
-                                <div>
-                                  <WrongQuestionPractice question={question} />
-                                  <section
-                                    className={styles.explanationPanel}
-                                    aria-label={`第 ${question.questionNumber} 題詳解`}
-                                  >
-                                    <span>詳解</span>
-                                    <p>{question.explanation?.trim() || '目前尚無詳解。'}</p>
-                                  </section>
-                                  <div className={styles.noteEditor}>
-                                    <ReviewNoteEditor question={question} />
-                                  </div>
-                                </div>
-                              </details>
-                            </article>
-                          ))}
+                  <div className={styles.questionList}>
+                    {visibleStats.map(({ question, wrongCount, lastWrongAt }) => (
+                      <article className={styles.wrongItem} key={question.id}>
+                        <div className={styles.wrongMeta}>
+                          <strong>累計答錯 {wrongCount} 次</strong>
+                          <span>最近答錯：{formatDateTime(lastWrongAt)}</span>
                         </div>
-                      </section>
+                        <QuestionCard
+                          question={question}
+                          difficult={state.difficultQuestionIds.includes(question.id)}
+                          onToggleDifficult={() =>
+                            dispatch({
+                              type: 'toggle-difficult',
+                              questionId: question.id,
+                            })
+                          }
+                        />
+                        <details className={styles.fullQuestion}>
+                          <summary>
+                            <span>查看選項、重新作答與詳解</span>
+                            <IconChevronDown size={18} stroke={2} aria-hidden="true" />
+                          </summary>
+                          <div>
+                            <WrongQuestionPractice question={question} />
+                            <section
+                              className={styles.explanationPanel}
+                              aria-label={`第 ${question.questionNumber} 題詳解`}
+                            >
+                              <span>詳解</span>
+                              <p>{question.explanation?.trim() || '目前尚無詳解。'}</p>
+                            </section>
+                            <div className={styles.noteEditor}>
+                              <ReviewNoteEditor question={question} />
+                            </div>
+                          </div>
+                        </details>
+                      </article>
                     ))}
                   </div>
                 </section>
-              ))}
+              ) : null}
             </div>
           </>
         ) : (

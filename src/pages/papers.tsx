@@ -1,11 +1,11 @@
 import type { GetStaticProps, InferGetStaticPropsType } from 'next';
 import Head from 'next/head';
 import { PapersPage } from '@/features/papers/papers-page';
-import { getQuestionSummaries } from '@/server/question-bank.server';
+import { getPaperQuestionSummaries } from '@/server/question-bank.server';
 import type { QuestionSummary } from '@/lib/types';
 
 export const getStaticProps: GetStaticProps<{ questions: QuestionSummary[] }> = async () => ({
-  props: { questions: await getQuestionSummaries() },
+  props: { questions: await getPaperQuestionSummaries() },
 });
 
 export default function PapersRoute({ questions }: InferGetStaticPropsType<typeof getStaticProps>) {

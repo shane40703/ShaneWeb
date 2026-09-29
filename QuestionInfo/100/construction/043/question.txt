@@ -1,0 +1,8 @@
+43. 如圖所示之窗框剖面構造，其安裝順序為何？
+
+[圖片：images/figure1.png]
+
+A. c→d→a→b
+B. a→c→b→d
+C. a→b→c→d
+D. b→a→c→d

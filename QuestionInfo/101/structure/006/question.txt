@@ -1,0 +1,8 @@
+6. 如圖之桁架，若僅施加集中載重在節點上，則何桿件為恆零桿件（constant-zero-force member）？
+
+[圖片：images/figure1.png]
+
+A. 桿件a
+B. 桿件b
+C. 桿件c
+D. 無恆零桿件

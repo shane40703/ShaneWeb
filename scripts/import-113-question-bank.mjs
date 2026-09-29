@@ -347,16 +347,17 @@ function parseQuestion(content, expectedNumber) {
 }
 
 function paperMeta(year, subject) {
+  const examCode = year === 100 ? '100230' : `${year}180`;
   const base =
     `https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?` +
-    `c=801&code=${year}180&q=1&s=${subject.subjectCode}`;
+    `c=801&code=${examCode}&q=1&s=${subject.subjectCode}`;
   return {
     status: 'official-complete',
     paperCode: subject.paperCode,
     officialName: subject.officialName,
     totalQuestions: subject.questionCount,
     questionUrl: `${base}&t=Q`,
-    answerUrl: `${base}&t=S`,
+    answerUrl: `${base}&t=${year <= 101 ? 'M' : 'S'}`,
   };
 }
 
@@ -494,7 +495,31 @@ async function importSubject(year, subject) {
   }
 }
 
-const years = Array.from({ length: 13 }, (_, index) => 102 + index);
+function requestedYears() {
+  const values = process.argv
+    .slice(2)
+    .flatMap((value) => value.split(','))
+    .map((value) => value.trim())
+    .filter(Boolean);
+
+  if (!values.length) {
+    return Array.from({ length: 15 }, (_, index) => 100 + index);
+  }
+
+  const years = [...new Set(values.map(Number))].sort((left, right) => left - right);
+  const invalidYears = years.filter(
+    (year) => !Number.isInteger(year) || year < 100 || year > 114,
+  );
+  if (invalidYears.length) {
+    throw new Error(
+      `年度參數必須是 100～114 的整數，目前收到：${values.join(', ')}`,
+    );
+  }
+
+  return years;
+}
+
+const years = requestedYears();
 
 for (const year of years) {
   for (const subject of subjects) {
@@ -503,7 +528,7 @@ for (const year of years) {
 }
 
 console.log(
-  `已匯入 ${years[0]}～${years.at(-1)} 年 ${years.length * subjects.reduce(
+  `已匯入 ${years.join('、')} 年 ${years.length * subjects.reduce(
     (total, subject) => total + subject.questionCount,
     0,
   )} 題正式題庫。`,

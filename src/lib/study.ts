@@ -274,12 +274,14 @@ export function pickRandomItems<T>(
 export function getAcceptedAnswerIndexes(
   question: Pick<Question, 'options' | 'answerKey'>,
 ) {
+  if (question.answerKey.kind === 'written') return [];
   return question.answerKey.kind === 'all-credit'
     ? question.options.map((_, index) => index)
     : question.answerKey.options;
 }
 
 export function formatCorrectAnswer(question: Pick<Question, 'answerKey'>) {
+  if (question.answerKey.kind === 'written') return '申論題無選項答案';
   return question.answerKey.kind === 'all-credit'
     ? '本題一律給分'
     : question.answerKey.options
@@ -319,6 +321,7 @@ export function isQuestionCorrect(
   question: Pick<Question, 'answerKey'>,
   selected: number | undefined,
 ) {
+  if (question.answerKey.kind === 'written') return false;
   if (question.answerKey.kind === 'all-credit') return true;
   return selected !== undefined && question.answerKey.options.includes(selected);
 }
@@ -328,6 +331,7 @@ type AttemptSource = Pick<Question, 'id' | 'subject' | 'year' | 'answerKey'>;
 export function toQuizQuestion(question: Question): QuizQuestion {
   return {
     id: question.id,
+    ...(question.format ? { format: question.format } : {}),
     subject: question.subject,
     year: question.year,
     questionNumber: question.questionNumber,
@@ -340,8 +344,38 @@ export function toQuizQuestion(question: Question): QuizQuestion {
     options: question.options,
     answerKey: question.answerKey,
     ...(question.explanation ? { explanation: question.explanation } : {}),
-    path: questionPath(question.subject, question.year, question.questionNumber),
+    path: questionPath(
+      question.subject,
+      question.year,
+      question.questionNumber,
+      question.format,
+    ),
   };
+}
+
+export function isWrittenQuestion(
+  question: Pick<Question, 'format'>,
+) {
+  return question.format === 'written';
+}
+
+export function formatQuestionNumberLabel(
+  question: Pick<Question, 'format' | 'questionNumber'>,
+  compact = false,
+) {
+  if (question.format === 'written') {
+    return compact ? `申${question.questionNumber}` : `申論第 ${question.questionNumber} 題`;
+  }
+  return compact ? String(question.questionNumber) : `第 ${question.questionNumber} 題`;
+}
+
+export function comparePaperQuestionOrder(
+  left: Pick<Question, 'format' | 'questionNumber'>,
+  right: Pick<Question, 'format' | 'questionNumber'>,
+) {
+  const leftSection = left.format === 'written' ? 0 : 1;
+  const rightSection = right.format === 'written' ? 0 : 1;
+  return leftSection - rightSection || left.questionNumber - right.questionNumber;
 }
 
 export function createAttempt({

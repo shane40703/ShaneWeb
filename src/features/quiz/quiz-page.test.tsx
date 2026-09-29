@@ -89,6 +89,23 @@ function quizQuestion(item: Question): QuizQuestion {
 const currentQuestion = question(43);
 const nextQuestion = question(44);
 const paper = [quizQuestion(currentQuestion), quizQuestion(nextQuestion)];
+const writtenQuestion: Question = {
+  ...question(1),
+  id: 'structure-114-written-01',
+  format: 'written',
+  subject: 'structure',
+  text: '請分析圖示結構。',
+  content: [{ kind: 'text', text: '請分析圖示結構。' }],
+  options: [],
+  answerKey: { kind: 'written' },
+};
+const writtenPaper: QuizQuestion[] = [
+  {
+    ...quizQuestion(writtenQuestion),
+    format: 'written',
+    path: '/questions/structure/114/written-01',
+  },
+];
 
 afterEach(cleanup);
 
@@ -140,6 +157,24 @@ describe('QuizPage progress presentation', () => {
     expect(
       screen.getByRole('button', { name: '標記為難題' }),
     ).toBeInTheDocument();
+  });
+
+  it('renders essay questions as view-only with note and discussion actions', () => {
+    render(<QuizPage question={writtenQuestion} paper={writtenPaper} />);
+
+    expect(screen.getByText('本題僅供檢視')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /寫使用者筆記/ })).toHaveAttribute(
+      'href',
+      '/notes?question=structure-114-written-01',
+    );
+    expect(screen.getByRole('button', { name: /詳解與討論/ })).toHaveAttribute(
+      'href',
+      '/community?question=structure-114-written-01',
+    );
+    expect(screen.queryByRole('radiogroup')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '對答案' })).not.toBeInTheDocument();
+    expect(screen.getByRole('complementary', { name: '申論題題號導覽' }))
+      .toHaveTextContent('申1');
   });
 
   it('keeps random-set position and original question number in one label', () => {

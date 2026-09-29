@@ -1,0 +1,16 @@
+{
+  "year": 114,
+  "subject": "structure",
+  "subjectName": "建築結構",
+  "questionNumber": 2,
+  "format": "written",
+  "hasImage": true,
+  "imageFile": "images/figure1.png",
+  "imageReasons": [
+    "題幹引用附圖"
+  ],
+  "sourcePages": [
+    1
+  ],
+  "warnings": []
+}

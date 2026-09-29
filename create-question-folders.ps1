@@ -7,7 +7,7 @@ $subjects = [ordered]@{
 
 $questionsRoot = Join-Path $PSScriptRoot "QuestionInfo"
 
-for ($year = 102; $year -le 114; $year++) {
+for ($year = 100; $year -le 114; $year++) {
     $yearPath = Join-Path $questionsRoot $year
 
     foreach ($subjectName in $subjects.Keys) {
@@ -37,5 +37,5 @@ for ($year = 102; $year -le 114; $year++) {
 }
 
 Write-Host ""
-Write-Host "Done. Created folders for years 102 to 114."
-Write-Host "Total questions: 3120"
+Write-Host "Done. Created folders for years 100 to 114."
+Write-Host "Total questions: 3600"

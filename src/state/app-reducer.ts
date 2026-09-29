@@ -101,7 +101,7 @@ export function appReducer(state: AppState, action: AppAction): AppState {
       return {
         ...state,
         answers,
-        attempts: [action.attempt, ...state.attempts].slice(0, 100),
+        attempts: [action.attempt, ...state.attempts],
         deletedAttemptIds: state.deletedAttemptIds.filter(
           (attemptId) => attemptId !== action.attempt.id,
         ),
@@ -116,11 +116,9 @@ export function appReducer(state: AppState, action: AppAction): AppState {
       );
       return {
         ...state,
-        attempts: [...attempts.values()]
-          .sort((left, right) =>
-            right.submittedAt.localeCompare(left.submittedAt),
-          )
-          .slice(0, 100),
+        attempts: [...attempts.values()].sort((left, right) =>
+          right.submittedAt.localeCompare(left.submittedAt),
+        ),
       };
     }
     case 'delete-attempt':

@@ -1,0 +1,20 @@
+{
+  "format": "written",
+  "primaryCategory": "力學",
+  "topic": "載重",
+  "tags": [
+    "載重"
+  ],
+  "answerKey": {
+    "kind": "written"
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 1
+  },
+  "images": {
+    "question-02.png": {
+      "alt": "101 年建築結構申論第 2 題附圖"
+    }
+  }
+}

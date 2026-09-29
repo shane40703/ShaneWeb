@@ -42,6 +42,12 @@ function question(id: string, subject: SubjectId): Question {
 
 const lawQuestion = question('law-114-01', 'law');
 const environmentQuestion = question('env-114-01', 'env');
+const writtenQuestion: Question = {
+  ...question('structure-114-written-01', 'structure'),
+  format: 'written',
+  options: [],
+  answerKey: { kind: 'written' },
+};
 
 function page(
   props: Partial<React.ComponentProps<typeof NotesPage>> = {},
@@ -213,6 +219,8 @@ describe('NotesPage question loading', () => {
     render(page({ questions: [current, similar] }));
 
     const panel = await screen.findByRole('region', { name: '類似題目' });
+    expect(panel).toHaveTextContent('類似考題');
+    expect(panel).not.toHaveTextContent('細分考點');
     expect(panel).toHaveTextContent('防火區劃與防火間隔');
     expect(within(panel).getByRole('link', { name: /113 年・第 2 題/ }))
       .toHaveAttribute('href', '/notes?question=law-113-02');
@@ -344,6 +352,18 @@ describe('NotesPage question loading', () => {
       }),
     ).toBeInTheDocument();
     expect(screen.getByText('難題')).toBeInTheDocument();
+  });
+
+  it('keeps notes available for an essay without answer choices or difficult marking', async () => {
+    router.query = { question: writtenQuestion.id };
+    render(page({ questions: [lawQuestion, writtenQuestion] }));
+
+    expect(await screen.findByRole('heading', { name: '申論第 1 題' }))
+      .toBeInTheDocument();
+    expect(screen.getByText('申論題')).toBeInTheDocument();
+    expect(screen.getByLabelText('我的筆記')).toBeInTheDocument();
+    expect(screen.queryByRole('region', { name: '題目選項' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '標記為難題' })).not.toBeInTheDocument();
   });
 
   it('toggles the current question difficult marker from the note editor', async () => {

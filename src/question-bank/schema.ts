@@ -99,6 +99,9 @@ export type SourceAnswerKey =
     }
   | {
       kind: 'all-credit';
+    }
+  | {
+      kind: 'written';
     };
 
 export type QuestionProvenance =

@@ -23,6 +23,7 @@ export function QuestionSelector({
   yearOptions,
   onSubjectChange,
   onYearChange,
+  disabledSubjectIds = [],
   questionPicker,
   summary,
   action,
@@ -33,6 +34,7 @@ export function QuestionSelector({
   yearOptions: readonly SelectorYearOption[];
   onSubjectChange: (subjectId: SubjectId) => void;
   onYearChange: (year: SelectorYear) => void;
+  disabledSubjectIds?: readonly SubjectId[];
   questionPicker?: ReactNode;
   summary?: ReactNode;
   action?: ReactNode;
@@ -46,6 +48,7 @@ export function QuestionSelector({
           <div className={styles.subjectGrid}>
             {subjects.map((subject) => {
               const selected = subject.id === subjectId;
+              const disabled = disabledSubjectIds.includes(subject.id);
               return (
                 <button
                   key={subject.id}
@@ -53,6 +56,7 @@ export function QuestionSelector({
                   className={styles.subjectButton}
                   data-subject={subject.id}
                   aria-pressed={selected}
+                  disabled={disabled}
                   onClick={() => onSubjectChange(subject.id)}
                 >
                   {selected ? (
@@ -120,6 +124,8 @@ export function QuestionNumberPicker({
   questions: readonly {
     id: string;
     questionNumber: number;
+    label?: ReactNode;
+    ariaLabel?: string;
     difficult?: boolean;
     hasContent?: boolean;
   }[];
@@ -134,13 +140,13 @@ export function QuestionNumberPicker({
         {questions.map((question) => (
           <QuestionNumberButton
             key={question.id}
-            ariaLabel={`第 ${question.questionNumber} 題`}
+            ariaLabel={question.ariaLabel ?? `第 ${question.questionNumber} 題`}
             active={question.id === value}
             difficult={question.difficult}
             hasContent={question.hasContent}
             onClick={() => onValueChange(question.id)}
           >
-            {question.questionNumber}
+            {question.label ?? question.questionNumber}
           </QuestionNumberButton>
         ))}
       </QuestionNumberGrid>

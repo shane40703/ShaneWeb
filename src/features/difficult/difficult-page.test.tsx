@@ -103,61 +103,64 @@ describe('DifficultPage', () => {
     window.localStorage.clear();
   });
 
-  it('groups difficult questions by catalog subject, newest year, and question number', async () => {
+  it('filters difficult questions by subject and year above the question list', async () => {
     renderPage(questions.map((item) => item.id));
 
-    await screen.findByRole('heading', { name: '建築法規與實務' });
+    await screen.findByRole('heading', { name: '建築法規與實務 · 114 年' });
     expect(
       screen.getAllByRole('heading', { level: 2 }).map((heading) => heading.textContent),
-    ).toEqual(['建築法規與實務']);
+    ).toEqual(['建築法規與實務 · 114 年']);
 
     const lawGroup = screen
-      .getByRole('heading', { name: '建築法規與實務' })
+      .getByRole('heading', { name: '建築法規與實務 · 114 年' })
       .closest('section');
     expect(lawGroup).not.toBeNull();
-    expect(
-      within(lawGroup!)
-        .getAllByRole('heading', { level: 3 })
-        .map((heading) => heading.textContent),
-    ).toEqual(['114 年', '113 年']);
-
-    const newestYear = within(lawGroup!)
-      .getByRole('heading', { name: '114 年' })
-      .closest('section');
-    expect(newestYear).not.toBeNull();
-    const prompts = newestYear!.querySelectorAll('[data-compact="true"]');
+    const prompts = lawGroup!.querySelectorAll('[data-compact="true"]');
     expect([...prompts].map((prompt) => prompt.textContent)).toEqual([
       'law-114-01 題幹',
       'law-114-02 題幹',
     ]);
 
-    const filters = screen.getByRole('group', { name: '難題科目分類' });
-    expect(within(filters).queryByRole('button', { name: /全部/ })).not.toBeInTheDocument();
-    expect(within(filters).getByRole('button', { name: '建築法規與實務 3' })).toHaveAttribute(
+    const filters = screen.getByRole('region', {
+      name: '難題科目與年度分類',
+    });
+    expect(within(filters).getByRole('button', { name: /建築法規與實務/ })).toHaveAttribute(
       'aria-pressed',
       'true',
     );
+    expect(within(filters).getByRole('button', { name: '114 年' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    expect(within(filters).getByRole('button', { name: /建築結構/ })).toBeDisabled();
     expect(
-      screen.getByRole('heading', { name: '建築法規與實務' }),
+      screen.getByRole('heading', { name: '建築法規與實務 · 114 年' }),
     ).toBeInTheDocument();
+    fireEvent.click(within(filters).getByRole('button', { name: '113 年' }));
     expect(
-      screen.queryByRole('heading', { name: '建築構造與施工' }),
+      screen.getByRole('heading', { name: '建築法規與實務 · 113 年' }),
+    ).toBeInTheDocument();
+    expect(screen.getByText('law-113-01 題幹')).toBeInTheDocument();
+    expect(screen.queryByText('law-114-01 題幹')).not.toBeInTheDocument();
+
+    expect(
+      screen.queryByRole('heading', { name: /建築構造與施工/ }),
     ).not.toBeInTheDocument();
     fireEvent.click(
-      within(filters).getByRole('button', { name: '建築環境控制 1' }),
+      within(filters).getByRole('button', { name: /建築環境控制/ }),
     );
     expect(
-      screen.getByRole('heading', { name: '建築環境控制' }),
+      screen.getByRole('heading', { name: '建築環境控制 · 112 年' }),
     ).toBeInTheDocument();
     expect(
-      screen.queryByRole('heading', { name: '建築法規與實務' }),
+      screen.queryByRole('heading', { name: /建築法規與實務/ }),
     ).not.toBeInTheDocument();
   });
 
   it('retries difficult questions without repeating the prompt', async () => {
     renderPage(['law-114-01', 'law-113-01']);
 
-    await screen.findByRole('heading', { name: '建築法規與實務' });
+    await screen.findByRole('heading', { name: '建築法規與實務 · 114 年' });
     const summaries = screen.getAllByText('查看選項、作答與詳解');
 
     fireEvent.click(summaries[0]);
@@ -189,8 +192,13 @@ describe('DifficultPage', () => {
     expect(screen.queryByText('正確答案')).not.toBeInTheDocument();
     expect(screen.queryByText('最佳解')).not.toBeInTheDocument();
 
-    fireEvent.click(summaries[1]);
-    const unexplainedQuestion = summaries[1].closest('article');
+    const filters = screen.getByRole('region', {
+      name: '難題科目與年度分類',
+    });
+    fireEvent.click(within(filters).getByRole('button', { name: '113 年' }));
+    const unexplainedSummary = screen.getByText('查看選項、作答與詳解');
+    fireEvent.click(unexplainedSummary);
+    const unexplainedQuestion = unexplainedSummary.closest('article');
     expect(unexplainedQuestion).not.toBeNull();
     expect(
       within(unexplainedQuestion!).getByRole('region', {
@@ -233,7 +241,7 @@ describe('DifficultPage', () => {
     });
 
     expect(
-      await screen.findByRole('heading', { name: '建築法規與實務' }),
+      await screen.findByRole('heading', { name: '建築法規與實務 · 114 年' }),
     ).toBeInTheDocument();
     expect(screen.getAllByText('law-114-01 題幹').length).toBeGreaterThan(0);
     expect(

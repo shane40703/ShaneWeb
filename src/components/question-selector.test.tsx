@@ -23,6 +23,7 @@ describe('QuestionSelector', () => {
         ]}
         onSubjectChange={onSubjectChange}
         onYearChange={onYearChange}
+        disabledSubjectIds={['structure']}
         ariaLabel="試卷選擇"
       />,
     );
@@ -33,6 +34,7 @@ describe('QuestionSelector', () => {
     );
     expect(screen.getByRole('button', { name: '113 年' })).toBeDisabled();
     expect(screen.queryByRole('button', { name: '114' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /建築結構/ })).toBeDisabled();
 
     await user.click(screen.getByRole('button', { name: /建築環境控制/ }));
     await user.click(screen.getByRole('button', { name: '跨年度' }));

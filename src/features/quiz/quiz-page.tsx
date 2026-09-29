@@ -60,6 +60,7 @@ import {
   type QuizProgressAction,
   type ScopedQuizProgressState,
 } from './quiz-state';
+import { WrittenQuestionPage } from './written-question-page';
 import styles from './quiz-page.module.css';
 
 export interface StaticQuestionPageProps {
@@ -95,7 +96,14 @@ function createRandomQuizSessionId() {
     `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
 }
 
-export function QuizPage({ question, paper }: StaticQuestionPageProps) {
+export function QuizPage(props: StaticQuestionPageProps) {
+  if (props.question.format === 'written') {
+    return <WrittenQuestionPage question={props.question} paper={props.paper} />;
+  }
+  return <MultipleChoiceQuizPage {...props} />;
+}
+
+function MultipleChoiceQuizPage({ question, paper }: StaticQuestionPageProps) {
   const router = useRouter();
   const { state, dispatch, hydrated, reportPersistence } = useAppState();
   const [progressState, progressDispatch] = useReducer(scopedQuizProgressReducer, {

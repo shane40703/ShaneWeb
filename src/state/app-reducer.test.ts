@@ -68,7 +68,7 @@ describe('appReducer', () => {
     expect(state.answers).toEqual({});
   });
 
-  it('keeps only the newest 100 attempts', () => {
+  it('keeps the complete attempt history beyond 100 attempts', () => {
     let state = createDefaultState();
     for (let index = 0; index < 105; index += 1) {
       const entry = { ...attempt(index), id: `attempt-${index}` };
@@ -78,9 +78,9 @@ describe('appReducer', () => {
         results: resultsFor(entry),
       });
     }
-    expect(state.attempts).toHaveLength(100);
+    expect(state.attempts).toHaveLength(105);
     expect(state.attempts[0].id).toBe('attempt-104');
-    expect(state.attempts.at(-1)?.id).toBe('attempt-5');
+    expect(state.attempts.at(-1)?.id).toBe('attempt-0');
   });
 
   it('toggles difficult questions and saves or removes notes', () => {
@@ -262,6 +262,23 @@ describe('appReducer', () => {
       cloud.id,
       local.id,
     ]);
+  });
+
+  it('restores the complete cloud history beyond 100 attempts', () => {
+    const cloudAttempts = Array.from({ length: 105 }, (_, index) => ({
+      ...attempt(index),
+      id: `cloud-attempt-${index}`,
+      submittedAt: `${2000 + index}-01-01T00:00:00.000Z`,
+    }));
+
+    const merged = appReducer(createDefaultState(), {
+      type: 'merge-attempts',
+      attempts: cloudAttempts,
+    });
+
+    expect(merged.attempts).toHaveLength(105);
+    expect(merged.attempts[0].id).toBe('cloud-attempt-104');
+    expect(merged.attempts.at(-1)?.id).toBe('cloud-attempt-0');
   });
 
   it('updates reading sizes and lets an administrator remove discussions', () => {

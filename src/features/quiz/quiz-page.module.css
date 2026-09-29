@@ -406,6 +406,39 @@
   justify-self: start;
 }
 
+.writtenNotice {
+  padding: 16px;
+  display: grid;
+  gap: 7px;
+  border: 1px solid color-mix(in srgb, var(--primary) 28%, var(--line));
+  border-radius: 12px;
+  background: var(--primary-soft);
+}
+
+.writtenNotice strong {
+  color: var(--primary-strong);
+  font-size: 14px;
+}
+
+.writtenNotice p {
+  margin: 0;
+  color: var(--text-soft);
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.writtenActions {
+  display: flex;
+  gap: 9px;
+  flex-wrap: wrap;
+}
+
+.writtenSectionLabel {
+  color: var(--subtle-text);
+  font-size: 12px;
+  font-weight: 700;
+}
+
 .singleFeedback {
   padding: 14px;
   display: grid;

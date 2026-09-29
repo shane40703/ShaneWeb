@@ -5,6 +5,10 @@ import {
 } from '@/components/content/content';
 import { ReviewNoteEditor } from '@/components/attempt-review';
 import {
+  QuestionSelector,
+  type SelectorYear,
+} from '@/components/question-selector';
+import {
   IconBulb,
   IconCircleCheck,
   IconLoader2,
@@ -17,29 +21,9 @@ import type { QuestionBankStatus } from '@/lib/question-bank-client';
 import { subjectsOfQuestionIds } from '@/lib/question-path';
 import { formatCorrectAnswer, isQuestionCorrect } from '@/lib/study';
 import type { Question, SubjectId } from '@/lib/types';
-import { subjects } from '@/question-bank/catalog';
+import { subjects, years } from '@/question-bank/catalog';
 import { useAppState } from '@/state/app-state';
 import styles from './difficult-page.module.css';
-
-function groupDifficultQuestions(questions: Question[]) {
-  return subjects.flatMap((subject) => {
-    const subjectQuestions = questions.filter(
-      (question) => question.subject === subject.id,
-    );
-    if (!subjectQuestions.length) return [];
-
-    const yearGroups = [...new Set(subjectQuestions.map((question) => question.year))]
-      .sort((left, right) => right - left)
-      .map((year) => ({
-        year,
-        questions: subjectQuestions
-          .filter((question) => question.year === year)
-          .sort((left, right) => left.questionNumber - right.questionNumber),
-      }));
-
-    return [{ subject, questions: subjectQuestions, yearGroups }];
-  });
-}
 
 function DifficultQuestionPractice({ question }: { question: Question }) {
   const { dispatch } = useAppState();
@@ -120,6 +104,7 @@ export function DifficultPage({
 }) {
   const { state, dispatch, hydrated } = useAppState();
   const [subjectFilter, setSubjectFilter] = useState<SubjectId>();
+  const [yearFilter, setYearFilter] = useState<number>();
   const difficultQuestions = questions.filter((question) =>
     state.difficultQuestionIds.includes(question.id),
   );
@@ -131,10 +116,24 @@ export function DifficultPage({
   )
     ? subjectFilter
     : availableSubjects[0]?.id;
-  const filteredDifficultQuestions = difficultQuestions.filter(
+  const activeSubject = availableSubjects.find(
+    (subject) => subject.id === activeSubjectFilter,
+  );
+  const subjectQuestions = difficultQuestions.filter(
     (question) => question.subject === activeSubjectFilter,
   );
-  const subjectGroups = groupDifficultQuestions(filteredDifficultQuestions);
+  const availableYears = years.filter((year) =>
+    subjectQuestions.some((question) => question.year === year),
+  );
+  const activeYearFilter = yearFilter && availableYears.includes(yearFilter)
+    ? yearFilter
+    : availableYears[0];
+  const visibleQuestions = subjectQuestions
+    .filter((question) => question.year === activeYearFilter)
+    .sort((left, right) => left.questionNumber - right.questionNumber);
+  const disabledSubjectIds = subjects
+    .filter((subject) => !availableSubjects.some((item) => item.id === subject.id))
+    .map((subject) => subject.id);
   const difficultSubjects = subjectsOfQuestionIds(state.difficultQuestionIds);
   const loadingSubjects = difficultSubjects.filter(
     (subjectId) => questionBankStatuses[subjectId] === 'loading',
@@ -142,6 +141,10 @@ export function DifficultPage({
   const failedSubjects = difficultSubjects.filter(
     (subjectId) => questionBankStatuses[subjectId] === 'error',
   );
+
+  function changeYear(nextYear: SelectorYear) {
+    if (typeof nextYear === 'number') setYearFilter(nextYear);
+  }
 
   return (
     <section className={styles.panel}>
@@ -194,106 +197,79 @@ export function DifficultPage({
             </section>
           ) : null}
           {difficultQuestions.length ? (
-            <section
-              className={styles.subjectFilters}
-              role="group"
-              aria-label="難題科目分類"
-            >
-              {availableSubjects.map((subject) => {
-                const count = difficultQuestions.filter(
-                  (question) => question.subject === subject.id,
-                ).length;
-
-                return (
-                  <button
-                    key={subject.id}
-                    type="button"
-                    aria-pressed={activeSubjectFilter === subject.id}
-                    onClick={() => setSubjectFilter(subject.id)}
-                  >
-                    {subject.name} <span>{count}</span>
-                  </button>
-                );
-              })}
-            </section>
+            <div className={styles.selector}>
+              <QuestionSelector
+                subjectId={activeSubjectFilter ?? subjects[0].id}
+                year={activeYearFilter ?? years[0]}
+                yearOptions={years.map((year) => ({
+                  value: year,
+                  disabled: !availableYears.includes(year),
+                }))}
+                disabledSubjectIds={disabledSubjectIds}
+                onSubjectChange={setSubjectFilter}
+                onYearChange={changeYear}
+                ariaLabel="難題科目與年度分類"
+              />
+            </div>
           ) : null}
-          {subjectGroups.length ? (
+          {activeSubject && activeYearFilter ? (
             <div className={styles.subjectList}>
-              {subjectGroups.map(
-                ({ subject, questions: groupedQuestions, yearGroups }) => (
-                  <section
-                    className={styles.subjectGroup}
-                    aria-labelledby={`difficult-subject-${subject.id}`}
-                    key={subject.id}
-                  >
-                    <header className={styles.subjectHeader}>
-                      <h2 id={`difficult-subject-${subject.id}`}>{subject.name}</h2>
-                      <span>{groupedQuestions.length} 題難題</span>
-                    </header>
-                    <div className={styles.yearList}>
-                      {yearGroups.map(({ year, questions: yearQuestions }) => (
-                        <section
-                          className={styles.yearGroup}
-                          aria-labelledby={`difficult-year-${subject.id}-${year}`}
-                          key={year}
-                        >
-                          <header className={styles.yearHeader}>
-                            <h3 id={`difficult-year-${subject.id}-${year}`}>
-                              {year} 年
-                            </h3>
-                            <span>{yearQuestions.length} 題</span>
-                          </header>
-                          <div className={styles.questionList}>
-                            {yearQuestions.map((question) => (
-                              <article
-                                className={styles.difficultItem}
-                                key={question.id}
-                              >
-                                <QuestionCard
-                                  question={question}
-                                  difficult
-                                  onToggleDifficult={() =>
-                                    dispatch({
-                                      type: 'toggle-difficult',
-                                      questionId: question.id,
-                                    })
-                                  }
-                                />
-                                <details className={styles.fullQuestion}>
-                                  <summary>
-                                    <span>查看選項、作答與詳解</span>
-                                    <IconChevronDown
-                                      size={18}
-                                      stroke={2}
-                                      aria-hidden="true"
-                                    />
-                                  </summary>
-                                  <div>
-                                    <DifficultQuestionPractice question={question} />
-                                    <section
-                                      className={styles.explanationPanel}
-                                      aria-label={`第 ${question.questionNumber} 題詳解`}
-                                    >
-                                      <span>詳解</span>
-                                      <p>
-                                        {question.explanation?.trim() ||
-                                          '目前尚無詳解。'}
-                                      </p>
-                                    </section>
-                                    <div className={styles.noteEditor}>
-                                      <ReviewNoteEditor question={question} />
-                                    </div>
-                                  </div>
-                                </details>
-                              </article>
-                            ))}
+              <section
+                className={styles.subjectGroup}
+                aria-labelledby={`difficult-subject-${activeSubject.id}-${activeYearFilter}`}
+              >
+                <header className={styles.subjectHeader}>
+                  <h2 id={`difficult-subject-${activeSubject.id}-${activeYearFilter}`}>
+                    {activeSubject.name} · {activeYearFilter} 年
+                  </h2>
+                  <span>{visibleQuestions.length} 題難題</span>
+                </header>
+                <div className={styles.questionList}>
+                  {visibleQuestions.map((question) => (
+                    <article
+                      className={styles.difficultItem}
+                      key={question.id}
+                    >
+                      <QuestionCard
+                        question={question}
+                        difficult
+                        onToggleDifficult={() =>
+                          dispatch({
+                            type: 'toggle-difficult',
+                            questionId: question.id,
+                          })
+                        }
+                      />
+                      <details className={styles.fullQuestion}>
+                        <summary>
+                          <span>查看選項、作答與詳解</span>
+                          <IconChevronDown
+                            size={18}
+                            stroke={2}
+                            aria-hidden="true"
+                          />
+                        </summary>
+                        <div>
+                          <DifficultQuestionPractice question={question} />
+                          <section
+                            className={styles.explanationPanel}
+                            aria-label={`第 ${question.questionNumber} 題詳解`}
+                          >
+                            <span>詳解</span>
+                            <p>
+                              {question.explanation?.trim() ||
+                                '目前尚無詳解。'}
+                            </p>
+                          </section>
+                          <div className={styles.noteEditor}>
+                            <ReviewNoteEditor question={question} />
                           </div>
-                        </section>
-                      ))}
-                    </div>
-                  </section>
-                ),
-              )}
+                        </div>
+                      </details>
+                    </article>
+                  ))}
+                </div>
+              </section>
             </div>
           ) : difficultQuestions.length ? (
             <EmptyState

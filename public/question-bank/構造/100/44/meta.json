@@ -1,0 +1,18 @@
+{
+  "primaryCategory": "防水工程",
+  "topic": "防水工程",
+  "tags": [
+    "防水工程"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "B",
+      "D"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 8
+  }
+}

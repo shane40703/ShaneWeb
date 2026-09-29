@@ -35,6 +35,12 @@ function question(id: string, subject: SubjectId): Question {
 
 const lawQuestion = question('law-114-01', 'law');
 const environmentQuestion = question('env-114-01', 'env');
+const writtenQuestion: Question = {
+  ...question('structure-114-written-01', 'structure'),
+  format: 'written',
+  options: [],
+  answerKey: { kind: 'written' },
+};
 
 function renderPage(
   props: Partial<React.ComponentProps<typeof CommunityPage>> = {},
@@ -212,5 +218,16 @@ describe('CommunityPage question loading', () => {
       screen.getByRole('button', { name: '切換投稿選取文字的粗體格式' }),
     );
     expect(textarea).toHaveValue('**粗體內容**');
+  });
+
+  it('allows essay discussion without answer choices or difficult marking', () => {
+    router.query = { question: writtenQuestion.id };
+    renderPage({ questions: [lawQuestion, writtenQuestion] });
+
+    expect(screen.getByRole('heading', { name: '申論第 1 題' })).toBeInTheDocument();
+    expect(screen.getByText('申論題')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '送出共享投稿' })).toBeInTheDocument();
+    expect(screen.queryByRole('region', { name: '題目選項' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '標記為難題' })).not.toBeInTheDocument();
   });
 });

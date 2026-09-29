@@ -7,6 +7,7 @@ import {
   getQuestionStaticPaths,
   loadQuestion,
   loadQuizQuestions,
+  loadWrittenQuestions,
 } from '@/server/question-bank.server';
 
 interface QuestionParams extends ParsedUrlQuery {
@@ -33,7 +34,9 @@ export const getStaticProps: GetStaticProps<
   const question = await loadQuestion(entry);
   // Only this paper travels with the page; a random set loads its questions
   // from /api/questions so page data stays proportional to one paper.
-  const paper = await loadQuizQuestions(entry.subject, entry.year);
+  const paper = question.format === 'written'
+    ? await loadWrittenQuestions(entry.subject, entry.year)
+    : await loadQuizQuestions(entry.subject, entry.year);
 
   return { props: { question, paper } };
 };
@@ -45,7 +48,7 @@ export default function StaticQuestionRoute({
   return (
     <>
       <Head>
-        <title>{`${question.year} 年第 ${question.questionNumber} 題｜建築師考試`}</title>
+        <title>{`${question.year} 年${question.format === 'written' ? '申論' : ''}第 ${question.questionNumber} 題｜建築師考試`}</title>
       </Head>
       <QuizPage question={question} paper={paper} />
     </>
