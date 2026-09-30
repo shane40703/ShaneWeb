@@ -2,7 +2,7 @@
   "primaryCategory": "其他營建法規",
   "topic": "法規位階",
   "relatedLaws": [
-    "其他營建法規"
+    "都市計畫法臺灣省施行細則"
   ],
   "tags": [
     "法規位階"
@@ -16,5 +16,6 @@
   "provenance": {
     "kind": "official",
     "page": 5
-  }
+  },
+  "fineTopic": "土地使用"
 }

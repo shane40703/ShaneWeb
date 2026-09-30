@@ -2,7 +2,8 @@
   "primaryCategory": "都市計畫法",
   "topic": "非都市土地",
   "relatedLaws": [
-    "區域計畫法"
+    "區域計畫法",
+    "區域計畫法施行細則"
   ],
   "tags": [
     "非都市土地"
@@ -16,5 +17,6 @@
   "provenance": {
     "kind": "official",
     "page": 5
-  }
+  },
+  "fineTopic": "非都市土地使用"
 }

@@ -2,7 +2,7 @@
   "primaryCategory": "其他營建法規",
   "topic": "法規位階",
   "relatedLaws": [
-    "其他營建法規"
+    "綠建築評估指標標準"
   ],
   "tags": [
     "法規位階"
@@ -13,5 +13,6 @@
   "provenance": {
     "kind": "official",
     "page": 4
-  }
+  },
+  "fineTopic": "綠建築標章"
 }

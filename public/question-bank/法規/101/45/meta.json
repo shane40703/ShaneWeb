@@ -2,7 +2,7 @@
   "primaryCategory": "都市計畫法",
   "topic": "國土與區域計畫",
   "relatedLaws": [
-    "都市計畫法"
+    "都市更新條例"
   ],
   "tags": [
     "國土與區域計畫"
@@ -16,5 +16,6 @@
   "provenance": {
     "kind": "official",
     "page": 5
-  }
+  },
+  "fineTopic": "都市更新"
 }

@@ -2,7 +2,7 @@
   "primaryCategory": "公寓大廈管理條例",
   "topic": "公寓大廈管理",
   "relatedLaws": [
-    "其他營建法規"
+    "公寓大廈管理條例"
   ],
   "tags": [
     "公寓大廈管理"
@@ -16,5 +16,6 @@
   "provenance": {
     "kind": "official",
     "page": 8
-  }
+  },
+  "fineTopic": "公寓大廈"
 }

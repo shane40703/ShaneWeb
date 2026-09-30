@@ -2,7 +2,7 @@
   "primaryCategory": "其他營建法規",
   "topic": "法規位階",
   "relatedLaws": [
-    "其他營建法規"
+    "公共工程施工綱要規範"
   ],
   "tags": [
     "法規位階"
@@ -16,5 +16,6 @@
   "provenance": {
     "kind": "official",
     "page": 7
-  }
+  },
+  "fineTopic": "公共工程施工綱要規範"
 }

@@ -1,11 +1,12 @@
 {
-  "primaryCategory": "其他營建法規",
-  "topic": "法規位階",
+  "primaryCategory": "營造業法",
+  "topic": "營造業法",
   "relatedLaws": [
-    "其他營建法規"
+    "營造業法",
+    "建築法"
   ],
   "tags": [
-    "法規位階"
+    "營造業法"
   ],
   "answerKey": {
     "kind": "accepted",
@@ -16,5 +17,6 @@
   "provenance": {
     "kind": "official",
     "page": 2
-  }
+  },
+  "fineTopic": "監造重點"
 }

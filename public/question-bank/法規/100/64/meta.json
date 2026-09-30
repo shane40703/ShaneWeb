@@ -2,7 +2,7 @@
   "primaryCategory": "都市計畫法",
   "topic": "非都市土地",
   "relatedLaws": [
-    "其他營建法規"
+    "國有非公用土地提供申請開發案件處理要點"
   ],
   "tags": [
     "非都市土地"
@@ -16,5 +16,6 @@
   "provenance": {
     "kind": "official",
     "page": 7
-  }
+  },
+  "fineTopic": "國有非公用土地提供申請開發案件處理要點"
 }
