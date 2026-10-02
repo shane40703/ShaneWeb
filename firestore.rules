@@ -160,7 +160,7 @@ service cloud.firestore {
       allow create: if signedIn() && validPost();
       allow update: if ownsPost() && (
         (request.resource.data.diff(resource.data).affectedKeys().hasOnly([
-            'content', 'images'
+            'content', 'images', 'deleted'
           ])
           && request.resource.data.content is string
           && request.resource.data.content.size() >= 0
@@ -169,6 +169,8 @@ service cloud.firestore {
           && request.resource.data.images.size() <= 4
           && (request.resource.data.content.size() >= 1
             || request.resource.data.images.size() >= 1)
+          && (!resource.data.keys().hasAny(['deleted'])
+            || resource.data.deleted == false)
           && request.resource.data.deleted == false)
         || (request.resource.data.diff(resource.data).affectedKeys().hasOnly([
             'content', 'deleted', 'deletedAt'

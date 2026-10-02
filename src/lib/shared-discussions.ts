@@ -70,6 +70,17 @@ export function createCloudDiscussionPostUpdateData(
     : { content, images };
 }
 
+export function createCloudDiscussionPostEditData(
+  content: string,
+  images: DiscussionPost['images'],
+) {
+  return {
+    content,
+    images,
+    deleted: false,
+  };
+}
+
 export function isFirestorePermissionDenied(reason: unknown) {
   if (!reason || typeof reason !== 'object' || !('code' in reason)) return false;
   return reason.code === 'permission-denied' || reason.code === 'firestore/permission-denied';
@@ -609,11 +620,14 @@ export function useSharedDiscussions(questionId: QuestionId) {
       requireUser();
       const firebase = getFirebaseServices();
       if (!firebase) return;
-      await updateDoc(doc(firebase.db, 'discussionPosts', postId), {
-        content: trimmed,
-      });
+      const post = posts.find((candidate) => candidate.id === postId);
+      if (!post) throw new Error('找不到要編輯的投稿，請重新整理後再試。');
+      await updateDoc(
+        doc(firebase.db, 'discussionPosts', postId),
+        createCloudDiscussionPostEditData(trimmed, post.images),
+      );
     },
-    [dispatch, enabled, requireUser],
+    [dispatch, enabled, posts, requireUser],
   );
 
   const deletePost = useCallback(

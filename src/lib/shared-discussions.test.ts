@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   createCloudDiscussionPostData,
+  createCloudDiscussionPostEditData,
   createCloudDiscussionPostUpdateData,
   deduplicateAuthorExplanations,
   isFirestorePermissionDenied,
@@ -43,6 +44,14 @@ describe('shared discussion parsing', () => {
     expect(
       createCloudDiscussionPostUpdateData('修正圖文', [], [{ id: 'old-image' }]),
     ).toEqual({ content: '修正圖文', images: [] });
+  });
+
+  it('normalizes legacy post fields when editing discussion content', () => {
+    expect(createCloudDiscussionPostEditData('修正後的詳解', [])).toEqual({
+      content: '修正後的詳解',
+      images: [],
+      deleted: false,
+    });
   });
 
   it('shows only the newest explanation from the same author', () => {
