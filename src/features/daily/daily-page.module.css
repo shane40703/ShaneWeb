@@ -468,6 +468,11 @@
   justify-self: end;
 }
 
+.noteEditor > section {
+  margin-top: 0;
+  grid-column: auto;
+}
+
 .explanation {
   padding: 12px 14px;
   border-left: 3px solid var(--primary);

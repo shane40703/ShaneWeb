@@ -16,12 +16,13 @@ export interface DailyPracticeSession {
   date: string;
   subjects: SubjectId[];
   questionIds: string[];
+  optionOrders: Record<string, number[]>;
   answers: Record<string, DailyPracticeAnswer>;
   eliminatedOptions: Record<string, number[]>;
   currentIndex: number;
   unreviewedWrongIds: string[];
   reviewedWrongIds: string[];
-  status: 'practice' | 'review' | 'subject-completed' | 'completed';
+  status: 'practice' | 'review' | 'completed' | 'failed';
 }
 
 export interface DailyCompletionRecord {
@@ -38,13 +39,52 @@ export function getTaipeiDateKey(date = new Date()) {
   }).format(date);
 }
 
+export function getMillisecondsUntilTaipeiMidnight(date = new Date()) {
+  const [year, month, day] = getTaipeiDateKey(date).split('-').map(Number);
+  const nextMidnight = Date.UTC(year, month - 1, day + 1) - 8 * 60 * 60 * 1000;
+  return Math.max(1, nextMidnight - date.getTime());
+}
+
+function shuffledOptionIndexes(length: number, random: () => number) {
+  const indexes = Array.from({ length }, (_, index) => index);
+  for (let index = indexes.length - 1; index > 0; index -= 1) {
+    const swapWith = Math.floor(random() * (index + 1));
+    [indexes[index], indexes[swapWith]] = [indexes[swapWith], indexes[index]];
+  }
+  return indexes;
+}
+
+export function applyDailyOptionOrder(
+  question: Question,
+  order: readonly number[] | undefined,
+): Question {
+  if (
+    !order ||
+    order.length !== question.options.length ||
+    new Set(order).size !== question.options.length ||
+    order.some((index) => index < 0 || index >= question.options.length)
+  ) {
+    return question;
+  }
+  return {
+    ...question,
+    options: order.map((index) => question.options[index]),
+    answerKey: question.answerKey.kind === 'accepted'
+      ? {
+          kind: 'accepted',
+          options: question.answerKey.options.map((index) => order.indexOf(index)),
+        }
+      : question.answerKey,
+  };
+}
+
 export function createDailyPracticeSession(
   questions: readonly Question[],
   subjects: readonly SubjectId[],
   date = getTaipeiDateKey(),
   random: () => number = Math.random,
 ): DailyPracticeSession {
-  const selectedSubjects = [...new Set(subjects)];
+  const selectedSubjects = [...new Set(subjects)].slice(0, 1);
   const questionIds = selectedSubjects.flatMap((subject) =>
     pickRandomItems(
       questions.filter(
@@ -55,10 +95,18 @@ export function createDailyPracticeSession(
       random,
     ).map((question) => question.id),
   );
+  const questionById = new Map(questions.map((question) => [question.id, question]));
+  const optionOrders = Object.fromEntries(
+    questionIds.map((id) => {
+      const optionCount = questionById.get(id)?.options.length ?? 0;
+      return [id, shuffledOptionIndexes(optionCount, random)];
+    }),
+  );
   return {
     date,
     subjects: selectedSubjects,
     questionIds,
+    optionOrders,
     answers: {},
     eliminatedOptions: {},
     currentIndex: 0,
@@ -100,7 +148,8 @@ export function parseDailyPracticeSession(
     !subjects.length ||
     !questionIds.length ||
     !Number.isInteger(session.currentIndex) ||
-    !['practice', 'review', 'subject-completed', 'completed'].includes(
+    subjects.length !== 1 ||
+    !['practice', 'review', 'completed', 'failed'].includes(
       session.status ?? '',
     )
   ) {
@@ -110,6 +159,17 @@ export function parseDailyPracticeSession(
     Object.entries(session.answers ?? {}).filter(
       ([id, answer]) => questionIds.includes(id) && isDailyAnswer(answer),
     ),
+  );
+  const optionOrders: Record<string, number[]> = Object.fromEntries(
+    Object.entries(session.optionOrders ?? {}).flatMap(([id, indexes]) => {
+      if (!questionIds.includes(id) || !Array.isArray(indexes)) return [];
+      const order = indexes.filter((index): index is number =>
+        Number.isInteger(index) && index >= 0,
+      );
+      return order.length === indexes.length && new Set(order).size === order.length
+        ? [[id, order]]
+        : [];
+    }),
   );
   const eliminatedOptions: Record<string, number[]> = Object.fromEntries(
     Object.entries(session.eliminatedOptions ?? {}).flatMap(([id, indexes]) => {
@@ -132,6 +192,7 @@ export function parseDailyPracticeSession(
     date: session.date,
     subjects,
     questionIds,
+    optionOrders,
     answers,
     eliminatedOptions,
     currentIndex: Math.min(
@@ -170,8 +231,6 @@ export function shouldEnterDailyReview(
 ) {
   return (
     wrongCount > 0 &&
-    (wrongCount >= DAILY_WRONG_LIMIT ||
-      nextIndex % DAILY_LEVEL_SIZE === 0 ||
-      nextIndex >= total)
+    (nextIndex % DAILY_LEVEL_SIZE === 0 || nextIndex >= total)
   );
 }

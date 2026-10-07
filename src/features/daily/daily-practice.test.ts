@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import type { Question, SubjectId } from '@/lib/types';
 import {
+  applyDailyOptionOrder,
   createDailyPracticeSession,
   DAILY_QUESTIONS_PER_SUBJECT,
+  getMillisecondsUntilTaipeiMidnight,
   parseDailyCompletionRecord,
   parseDailyPracticeSession,
   shouldEnterDailyReview,
@@ -26,7 +28,7 @@ function question(subject: SubjectId, number: number): Question {
 }
 
 describe('daily practice', () => {
-  it('draws fifty questions for every selected subject', () => {
+  it('draws fifty questions for only the selected subject', () => {
     const questions = (['law', 'env'] as const).flatMap((subject) =>
       Array.from({ length: 60 }, (_, index) => question(subject, index + 1)),
     );
@@ -38,17 +40,35 @@ describe('daily practice', () => {
       () => 0.5,
     );
 
-    expect(session.questionIds).toHaveLength(DAILY_QUESTIONS_PER_SUBJECT * 2);
+    expect(session.questionIds).toHaveLength(DAILY_QUESTIONS_PER_SUBJECT);
+    expect(session.subjects).toEqual(['law']);
     expect(session.questionIds.filter((id) => id.startsWith('law-'))).toHaveLength(50);
-    expect(session.questionIds.filter((id) => id.startsWith('env-'))).toHaveLength(50);
-    expect(new Set(session.questionIds)).toHaveLength(100);
+    expect(session.questionIds.filter((id) => id.startsWith('env-'))).toHaveLength(0);
+    expect(new Set(session.questionIds)).toHaveLength(50);
+    expect(Object.keys(session.optionOrders)).toHaveLength(50);
   });
 
-  it('requires review at a level boundary or after three mistakes', () => {
-    expect(shouldEnterDailyReview(3, 50, 3)).toBe(true);
+  it('requires review only at a level boundary because the mistake limit ends the run', () => {
+    expect(shouldEnterDailyReview(3, 50, 3)).toBe(false);
     expect(shouldEnterDailyReview(5, 50, 1)).toBe(true);
     expect(shouldEnterDailyReview(4, 50, 1)).toBe(false);
     expect(shouldEnterDailyReview(50, 50, 1)).toBe(true);
+  });
+
+  it('reorders answer choices together with the accepted answer', () => {
+    const reordered = applyDailyOptionOrder(question('law', 1), [2, 0, 3, 1]);
+
+    expect(reordered.options).toEqual(['C', 'A', 'D', 'B']);
+    expect(reordered.answerKey).toEqual({ kind: 'accepted', options: [1] });
+  });
+
+  it('refreshes at the next Taipei midnight instead of after 24 hours', () => {
+    expect(
+      getMillisecondsUntilTaipeiMidnight(new Date('2026-10-07T15:59:00.000Z')),
+    ).toBe(60_000);
+    expect(
+      getMillisecondsUntilTaipeiMidnight(new Date('2026-10-07T16:01:00.000Z')),
+    ).toBe(86_340_000);
   });
 
   it('restores only a valid session from the same Taipei date', () => {

@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
   IconAlertTriangle,
-  IconArrowRight,
   IconCalendarClock,
   IconCircleCheck,
   IconFlag3,
@@ -14,6 +13,7 @@ import {
   IconX,
 } from '@tabler/icons-react';
 import { DifficultButton } from '@/components/difficult-button';
+import { ReviewNoteEditor } from '@/components/attempt-review';
 import { QuestionAnswerPanel } from '@/components/question-answer-panel';
 import { QuestionPrompt, Tag } from '@/components/content/content';
 import { Button, OptionGroup } from '@/components/ui/ui';
@@ -25,6 +25,7 @@ import type { Question, SubjectId } from '@/lib/types';
 import { subjects } from '@/question-bank/catalog';
 import { useAppState } from '@/state/app-state';
 import {
+  applyDailyOptionOrder,
   createDailyPracticeSession,
   DAILY_COMPLETION_STORAGE_KEY,
   DAILY_LEVEL_SIZE,
@@ -32,6 +33,7 @@ import {
   DAILY_QUESTIONS_PER_SUBJECT,
   DAILY_WRONG_LIMIT,
   getTaipeiDateKey,
+  getMillisecondsUntilTaipeiMidnight,
   parseDailyCompletionRecord,
   parseDailyPracticeSession,
   shouldEnterDailyReview,
@@ -80,7 +82,7 @@ function DailySetup({
   const readyToStart = selectedSubjects.every(
     (subject) => (subjectCounts[subject] ?? 0) > 0,
   );
-  const targetCount = selectedSubjects.length * DAILY_QUESTIONS_PER_SUBJECT;
+  const selectedSubject = selectedSubjects[0];
 
   return (
     <section className={styles.setup} aria-labelledby="daily-practice-title">
@@ -91,19 +93,19 @@ function DailySetup({
         <div>
           <span className={styles.eyebrow}>DAILY CHALLENGE</span>
           <h2 id="daily-practice-title">每日 50 題闖關</h2>
-          <p>每個選取科目各抽 50 題；完成的科目隔日重新開放。</p>
+          <p>選擇一個科目進行 50 題挑戰；各科進度獨立，完成後隔日重新開放。</p>
         </div>
       </div>
 
       <div className={styles.rules} aria-label="每日練習規則">
         <div><strong>50</strong><span>每科題數</span></div>
         <div><strong>5</strong><span>每層題數</span></div>
-        <div><strong>{DAILY_WRONG_LIMIT}</strong><span>錯題警戒</span></div>
-        <p>每層結束需檢討該層錯題；累積錯 {DAILY_WRONG_LIMIT} 題會立即暫停並進入檢討。</p>
+        <div><strong>{DAILY_WRONG_LIMIT}</strong><span>答錯上限</span></div>
+        <p>每層結束需檢討該層錯題；累積答錯 {DAILY_WRONG_LIMIT} 題時，該科今日練習直接結束。</p>
       </div>
 
       <fieldset className={styles.subjectChoices}>
-        <legend>選擇今日科目（可複選）</legend>
+        <legend>選擇今日科目</legend>
         {subjects.map((subject) => {
           const checked = selectedSubjects.includes(subject.id);
           const completed = completedSubjects.includes(subject.id);
@@ -114,7 +116,8 @@ function DailySetup({
               data-completed={completed || undefined}
             >
               <input
-                type="checkbox"
+                type="radio"
+                name="daily-subject"
                 checked={checked}
                 disabled={completed}
                 onChange={() => onToggleSubject(subject.id)}
@@ -148,8 +151,8 @@ function DailySetup({
         <span>
           {loading ? (
             <><IconLoader2 size={18} aria-hidden="true" /> 正在準備題庫…</>
-          ) : selectedSubjects.length ? (
-            <>已選 {selectedSubjects.length} 科・今日共 {targetCount} 題</>
+          ) : selectedSubject ? (
+            <>已選 {subjectShortName(selectedSubject)}・今日 50 題</>
           ) : completedSubjects.length === subjects.length ? (
             <>今日四科皆已完成，明天再繼續。</>
           ) : (
@@ -191,8 +194,7 @@ function ProgressOverview({
   );
   const currentLevel = Math.floor(currentSubjectPosition / DAILY_LEVEL_SIZE);
   const levelCount = Math.ceil(questionIds.length / DAILY_LEVEL_SIZE);
-  const subjectFinished = session.status === 'subject-completed' ||
-    session.status === 'completed';
+  const subjectFinished = session.status === 'completed' || session.status === 'failed';
 
   return (
     <section className={styles.progressOverview} aria-label="每日練習進度與關卡">
@@ -242,15 +244,13 @@ function CompletionSummary({
   session,
   subject,
   questionById,
-  hasNextSubject,
-  onContinue,
+  failed,
   onSelectSubjects,
 }: {
   session: DailyPracticeSession;
   subject: SubjectId;
   questionById: Map<string, Question>;
-  hasNextSubject: boolean;
-  onContinue: () => void;
+  failed: boolean;
   onSelectSubjects: () => void;
 }) {
   const subjectQuestionIds = session.questionIds.filter(
@@ -267,16 +267,11 @@ function CompletionSummary({
     <div className={styles.completionArea}>
       <section className={styles.completed}>
         <IconTrophy size={49} stroke={1.7} aria-hidden="true" />
-        <span className={styles.eyebrow}>DAILY CLEAR</span>
-        <h3>{subjectShortName(subject)}今日挑戰完成</h3>
+        <span className={styles.eyebrow}>{failed ? 'DAILY STOP' : 'DAILY CLEAR'}</span>
+        <h3>{subjectShortName(subject)}今日挑戰{failed ? '結束' : '完成'}</h3>
         <p>完成 {answeredIds.length} 題，答對 {correctCount} 題、答錯 {wrongIds.length} 題。</p>
         <strong>{accuracy}% 正確率</strong>
         <div className={styles.completionActions}>
-          {hasNextSubject ? (
-            <Button variant="primary" onClick={onContinue}>
-              繼續下一科 <IconArrowRight size={17} />
-            </Button>
-          ) : null}
           <Button onClick={onSelectSubjects}>選擇其他科目</Button>
         </div>
       </section>
@@ -295,21 +290,27 @@ function CompletionSummary({
               const question = questionById.get(questionId);
               const answer = session.answers[questionId];
               if (!question || !answer) return null;
+              const displayedQuestion = applyDailyOptionOrder(
+                question,
+                session.optionOrders[questionId],
+              );
               return (
                 <article key={questionId}>
                   <div className={styles.questionMeta}>
-                    <Tag>{question.year} 年</Tag>
                     <Tag tone="purple">原題第 {question.questionNumber} 題</Tag>
                   </div>
                   <QuestionPrompt question={question} compact />
                   <QuestionAnswerPanel
-                    question={question}
+                    question={displayedQuestion}
                     selectedIndex={answer.selected}
                     showStatusLabels
                   />
                   <div className={styles.explanation}>
-                    <strong>正確答案：{formatCorrectAnswer(question)}</strong>
+                    <strong>正確答案：{formatCorrectAnswer(displayedQuestion)}</strong>
                     <p>{question.explanation?.trim() || '本題目前尚無詳解，請比較正確選項與題幹條件。'}</p>
+                  </div>
+                  <div className={styles.noteEditor}>
+                    <ReviewNoteEditor question={displayedQuestion} />
                   </div>
                 </article>
               );
@@ -337,6 +338,7 @@ export function DailyPage() {
     selected: number;
   }>();
   const [restored, setRestored] = useState(false);
+  const [today, setToday] = useState(getTaipeiDateKey);
   const bank = useSubjectQuestions(session?.subjects ?? selectedSubjects);
 
   useEffect(() => {
@@ -346,9 +348,11 @@ export function DailyPage() {
       if (!active) return;
       const storedSession = parseDailyPracticeSession(
         readStoredValue(DAILY_PRACTICE_STORAGE_KEY),
+        today,
       );
       const storedCompletions = parseDailyCompletionRecord(
         readStoredValue(DAILY_COMPLETION_STORAGE_KEY),
+        today,
       );
       setCompletionRecord(storedCompletions);
       if (storedSession) {
@@ -365,7 +369,20 @@ export function DailyPage() {
     return () => {
       active = false;
     };
-  }, [ready, restored]);
+  }, [ready, restored, today]);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      const nextDate = getTaipeiDateKey();
+      removeStoredSession();
+      setSession(null);
+      setDraftAnswer(undefined);
+      setCompletionRecord({ date: nextDate, subjects: [] });
+      setSelectedSubjects(['law']);
+      setToday(nextDate);
+    }, getMillisecondsUntilTaipeiMidnight() + 250);
+    return () => window.clearTimeout(timer);
+  }, [today]);
 
   useEffect(() => {
     if (!session) return;
@@ -391,8 +408,14 @@ export function DailyPage() {
     [bank.questions],
   );
   const currentQuestionId = session?.questionIds[session.currentIndex];
-  const currentQuestion = currentQuestionId
+  const sourceCurrentQuestion = currentQuestionId
     ? questionById.get(currentQuestionId)
+    : undefined;
+  const currentQuestion = sourceCurrentQuestion && session
+    ? applyDailyOptionOrder(
+        sourceCurrentQuestion,
+        session.optionOrders[sourceCurrentQuestion.id],
+      )
     : undefined;
   const currentAnswer = currentQuestionId
     ? session?.answers[currentQuestionId]
@@ -408,11 +431,7 @@ export function DailyPage() {
 
   function toggleSubject(subject: SubjectId) {
     if (completionRecord.subjects.includes(subject)) return;
-    setSelectedSubjects((current) =>
-      current.includes(subject)
-        ? current.filter((item) => item !== subject)
-        : [...current, subject],
-    );
+    setSelectedSubjects([subject]);
   }
 
   function startPractice() {
@@ -430,45 +449,30 @@ export function DailyPage() {
     }));
   }
 
-  function subjectAt(index: number) {
-    const id = session?.questionIds[index];
-    return id ? questionById.get(id)?.subject : undefined;
-  }
-
-  function isSubjectBoundary(nextIndex: number) {
-    const finishedSubject = subjectAt(nextIndex - 1);
-    return Boolean(
-      finishedSubject &&
-      (nextIndex >= (session?.questionIds.length ?? 0) ||
-        subjectAt(nextIndex) !== finishedSubject),
-    );
-  }
-
-  function completionStatus(nextIndex: number) {
-    return nextIndex >= (session?.questionIds.length ?? 0)
-      ? 'completed' as const
-      : 'subject-completed' as const;
-  }
-
   function answerQuestion() {
     if (!session || !currentQuestion || selectedOption === undefined || currentAnswer) return;
     const correct = isQuestionCorrect(currentQuestion, selectedOption);
     dispatch({
       type: 'save-answer',
       questionId: currentQuestion.id,
-      selected: selectedOption,
+      selected: session.optionOrders[currentQuestion.id]?.[selectedOption] ?? selectedOption,
       correct,
       answeredAt: new Date().toISOString(),
     });
+    const nextWrongIds = correct
+      ? session.unreviewedWrongIds
+      : [...new Set([...session.unreviewedWrongIds, currentQuestion.id])];
+    const failed = nextWrongIds.length >= DAILY_WRONG_LIMIT;
+    if (failed) markSubjectCompleted(currentQuestion.subject);
     setSession({
       ...session,
       answers: {
         ...session.answers,
         [currentQuestion.id]: { selected: selectedOption, correct },
       },
-      unreviewedWrongIds: correct
-        ? session.unreviewedWrongIds
-        : [...new Set([...session.unreviewedWrongIds, currentQuestion.id])],
+      unreviewedWrongIds: nextWrongIds,
+      currentIndex: failed ? session.currentIndex + 1 : session.currentIndex,
+      status: failed ? 'failed' : session.status,
     });
   }
 
@@ -494,18 +498,15 @@ export function DailyPage() {
       session.questionIds.length,
       session.unreviewedWrongIds.length,
     );
-    const boundary = isSubjectBoundary(nextIndex);
-    if (!enterReview && boundary) {
-      const finishedSubject = subjectAt(nextIndex - 1);
-      if (finishedSubject) markSubjectCompleted(finishedSubject);
-    }
+    const completed = nextIndex >= session.questionIds.length;
+    if (!enterReview && completed) markSubjectCompleted(session.subjects[0]);
     setSession({
       ...session,
       currentIndex: nextIndex,
       status: enterReview
         ? 'review'
-        : boundary
-          ? completionStatus(nextIndex)
+        : completed
+          ? 'completed'
           : 'practice',
     });
   }
@@ -524,16 +525,13 @@ export function DailyPage() {
       session.reviewedWrongIds.includes(id),
     );
     if (!allReviewed) return;
-    const boundary = isSubjectBoundary(session.currentIndex);
-    if (boundary) {
-      const finishedSubject = subjectAt(session.currentIndex - 1);
-      if (finishedSubject) markSubjectCompleted(finishedSubject);
-    }
+    const completed = session.currentIndex >= session.questionIds.length;
+    if (completed) markSubjectCompleted(session.subjects[0]);
     setSession({
       ...session,
       unreviewedWrongIds: [],
       reviewedWrongIds: [],
-      status: boundary ? completionStatus(session.currentIndex) : 'practice',
+      status: completed ? 'completed' : 'practice',
     });
   }
 
@@ -576,10 +574,8 @@ export function DailyPage() {
     );
   }
 
-  const completedSubject = subjectAt(Math.max(0, session.currentIndex - 1));
-  const focusSubject = session.status === 'subject-completed' || session.status === 'completed'
-    ? completedSubject
-    : currentQuestion?.subject ?? subjectAt(session.currentIndex);
+  const completedSubject = session.subjects[0];
+  const focusSubject = session.subjects[0];
   const reviewReady = session.unreviewedWrongIds.every((id) =>
     session.reviewedWrongIds.includes(id),
   );
@@ -594,8 +590,6 @@ export function DailyPage() {
         .filter((id) => questionById.get(id)?.subject === currentQuestion.subject)
         .length
     : 0;
-  const nextSubject = subjectAt(session.currentIndex);
-
   return (
     <section className={styles.daily}>
       {focusSubject ? (
@@ -630,23 +624,29 @@ export function DailyPage() {
               const question = questionById.get(questionId);
               const answer = session.answers[questionId];
               if (!question || !answer) return null;
+              const displayedQuestion = applyDailyOptionOrder(
+                question,
+                session.optionOrders[questionId],
+              );
               const reviewed = session.reviewedWrongIds.includes(questionId);
               return (
                 <article key={questionId} data-reviewed={reviewed || undefined}>
                   <div className={styles.questionMeta}>
-                    <Tag>{question.year} 年</Tag>
                     <Tag tone="green">{subjectShortName(question.subject)}</Tag>
                     <Tag tone="purple">原題第 {question.questionNumber} 題</Tag>
                   </div>
                   <QuestionPrompt question={question} compact />
                   <QuestionAnswerPanel
-                    question={question}
+                    question={displayedQuestion}
                     selectedIndex={answer.selected}
                     showStatusLabels
                   />
                   <div className={styles.explanation}>
-                    <strong>正確答案：{formatCorrectAnswer(question)}</strong>
+                    <strong>正確答案：{formatCorrectAnswer(displayedQuestion)}</strong>
                     <p>{question.explanation?.trim() || '本題目前尚無詳解，請比較正確選項與題幹條件。'}</p>
+                  </div>
+                  <div className={styles.noteEditor}>
+                    <ReviewNoteEditor question={displayedQuestion} />
                   </div>
                   <Button
                     variant={reviewed ? 'secondary' : 'primary'}
@@ -667,13 +667,12 @@ export function DailyPage() {
             </Button>
           </footer>
         </section>
-      ) : (session.status === 'subject-completed' || session.status === 'completed') && completedSubject ? (
+      ) : (session.status === 'completed' || session.status === 'failed') && completedSubject ? (
         <CompletionSummary
           session={session}
           subject={completedSubject}
           questionById={questionById}
-          hasNextSubject={session.status === 'subject-completed' && Boolean(nextSubject)}
-          onContinue={() => setSession({ ...session, status: 'practice' })}
+          failed={session.status === 'failed'}
           onSelectSubjects={() => returnToSelection(false)}
         />
       ) : currentQuestion ? (
@@ -685,7 +684,7 @@ export function DailyPage() {
             <div className={styles.questionMeta}>
               <Tag>本科第 {Math.floor(currentSubjectQuestionIndex / DAILY_LEVEL_SIZE) + 1} 層</Tag>
               <Tag tone="green">本層第 {(currentSubjectQuestionIndex % DAILY_LEVEL_SIZE) + 1} / {DAILY_LEVEL_SIZE} 題</Tag>
-              <Tag tone="purple">{subjectShortName(currentQuestion.subject)}・{currentQuestion.year} 年</Tag>
+              <Tag tone="purple">{subjectShortName(currentQuestion.subject)}</Tag>
             </div>
             <div className={styles.challengeActions}>
               <DifficultButton
@@ -710,17 +709,17 @@ export function DailyPage() {
             }
             onToggleEliminated={toggleEliminatedOption}
           />
-          {currentAnswer ? (
+          {currentAnswer && !currentAnswer.correct ? (
             <div className={styles.answerResult} data-correct={currentAnswer.correct || undefined} role="status">
-              {currentAnswer.correct ? <IconCircleCheck size={22} /> : <IconX size={22} />}
+              <IconX size={22} />
               <div>
-                <strong>{currentAnswer.correct ? '答對了，繼續前進！' : '答錯了，已加入本輪檢討'}</strong>
-                {!currentAnswer.correct ? <span>正確答案：{formatCorrectAnswer(currentQuestion)}</span> : null}
+                <strong>答錯了，已加入本輪檢討</strong>
+                <span>正確答案：{formatCorrectAnswer(currentQuestion)}</span>
               </div>
             </div>
           ) : null}
           <footer>
-            <span>累積錯 {session.unreviewedWrongIds.length} 題；達 {DAILY_WRONG_LIMIT} 題立即進入檢討。</span>
+            <span>累積錯 {session.unreviewedWrongIds.length} 題；達 {DAILY_WRONG_LIMIT} 題時今日練習直接結束。</span>
             {currentAnswer ? (
               <Button variant="primary" onClick={continuePractice}>下一題</Button>
             ) : (
