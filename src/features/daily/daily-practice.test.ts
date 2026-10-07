@@ -3,6 +3,7 @@ import type { Question, SubjectId } from '@/lib/types';
 import {
   createDailyPracticeSession,
   DAILY_QUESTIONS_PER_SUBJECT,
+  parseDailyCompletionRecord,
   parseDailyPracticeSession,
   shouldEnterDailyReview,
 } from './daily-practice';
@@ -65,5 +66,21 @@ describe('daily practice', () => {
       parseDailyPracticeSession(JSON.stringify(session), '2026-10-08'),
     ).toBeNull();
     expect(parseDailyPracticeSession('{broken', '2026-10-07')).toBeNull();
+  });
+
+  it('keeps completed subjects locked only on the recorded date', () => {
+    const record = JSON.stringify({
+      date: '2026-10-07',
+      subjects: ['law', 'env', 'invalid'],
+    });
+
+    expect(parseDailyCompletionRecord(record, '2026-10-07')).toEqual({
+      date: '2026-10-07',
+      subjects: ['law', 'env'],
+    });
+    expect(parseDailyCompletionRecord(record, '2026-10-08')).toEqual({
+      date: '2026-10-08',
+      subjects: [],
+    });
   });
 });

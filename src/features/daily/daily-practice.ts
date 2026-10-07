@@ -2,6 +2,7 @@ import { isSubjectId, pickRandomItems } from '@/lib/study';
 import type { Question, SubjectId } from '@/lib/types';
 
 export const DAILY_PRACTICE_STORAGE_KEY = 'shaneweb:daily-practice';
+export const DAILY_COMPLETION_STORAGE_KEY = 'shaneweb:daily-completions';
 export const DAILY_QUESTIONS_PER_SUBJECT = 50;
 export const DAILY_LEVEL_SIZE = 5;
 export const DAILY_WRONG_LIMIT = 3;
@@ -16,10 +17,16 @@ export interface DailyPracticeSession {
   subjects: SubjectId[];
   questionIds: string[];
   answers: Record<string, DailyPracticeAnswer>;
+  eliminatedOptions: Record<string, number[]>;
   currentIndex: number;
   unreviewedWrongIds: string[];
   reviewedWrongIds: string[];
-  status: 'practice' | 'review' | 'completed';
+  status: 'practice' | 'review' | 'subject-completed' | 'completed';
+}
+
+export interface DailyCompletionRecord {
+  date: string;
+  subjects: SubjectId[];
 }
 
 export function getTaipeiDateKey(date = new Date()) {
@@ -53,6 +60,7 @@ export function createDailyPracticeSession(
     subjects: selectedSubjects,
     questionIds,
     answers: {},
+    eliminatedOptions: {},
     currentIndex: 0,
     unreviewedWrongIds: [],
     reviewedWrongIds: [],
@@ -92,7 +100,9 @@ export function parseDailyPracticeSession(
     !subjects.length ||
     !questionIds.length ||
     !Number.isInteger(session.currentIndex) ||
-    !['practice', 'review', 'completed'].includes(session.status ?? '')
+    !['practice', 'review', 'subject-completed', 'completed'].includes(
+      session.status ?? '',
+    )
   ) {
     return null;
   }
@@ -100,6 +110,17 @@ export function parseDailyPracticeSession(
     Object.entries(session.answers ?? {}).filter(
       ([id, answer]) => questionIds.includes(id) && isDailyAnswer(answer),
     ),
+  );
+  const eliminatedOptions: Record<string, number[]> = Object.fromEntries(
+    Object.entries(session.eliminatedOptions ?? {}).flatMap(([id, indexes]) => {
+      if (!questionIds.includes(id) || !Array.isArray(indexes)) return [];
+      return [[
+        id,
+        [...new Set(indexes.filter((index): index is number =>
+          Number.isInteger(index) && index >= 0,
+        ))],
+      ]];
+    }),
   );
   const validWrongIds = (ids: unknown) =>
     Array.isArray(ids)
@@ -112,6 +133,7 @@ export function parseDailyPracticeSession(
     subjects,
     questionIds,
     answers,
+    eliminatedOptions,
     currentIndex: Math.min(
       Math.max(0, session.currentIndex as number),
       questionIds.length,
@@ -120,6 +142,25 @@ export function parseDailyPracticeSession(
     reviewedWrongIds: validWrongIds(session.reviewedWrongIds),
     status: session.status as DailyPracticeSession['status'],
   };
+}
+
+export function parseDailyCompletionRecord(
+  raw: string | null,
+  today = getTaipeiDateKey(),
+): DailyCompletionRecord {
+  if (!raw) return { date: today, subjects: [] };
+  try {
+    const value = JSON.parse(raw) as Partial<DailyCompletionRecord>;
+    if (value.date !== today || !Array.isArray(value.subjects)) {
+      return { date: today, subjects: [] };
+    }
+    return {
+      date: today,
+      subjects: [...new Set(value.subjects.filter(isSubjectId))],
+    };
+  } catch {
+    return { date: today, subjects: [] };
+  }
 }
 
 export function shouldEnterDailyReview(

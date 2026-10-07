@@ -1,9 +1,16 @@
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Question, SubjectId } from '@/lib/types';
+import {
+  DAILY_COMPLETION_STORAGE_KEY,
+  DAILY_PRACTICE_STORAGE_KEY,
+  createDailyPracticeSession,
+  getTaipeiDateKey,
+} from './daily-practice';
 import { DailyPage } from './daily-page';
 
 const appState = vi.hoisted(() => ({
+  state: { difficultQuestionIds: [] as string[] },
   dispatch: vi.fn(),
   reportPersistence: vi.fn(),
 }));
@@ -59,7 +66,52 @@ describe('DailyPage', () => {
     fireEvent.click(screen.getByRole('button', { name: /建立今日挑戰/ }));
 
     const statistics = await screen.findByLabelText('每日練習統計');
-    await waitFor(() => expect(within(statistics).getByText('/ 100')).toBeInTheDocument());
-    expect(screen.getByText('法規・環控')).toBeInTheDocument();
+    await waitFor(() => expect(within(statistics).getByText('/ 50')).toBeInTheDocument());
+    expect(screen.getByLabelText('法規關卡進度')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '標記為難題' })).toBeInTheDocument();
+
+    const eliminate = screen.getByRole('button', { name: '刪去選項 A' });
+    fireEvent.click(eliminate);
+    expect(eliminate).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('locks a completed subject until the next day', async () => {
+    window.localStorage.setItem(
+      DAILY_COMPLETION_STORAGE_KEY,
+      JSON.stringify({ date: getTaipeiDateKey(), subjects: ['law'] }),
+    );
+
+    render(<DailyPage />);
+
+    const law = await screen.findByRole('checkbox', { name: /建築法規與實務/ });
+    expect(law).toBeDisabled();
+    expect(screen.getByText('今日已完成，明日再開放')).toBeInTheDocument();
+    expect(screen.getByRole('checkbox', { name: /建築環境控制/ })).toBeChecked();
+  });
+
+  it('lists wrong questions under the completed subject summary', async () => {
+    const session = createDailyPracticeSession(
+      [question('law', 1)],
+      ['law'],
+      getTaipeiDateKey(),
+    );
+    session.currentIndex = 1;
+    session.status = 'completed';
+    session.answers[session.questionIds[0]] = { selected: 1, correct: false };
+    window.localStorage.setItem(
+      DAILY_PRACTICE_STORAGE_KEY,
+      JSON.stringify(session),
+    );
+    window.localStorage.setItem(
+      DAILY_COMPLETION_STORAGE_KEY,
+      JSON.stringify({ date: getTaipeiDateKey(), subjects: ['law'] }),
+    );
+
+    render(<DailyPage />);
+
+    expect(await screen.findByText('法規今日挑戰完成')).toBeInTheDocument();
+    expect(screen.getByText('本次錯題整理')).toBeInTheDocument();
+    expect(screen.getByText('law 第 1 題')).toBeInTheDocument();
+    expect(screen.getByText('正確答案：A')).toBeInTheDocument();
   });
 });
