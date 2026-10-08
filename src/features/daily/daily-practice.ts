@@ -28,12 +28,31 @@ export interface DailyPracticeSession {
 export interface DailyCompletionRecord {
   date: string;
   subjects: SubjectId[];
+  results: Partial<Record<SubjectId, DailyCompletionResult>>;
+}
+
+export interface DailyCompletionResult {
+  answered: number;
+  correct: number;
+  status: 'completed' | 'failed';
 }
 
 export function countDailyWrongAnswers(
   answers: Readonly<Record<string, DailyPracticeAnswer>>,
 ) {
   return Object.values(answers).filter((answer) => !answer.correct).length;
+}
+
+export function createDailyCompletionResult(
+  answers: Readonly<Record<string, DailyPracticeAnswer>>,
+  status: DailyCompletionResult['status'],
+): DailyCompletionResult {
+  const answered = Object.keys(answers).length;
+  return {
+    answered,
+    correct: answered - countDailyWrongAnswers(answers),
+    status,
+  };
 }
 
 export function getTaipeiDateKey(date = new Date()) {
@@ -194,11 +213,15 @@ export function parseDailyPracticeSession(
           typeof id === 'string' && questionIds.includes(id),
         ))]
       : [];
+  const unreviewedWrongIds = validWrongIds(session.unreviewedWrongIds);
+  const reviewedWrongIds = validWrongIds(session.reviewedWrongIds);
   const status = session.status === 'completed'
     ? 'completed'
-    : countDailyWrongAnswers(answers) >= DAILY_WRONG_LIMIT
+    : unreviewedWrongIds.length >= DAILY_WRONG_LIMIT
       ? 'failed'
-      : session.status as DailyPracticeSession['status'];
+      : session.status === 'failed'
+        ? 'practice'
+        : session.status as DailyPracticeSession['status'];
   return {
     date: session.date,
     subjects,
@@ -210,8 +233,8 @@ export function parseDailyPracticeSession(
       Math.max(0, session.currentIndex as number),
       questionIds.length,
     ),
-    unreviewedWrongIds: validWrongIds(session.unreviewedWrongIds),
-    reviewedWrongIds: validWrongIds(session.reviewedWrongIds),
+    unreviewedWrongIds,
+    reviewedWrongIds,
     status,
   };
 }
@@ -220,18 +243,39 @@ export function parseDailyCompletionRecord(
   raw: string | null,
   today = getTaipeiDateKey(),
 ): DailyCompletionRecord {
-  if (!raw) return { date: today, subjects: [] };
+  if (!raw) return { date: today, subjects: [], results: {} };
   try {
     const value = JSON.parse(raw) as Partial<DailyCompletionRecord>;
     if (value.date !== today || !Array.isArray(value.subjects)) {
-      return { date: today, subjects: [] };
+      return { date: today, subjects: [], results: {} };
     }
+    const subjects = [...new Set(value.subjects.filter(isSubjectId))];
+    const results: DailyCompletionRecord['results'] = {};
+    const storedResults = value.results && typeof value.results === 'object'
+      ? value.results
+      : {};
+    subjects.forEach((subject) => {
+      const result = storedResults[subject];
+      if (
+        result &&
+        Number.isInteger(result.answered) &&
+        result.answered >= 0 &&
+        result.answered <= DAILY_QUESTIONS_PER_SUBJECT &&
+        Number.isInteger(result.correct) &&
+        result.correct >= 0 &&
+        result.correct <= result.answered &&
+        ['completed', 'failed'].includes(result.status)
+      ) {
+        results[subject] = result;
+      }
+    });
     return {
       date: today,
-      subjects: [...new Set(value.subjects.filter(isSubjectId))],
+      subjects,
+      results,
     };
   } catch {
-    return { date: today, subjects: [] };
+    return { date: today, subjects: [], results: {} };
   }
 }
 

@@ -3,6 +3,7 @@ import type { Question, SubjectId } from '@/lib/types';
 import {
   applyDailyOptionOrder,
   countDailyWrongAnswers,
+  createDailyCompletionResult,
   createDailyPracticeSession,
   DAILY_QUESTIONS_PER_SUBJECT,
   getMillisecondsUntilTaipeiMidnight,
@@ -64,6 +65,17 @@ describe('daily practice', () => {
     })).toBe(2);
   });
 
+  it('creates a persisted completion score for the subject selection page', () => {
+    expect(createDailyCompletionResult({
+      first: { selected: 0, correct: true },
+      second: { selected: 2, correct: false },
+    }, 'failed')).toEqual({
+      answered: 2,
+      correct: 1,
+      status: 'failed',
+    });
+  });
+
   it('reorders answer choices together with the accepted answer', () => {
     const reordered = applyDailyOptionOrder(question('law', 1), [2, 0, 3, 1]);
 
@@ -97,7 +109,7 @@ describe('daily practice', () => {
     expect(parseDailyPracticeSession('{broken', '2026-10-07')).toBeNull();
   });
 
-  it('repairs a stored session that already reached the cumulative mistake limit', () => {
+  it('fails only when the current level has reached the mistake limit', () => {
     const session = createDailyPracticeSession(
       Array.from({ length: 4 }, (_, index) => question('law', index + 1)),
       ['law'],
@@ -107,12 +119,30 @@ describe('daily practice', () => {
     session.answers = Object.fromEntries(
       session.questionIds.slice(0, 3).map((id) => [id, { selected: 1, correct: false }]),
     );
-    session.unreviewedWrongIds = [];
+    session.unreviewedWrongIds = session.questionIds.slice(0, 3);
     session.status = 'practice';
 
     expect(
       parseDailyPracticeSession(JSON.stringify(session), '2026-10-07')?.status,
     ).toBe('failed');
+  });
+
+  it('repairs a session incorrectly failed by mistakes from earlier levels', () => {
+    const session = createDailyPracticeSession(
+      Array.from({ length: 6 }, (_, index) => question('law', index + 1)),
+      ['law'],
+      '2026-10-07',
+    );
+    session.currentIndex = 5;
+    session.answers = Object.fromEntries(
+      session.questionIds.slice(0, 3).map((id) => [id, { selected: 1, correct: false }]),
+    );
+    session.unreviewedWrongIds = [];
+    session.status = 'failed';
+
+    expect(
+      parseDailyPracticeSession(JSON.stringify(session), '2026-10-07')?.status,
+    ).toBe('practice');
   });
 
   it('keeps completed subjects locked only on the recorded date', () => {
@@ -124,10 +154,31 @@ describe('daily practice', () => {
     expect(parseDailyCompletionRecord(record, '2026-10-07')).toEqual({
       date: '2026-10-07',
       subjects: ['law', 'env'],
+      results: {},
     });
     expect(parseDailyCompletionRecord(record, '2026-10-08')).toEqual({
       date: '2026-10-08',
       subjects: [],
+      results: {},
+    });
+  });
+
+  it('restores valid completion scores and ignores malformed ones', () => {
+    const record = JSON.stringify({
+      date: '2026-10-07',
+      subjects: ['law', 'env'],
+      results: {
+        law: { answered: 50, correct: 46, status: 'completed' },
+        env: { answered: 3, correct: 4, status: 'failed' },
+      },
+    });
+
+    expect(parseDailyCompletionRecord(record, '2026-10-07')).toEqual({
+      date: '2026-10-07',
+      subjects: ['law', 'env'],
+      results: {
+        law: { answered: 50, correct: 46, status: 'completed' },
+      },
     });
   });
 });

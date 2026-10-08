@@ -26,7 +26,7 @@ import { subjects } from '@/question-bank/catalog';
 import { useAppState } from '@/state/app-state';
 import {
   applyDailyOptionOrder,
-  countDailyWrongAnswers,
+  createDailyCompletionResult,
   createDailyPracticeSession,
   DAILY_COMPLETION_STORAGE_KEY,
   DAILY_LEVEL_SIZE,
@@ -39,6 +39,7 @@ import {
   parseDailyPracticeSession,
   shouldEnterDailyReview,
   type DailyCompletionRecord,
+  type DailyCompletionResult,
   type DailyPracticeSession,
 } from './daily-practice';
 import styles from './daily-page.module.css';
@@ -58,6 +59,7 @@ function removeStoredSession() {
 function DailySetup({
   selectedSubjects,
   completedSubjects,
+  completionResults,
   onToggleSubject,
   onStart,
   questions,
@@ -67,6 +69,7 @@ function DailySetup({
 }: {
   selectedSubjects: SubjectId[];
   completedSubjects: SubjectId[];
+  completionResults: DailyCompletionRecord['results'];
   onToggleSubject: (subject: SubjectId) => void;
   onStart: () => void;
   questions: Question[];
@@ -102,7 +105,7 @@ function DailySetup({
         <div><strong>50</strong><span>每科題數</span></div>
         <div><strong>5</strong><span>每層題數</span></div>
         <div><strong>{DAILY_WRONG_LIMIT}</strong><span>答錯上限</span></div>
-        <p>每層結束需檢討該層錯題；累積答錯 {DAILY_WRONG_LIMIT} 題時，該科今日練習直接結束。</p>
+        <p>每層結束需檢討該層錯題；單層答錯 {DAILY_WRONG_LIMIT} 題時，該科今日練習直接結束。</p>
       </div>
 
       <fieldset className={styles.subjectChoices}>
@@ -110,6 +113,7 @@ function DailySetup({
         {subjects.map((subject) => {
           const checked = selectedSubjects.includes(subject.id);
           const completed = completedSubjects.includes(subject.id);
+          const result = completionResults[subject.id];
           return (
             <label
               key={subject.id}
@@ -127,7 +131,12 @@ function DailySetup({
                 <strong>{subject.name}</strong>
                 <small>
                   {completed ? (
-                    <><IconCalendarClock size={14} /> 今日已完成，明日再開放</>
+                    <>
+                      <IconCalendarClock size={14} />
+                      {result
+                        ? `今日${result.status === 'failed' ? '挑戰結束' : '已完成'}・答對 ${result.correct} / ${result.answered} 題，明日再開放`
+                        : '今日已完成，明日再開放'}
+                    </>
                   ) : checked && !loading ? (
                     `題庫 ${subjectCounts[subject.id] ?? 0} 題，今日抽 50 題`
                   ) : (
@@ -189,7 +198,7 @@ function ProgressOverview({
   );
   const answered = questionIds.filter((id) => session.answers[id]);
   const correct = answered.filter((id) => session.answers[id].correct).length;
-  const wrong = countDailyWrongAnswers(session.answers);
+  const wrong = session.unreviewedWrongIds.length;
   const currentSubjectPosition = Math.min(
     questionIds.filter((id) => session.questionIds.indexOf(id) < session.currentIndex).length,
     Math.max(0, questionIds.length - 1),
@@ -232,7 +241,7 @@ function ProgressOverview({
         <span><strong>{answered.length}</strong> / {questionIds.length}<small>已作答</small></span>
         <span><strong>{correct}</strong><small>答對</small></span>
         <span data-danger={wrong >= DAILY_WRONG_LIMIT || undefined}>
-          <strong>{wrong}</strong> / {DAILY_WRONG_LIMIT}<small>累積答錯</small>
+          <strong>{wrong}</strong> / {DAILY_WRONG_LIMIT}<small>本層答錯</small>
         </span>
       </div>
       <button type="button" className={styles.reset} onClick={onReset}>
@@ -333,6 +342,7 @@ export function DailyPage() {
   const [completionRecord, setCompletionRecord] = useState<DailyCompletionRecord>({
     date: getTaipeiDateKey(),
     subjects: [],
+    results: {},
   });
   const [session, setSession] = useState<DailyPracticeSession | null>(null);
   const [draftAnswer, setDraftAnswer] = useState<{
@@ -356,15 +366,33 @@ export function DailyPage() {
         readStoredValue(DAILY_COMPLETION_STORAGE_KEY),
         today,
       );
-      const normalizedCompletions = storedSession?.status === 'failed'
-        ? {
+      let normalizedCompletions = storedCompletions;
+      const storedSubject = storedSession?.subjects[0];
+      if (storedSession && storedSubject) {
+        if (storedSession.status === 'completed' || storedSession.status === 'failed') {
+          normalizedCompletions = {
             date: storedCompletions.date,
-            subjects: [...new Set([
-              ...storedCompletions.subjects,
-              ...storedSession.subjects,
-            ])],
-          }
-        : storedCompletions;
+            subjects: [...new Set([...storedCompletions.subjects, storedSubject])],
+            results: {
+              ...storedCompletions.results,
+              [storedSubject]: createDailyCompletionResult(
+                storedSession.answers,
+                storedSession.status,
+              ),
+            },
+          };
+        } else if (storedCompletions.subjects.includes(storedSubject)) {
+          const results = { ...storedCompletions.results };
+          delete results[storedSubject];
+          normalizedCompletions = {
+            date: storedCompletions.date,
+            subjects: storedCompletions.subjects.filter(
+              (subject) => subject !== storedSubject,
+            ),
+            results,
+          };
+        }
+      }
       setCompletionRecord(normalizedCompletions);
       if (storedSession) {
         setSession(storedSession);
@@ -388,7 +416,7 @@ export function DailyPage() {
       removeStoredSession();
       setSession(null);
       setDraftAnswer(undefined);
-      setCompletionRecord({ date: nextDate, subjects: [] });
+      setCompletionRecord({ date: nextDate, subjects: [], results: {} });
       setSelectedSubjects(['law']);
       setToday(nextDate);
     }, getMillisecondsUntilTaipeiMidnight() + 250);
@@ -453,10 +481,18 @@ export function DailyPage() {
     if (next.questionIds.length) setSession(next);
   }
 
-  function markSubjectCompleted(subject: SubjectId) {
+  function markSubjectCompleted(
+    subject: SubjectId,
+    answers: DailyPracticeSession['answers'],
+    status: DailyCompletionResult['status'],
+  ) {
     setCompletionRecord((current) => ({
       date: current.date,
       subjects: [...new Set([...current.subjects, subject])],
+      results: {
+        ...current.results,
+        [subject]: createDailyCompletionResult(answers, status),
+      },
     }));
   }
 
@@ -473,15 +509,15 @@ export function DailyPage() {
     const nextWrongIds = correct
       ? session.unreviewedWrongIds
       : [...new Set([...session.unreviewedWrongIds, currentQuestion.id])];
-    const cumulativeWrongCount = countDailyWrongAnswers(session.answers) + (correct ? 0 : 1);
-    const failed = cumulativeWrongCount >= DAILY_WRONG_LIMIT;
-    if (failed) markSubjectCompleted(currentQuestion.subject);
+    const nextAnswers = {
+      ...session.answers,
+      [currentQuestion.id]: { selected: selectedOption, correct },
+    };
+    const failed = nextWrongIds.length >= DAILY_WRONG_LIMIT;
+    if (failed) markSubjectCompleted(currentQuestion.subject, nextAnswers, 'failed');
     setSession({
       ...session,
-      answers: {
-        ...session.answers,
-        [currentQuestion.id]: { selected: selectedOption, correct },
-      },
+      answers: nextAnswers,
       unreviewedWrongIds: nextWrongIds,
       currentIndex: failed ? session.currentIndex + 1 : session.currentIndex,
       status: failed ? 'failed' : session.status,
@@ -511,7 +547,9 @@ export function DailyPage() {
       session.unreviewedWrongIds.length,
     );
     const completed = nextIndex >= session.questionIds.length;
-    if (!enterReview && completed) markSubjectCompleted(session.subjects[0]);
+    if (!enterReview && completed) {
+      markSubjectCompleted(session.subjects[0], session.answers, 'completed');
+    }
     setSession({
       ...session,
       currentIndex: nextIndex,
@@ -538,7 +576,9 @@ export function DailyPage() {
     );
     if (!allReviewed) return;
     const completed = session.currentIndex >= session.questionIds.length;
-    if (completed) markSubjectCompleted(session.subjects[0]);
+    if (completed) {
+      markSubjectCompleted(session.subjects[0], session.answers, 'completed');
+    }
     setSession({
       ...session,
       unreviewedWrongIds: [],
@@ -576,6 +616,7 @@ export function DailyPage() {
       <DailySetup
         selectedSubjects={selectedSubjects}
         completedSubjects={completionRecord.subjects}
+        completionResults={completionRecord.results}
         onToggleSubject={toggleSubject}
         onStart={startPractice}
         questions={bank.questions}
@@ -731,7 +772,7 @@ export function DailyPage() {
             </div>
           ) : null}
           <footer>
-            <span>累積錯 {countDailyWrongAnswers(session.answers)} 題；達 {DAILY_WRONG_LIMIT} 題時今日練習直接結束。</span>
+            <span>本層錯 {session.unreviewedWrongIds.length} 題；本層達 {DAILY_WRONG_LIMIT} 題時今日練習直接結束。</span>
             {currentAnswer ? (
               <Button variant="primary" onClick={continuePractice}>下一題</Button>
             ) : (
