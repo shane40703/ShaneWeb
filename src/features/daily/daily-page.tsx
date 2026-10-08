@@ -26,6 +26,7 @@ import { subjects } from '@/question-bank/catalog';
 import { useAppState } from '@/state/app-state';
 import {
   applyDailyOptionOrder,
+  countDailyWrongAnswers,
   createDailyPracticeSession,
   DAILY_COMPLETION_STORAGE_KEY,
   DAILY_LEVEL_SIZE,
@@ -188,6 +189,7 @@ function ProgressOverview({
   );
   const answered = questionIds.filter((id) => session.answers[id]);
   const correct = answered.filter((id) => session.answers[id].correct).length;
+  const wrong = countDailyWrongAnswers(session.answers);
   const currentSubjectPosition = Math.min(
     questionIds.filter((id) => session.questionIds.indexOf(id) < session.currentIndex).length,
     Math.max(0, questionIds.length - 1),
@@ -229,8 +231,8 @@ function ProgressOverview({
       <div className={styles.scoreboard} aria-label="每日練習統計">
         <span><strong>{answered.length}</strong> / {questionIds.length}<small>已作答</small></span>
         <span><strong>{correct}</strong><small>答對</small></span>
-        <span data-danger={session.unreviewedWrongIds.length >= DAILY_WRONG_LIMIT || undefined}>
-          <strong>{session.unreviewedWrongIds.length}</strong> / {DAILY_WRONG_LIMIT}<small>待檢討</small>
+        <span data-danger={wrong >= DAILY_WRONG_LIMIT || undefined}>
+          <strong>{wrong}</strong> / {DAILY_WRONG_LIMIT}<small>累積答錯</small>
         </span>
       </div>
       <button type="button" className={styles.reset} onClick={onReset}>
@@ -354,7 +356,16 @@ export function DailyPage() {
         readStoredValue(DAILY_COMPLETION_STORAGE_KEY),
         today,
       );
-      setCompletionRecord(storedCompletions);
+      const normalizedCompletions = storedSession?.status === 'failed'
+        ? {
+            date: storedCompletions.date,
+            subjects: [...new Set([
+              ...storedCompletions.subjects,
+              ...storedSession.subjects,
+            ])],
+          }
+        : storedCompletions;
+      setCompletionRecord(normalizedCompletions);
       if (storedSession) {
         setSession(storedSession);
         setSelectedSubjects(storedSession.subjects);
@@ -462,7 +473,8 @@ export function DailyPage() {
     const nextWrongIds = correct
       ? session.unreviewedWrongIds
       : [...new Set([...session.unreviewedWrongIds, currentQuestion.id])];
-    const failed = nextWrongIds.length >= DAILY_WRONG_LIMIT;
+    const cumulativeWrongCount = countDailyWrongAnswers(session.answers) + (correct ? 0 : 1);
+    const failed = cumulativeWrongCount >= DAILY_WRONG_LIMIT;
     if (failed) markSubjectCompleted(currentQuestion.subject);
     setSession({
       ...session,
@@ -719,7 +731,7 @@ export function DailyPage() {
             </div>
           ) : null}
           <footer>
-            <span>累積錯 {session.unreviewedWrongIds.length} 題；達 {DAILY_WRONG_LIMIT} 題時今日練習直接結束。</span>
+            <span>累積錯 {countDailyWrongAnswers(session.answers)} 題；達 {DAILY_WRONG_LIMIT} 題時今日練習直接結束。</span>
             {currentAnswer ? (
               <Button variant="primary" onClick={continuePractice}>下一題</Button>
             ) : (

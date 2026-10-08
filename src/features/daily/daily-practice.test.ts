@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { Question, SubjectId } from '@/lib/types';
 import {
   applyDailyOptionOrder,
+  countDailyWrongAnswers,
   createDailyPracticeSession,
   DAILY_QUESTIONS_PER_SUBJECT,
   getMillisecondsUntilTaipeiMidnight,
@@ -55,6 +56,14 @@ describe('daily practice', () => {
     expect(shouldEnterDailyReview(50, 50, 1)).toBe(true);
   });
 
+  it('counts all mistakes even after pending review items are cleared', () => {
+    expect(countDailyWrongAnswers({
+      first: { selected: 1, correct: false },
+      second: { selected: 0, correct: true },
+      third: { selected: 2, correct: false },
+    })).toBe(2);
+  });
+
   it('reorders answer choices together with the accepted answer', () => {
     const reordered = applyDailyOptionOrder(question('law', 1), [2, 0, 3, 1]);
 
@@ -86,6 +95,24 @@ describe('daily practice', () => {
       parseDailyPracticeSession(JSON.stringify(session), '2026-10-08'),
     ).toBeNull();
     expect(parseDailyPracticeSession('{broken', '2026-10-07')).toBeNull();
+  });
+
+  it('repairs a stored session that already reached the cumulative mistake limit', () => {
+    const session = createDailyPracticeSession(
+      Array.from({ length: 4 }, (_, index) => question('law', index + 1)),
+      ['law'],
+      '2026-10-07',
+    );
+    session.currentIndex = 3;
+    session.answers = Object.fromEntries(
+      session.questionIds.slice(0, 3).map((id) => [id, { selected: 1, correct: false }]),
+    );
+    session.unreviewedWrongIds = [];
+    session.status = 'practice';
+
+    expect(
+      parseDailyPracticeSession(JSON.stringify(session), '2026-10-07')?.status,
+    ).toBe('failed');
   });
 
   it('keeps completed subjects locked only on the recorded date', () => {

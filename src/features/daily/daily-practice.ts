@@ -30,6 +30,12 @@ export interface DailyCompletionRecord {
   subjects: SubjectId[];
 }
 
+export function countDailyWrongAnswers(
+  answers: Readonly<Record<string, DailyPracticeAnswer>>,
+) {
+  return Object.values(answers).filter((answer) => !answer.correct).length;
+}
+
 export function getTaipeiDateKey(date = new Date()) {
   return new Intl.DateTimeFormat('en-CA', {
     timeZone: 'Asia/Taipei',
@@ -188,6 +194,11 @@ export function parseDailyPracticeSession(
           typeof id === 'string' && questionIds.includes(id),
         ))]
       : [];
+  const status = session.status === 'completed'
+    ? 'completed'
+    : countDailyWrongAnswers(answers) >= DAILY_WRONG_LIMIT
+      ? 'failed'
+      : session.status as DailyPracticeSession['status'];
   return {
     date: session.date,
     subjects,
@@ -201,7 +212,7 @@ export function parseDailyPracticeSession(
     ),
     unreviewedWrongIds: validWrongIds(session.unreviewedWrongIds),
     reviewedWrongIds: validWrongIds(session.reviewedWrongIds),
-    status: session.status as DailyPracticeSession['status'],
+    status,
   };
 }
 

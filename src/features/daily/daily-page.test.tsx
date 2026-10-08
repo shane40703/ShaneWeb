@@ -149,7 +149,7 @@ describe('DailyPage', () => {
     expect(screen.getByRole('button', { name: '下一題' })).toBeInTheDocument();
   });
 
-  it('ends and locks today\'s subject immediately on the third mistake', async () => {
+  it('ends and locks today\'s subject on the third cumulative mistake after prior reviews', async () => {
     const session = createDailyPracticeSession(
       [question('law', 1), question('law', 2), question('law', 3)],
       ['law'],
@@ -161,11 +161,13 @@ describe('DailyPage', () => {
     session.currentIndex = 2;
     session.answers[session.questionIds[0]] = { selected: 1, correct: false };
     session.answers[session.questionIds[1]] = { selected: 1, correct: false };
-    session.unreviewedWrongIds = session.questionIds.slice(0, 2);
+    session.unreviewedWrongIds = [];
+    session.reviewedWrongIds = session.questionIds.slice(0, 2);
     window.localStorage.setItem(DAILY_PRACTICE_STORAGE_KEY, JSON.stringify(session));
 
     renderDailyPage();
 
+    expect(await screen.findByText(/累積錯 2 題/)).toBeInTheDocument();
     fireEvent.click((await screen.findByText('選項 B')).closest('label')!);
     fireEvent.click(screen.getByRole('button', { name: '確認答案' }));
     expect(await screen.findByText('法規今日挑戰結束')).toBeInTheDocument();
