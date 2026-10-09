@@ -7,10 +7,22 @@ export const DAILY_QUESTIONS_PER_SUBJECT = 50;
 export const DAILY_LEVEL_SIZE = 5;
 export const DAILY_MAX_LIVES = 10;
 export const DAILY_HEAL_STREAK = 3;
+export const DAILY_QUESTION_SECONDS = 30;
+export const DAILY_TIME_BONUS_SECONDS = 10;
+export const DAILY_FREEZE_SECONDS = 8;
+
+export const DAILY_RELIC_TYPES = [
+  'eliminate',
+  'time',
+  'freeze',
+  'shield',
+] as const;
+export type DailyRelicType = (typeof DAILY_RELIC_TYPES)[number];
 
 export interface DailyPracticeAnswer {
   selected: number;
   correct: boolean;
+  timedOut?: boolean;
 }
 
 export interface DailyPracticeSession {
@@ -20,6 +32,9 @@ export interface DailyPracticeSession {
   optionOrders: Record<string, number[]>;
   answers: Record<string, DailyPracticeAnswer>;
   eliminatedOptions: Record<string, number[]>;
+  relicUses: Partial<Record<string, DailyRelicType>>;
+  questionDeadlineMs?: number;
+  timerFrozenUntilMs?: number;
   currentIndex: number;
   unreviewedWrongIds: string[];
   reviewedWrongIds: string[];
@@ -47,29 +62,71 @@ export function countDailyWrongAnswers(
 export function getDailyLifeState(
   questionIds: readonly string[],
   answers: Readonly<Record<string, DailyPracticeAnswer>>,
+  relicUses: Readonly<Partial<Record<string, DailyRelicType>>> = {},
 ) {
   let streak = 0;
   let remaining = DAILY_MAX_LIVES;
   let restored = 0;
-  for (const questionId of questionIds) {
+  let relicsEarned = 0;
+  for (const [index, questionId] of questionIds.entries()) {
     const answer = answers[questionId];
     if (!answer) break;
     if (!answer.correct) {
       streak = 0;
-      remaining = Math.max(0, remaining - 1);
-      if (remaining === 0) break;
-      continue;
-    }
-    streak += 1;
-    if (streak === DAILY_HEAL_STREAK) {
-      if (remaining < DAILY_MAX_LIVES) {
-        remaining += 1;
-        restored += 1;
+      if (relicUses[questionId] !== 'shield') {
+        remaining = Math.max(0, remaining - 1);
       }
-      streak = 0;
+      if (remaining === 0) break;
+    } else {
+      streak += 1;
+      if (streak === DAILY_HEAL_STREAK) {
+        if (remaining < DAILY_MAX_LIVES) {
+          remaining += 1;
+          restored += 1;
+        } else {
+          relicsEarned += 1;
+        }
+        streak = 0;
+      }
+    }
+
+    const completedLevel = (index + 1) % DAILY_LEVEL_SIZE === 0;
+    if (completedLevel) {
+      const levelIds = questionIds.slice(index + 1 - DAILY_LEVEL_SIZE, index + 1);
+      if (levelIds.every((id) => answers[id]?.correct)) relicsEarned += 1;
     }
   }
-  return { remaining, restored, streak };
+  return { remaining, restored, streak, relicsEarned };
+}
+
+export function getDailyRelicInventory(
+  questionIds: readonly string[],
+  answers: Readonly<Record<string, DailyPracticeAnswer>>,
+  relicUses: Readonly<Partial<Record<string, DailyRelicType>>> = {},
+) {
+  const inventory = Object.fromEntries(
+    DAILY_RELIC_TYPES.map((type) => [type, 0]),
+  ) as Record<DailyRelicType, number>;
+  const { relicsEarned } = getDailyLifeState(questionIds, answers, relicUses);
+  for (let index = 0; index < relicsEarned; index += 1) {
+    inventory[DAILY_RELIC_TYPES[index % DAILY_RELIC_TYPES.length]] += 1;
+  }
+  Object.values(relicUses).forEach((type) => {
+    if (type) inventory[type] = Math.max(0, inventory[type] - 1);
+  });
+  return inventory;
+}
+
+export function getDailyRemainingTimeMs(
+  deadlineMs: number | undefined,
+  frozenUntilMs: number | undefined,
+  nowMs = Date.now(),
+) {
+  if (!deadlineMs) return DAILY_QUESTION_SECONDS * 1000;
+  const effectiveNow = frozenUntilMs && frozenUntilMs > nowMs
+    ? frozenUntilMs
+    : nowMs;
+  return Math.max(0, deadlineMs - effectiveNow);
 }
 
 export function createDailyCompletionResult(
@@ -163,6 +220,7 @@ export function createDailyPracticeSession(
     optionOrders,
     answers: {},
     eliminatedOptions: {},
+    relicUses: {},
     currentIndex: 0,
     unreviewedWrongIds: [],
     reviewedWrongIds: [],
@@ -173,7 +231,9 @@ export function createDailyPracticeSession(
 function isDailyAnswer(value: unknown): value is DailyPracticeAnswer {
   if (!value || typeof value !== 'object') return false;
   const answer = value as Partial<DailyPracticeAnswer>;
-  return Number.isInteger(answer.selected) && typeof answer.correct === 'boolean';
+  return Number.isInteger(answer.selected) &&
+    typeof answer.correct === 'boolean' &&
+    (answer.timedOut === undefined || typeof answer.timedOut === 'boolean');
 }
 
 export function parseDailyPracticeSession(
@@ -236,6 +296,13 @@ export function parseDailyPracticeSession(
       ]];
     }),
   );
+  const relicUses: DailyPracticeSession['relicUses'] = Object.fromEntries(
+    Object.entries(session.relicUses ?? {}).filter(
+      ([id, type]) =>
+        questionIds.includes(id) &&
+        DAILY_RELIC_TYPES.includes(type as DailyRelicType),
+    ),
+  );
   const validWrongIds = (ids: unknown) =>
     Array.isArray(ids)
       ? [...new Set(ids.filter((id): id is string =>
@@ -244,7 +311,7 @@ export function parseDailyPracticeSession(
       : [];
   const unreviewedWrongIds = validWrongIds(session.unreviewedWrongIds);
   const reviewedWrongIds = validWrongIds(session.reviewedWrongIds);
-  const lifeState = getDailyLifeState(questionIds, answers);
+  const lifeState = getDailyLifeState(questionIds, answers, relicUses);
   const status = session.status === 'completed'
     ? 'completed'
     : lifeState.remaining <= 0
@@ -259,6 +326,13 @@ export function parseDailyPracticeSession(
     optionOrders,
     answers,
     eliminatedOptions,
+    relicUses,
+    questionDeadlineMs: Number.isFinite(session.questionDeadlineMs)
+      ? session.questionDeadlineMs
+      : undefined,
+    timerFrozenUntilMs: Number.isFinite(session.timerFrozenUntilMs)
+      ? session.timerFrozenUntilMs
+      : undefined,
     currentIndex: Math.min(
       Math.max(0, session.currentIndex as number),
       questionIds.length,
@@ -314,8 +388,9 @@ export function shouldEnterDailyReview(
   total: number,
   wrongCount: number,
 ) {
+  void wrongCount;
   return (
-    wrongCount > 0 &&
+    nextIndex > 0 &&
     (nextIndex % DAILY_LEVEL_SIZE === 0 || nextIndex >= total)
   );
 }

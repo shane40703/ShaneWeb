@@ -7,6 +7,8 @@ import {
   createDailyPracticeSession,
   DAILY_QUESTIONS_PER_SUBJECT,
   getDailyLifeState,
+  getDailyRelicInventory,
+  getDailyRemainingTimeMs,
   getMillisecondsUntilTaipeiMidnight,
   parseDailyCompletionRecord,
   parseDailyPracticeSession,
@@ -54,6 +56,7 @@ describe('daily practice', () => {
   it('requires review only at a level boundary', () => {
     expect(shouldEnterDailyReview(3, 50, 3)).toBe(false);
     expect(shouldEnterDailyReview(5, 50, 1)).toBe(true);
+    expect(shouldEnterDailyReview(5, 50, 0)).toBe(true);
     expect(shouldEnterDailyReview(4, 50, 1)).toBe(false);
     expect(shouldEnterDailyReview(50, 50, 1)).toBe(true);
   });
@@ -92,7 +95,43 @@ describe('daily practice', () => {
       remaining: 9,
       restored: 1,
       streak: 0,
+      relicsEarned: 1,
     });
+  });
+
+  it('awards rotating relics for full-health streaks and flawless levels', () => {
+    const questionIds = ['first', 'second', 'third', 'fourth', 'fifth'];
+    const answers = Object.fromEntries(
+      questionIds.map((id) => [id, { selected: 0, correct: true }]),
+    );
+
+    expect(getDailyLifeState(questionIds, answers).relicsEarned).toBe(2);
+    expect(getDailyRelicInventory(questionIds, answers)).toEqual({
+      eliminate: 1,
+      time: 1,
+      freeze: 0,
+      shield: 0,
+    });
+    expect(getDailyRelicInventory(questionIds, answers, { sixth: 'eliminate' })).toEqual({
+      eliminate: 0,
+      time: 1,
+      freeze: 0,
+      shield: 0,
+    });
+  });
+
+  it('prevents one life loss when a shield relic is active', () => {
+    const questionIds = Array.from({ length: 10 }, (_, index) => `wrong-${index}`);
+    const answers = Object.fromEntries(
+      questionIds.map((id) => [id, { selected: 1, correct: false }]),
+    );
+
+    expect(getDailyLifeState(questionIds, answers, { 'wrong-0': 'shield' }).remaining).toBe(1);
+  });
+
+  it('keeps the displayed time still while a freeze relic is active', () => {
+    expect(getDailyRemainingTimeMs(38_000, 18_000, 12_000)).toBe(20_000);
+    expect(getDailyRemainingTimeMs(38_000, 18_000, 20_000)).toBe(18_000);
   });
 
   it('creates a persisted completion score for the subject selection page', () => {
@@ -176,6 +215,7 @@ describe('daily practice', () => {
       remaining: 1,
       restored: 1,
       streak: 0,
+      relicsEarned: 0,
     });
     expect(
       parseDailyPracticeSession(JSON.stringify(session), '2026-10-07')?.status,
