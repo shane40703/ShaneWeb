@@ -130,6 +130,7 @@ describe('daily practice', () => {
   });
 
   it('keeps the displayed time still while a freeze relic is active', () => {
+    expect(getDailyRemainingTimeMs(undefined, undefined, 12_000)).toBe(60_000);
     expect(getDailyRemainingTimeMs(38_000, 18_000, 12_000)).toBe(20_000);
     expect(getDailyRemainingTimeMs(38_000, 18_000, 20_000)).toBe(18_000);
   });

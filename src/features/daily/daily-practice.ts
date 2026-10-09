@@ -7,7 +7,7 @@ export const DAILY_QUESTIONS_PER_SUBJECT = 50;
 export const DAILY_LEVEL_SIZE = 5;
 export const DAILY_MAX_LIVES = 10;
 export const DAILY_HEAL_STREAK = 3;
-export const DAILY_QUESTION_SECONDS = 30;
+export const DAILY_QUESTION_SECONDS = 60;
 export const DAILY_TIME_BONUS_SECONDS = 10;
 export const DAILY_FREEZE_SECONDS = 8;
 
