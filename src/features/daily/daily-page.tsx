@@ -1,25 +1,31 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
   IconAlertTriangle,
+  IconBolt,
   IconCalendarClock,
   IconCircleCheck,
   IconFlag3,
+  IconFlame,
   IconLoader2,
   IconLock,
   IconRefresh,
   IconShieldX,
+  IconSparkles,
   IconTargetArrow,
   IconTrophy,
   IconX,
 } from '@tabler/icons-react';
 import { DifficultButton } from '@/components/difficult-button';
 import { ReviewNoteEditor } from '@/components/attempt-review';
+import { AttachmentGallery } from '@/components/image-attachments';
 import { QuestionAnswerPanel } from '@/components/question-answer-panel';
+import { RichText } from '@/components/rich-text';
 import { QuestionPrompt, Tag } from '@/components/content/content';
 import { Button, OptionGroup } from '@/components/ui/ui';
 import { useSubjectQuestions } from '@/lib/question-bank-client';
 import { readStoredValue, writeStoredValue } from '@/lib/storage';
 import { formatCorrectAnswer, isQuestionCorrect } from '@/lib/study';
+import { useSharedDiscussions } from '@/lib/shared-discussions';
 import { useClientReady } from '@/lib/use-client-ready';
 import type { Question, SubjectId } from '@/lib/types';
 import { subjects } from '@/question-bank/catalog';
@@ -54,6 +60,52 @@ function removeStoredSession() {
   } catch {
     // The in-memory reset still works when private browsing blocks storage.
   }
+}
+
+function getCurrentStreak(session: DailyPracticeSession) {
+  let streak = 0;
+  for (const questionId of session.questionIds) {
+    const answer = session.answers[questionId];
+    if (!answer) break;
+    streak = answer.correct ? streak + 1 : 0;
+  }
+  return streak;
+}
+
+function DailyExplanation({
+  question,
+  selectedIndex,
+}: {
+  question: Question;
+  selectedIndex: number;
+}) {
+  const shared = useSharedDiscussions(question.id);
+  const usefulPosts = shared.posts.filter((post) =>
+    ['explanation', 'supplement', 'correction'].includes(post.type),
+  );
+  const hasBuiltInExplanation = Boolean(question.explanation?.trim());
+
+  return (
+    <section className={styles.explanation} aria-label={`第 ${question.questionNumber} 題詳解`}>
+      <strong>正確答案：{formatCorrectAnswer(question)}</strong>
+      {hasBuiltInExplanation ? (
+        <p><RichText>{question.explanation!}</RichText></p>
+      ) : null}
+      {usefulPosts.map((post) => (
+        <article key={post.id}>
+          {post.content ? <p><RichText>{post.content}</RichText></p> : null}
+          <AttachmentGallery images={post.images} />
+        </article>
+      ))}
+      {shared.loading ? <p>正在載入詳解與討論…</p> : null}
+      {!shared.loading && !hasBuiltInExplanation && !usefulPosts.length ? (
+        <p>{shared.error || '本題目前尚無詳解，請比較正確選項與題幹條件。'}</p>
+      ) : null}
+      <span className={styles.answerSummary}>
+        你的答案：{String.fromCharCode(65 + selectedIndex)}
+      </span>
+    </section>
+  );
 }
 
 function DailySetup({
@@ -199,6 +251,7 @@ function ProgressOverview({
   const answered = questionIds.filter((id) => session.answers[id]);
   const correct = answered.filter((id) => session.answers[id].correct).length;
   const wrong = session.unreviewedWrongIds.length;
+  const streak = getCurrentStreak(session);
   const currentSubjectPosition = Math.min(
     questionIds.filter((id) => session.questionIds.indexOf(id) < session.currentIndex).length,
     Math.max(0, questionIds.length - 1),
@@ -242,6 +295,9 @@ function ProgressOverview({
         <span><strong>{correct}</strong><small>答對</small></span>
         <span data-danger={wrong >= DAILY_WRONG_LIMIT || undefined}>
           <strong>{wrong}</strong> / {DAILY_WRONG_LIMIT}<small>本層答錯</small>
+        </span>
+        <span data-bonus={streak > 1 || undefined}>
+          <strong><IconBolt size={15} /> {correct * 10}</strong><small>XP・連擊 {streak}</small>
         </span>
       </div>
       <button type="button" className={styles.reset} onClick={onReset}>
@@ -308,6 +364,8 @@ function CompletionSummary({
               return (
                 <article key={questionId}>
                   <div className={styles.questionMeta}>
+                    <Tag>{question.year} 年</Tag>
+                    <Tag tone="green">{question.primaryCategory}</Tag>
                     <Tag tone="purple">原題第 {question.questionNumber} 題</Tag>
                   </div>
                   <QuestionPrompt question={question} compact />
@@ -316,10 +374,10 @@ function CompletionSummary({
                     selectedIndex={answer.selected}
                     showStatusLabels
                   />
-                  <div className={styles.explanation}>
-                    <strong>正確答案：{formatCorrectAnswer(displayedQuestion)}</strong>
-                    <p>{question.explanation?.trim() || '本題目前尚無詳解，請比較正確選項與題幹條件。'}</p>
-                  </div>
+                  <DailyExplanation
+                    question={displayedQuestion}
+                    selectedIndex={answer.selected}
+                  />
                   <div className={styles.noteEditor}>
                     <ReviewNoteEditor question={displayedQuestion} />
                   </div>
@@ -643,6 +701,7 @@ export function DailyPage() {
         .filter((id) => questionById.get(id)?.subject === currentQuestion.subject)
         .length
     : 0;
+  const currentStreak = getCurrentStreak(session);
   return (
     <section className={styles.daily}>
       {focusSubject ? (
@@ -685,7 +744,9 @@ export function DailyPage() {
               return (
                 <article key={questionId} data-reviewed={reviewed || undefined}>
                   <div className={styles.questionMeta}>
+                    <Tag>{question.year} 年</Tag>
                     <Tag tone="green">{subjectShortName(question.subject)}</Tag>
+                    <Tag>{question.primaryCategory}</Tag>
                     <Tag tone="purple">原題第 {question.questionNumber} 題</Tag>
                   </div>
                   <QuestionPrompt question={question} compact />
@@ -694,10 +755,10 @@ export function DailyPage() {
                     selectedIndex={answer.selected}
                     showStatusLabels
                   />
-                  <div className={styles.explanation}>
-                    <strong>正確答案：{formatCorrectAnswer(displayedQuestion)}</strong>
-                    <p>{question.explanation?.trim() || '本題目前尚無詳解，請比較正確選項與題幹條件。'}</p>
-                  </div>
+                  <DailyExplanation
+                    question={displayedQuestion}
+                    selectedIndex={answer.selected}
+                  />
                   <div className={styles.noteEditor}>
                     <ReviewNoteEditor question={displayedQuestion} />
                   </div>
@@ -737,7 +798,8 @@ export function DailyPage() {
             <div className={styles.questionMeta}>
               <Tag>本科第 {Math.floor(currentSubjectQuestionIndex / DAILY_LEVEL_SIZE) + 1} 層</Tag>
               <Tag tone="green">本層第 {(currentSubjectQuestionIndex % DAILY_LEVEL_SIZE) + 1} / {DAILY_LEVEL_SIZE} 題</Tag>
-              <Tag tone="purple">{subjectShortName(currentQuestion.subject)}</Tag>
+              <Tag>{subjectShortName(currentQuestion.subject)}</Tag>
+              <Tag tone="purple">{currentQuestion.primaryCategory}</Tag>
             </div>
             <div className={styles.challengeActions}>
               <DifficultButton
@@ -762,6 +824,13 @@ export function DailyPage() {
             }
             onToggleEliminated={toggleEliminatedOption}
           />
+          {currentAnswer?.correct ? (
+            <div className={styles.rewardBurst} aria-hidden="true">
+              <IconSparkles size={22} />
+              <strong>+10 XP</strong>
+              <span><IconFlame size={16} /> 連擊 {currentStreak}</span>
+            </div>
+          ) : null}
           {currentAnswer && !currentAnswer.correct ? (
             <div className={styles.answerResult} data-correct={currentAnswer.correct || undefined} role="status">
               <IconX size={22} />

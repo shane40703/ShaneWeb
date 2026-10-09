@@ -20,6 +20,10 @@ const appState = vi.hoisted(() => ({
   reportPersistence: vi.fn(),
 }));
 
+const sharedDiscussions = vi.hoisted(() => ({
+  posts: [] as Array<Record<string, unknown>>,
+}));
+
 function question(subject: SubjectId, number: number): Question {
   return {
     id: `${subject}-114-${String(number).padStart(2, '0')}`,
@@ -53,12 +57,25 @@ vi.mock('@/lib/question-bank-client', () => ({
   }),
 }));
 
+vi.mock('@/lib/shared-discussions', () => ({
+  useSharedDiscussions: () => ({
+    posts: sharedDiscussions.posts,
+    loading: false,
+    error: '',
+  }),
+  useDiscussionPublisher: () => ({
+    publish: vi.fn(),
+    enabled: false,
+  }),
+}));
+
 beforeEach(() => {
   window.localStorage.clear();
   appState.dispatch.mockReset();
   appState.reportPersistence.mockReset();
   appState.state.notes = {};
   appState.state.noteImages = {};
+  sharedDiscussions.posts = [];
 });
 
 afterEach(cleanup);
@@ -84,6 +101,7 @@ describe('DailyPage', () => {
     await waitFor(() => expect(within(statistics).getByText('/ 50')).toBeInTheDocument());
     expect(screen.getByLabelText('環控關卡進度')).toBeInTheDocument();
     expect(screen.queryByText('114 年')).not.toBeInTheDocument();
+    expect(screen.getByText('測試分類')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '標記為難題' })).toBeInTheDocument();
 
     const eliminate = screen.getByRole('button', { name: '刪去選項 A' });
@@ -152,6 +170,8 @@ describe('DailyPage', () => {
     fireEvent.click((await screen.findByText('選項 A')).closest('label')!);
     fireEvent.click(screen.getByRole('button', { name: '確認答案' }));
     expect(screen.queryByText('答對了，繼續前進！')).not.toBeInTheDocument();
+    expect(screen.getByText('+10 XP')).toBeInTheDocument();
+    expect(screen.getAllByText(/連擊 1/)).toHaveLength(2);
     expect(screen.getByRole('button', { name: '下一題' })).toBeInTheDocument();
   });
 
@@ -219,10 +239,24 @@ describe('DailyPage', () => {
     session.answers[wrongId] = { selected: 1, correct: false };
     session.unreviewedWrongIds = [wrongId];
     session.optionOrders[wrongId] = [0, 1, 2, 3];
+    sharedDiscussions.posts = [{
+      id: 'shared-explanation',
+      questionId: wrongId,
+      type: 'explanation',
+      content: '這是共享詳解內容',
+      images: [],
+      createdAt: '2026-10-09T00:00:00.000Z',
+      likes: 0,
+      replies: [],
+      reported: false,
+    }];
     window.localStorage.setItem(DAILY_PRACTICE_STORAGE_KEY, JSON.stringify(session));
 
     renderDailyPage();
 
     expect(await screen.findByRole('region', { name: /使用者筆記/ })).toBeInTheDocument();
+    expect(screen.getByText('114 年')).toBeInTheDocument();
+    expect(screen.getByText('測試分類')).toBeInTheDocument();
+    expect(screen.getByText('這是共享詳解內容')).toBeInTheDocument();
   });
 });
