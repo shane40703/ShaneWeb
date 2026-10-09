@@ -1,15 +1,15 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
   IconAlertTriangle,
-  IconBolt,
   IconCalendarClock,
   IconCircleCheck,
   IconFlag3,
-  IconFlame,
+  IconHeart,
   IconLoader2,
   IconLock,
   IconRefresh,
   IconShieldX,
+  IconShieldPlus,
   IconSparkles,
   IconTargetArrow,
   IconTrophy,
@@ -35,10 +35,12 @@ import {
   createDailyCompletionResult,
   createDailyPracticeSession,
   DAILY_COMPLETION_STORAGE_KEY,
+  DAILY_HEAL_STREAK,
   DAILY_LEVEL_SIZE,
+  DAILY_MAX_LIVES,
   DAILY_PRACTICE_STORAGE_KEY,
   DAILY_QUESTIONS_PER_SUBJECT,
-  DAILY_WRONG_LIMIT,
+  getDailyLifeState,
   getTaipeiDateKey,
   getMillisecondsUntilTaipeiMidnight,
   parseDailyCompletionRecord,
@@ -60,16 +62,6 @@ function removeStoredSession() {
   } catch {
     // The in-memory reset still works when private browsing blocks storage.
   }
-}
-
-function getCurrentStreak(session: DailyPracticeSession) {
-  let streak = 0;
-  for (const questionId of session.questionIds) {
-    const answer = session.answers[questionId];
-    if (!answer) break;
-    streak = answer.correct ? streak + 1 : 0;
-  }
-  return streak;
 }
 
 function DailyExplanation({
@@ -110,7 +102,6 @@ function DailyExplanation({
 
 function DailySetup({
   selectedSubjects,
-  completedSubjects,
   completionResults,
   onToggleSubject,
   onStart,
@@ -120,7 +111,6 @@ function DailySetup({
   onRetry,
 }: {
   selectedSubjects: SubjectId[];
-  completedSubjects: SubjectId[];
   completionResults: DailyCompletionRecord['results'];
   onToggleSubject: (subject: SubjectId) => void;
   onStart: () => void;
@@ -156,38 +146,34 @@ function DailySetup({
       <div className={styles.rules} aria-label="每日練習規則">
         <div><strong>50</strong><span>每科題數</span></div>
         <div><strong>5</strong><span>每層題數</span></div>
-        <div><strong>{DAILY_WRONG_LIMIT}</strong><span>答錯上限</span></div>
-        <p>每層結束需檢討該層錯題；單層答錯 {DAILY_WRONG_LIMIT} 題時，該科今日練習直接結束。</p>
+        <div><strong>{DAILY_MAX_LIVES}</strong><span>初始血量</span></div>
+        <p>整場挑戰共用 {DAILY_MAX_LIVES} 點血量；答錯扣 1 點，連續答對 {DAILY_HEAL_STREAK} 題回復 1 點，最多回到 {DAILY_MAX_LIVES} 點。</p>
       </div>
 
       <fieldset className={styles.subjectChoices}>
         <legend>選擇今日科目</legend>
         {subjects.map((subject) => {
           const checked = selectedSubjects.includes(subject.id);
-          const completed = completedSubjects.includes(subject.id);
           const result = completionResults[subject.id];
           return (
             <label
               key={subject.id}
               data-checked={checked || undefined}
-              data-completed={completed || undefined}
+              data-result={Boolean(result) || undefined}
             >
               <input
                 type="radio"
                 name="daily-subject"
                 checked={checked}
-                disabled={completed}
                 onChange={() => onToggleSubject(subject.id)}
               />
               <span>
                 <strong>{subject.name}</strong>
                 <small>
-                  {completed ? (
+                  {result ? (
                     <>
                       <IconCalendarClock size={14} />
-                      {result
-                        ? `今日${result.status === 'failed' ? '挑戰結束' : '已完成'}・答對 ${result.correct} / ${result.answered} 題，明日再開放`
-                        : '今日已完成，明日再開放'}
+                      今日上次{result.status === 'failed' ? '挑戰結束' : '完成'}・答對 {result.correct} / {result.answered} 題，可再次挑戰
                     </>
                   ) : checked && !loading ? (
                     `題庫 ${subjectCounts[subject.id] ?? 0} 題，今日抽 50 題`
@@ -215,10 +201,8 @@ function DailySetup({
             <><IconLoader2 size={18} aria-hidden="true" /> 正在準備題庫…</>
           ) : selectedSubject ? (
             <>已選 {subjectShortName(selectedSubject)}・今日 50 題</>
-          ) : completedSubjects.length === subjects.length ? (
-            <>今日四科皆已完成，明天再繼續。</>
           ) : (
-            <>請選擇尚未完成的科目。</>
+            <>請選擇今日要挑戰的科目。</>
           )}
         </span>
         <Button
@@ -250,8 +234,11 @@ function ProgressOverview({
   );
   const answered = questionIds.filter((id) => session.answers[id]);
   const correct = answered.filter((id) => session.answers[id].correct).length;
-  const wrong = session.unreviewedWrongIds.length;
-  const streak = getCurrentStreak(session);
+  const wrong = answered.length - correct;
+  const lifeState = getDailyLifeState(
+    session.questionIds,
+    session.answers,
+  );
   const currentSubjectPosition = Math.min(
     questionIds.filter((id) => session.questionIds.indexOf(id) < session.currentIndex).length,
     Math.max(0, questionIds.length - 1),
@@ -293,11 +280,12 @@ function ProgressOverview({
       <div className={styles.scoreboard} aria-label="每日練習統計">
         <span><strong>{answered.length}</strong> / {questionIds.length}<small>已作答</small></span>
         <span><strong>{correct}</strong><small>答對</small></span>
-        <span data-danger={wrong >= DAILY_WRONG_LIMIT || undefined}>
-          <strong>{wrong}</strong> / {DAILY_WRONG_LIMIT}<small>本層答錯</small>
+        <span>
+          <strong>{wrong}</strong><small>累積答錯</small>
         </span>
-        <span data-bonus={streak > 1 || undefined}>
-          <strong><IconBolt size={15} /> {correct * 10}</strong><small>XP・連擊 {streak}</small>
+        <span data-danger={lifeState.remaining <= 3 || undefined} data-bonus={lifeState.remaining > 3 || undefined}>
+          <strong><IconHeart size={15} /> {lifeState.remaining} / {DAILY_MAX_LIVES}</strong>
+          <small>血量・連對 {lifeState.streak} / {DAILY_HEAL_STREAK}</small>
         </span>
       </div>
       <button type="button" className={styles.reset} onClick={onReset}>
@@ -439,16 +427,6 @@ export function DailyPage() {
               ),
             },
           };
-        } else if (storedCompletions.subjects.includes(storedSubject)) {
-          const results = { ...storedCompletions.results };
-          delete results[storedSubject];
-          normalizedCompletions = {
-            date: storedCompletions.date,
-            subjects: storedCompletions.subjects.filter(
-              (subject) => subject !== storedSubject,
-            ),
-            results,
-          };
         }
       }
       setCompletionRecord(normalizedCompletions);
@@ -456,10 +434,7 @@ export function DailyPage() {
         setSession(storedSession);
         setSelectedSubjects(storedSession.subjects);
       } else {
-        const firstAvailable = subjects.find(
-          (subject) => !storedCompletions.subjects.includes(subject.id),
-        );
-        setSelectedSubjects(firstAvailable ? [firstAvailable.id] : []);
+        setSelectedSubjects(['law']);
       }
       setRestored(true);
     });
@@ -527,15 +502,11 @@ export function DailyPage() {
   }
 
   function toggleSubject(subject: SubjectId) {
-    if (completionRecord.subjects.includes(subject)) return;
     setSelectedSubjects([subject]);
   }
 
   function startPractice() {
-    const availableSubjects = selectedSubjects.filter(
-      (subject) => !completionRecord.subjects.includes(subject),
-    );
-    const next = createDailyPracticeSession(bank.questions, availableSubjects);
+    const next = createDailyPracticeSession(bank.questions, selectedSubjects);
     if (next.questionIds.length) setSession(next);
   }
 
@@ -571,7 +542,8 @@ export function DailyPage() {
       ...session.answers,
       [currentQuestion.id]: { selected: selectedOption, correct },
     };
-    const failed = nextWrongIds.length >= DAILY_WRONG_LIMIT;
+    const nextLifeState = getDailyLifeState(session.questionIds, nextAnswers);
+    const failed = nextLifeState.remaining <= 0;
     if (failed) markSubjectCompleted(currentQuestion.subject, nextAnswers, 'failed');
     setSession({
       ...session,
@@ -652,13 +624,11 @@ export function DailyPage() {
     ) {
       return;
     }
+    const previousSubject = session?.subjects[0] ?? selectedSubjects[0] ?? 'law';
     removeStoredSession();
     setSession(null);
     setDraftAnswer(undefined);
-    const firstAvailable = subjects.find(
-      (subject) => !completionRecord.subjects.includes(subject.id),
-    );
-    setSelectedSubjects(firstAvailable ? [firstAvailable.id] : []);
+    setSelectedSubjects([previousSubject]);
   }
 
   if (!ready || !restored) {
@@ -673,7 +643,6 @@ export function DailyPage() {
     return (
       <DailySetup
         selectedSubjects={selectedSubjects}
-        completedSubjects={completionRecord.subjects}
         completionResults={completionRecord.results}
         onToggleSubject={toggleSubject}
         onStart={startPractice}
@@ -701,7 +670,19 @@ export function DailyPage() {
         .filter((id) => questionById.get(id)?.subject === currentQuestion.subject)
         .length
     : 0;
-  const currentStreak = getCurrentStreak(session);
+  const currentLifeState = getDailyLifeState(
+    session.questionIds,
+    session.answers,
+  );
+  const previousLifeState = getDailyLifeState(
+    session.questionIds.slice(0, session.currentIndex),
+    session.answers,
+  );
+  const completedHealStreak = Boolean(
+    currentAnswer?.correct && previousLifeState.streak === DAILY_HEAL_STREAK - 1,
+  );
+  const restoredLife = completedHealStreak &&
+    currentLifeState.remaining > previousLifeState.remaining;
   return (
     <section className={styles.daily}>
       {focusSubject ? (
@@ -827,21 +808,28 @@ export function DailyPage() {
           {currentAnswer?.correct ? (
             <div className={styles.rewardBurst} aria-hidden="true">
               <IconSparkles size={22} />
-              <strong>+10 XP</strong>
-              <span><IconFlame size={16} /> 連擊 {currentStreak}</span>
+              <strong>{completedHealStreak
+                ? restoredLife ? '血量 +1' : '血量已滿'
+                : `連擊 ${currentLifeState.streak} / ${DAILY_HEAL_STREAK}`}</strong>
+              <span>
+                <IconShieldPlus size={16} />
+                {completedHealStreak
+                  ? `目前血量 ${currentLifeState.remaining} / ${DAILY_MAX_LIVES}`
+                  : `再答對 ${DAILY_HEAL_STREAK - currentLifeState.streak} 題回復血量`}
+              </span>
             </div>
           ) : null}
           {currentAnswer && !currentAnswer.correct ? (
             <div className={styles.answerResult} data-correct={currentAnswer.correct || undefined} role="status">
               <IconX size={22} />
               <div>
-                <strong>答錯了，已加入本輪檢討</strong>
+                <strong>答錯了，血量 -1，已加入本輪檢討</strong>
                 <span>正確答案：{formatCorrectAnswer(currentQuestion)}</span>
               </div>
             </div>
           ) : null}
           <footer>
-            <span>本層錯 {session.unreviewedWrongIds.length} 題；本層達 {DAILY_WRONG_LIMIT} 題時今日練習直接結束。</span>
+            <span>剩餘 {currentLifeState.remaining} / {DAILY_MAX_LIVES} 點血量；答錯扣 1，連續答對 {DAILY_HEAL_STREAK} 題回復 1。</span>
             {currentAnswer ? (
               <Button variant="primary" onClick={continuePractice}>下一題</Button>
             ) : (

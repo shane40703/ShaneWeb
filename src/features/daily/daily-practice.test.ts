@@ -6,6 +6,7 @@ import {
   createDailyCompletionResult,
   createDailyPracticeSession,
   DAILY_QUESTIONS_PER_SUBJECT,
+  getDailyLifeState,
   getMillisecondsUntilTaipeiMidnight,
   parseDailyCompletionRecord,
   parseDailyPracticeSession,
@@ -50,7 +51,7 @@ describe('daily practice', () => {
     expect(Object.keys(session.optionOrders)).toHaveLength(50);
   });
 
-  it('requires review only at a level boundary because the mistake limit ends the run', () => {
+  it('requires review only at a level boundary', () => {
     expect(shouldEnterDailyReview(3, 50, 3)).toBe(false);
     expect(shouldEnterDailyReview(5, 50, 1)).toBe(true);
     expect(shouldEnterDailyReview(4, 50, 1)).toBe(false);
@@ -63,6 +64,35 @@ describe('daily practice', () => {
       second: { selected: 0, correct: true },
       third: { selected: 2, correct: false },
     })).toBe(2);
+  });
+
+  it('restores one life after three consecutive correct answers without banking at full health', () => {
+    const questionIds = [
+      'wrong',
+      'first',
+      'second',
+      'third',
+      'full-first',
+      'full-second',
+      'full-third',
+      'wrong-after-full',
+    ];
+    const answers = {
+      wrong: { selected: 1, correct: false },
+      first: { selected: 0, correct: true },
+      second: { selected: 0, correct: true },
+      third: { selected: 0, correct: true },
+      'full-first': { selected: 0, correct: true },
+      'full-second': { selected: 0, correct: true },
+      'full-third': { selected: 0, correct: true },
+      'wrong-after-full': { selected: 1, correct: false },
+    };
+
+    expect(getDailyLifeState(questionIds, answers)).toEqual({
+      remaining: 9,
+      restored: 1,
+      streak: 0,
+    });
   });
 
   it('creates a persisted completion score for the subject selection page', () => {
@@ -109,22 +139,47 @@ describe('daily practice', () => {
     expect(parseDailyPracticeSession('{broken', '2026-10-07')).toBeNull();
   });
 
-  it('fails only when the current level has reached the mistake limit', () => {
+  it('fails when the tenth life is lost', () => {
     const session = createDailyPracticeSession(
-      Array.from({ length: 4 }, (_, index) => question('law', index + 1)),
+      Array.from({ length: 10 }, (_, index) => question('law', index + 1)),
       ['law'],
       '2026-10-07',
     );
-    session.currentIndex = 3;
+    session.currentIndex = 10;
     session.answers = Object.fromEntries(
-      session.questionIds.slice(0, 3).map((id) => [id, { selected: 1, correct: false }]),
+      session.questionIds.map((id) => [id, { selected: 1, correct: false }]),
     );
-    session.unreviewedWrongIds = session.questionIds.slice(0, 3);
+    session.unreviewedWrongIds = session.questionIds.slice(5);
     session.status = 'practice';
 
     expect(
       parseDailyPracticeSession(JSON.stringify(session), '2026-10-07')?.status,
     ).toBe('failed');
+  });
+
+  it('keeps a session active when a three-answer streak restores one life', () => {
+    const session = createDailyPracticeSession(
+      Array.from({ length: 13 }, (_, index) => question('law', index + 1)),
+      ['law'],
+      '2026-10-07',
+    );
+    session.currentIndex = 13;
+    session.answers = Object.fromEntries([
+      [session.questionIds[0], { selected: 1, correct: false }],
+      ...session.questionIds.slice(1, 4).map((id) => [id, { selected: 0, correct: true }]),
+      ...session.questionIds.slice(4).map((id) => [id, { selected: 1, correct: false }]),
+    ]);
+    session.unreviewedWrongIds = session.questionIds.slice(9);
+    session.status = 'failed';
+
+    expect(getDailyLifeState(session.questionIds, session.answers)).toEqual({
+      remaining: 1,
+      restored: 1,
+      streak: 0,
+    });
+    expect(
+      parseDailyPracticeSession(JSON.stringify(session), '2026-10-07')?.status,
+    ).toBe('practice');
   });
 
   it('repairs a session incorrectly failed by mistakes from earlier levels', () => {
@@ -145,7 +200,7 @@ describe('daily practice', () => {
     ).toBe('practice');
   });
 
-  it('keeps completed subjects locked only on the recorded date', () => {
+  it('keeps completion results only on the recorded date', () => {
     const record = JSON.stringify({
       date: '2026-10-07',
       subjects: ['law', 'env', 'invalid'],

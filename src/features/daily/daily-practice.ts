@@ -5,7 +5,8 @@ export const DAILY_PRACTICE_STORAGE_KEY = 'shaneweb:daily-practice';
 export const DAILY_COMPLETION_STORAGE_KEY = 'shaneweb:daily-completions';
 export const DAILY_QUESTIONS_PER_SUBJECT = 50;
 export const DAILY_LEVEL_SIZE = 5;
-export const DAILY_WRONG_LIMIT = 3;
+export const DAILY_MAX_LIVES = 10;
+export const DAILY_HEAL_STREAK = 3;
 
 export interface DailyPracticeAnswer {
   selected: number;
@@ -41,6 +42,34 @@ export function countDailyWrongAnswers(
   answers: Readonly<Record<string, DailyPracticeAnswer>>,
 ) {
   return Object.values(answers).filter((answer) => !answer.correct).length;
+}
+
+export function getDailyLifeState(
+  questionIds: readonly string[],
+  answers: Readonly<Record<string, DailyPracticeAnswer>>,
+) {
+  let streak = 0;
+  let remaining = DAILY_MAX_LIVES;
+  let restored = 0;
+  for (const questionId of questionIds) {
+    const answer = answers[questionId];
+    if (!answer) break;
+    if (!answer.correct) {
+      streak = 0;
+      remaining = Math.max(0, remaining - 1);
+      if (remaining === 0) break;
+      continue;
+    }
+    streak += 1;
+    if (streak === DAILY_HEAL_STREAK) {
+      if (remaining < DAILY_MAX_LIVES) {
+        remaining += 1;
+        restored += 1;
+      }
+      streak = 0;
+    }
+  }
+  return { remaining, restored, streak };
 }
 
 export function createDailyCompletionResult(
@@ -215,9 +244,10 @@ export function parseDailyPracticeSession(
       : [];
   const unreviewedWrongIds = validWrongIds(session.unreviewedWrongIds);
   const reviewedWrongIds = validWrongIds(session.reviewedWrongIds);
+  const lifeState = getDailyLifeState(questionIds, answers);
   const status = session.status === 'completed'
     ? 'completed'
-    : unreviewedWrongIds.length >= DAILY_WRONG_LIMIT
+    : lifeState.remaining <= 0
       ? 'failed'
       : session.status === 'failed'
         ? 'practice'

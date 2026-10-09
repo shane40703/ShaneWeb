@@ -137,11 +137,8 @@
   background: var(--primary-soft);
 }
 
-.subjectChoices label[data-completed] {
-  border-color: var(--line);
-  background: var(--surface-2);
-  cursor: not-allowed;
-  opacity: .72;
+.subjectChoices label[data-result] {
+  border-color: color-mix(in srgb, var(--success) 38%, var(--line));
 }
 
 .subjectChoices input {

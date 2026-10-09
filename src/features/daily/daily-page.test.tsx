@@ -109,7 +109,7 @@ describe('DailyPage', () => {
     expect(eliminate).toHaveAttribute('aria-pressed', 'true');
   });
 
-  it('locks a completed subject until the next day', async () => {
+  it('allows a completed subject to be challenged again during testing', async () => {
     window.localStorage.setItem(
       DAILY_COMPLETION_STORAGE_KEY,
       JSON.stringify({
@@ -124,9 +124,11 @@ describe('DailyPage', () => {
     renderDailyPage();
 
     const law = await screen.findByRole('radio', { name: /建築法規與實務/ });
-    expect(law).toBeDisabled();
-    expect(screen.getByText(/今日已完成・答對 44 \/ 50 題/)).toBeInTheDocument();
-    expect(screen.getByRole('radio', { name: /建築環境控制/ })).toBeChecked();
+    expect(law).toBeEnabled();
+    expect(law).toBeChecked();
+    expect(screen.getByText(/今日上次完成・答對 44 \/ 50 題，可再次挑戰/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /建立今日挑戰/ }));
+    expect(await screen.findByLabelText('法規關卡進度')).toBeInTheDocument();
   });
 
   it('lists wrong questions under the completed subject summary', async () => {
@@ -170,33 +172,59 @@ describe('DailyPage', () => {
     fireEvent.click((await screen.findByText('選項 A')).closest('label')!);
     fireEvent.click(screen.getByRole('button', { name: '確認答案' }));
     expect(screen.queryByText('答對了，繼續前進！')).not.toBeInTheDocument();
-    expect(screen.getByText('+10 XP')).toBeInTheDocument();
-    expect(screen.getAllByText(/連擊 1/)).toHaveLength(2);
+    expect(screen.queryByText(/XP/)).not.toBeInTheDocument();
+    expect(screen.getByText('連擊 1 / 3')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '下一題' })).toBeInTheDocument();
   });
 
-  it('ends and locks today\'s subject on the third mistake within one level', async () => {
+  it('restores one life after three consecutive correct answers', async () => {
     const session = createDailyPracticeSession(
-      [question('law', 1), question('law', 2), question('law', 3)],
+      Array.from({ length: 4 }, (_, index) => question('law', index + 1)),
       ['law'],
       getTaipeiDateKey(),
     );
     session.questionIds.forEach((id) => {
       session.optionOrders[id] = [0, 1, 2, 3];
     });
-    session.currentIndex = 2;
+    session.currentIndex = 3;
     session.answers[session.questionIds[0]] = { selected: 1, correct: false };
-    session.answers[session.questionIds[1]] = { selected: 1, correct: false };
-    session.unreviewedWrongIds = session.questionIds.slice(0, 2);
+    session.answers[session.questionIds[1]] = { selected: 0, correct: true };
+    session.answers[session.questionIds[2]] = { selected: 0, correct: true };
+    session.unreviewedWrongIds = [session.questionIds[0]];
     window.localStorage.setItem(DAILY_PRACTICE_STORAGE_KEY, JSON.stringify(session));
 
     renderDailyPage();
 
-    expect(await screen.findByText(/本層錯 2 題/)).toBeInTheDocument();
+    fireEvent.click((await screen.findByText('選項 A')).closest('label')!);
+    fireEvent.click(screen.getByRole('button', { name: '確認答案' }));
+    expect(screen.getByText('血量 +1')).toBeInTheDocument();
+    expect(screen.getByText('目前血量 10 / 10')).toBeInTheDocument();
+    expect(screen.getByText(/剩餘 10 \/ 10 點血量/)).toBeInTheDocument();
+  });
+
+  it('ends the current run when the tenth life is lost', async () => {
+    const session = createDailyPracticeSession(
+      Array.from({ length: 10 }, (_, index) => question('law', index + 1)),
+      ['law'],
+      getTaipeiDateKey(),
+    );
+    session.questionIds.forEach((id) => {
+      session.optionOrders[id] = [0, 1, 2, 3];
+    });
+    session.currentIndex = 9;
+    session.questionIds.slice(0, 9).forEach((id) => {
+      session.answers[id] = { selected: 1, correct: false };
+    });
+    session.unreviewedWrongIds = session.questionIds.slice(5, 9);
+    window.localStorage.setItem(DAILY_PRACTICE_STORAGE_KEY, JSON.stringify(session));
+
+    renderDailyPage();
+
+    expect(await screen.findByText(/剩餘 1 \/ 10 點血量/)).toBeInTheDocument();
     fireEvent.click((await screen.findByText('選項 B')).closest('label')!);
     fireEvent.click(screen.getByRole('button', { name: '確認答案' }));
     expect(await screen.findByText('法規今日挑戰結束')).toBeInTheDocument();
-    expect(screen.getByText(/完成 3 題，答對 0 題、答錯 3 題/)).toBeInTheDocument();
+    expect(screen.getByText(/完成 10 題，答對 0 題、答錯 10 題/)).toBeInTheDocument();
   });
 
   it('does not end when the third total mistake is only the first mistake of a new level', async () => {
@@ -218,12 +246,12 @@ describe('DailyPage', () => {
 
     renderDailyPage();
 
-    expect(await screen.findByText(/本層錯 0 題/)).toBeInTheDocument();
+    expect(await screen.findByText(/剩餘 9 \/ 10 點血量/)).toBeInTheDocument();
     fireEvent.click(screen.getByText('選項 B').closest('label')!);
     fireEvent.click(screen.getByRole('button', { name: '確認答案' }));
 
     expect(screen.queryByText('法規今日挑戰結束')).not.toBeInTheDocument();
-    expect(screen.getByText(/本層錯 1 題/)).toBeInTheDocument();
+    expect(screen.getByText(/剩餘 8 \/ 10 點血量/)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '下一題' })).toBeInTheDocument();
   });
 
