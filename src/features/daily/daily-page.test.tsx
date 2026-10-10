@@ -98,6 +98,7 @@ describe('DailyPage', () => {
     fireEvent.click(screen.getByRole('button', { name: /建立今日挑戰/ }));
 
     const statistics = await screen.findByLabelText('每日練習統計');
+    expect(within(screen.getByRole('complementary', { name: '挑戰資訊' })).getByLabelText('每日練習統計')).toBe(statistics);
     await waitFor(() => expect(within(statistics).getByText('/ 50')).toBeInTheDocument());
     expect(screen.getByLabelText('環控關卡進度')).toBeInTheDocument();
     expect(screen.queryByText('114 年')).not.toBeInTheDocument();
@@ -259,6 +260,8 @@ describe('DailyPage', () => {
 
     expect(screen.getByText('結界擋下反擊，本題未扣血')).toBeInTheDocument();
     expect(screen.getByLabelText('建築師剩餘 3 / 3 點血量')).toBeInTheDocument();
+    expect(screen.getByText('BLOCK!')).toBeInTheDocument();
+    expect(screen.getByLabelText(/第 2 層 鋼構工地/)).toHaveAttribute('data-blocked', 'true');
   });
 
   it('shows a flawless stage clear and awards a relic', async () => {
@@ -301,6 +304,8 @@ describe('DailyPage', () => {
 
     expect(await screen.findByText('法規今日挑戰結束', {}, { timeout: 1500 })).toBeInTheDocument();
     expect(screen.getByText(/完成 1 題，答對 0 題、答錯 1 題/)).toBeInTheDocument();
+    expect(screen.getByLabelText('每日挑戰戰敗')).toHaveTextContent('時間耗盡，遭魔王擊倒');
+    expect(screen.getByLabelText('建築師剩餘 0 / 3 點血量')).toBeInTheDocument();
   });
 
   it('ends the current run when the third first-stage life is lost', async () => {
@@ -326,6 +331,34 @@ describe('DailyPage', () => {
     fireEvent.click(screen.getByRole('button', { name: '確認答案' }));
     expect(await screen.findByText('法規今日挑戰結束')).toBeInTheDocument();
     expect(screen.getByText(/完成 3 題，答對 0 題、答錯 3 題/)).toBeInTheDocument();
+    expect(screen.getByLabelText('每日挑戰戰敗')).toHaveTextContent('耐久耗盡，建築師倒下了');
+    expect(screen.getByLabelText('建築師剩餘 0 / 3 點血量')).toBeInTheDocument();
+    expect(screen.getByLabelText(/第 1 層 磚造巷口/)).toHaveAttribute('data-result', 'wrong');
+  });
+
+  it('restores the failed stage and defeat scene at a stage boundary', async () => {
+    const session = createDailyPracticeSession(
+      Array.from({ length: 6 }, (_, index) => question('law', index + 1)),
+      ['law'],
+      getTaipeiDateKey(),
+    );
+    session.currentIndex = 5;
+    session.status = 'failed';
+    session.answers = Object.fromEntries(session.questionIds.slice(0, 5).map((id, index) => [
+      id, { selected: index % 2 === 0 && index !== 4 ? 0 : 1, correct: index % 2 === 0 && index !== 4 },
+    ]));
+    window.localStorage.setItem(DAILY_PRACTICE_STORAGE_KEY, JSON.stringify(session));
+
+    renderDailyPage();
+
+    expect(await screen.findByLabelText('每日挑戰戰敗')).toBeInTheDocument();
+    expect(screen.getByLabelText(/第 1 層 磚造巷口/)).toHaveAttribute('data-failed', 'true');
+    expect(screen.getByLabelText('建築師剩餘 0 / 3 點血量')).toBeInTheDocument();
+    expect(screen.queryByLabelText(/第 2 層 鋼構工地/)).not.toBeInTheDocument();
+    const failedStage = within(screen.getByLabelText('法規關卡進度')).getAllByRole('listitem')[0];
+    expect(failedStage).toHaveAttribute('data-failed', 'true');
+    expect(failedStage).not.toHaveAttribute('data-complete');
+    expect(screen.queryByText('COUNTER!')).not.toBeInTheDocument();
   });
 
   it('does not end when the third total mistake is only the first mistake of a new level', async () => {

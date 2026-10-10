@@ -391,7 +391,12 @@ export function parseDailyPracticeSession(
     questionIds,
     answers,
     protectedWrongIds,
-    Math.max(0, Math.min(currentIndex, questionIds.length - 1)),
+    Math.max(0, Math.min(
+      session.status === 'failed' && !answers[questionIds[currentIndex]]
+        ? currentIndex - 1
+        : currentIndex,
+      questionIds.length - 1,
+    )),
   );
   const status = session.status === 'completed'
     ? 'completed'

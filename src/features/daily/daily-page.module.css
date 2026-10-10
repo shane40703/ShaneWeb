@@ -68,17 +68,17 @@
   overflow: hidden;
   background-image:
     linear-gradient(180deg, rgb(2 5 10 / 4%) 45%, rgb(2 5 10 / 56%) 100%),
-    url('/daily-game/stage-1.webp');
+    url('/daily-game/stage-1-v2.webp');
   background-repeat: no-repeat;
   background-size: 100% 100%, cover;
   background-position: center, center 78%;
 }
 
-.battleScene[data-stage='2'] .pixelArena { background-image: linear-gradient(180deg, transparent, #02050a88), url('/daily-game/stage-2.webp'); }
-.battleScene[data-stage='3'] .pixelArena { background-image: linear-gradient(180deg, transparent, #02050a88), url('/daily-game/stage-3.webp'); }
-.battleScene[data-stage='4'] .pixelArena { background-image: linear-gradient(180deg, transparent, #02050a88), url('/daily-game/stage-4.webp'); }
-.battleScene[data-stage='5'] .pixelArena { background-image: linear-gradient(180deg, transparent, #02050a88), url('/daily-game/stage-5.webp'); }
-.battleScene[data-stage='6'] .pixelArena { background-image: linear-gradient(180deg, transparent, #02050a88), url('/daily-game/stage-6.webp'); }
+.battleScene[data-stage='2'] .pixelArena { background-image: linear-gradient(180deg, transparent, #02050a88), url('/daily-game/stage-2-v2.webp'); }
+.battleScene[data-stage='3'] .pixelArena { background-image: linear-gradient(180deg, transparent, #02050a88), url('/daily-game/stage-3-v2.webp'); }
+.battleScene[data-stage='4'] .pixelArena { background-image: linear-gradient(180deg, transparent, #02050a88), url('/daily-game/stage-4-v2.webp'); }
+.battleScene[data-stage='5'] .pixelArena { background-image: linear-gradient(180deg, transparent, #02050a88), url('/daily-game/stage-5-v2.webp'); }
+.battleScene[data-stage='6'] .pixelArena { background-image: linear-gradient(180deg, transparent, #02050a88), url('/daily-game/stage-6-v2.webp'); }
 
 .scanlines {
   position: absolute;
@@ -116,19 +116,31 @@
 
 .bossActor {
   right: 2%;
-  background-image: url('/daily-game/boss-1-v2.webp');
+  background-image: none;
   animation: bossIdle 1.6s steps(2, end) infinite;
 }
 
-.bossActor[data-boss='2'] { background-image: url('/daily-game/boss-2-v2.webp'); }
-.bossActor[data-boss='3'] { background-image: url('/daily-game/boss-3-v2.webp'); }
-.bossActor[data-boss='4'] { background-image: url('/daily-game/boss-4-v2.webp'); }
-.bossActor[data-boss='5'] { background-image: url('/daily-game/boss-5-v2.webp'); }
+.bossSprite {
+  width: 100%;
+  height: 100%;
+  display: block;
+  background: url('/daily-game/boss-1-v2.webp') center bottom / contain no-repeat;
+  transform: scaleX(-1);
+}
+
+.bossActor[data-boss='2'] .bossSprite { background-image: url('/daily-game/boss-2-v2.webp'); }
+.bossActor[data-boss='3'] .bossSprite { background-image: url('/daily-game/boss-3-v2.webp'); }
+.bossActor[data-boss='4'] .bossSprite { background-image: url('/daily-game/boss-4-v2.webp'); }
+.bossActor[data-boss='5'] .bossSprite { background-image: url('/daily-game/boss-5-v2.webp'); }
 .bossActor[data-boss='6'] {
   height: 110%;
   right: 2%;
   bottom: 0;
+}
+
+.bossActor[data-boss='6'] .bossSprite {
   background-image: url('/daily-game/boss-6-v2.webp');
+  transform: scaleX(1);
 }
 
 .battleScene[data-result='correct'] .heroActor {
@@ -136,15 +148,113 @@
 }
 
 .battleScene[data-result='correct'] .bossActor {
-  animation: bossHit 620ms steps(3, end) both;
+  animation: bossHit 900ms steps(5, end) both;
 }
 
 .battleScene[data-result='wrong'] .heroActor {
-  animation: heroHit 520ms steps(3, end) both;
+  animation: heroHit 900ms steps(5, end) both;
 }
 
 .battleScene[data-result='wrong'] .bossActor {
   animation: bossAttack 520ms steps(3, end) both;
+}
+
+.battleScene[data-blocked] .heroActor {
+  animation: barrierPulse 700ms steps(2, end) both;
+}
+
+.bossImpact,
+.heroImpact,
+.bossDamage,
+.heroDamage {
+  position: absolute;
+  z-index: 6;
+  top: 30%;
+  right: 8%;
+  pointer-events: none;
+  color: #fff8b2;
+  text-shadow: 2px 2px #8b2615, -2px -2px #8b2615;
+  font-family: ui-monospace, monospace;
+  font-size: 32px;
+  animation: impactFlash 650ms steps(4, end) forwards;
+}
+
+.heroImpact,
+.heroDamage { right: auto; left: 8%; color: #ff8070; }
+.bossDamage,
+.heroDamage { top: 12%; font-size: 20px; animation: damageFloat 1100ms steps(6, end) forwards; }
+
+.failureScene {
+  position: absolute;
+  z-index: 8;
+  inset: 0;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 8px;
+  color: #ffd2c6;
+  background: linear-gradient(90deg, #2d080844, #270b20dd 40%, #270b20dd 65%, #2d080844);
+  text-shadow: 2px 2px #270c1d;
+  animation: victoryReveal 500ms 700ms steps(4, end) both;
+}
+
+.failureScene strong { font-family: ui-monospace, monospace; font-size: clamp(24px, 3vw, 36px); letter-spacing: .12em; }
+.failureScene span { font-size: 12px; }
+.battleScene[data-failed] .heroActor { animation: heroDefeat 1000ms steps(6, end) forwards; }
+
+@keyframes impactFlash {
+  0% { opacity: 0; scale: .5; }
+  25% { opacity: 1; scale: 1.5; }
+  100% { opacity: 0; scale: .7; }
+}
+
+@keyframes damageFloat {
+  0% { opacity: 1; transform: translateY(12px); }
+  70% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-22px); }
+}
+
+@keyframes heroDefeat {
+  0% { transform: translateX(0) rotate(0); }
+  25% { filter: brightness(2) sepia(1) saturate(3); transform: translateX(-6px); }
+  65% { transform: translateY(12px) rotate(-45deg); opacity: .7; }
+  100% { transform: translateY(35px) rotate(-80deg); opacity: .35; }
+}
+
+.playLayout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 224px;
+  align-items: start;
+  gap: 14px;
+}
+
+.questionArea { min-width: 0; grid-column: 1; grid-row: 1; }
+.sidebar {
+  grid-column: 2;
+  grid-row: 1;
+  position: sticky;
+  top: calc(166px + clamp(100px, 16vh, 145px));
+}
+
+.battleScene[data-failed] + .playLayout .sidebar,
+.battleScene[data-victory] + .playLayout .sidebar {
+  position: static;
+}
+
+.sidebar .progressOverview { display: grid; grid-template-columns: 1fr; gap: 12px; }
+.sidebar .levelMap { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px 4px; overflow: visible; }
+.sidebar .scoreboard { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-row: auto; }
+.sidebar .scoreboard > span { min-width: 0; }
+.sidebar .reset { grid-row: auto; justify-content: center; }
+
+@media (max-width: 1100px) {
+  .playLayout { grid-template-columns: minmax(0, 1fr); }
+  .sidebar { grid-column: 1; grid-row: 2; position: static; }
+  .sidebar .levelMap { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 3px; }
+  .sidebar .scoreboard { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .sidebar .levelMap li { min-width: 0; }
+  .sidebar .levelMap small { font-size: 8px; white-space: normal; text-align: center; }
+  .sidebar .levelMap li[data-boss] small::after { display: none; }
 }
 
 .barrierAura {
@@ -742,6 +852,12 @@
   animation: activeLevel 1.8s ease-in-out infinite;
 }
 
+.levelMap li[data-failed] > span {
+  border-color: var(--danger);
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
 .levelMap li[data-boss] > span {
   border-style: double;
   border-width: 3px;
@@ -1296,9 +1412,9 @@
 }
 
 @keyframes bossHit {
-  0%, 100% { transform: translateX(0); filter: drop-shadow(8px 10px 3px rgb(0 0 0 / 38%)); }
-  45% { transform: translateX(8px); filter: brightness(2) saturate(.3) drop-shadow(0 0 15px #fff); }
-  65% { transform: translateX(-5px); }
+  0%, 100% { opacity: 1; transform: translateX(0); filter: drop-shadow(8px 10px 3px rgb(0 0 0 / 38%)); }
+  20%, 50% { opacity: .6; transform: translateX(12px); filter: brightness(2) saturate(.3) drop-shadow(0 0 15px #fff); }
+  35%, 65% { opacity: 1; transform: translateX(-5px); filter: drop-shadow(0 0 10px #ffc070); }
 }
 
 @keyframes bossAttack {
@@ -1307,9 +1423,9 @@
 }
 
 @keyframes heroHit {
-  0%, 100% { transform: translateX(0); filter: drop-shadow(8px 10px 3px rgb(0 0 0 / 38%)); }
-  42% { transform: translateX(-10px); filter: brightness(1.8) sepia(1) saturate(5) drop-shadow(0 0 13px #ff4d45); }
-  62% { transform: translateX(7px); }
+  0%, 100% { opacity: 1; transform: translateX(0); filter: drop-shadow(8px 10px 3px rgb(0 0 0 / 38%)); }
+  20%, 50% { opacity: .6; transform: translateX(-12px); filter: brightness(1.8) sepia(1) saturate(5) drop-shadow(0 0 13px #ff4d45); }
+  35%, 65% { opacity: 1; transform: translateX(7px); filter: drop-shadow(0 0 10px #ff4d45); }
 }
 
 @keyframes calloutPop {
@@ -1540,7 +1656,12 @@
   .hitCallout,
   .damageCallout,
   .comboCallout,
+  .bossImpact,
+  .heroImpact,
+  .bossDamage,
+  .heroDamage,
   .barrierAura,
+  .failureScene,
   .victoryScene,
   .victoryStars,
   .defeatBanner {
@@ -1550,5 +1671,24 @@
   .battleScene[data-defeated] .bossActor {
     animation: none;
     opacity: 0;
+  }
+
+  .battleScene[data-result] .heroActor,
+  .battleScene[data-result] .bossActor,
+  .battleScene[data-blocked] .heroActor,
+  .battleScene[data-failed] .heroActor {
+    animation: none;
+  }
+
+  .battleScene[data-failed] .heroActor {
+    transform: translateY(35px) rotate(-80deg);
+    opacity: .35;
+  }
+
+  .bossImpact,
+  .heroImpact,
+  .bossDamage,
+  .heroDamage {
+    display: none;
   }
 }

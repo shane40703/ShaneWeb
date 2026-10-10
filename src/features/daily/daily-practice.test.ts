@@ -240,6 +240,23 @@ describe('daily practice', () => {
     ).toBe('practice');
   });
 
+  it('preserves defeat on the last question of a stage instead of using the next stage life', () => {
+    const session = createDailyPracticeSession(
+      Array.from({ length: 6 }, (_, index) => question('law', index + 1)),
+      ['law'],
+      '2026-10-07',
+    );
+    session.currentIndex = 5;
+    session.status = 'failed';
+    session.answers = Object.fromEntries(session.questionIds.slice(0, 5).map((id, index) => [
+      id, { selected: index % 2 === 0 && index !== 4 ? 0 : 1, correct: index % 2 === 0 && index !== 4 },
+    ]));
+
+    const restored = parseDailyPracticeSession(JSON.stringify(session), '2026-10-07');
+    expect(restored?.status).toBe('failed');
+    expect(restored?.currentIndex).toBe(5);
+  });
+
   it('resets stage life after clearing the previous boss', () => {
     const session = createDailyPracticeSession(
       Array.from({ length: 6 }, (_, index) => question('law', index + 1)),
