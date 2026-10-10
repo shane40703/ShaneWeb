@@ -70,6 +70,7 @@ vi.mock('@/lib/shared-discussions', () => ({
 }));
 
 beforeEach(() => {
+  vi.spyOn(window, 'scrollTo').mockImplementation(() => {});
   window.localStorage.clear();
   appState.dispatch.mockReset();
   appState.reportPersistence.mockReset();
@@ -89,6 +90,45 @@ function renderDailyPage() {
 }
 
 describe('DailyPage', () => {
+  it('allows a perfect guard to block a wrong answer and preserves its stage charge', async () => {
+    const session = createDailyPracticeSession(
+      Array.from({ length: 6 }, (_, index) => question('law', index + 1)), ['law'], getTaipeiDateKey(),
+    );
+    session.questionIds.forEach(id => { session.optionOrders[id] = [0, 1, 2, 3]; });
+    session.questionDeadlineMs = Date.now() + 54_000;
+    window.localStorage.setItem(DAILY_PRACTICE_STORAGE_KEY, JSON.stringify(session));
+    renderDailyPage();
+
+    const guard = await screen.findByRole('button', { name: '架設防禦：每關一次，蓄力亮紅時完美格擋' });
+    fireEvent.click(guard);
+    expect(screen.getByText('完美格擋！延長 5 秒，防護 3 秒')).toBeInTheDocument();
+    fireEvent.click(screen.getByText('選項 B').closest('label')!);
+    fireEvent.click(screen.getByRole('button', { name: '確認答案' }));
+    expect(screen.getByText('完美格擋擋下反擊，本題未扣血')).toBeInTheDocument();
+    expect(screen.getByLabelText('建築師剩餘 3 / 3 點血量')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: '下一題' }));
+    expect(guard).toBeDisabled();
+    const stored = JSON.parse(window.localStorage.getItem(DAILY_PRACTICE_STORAGE_KEY)!);
+    expect(stored.guardUses[session.questionIds[0]]).toBe('perfect');
+    expect(stored.guardUntilMs).toBeUndefined();
+  });
+
+  it('shows a third-hit finisher without changing the required question count', async () => {
+    const session = createDailyPracticeSession(
+      Array.from({ length: 5 }, (_, index) => question('law', index + 1)), ['law'], getTaipeiDateKey(),
+    );
+    session.currentIndex = 2;
+    session.questionIds.forEach(id => { session.optionOrders[id] = [0, 1, 2, 3]; });
+    session.answers = Object.fromEntries(session.questionIds.slice(0, 2).map(id => [id, { selected: 0, correct: true }]));
+    window.localStorage.setItem(DAILY_PRACTICE_STORAGE_KEY, JSON.stringify(session));
+    renderDailyPage();
+    fireEvent.click((await screen.findByText('選項 A')).closest('label')!);
+    fireEvent.click(screen.getByRole('button', { name: '確認答案' }));
+    expect(screen.getByText('3 COMBO!・連擊必殺')).toBeInTheDocument();
+    expect(screen.getByLabelText(/第 1 層 磚造巷口/)).toHaveAttribute('data-finisher', 'true');
+    expect(screen.getByLabelText('砌縫咕嚕剩餘 2 / 5 點血量')).toBeInTheDocument();
+  });
+
   it('creates an independent fifty-question run for one selected subject', async () => {
     renderDailyPage();
 

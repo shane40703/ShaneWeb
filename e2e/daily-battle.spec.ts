@@ -6,8 +6,10 @@ async function seedRun(
   status: 'practice' | 'failed',
   results: boolean[],
   timedOut = false,
+  remainingSeconds = 60,
 ) {
-  await page.addInitScript(({ currentIndex, status, results, timedOut }) => {
+  await page.addInitScript(({ currentIndex, status, results, timedOut, remainingSeconds }) => {
+    if (localStorage.getItem('shaneweb:daily-practice')) return;
     const questionIds = Array.from({ length: 50 }, (_, i) => `law-114-${String(i + 1).padStart(2, '0')}`);
     localStorage.setItem('shaneweb:daily-practice', JSON.stringify({
       date: new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Taipei', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date()),
@@ -19,29 +21,42 @@ async function seedRun(
       }])),
       eliminatedOptions: {}, relicUses: {}, protectedWrongIds: [],
       currentIndex, unreviewedWrongIds: [], reviewedWrongIds: [], status,
+      questionDeadlineMs: Date.now() + remainingSeconds * 1000,
     }));
-  }, { currentIndex, status, results, timedOut });
+  }, { currentIndex, status, results, timedOut, remainingSeconds });
 }
 
-test('daily battle stays compact and visible while answering', async ({ page }) => {
+async function pauseAtCast(page: Page, phaseMs: number) {
+  const target = await page.evaluate(phase => {
+    const session = JSON.parse(localStorage.getItem('shaneweb:daily-practice')!);
+    const now = Date.now();
+    const elapsed = 60_000 - (session.questionDeadlineMs - now);
+    return now + (phase - elapsed % 8000 + 8000) % 8000;
+  }, phaseMs);
+  await page.clock.pauseAt(new Date(target));
+}
+
+test('larger battle and answer button share the viewport without page scrolling', async ({ page }) => {
   await page.goto('/daily');
   await page.getByRole('button', { name: '建立今日挑戰' }).click();
   const battle = page.locator('[data-stage]').first();
   await expect(battle).toBeVisible();
   const initial = await battle.boundingBox();
-  expect(initial!.height).toBeLessThan(250);
+  expect(initial!.height).toBeGreaterThan(250);
+  expect(initial!.height).toBeLessThan(530);
   const sidebar = await page.getByRole('complementary', { name: '挑戰資訊' }).boundingBox();
   const question = await page.locator('article').filter({
     has: page.getByRole('button', { name: '確認答案' }),
   }).boundingBox();
   if (page.viewportSize()!.width > 1100) {
-    expect(sidebar!.x).toBeGreaterThanOrEqual(question!.x + question!.width);
-    expect(Math.abs(sidebar!.y - question!.y)).toBeLessThan(2);
+    expect(question!.x).toBeGreaterThanOrEqual(initial!.x + initial!.width);
+    expect(sidebar!.y).toBeGreaterThan(initial!.y + initial!.height);
+    expect(Math.abs(initial!.y - question!.y)).toBeLessThan(2);
   } else {
     expect(sidebar!.y).toBeGreaterThanOrEqual(question!.y + question!.height);
   }
   await expect(page.getByLabel('砌縫咕嚕', { exact: true }).locator('span')).toHaveCSS('transform', 'matrix(-1, 0, 0, 1, 0, 0)');
-  await page.getByRole('button', { name: '確認答案' }).scrollIntoViewIfNeeded();
+  await expect(page.getByRole('button', { name: '確認答案' })).toBeInViewport({ ratio: 1 });
   const scrolled = await battle.boundingBox();
   expect(scrolled!.y).toBeGreaterThanOrEqual(60);
   expect(scrolled!.y + scrolled!.height).toBeLessThan(page.viewportSize()!.height - 100);
@@ -49,6 +64,9 @@ test('daily battle stays compact and visible while answering', async ({ page }) 
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
     page.viewportSize()!.width,
   );
+  // Native scroll anchoring may settle a few pixels as a random question's image loads.
+  expect(await page.evaluate(() => window.scrollY)).toBeLessThan(10);
+  await expect(battle.locator('[class*="pixelArena"]')).toHaveCSS('background-image', /stage-1-v2.webp/);
 });
 
 test('completed daily run defeats the dragon and displays victory', async ({ page }) => {
@@ -117,4 +135,62 @@ test('timeout defeat supports reduced motion and still displays the fallen state
   await expect(page.getByLabel('建築師勇者')).toHaveCSS('animation-name', 'none');
   await expect(page.getByLabel('建築師勇者')).toHaveCSS('opacity', '0.35');
   await expect(page.getByLabel('建築師剩餘 0 / 3 點血量')).toBeVisible();
+});
+
+test('boss telegraphs ongoing attacks while the real countdown drains the HP bar', async ({ page }) => {
+  await page.clock.install({ time: new Date('2026-10-11T04:00:00+08:00') });
+  await seedRun(page, 0, 'practice', []);
+  await page.goto('/daily');
+  const hp = page.getByRole('progressbar', { name: '本題倒數血量' });
+  await expect(hp).toBeVisible();
+  const before = Number(await hp.getAttribute('aria-valuenow'));
+  await pauseAtCast(page, 7200);
+  expect(Number(await hp.getAttribute('aria-valuenow'))).toBeLessThan(before);
+  await expect(page.getByLabel(/第 1 層 磚造巷口/)).toHaveAttribute('data-striking', 'true');
+  await expect(page.locator('[class*="enemyBolt"]')).toBeAttached();
+  await expect(page.getByLabel('建築師剩餘 3 / 3 點血量')).toBeVisible();
+});
+
+test('perfect guard has an actual timed benefit and cannot be reused after reload', async ({ page }) => {
+  await page.clock.install({ time: new Date('2026-10-11T04:00:00+08:00') });
+  await seedRun(page, 0, 'practice', [], false, 54);
+  await page.goto('/daily');
+  const guard = page.getByRole('button', { name: '架設防禦：每關一次，蓄力亮紅時完美格擋' });
+  await expect(guard).toBeEnabled();
+  await pauseAtCast(page, 6000);
+  const deadline = await page.evaluate(() => JSON.parse(localStorage.getItem('shaneweb:daily-practice')!).questionDeadlineMs);
+  await guard.click();
+  await expect(page.getByText('完美格擋！延長 5 秒，防護 3 秒')).toBeVisible();
+  await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('shaneweb:daily-practice')!).questionDeadlineMs)).toBe(deadline + 5000);
+  await expect(guard).toBeDisabled();
+  // Hydration schedules work too; don't freeze Next/React while reloading.
+  await page.clock.resume();
+  await page.reload();
+  await expect(guard).toBeDisabled();
+  await page.clock.fastForward(3000);
+  await expect(page.getByLabel(/第 1 層 磚造巷口/)).toHaveAttribute('data-casting', 'true');
+});
+
+test('long illustrated questions scroll inside the card while the attack button stays visible', async ({ page }) => {
+  await page.route('**/question-data/law/114.json', async route => {
+    const response = await route.fetch();
+    const questions = await response.json();
+    const target = questions.find((question: { id: string }) => question.id === 'law-114-01');
+    target.content = [
+      { kind: 'text', text: Array(50).fill('長題內容完整保留，可在題目區內向下閱讀。').join('\n') },
+      { kind: 'image', src: '/daily-game/stage-1-v2.webp', alt: '長題測試附圖', width: 512, height: 512 },
+    ];
+    await route.fulfill({ json: questions });
+  });
+  await seedRun(page, 0, 'practice', []);
+  await page.goto('/daily');
+  const body = page.getByRole('region', { name: '題目與選項' });
+  await expect(body).toBeVisible();
+  const sizes = await body.evaluate(el => ({ height: el.clientHeight, scroll: el.scrollHeight }));
+  expect(sizes.scroll).toBeGreaterThan(sizes.height + 100);
+  await expect(page.getByRole('button', { name: '確認答案' })).toBeInViewport({ ratio: 1 });
+  await body.evaluate(el => { el.scrollTop = el.scrollHeight; });
+  await expect(page.getByRole('radio').last()).toBeInViewport();
+  await expect(page.getByRole('button', { name: '確認答案' })).toBeInViewport({ ratio: 1 });
+  expect(await page.evaluate(() => window.scrollY)).toBeLessThanOrEqual(1);
 });

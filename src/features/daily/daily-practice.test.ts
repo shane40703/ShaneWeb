@@ -2,12 +2,14 @@ import { describe, expect, it } from 'vitest';
 import type { Question, SubjectId } from '@/lib/types';
 import {
   applyDailyOptionOrder,
+  activateDailyGuard,
   countDailyWrongAnswers,
   createDailyCompletionResult,
   createDailyPracticeSession,
   DAILY_QUESTIONS_PER_SUBJECT,
   DAILY_STAGES,
   getDailyLifeState,
+  getDailyCombatState,
   getDailyRelicInventory,
   getDailyRemainingTimeMs,
   getDailyStageBounds,
@@ -36,6 +38,71 @@ function question(subject: SubjectId, number: number): Question {
 }
 
 describe('daily practice', () => {
+  it('drains timed HP continuously while keeping stage mistake capacity unchanged', () => {
+    const session = createDailyPracticeSession(Array.from({ length: 6 }, (_, i) => question('law', i + 1)), ['law']);
+    session.questionDeadlineMs = 61_000;
+    expect(getDailyCombatState(session, 1000).timedHpRatio).toBe(1);
+    expect(getDailyCombatState(session, 31_000).timedHpRatio).toBe(.5);
+    expect(getDailyCombatState(session, 61_000).timedHpRatio).toBe(0);
+    session.answers[session.questionIds[0]] = { selected: 1, correct: false };
+    session.currentIndex = 1;
+    expect(getDailyCombatState(session, 31_000).timedHpRatio).toBeCloseTo(1 / 3);
+    expect(getDailyLifeState(session.questionIds, session.answers).remaining).toBe(2);
+  });
+
+  it('pauses the attack and timed HP drain after answering or during review', () => {
+    const session = createDailyPracticeSession([question('law', 1)], ['law']);
+    session.questionDeadlineMs = 61_000;
+    session.answers[session.questionIds[0]] = { selected: 0, correct: true };
+    expect(getDailyCombatState(session, 50_000)).toMatchObject({ active: false, timedHpRatio: 1 });
+    session.status = 'review';
+    expect(getDailyCombatState(session, 70_000).active).toBe(false);
+  });
+
+  it('awards a perfect guard only inside the telegraphed window and only once per stage', () => {
+    const session = createDailyPracticeSession(Array.from({ length: 6 }, (_, i) => question('law', i + 1)), ['law']);
+    session.questionDeadlineMs = 55_000;
+    const guarded = activateDailyGuard(session, 1000);
+    expect(guarded.guardUses?.[session.questionIds[0]]).toBe('perfect');
+    expect(guarded.questionDeadlineMs).toBe(60_000);
+    expect(guarded.guardUntilMs).toBe(4000);
+    expect(getDailyCombatState(guarded, 2000).guarding).toBe(true);
+    expect(getDailyCombatState(guarded, 4000).guarding).toBe(false);
+    expect(activateDailyGuard(guarded, 2000)).toBe(guarded);
+    guarded.currentIndex = 1;
+    expect(getDailyCombatState(guarded, 2000).guardAvailable).toBe(false);
+    guarded.currentIndex = 5;
+    expect(getDailyCombatState(guarded, 2000).guardAvailable).toBe(true);
+  });
+
+  it('gives an early guard only two seconds and never permits guarding after timeout', () => {
+    const session = createDailyPracticeSession([question('law', 1)], ['law']);
+    session.questionDeadlineMs = 61_000;
+    const guarded = activateDailyGuard(session, 1000);
+    expect(guarded.guardUses?.[session.questionIds[0]]).toBe('early');
+    expect(guarded.questionDeadlineMs).toBe(63_000);
+    expect(guarded.guardUntilMs).toBeUndefined();
+    expect(activateDailyGuard(session, 61_000)).toBe(session);
+  });
+
+  it('restores guard consumption and removes duplicate or invalid saved guards', () => {
+    const session = createDailyPracticeSession(Array.from({ length: 6 }, (_, i) => question('law', i + 1)), ['law'], '2026-10-11');
+    const [first, second] = session.questionIds;
+    session.guardUses = { [first]: 'perfect', [second]: 'early', invalid: 'perfect' };
+    session.guardUntilMs = 4000;
+    const restored = parseDailyPracticeSession(JSON.stringify(session), '2026-10-11')!;
+    expect(restored.guardUses).toEqual({ [first]: 'perfect' });
+    expect(getDailyCombatState(restored, 2000).guardAvailable).toBe(false);
+  });
+
+  it('telegraphs attacks and enrages at low boss HP with an uninterrupted third-hit combo', () => {
+    const session = createDailyPracticeSession(Array.from({ length: 5 }, (_, i) => question('law', i + 1)), ['law']);
+    session.currentIndex = 2;
+    session.answers = Object.fromEntries(session.questionIds.slice(0, 3).map(id => [id, { selected: 0, correct: true }]));
+    const combat = getDailyCombatState(session, 1000);
+    expect(combat).toMatchObject({ chain: 3, enraged: true, cycleMs: 5000, bossRemaining: 2 });
+  });
+
   it('draws fifty questions for only the selected subject', () => {
     const questions = (['law', 'env'] as const).flatMap((subject) =>
       Array.from({ length: 60 }, (_, index) => question(subject, index + 1)),

@@ -1,4 +1,4 @@
-import { type CSSProperties, useEffect, useMemo, useState } from 'react';
+import { type CSSProperties, useEffect, useMemo, useRef, useState } from 'react';
 import {
   IconAlertTriangle,
   IconCalendarClock,
@@ -14,6 +14,7 @@ import {
   IconShieldX,
   IconShieldPlus,
   IconSparkles,
+  IconSwords,
   IconTargetArrow,
   IconTrophy,
   IconX,
@@ -39,6 +40,7 @@ import { subjects } from '@/question-bank/catalog';
 import { useAppState } from '@/state/app-state';
 import {
   applyDailyOptionOrder,
+  activateDailyGuard,
   createDailyCompletionResult,
   createDailyPracticeSession,
   DAILY_BARRIER_SECONDS,
@@ -50,6 +52,7 @@ import {
   DAILY_RELIC_TYPES,
   DAILY_STAGES,
   getDailyLifeState,
+  getDailyCombatState,
   getDailyRelicInventory,
   getDailyRemainingTimeMs,
   getDailyStageBounds,
@@ -77,6 +80,28 @@ const relicLabels: Record<DailyRelicType, { name: string; description: string }>
 function RelicIcon({ type, size = 17 }: { type: DailyRelicType; size?: number }) {
   if (type === 'eliminate') return <IconEraser size={size} />;
   return <IconShieldCheck size={size} />;
+}
+
+function DailyRelicDock({ session, inventory, disabled, onActivate }: {
+  session: DailyPracticeSession;
+  inventory: Record<DailyRelicType, number>;
+  disabled: boolean;
+  onActivate: (type: DailyRelicType) => void;
+}) {
+  const use = session.relicUses[session.questionIds[session.currentIndex]];
+  return (
+    <section className={styles.relicDock} aria-label="本題寶具">
+      <div><span>RELIC DECK</span><small>{use ? `本題已使用：${relicLabels[use].name}` : '每題最多使用 1 個寶具'}</small></div>
+      {DAILY_RELIC_TYPES.map(type => (
+        <button key={type} type="button" title={relicLabels[type].description}
+          aria-label={`${relicLabels[type].name}：${relicLabels[type].description}，持有 ${inventory[type]} 個`}
+          aria-pressed={use === type} disabled={disabled || Boolean(use) || inventory[type] <= 0}
+          onClick={() => onActivate(type)}>
+          <RelicIcon type={type} /><span>{relicLabels[type].name}</span><b>×{inventory[type]}</b>
+        </button>
+      ))}
+    </section>
+  );
 }
 
 function subjectShortName(subjectId: SubjectId | undefined) {
@@ -136,6 +161,8 @@ function DailyBattleScene({
   barrierActive,
   answer,
   lifeState,
+  nowMs,
+  onGuard,
 }: {
   session: DailyPracticeSession;
   stageIndex: number;
@@ -143,7 +170,10 @@ function DailyBattleScene({
   barrierActive: boolean;
   answer: DailyPracticeSession['answers'][string] | undefined;
   lifeState: ReturnType<typeof getDailyLifeState>;
+  nowMs: number;
+  onGuard: () => void;
 }) {
+  const combat = getDailyCombatState(session, nowMs);
   const stage = DAILY_STAGES[stageIndex];
   const { start, end } = getDailyStageBounds(stageIndex);
   const stageIds = session.questionIds.slice(start, end);
@@ -175,6 +205,11 @@ function DailyBattleScene({
       data-victory={victory || undefined}
       data-failed={failed || undefined}
       data-blocked={protectedHit || undefined}
+      data-enraged={combat.enraged || undefined}
+      data-casting={combat.active && !combat.guarding || undefined}
+      data-striking={combat.active && !combat.guarding && combat.castProgress >= .88 || undefined}
+      data-finisher={answer?.correct && combat.chain > 0 && combat.chain % DAILY_HEAL_STREAK === 0 || undefined}
+      style={{ '--cast-duration': `${combat.cycleMs}ms` } as CSSProperties}
       aria-label={`第 ${stageIndex + 1} 層 ${stage.name}，對戰${stage.boss}`}
     >
       <header className={styles.battleHeading}>
@@ -185,24 +220,32 @@ function DailyBattleScene({
       <div className={styles.pixelArena}>
         <span className={styles.scanlines} aria-hidden="true" />
         <div className={styles.heroActor} aria-label="建築師勇者">
-          {barrierActive ? <i className={styles.barrierAura} /> : null}
+          {barrierActive || combat.guarding ? <i className={styles.barrierAura} /> : null}
         </div>
         {answer?.correct && !failed ? (
           <>
             <b className={styles.hitCallout}>MEASURE HIT!</b>
             <span className={styles.bossImpact} aria-hidden="true">✦</span>
             <b className={styles.bossDamage} aria-hidden="true">−1</b>
+            <span className={styles.tapeStrike} aria-hidden="true" />
+            {combat.chain > 0 && combat.chain % DAILY_HEAL_STREAK === 0 ? (
+              <span className={styles.finisherStrike} aria-hidden="true">✦</span>
+            ) : null}
           </>
         ) : null}
         {answer && !answer.correct ? (
           <>
             {!failed ? <b className={styles.damageCallout}>{protectedHit ? 'BLOCK!' : 'COUNTER!'}</b> : null}
             <span className={styles.heroImpact} aria-hidden="true">{protectedHit ? '◇' : '✦'}</span>
-            <b className={styles.heroDamage} aria-hidden="true">{protectedHit ? '防禦' : '−1'}</b>
+            <b className={styles.heroDamage} aria-hidden="true">{protectedHit ? '防禦' : failed ? 'KO' : '−1 格'}</b>
+            <span className={styles.counterStrike} aria-hidden="true" />
           </>
         ) : null}
-        {lifeState.streak >= 2 ? (
-          <b className={styles.comboCallout}>{lifeState.streak} COMBO!</b>
+        {combat.chain >= 2 ? (
+          <b className={styles.comboCallout}>{combat.chain} COMBO!{combat.chain % 3 === 0 ? '・連擊必殺' : ''}</b>
+        ) : null}
+        {combat.active && !combat.guarding && combat.castProgress >= .88 ? (
+          <span key={combat.attackNumber} className={styles.enemyBolt} aria-hidden="true" />
         ) : null}
         <div className={styles.bossActor} data-boss={stageIndex + 1} aria-label={stage.boss}>
           <span className={styles.bossSprite} aria-hidden="true" />
@@ -230,8 +273,10 @@ function DailyBattleScene({
           className={styles.fighterMeter}
           aria-label={`建築師剩餘 ${failed ? 0 : lifeState.remaining} / ${lifeState.maximum} 點血量`}
         >
-          <span><b>建築師</b><small>HP {failed ? 0 : lifeState.remaining} / {lifeState.maximum}</small></span>
-          <i><b style={{ width: `${failed ? 0 : (lifeState.remaining / lifeState.maximum) * 100}%` }} /></i>
+          <span><b>建築師</b><small>耐久 {failed ? 0 : lifeState.remaining} / {lifeState.maximum}</small></span>
+          <i role="progressbar" aria-label="本題倒數血量" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(combat.timedHpRatio * 100)}>
+            <b style={{ width: `${combat.timedHpRatio * 100}%` }} />
+          </i>
         </div>
         {session.status === 'practice' && !answer ? (
           <div
@@ -257,6 +302,27 @@ function DailyBattleScene({
           <i><b style={{ width: `${(bossRemaining / stage.questions) * 100}%` }} /></i>
         </div>
       </footer>
+      <div className={styles.bossIntent} data-danger={combat.active && combat.castProgress >= .65 || undefined}>
+        <div>
+          <strong>{failed ? '魔王擊倒了建築師' : victory ? '六層制霸！' : answer ? '本題攻防已結算' :
+            combat.guarding ? '防護中・敵人攻擊已擋下' : `${combat.enraged ? '狂暴・' : ''}${combat.skill}蓄力`}</strong>
+          <small>{combat.active
+            ? `倒數持續消耗本題血條・${Math.ceil((1 - combat.castProgress) * combat.cycleMs / 1000)} 秒後攻擊`
+            : '答對攻擊魔王・連對三題回復耐久或獲得寶具'}</small>
+          <i><b style={{ width: `${combat.active ? combat.castProgress * 100 : 0}%` }} /></i>
+        </div>
+        <button type="button" onClick={onGuard} disabled={!combat.guardAvailable}
+          aria-label="架設防禦：每關一次，蓄力亮紅時完美格擋">
+          <IconShieldCheck size={16} /> {combat.active ? combat.guardAvailable ? '架設防禦' : '防禦已用' : '攻防結束'}
+        </button>
+      </div>
+      {session.guardUses?.[session.questionIds[session.currentIndex]] && combat.active ? (
+        <span className={styles.guardResult} role="status">
+          {session.guardUses[session.questionIds[session.currentIndex]] === 'perfect'
+            ? '完美格擋！延長 5 秒，防護 3 秒'
+            : '提前防禦・延長 2 秒，下關可再次使用'}
+        </span>
+      ) : null}
     </section>
   );
 }
@@ -300,7 +366,7 @@ function DailySetup({
         <div>
           <span className={styles.eyebrow}>DAILY CHALLENGE</span>
           <h2 id="daily-practice-title">建築師的六層試煉</h2>
-          <p>拿起捲尺，在 50 題內穿越六座建築戰場，擊敗從砌縫咕嚕到天際龍王的建築系魔王。</p>
+          <p>拿起捲尺，以答題打斷魔王攻勢，穿越六座建築戰場，擊敗天際龍王。</p>
         </div>
       </div>
 
@@ -310,6 +376,7 @@ function DailySetup({
         <div><strong>3–4</strong><span>每層耐久</span></div>
         <div><strong>{DAILY_QUESTION_SECONDS}s</strong><span>每題限時</span></div>
         <p>各層題數 5／6／7／8／9／15；答錯會遭魔王反擊，連對 {DAILY_HEAL_STREAK} 題回復 1 格。倒數歸零立即戰敗，防護結界可擋攻並延長 {DAILY_BARRIER_SECONDS} 秒。</p>
+        <p>本題血條隨時間下降，作答後停止攻防；下一題重新蓄力。每關可防禦一次，魔王蓄力亮紅時格擋可延長 5 秒並擋傷 3 秒，提前防禦延長 2 秒。</p>
       </div>
 
       <fieldset className={styles.subjectChoices}>
@@ -560,6 +627,7 @@ function CompletionSummary({
 }
 
 export function DailyPage() {
+  const answerBodyRef = useRef<HTMLDivElement>(null);
   const ready = useClientReady();
   const { state, dispatch, reportPersistence } = useAppState();
   const [selectedSubjects, setSelectedSubjects] = useState<SubjectId[]>(['law']);
@@ -659,6 +727,9 @@ export function DailyPage() {
     [bank.questions],
   );
   const currentQuestionId = session?.questionIds[session.currentIndex];
+  useEffect(() => {
+    if (answerBodyRef.current) answerBodyRef.current.scrollTop = 0;
+  }, [currentQuestionId]);
   const sourceCurrentQuestion = currentQuestionId
     ? questionById.get(currentQuestionId)
     : undefined;
@@ -739,7 +810,8 @@ export function DailyPage() {
           !current ||
           current.status !== 'practice' ||
           current.questionIds[current.currentIndex] !== currentQuestionId ||
-          current.answers[currentQuestionId]
+          current.answers[currentQuestionId] ||
+          (current.questionDeadlineMs ?? 0) > Date.now()
         ) {
           return current;
         }
@@ -806,6 +878,7 @@ export function DailyPage() {
         ...next,
         questionDeadlineMs: startedAt + DAILY_QUESTION_SECONDS * 1000,
       });
+      window.scrollTo({ top: 0, behavior: 'instant' });
     }
   }
 
@@ -826,6 +899,8 @@ export function DailyPage() {
 
   function answerQuestion() {
     if (!session || !currentQuestion || selectedOption === undefined || currentAnswer) return;
+    const answeredAtMs = Date.now();
+    if (getDailyRemainingTimeMs(session.questionDeadlineMs, answeredAtMs) <= 0) return;
     const correct = isQuestionCorrect(currentQuestion, selectedOption);
     dispatch({
       type: 'save-answer',
@@ -842,7 +917,7 @@ export function DailyPage() {
       [currentQuestion.id]: { selected: selectedOption, correct },
     };
     const barrierProtected = !correct && Boolean(
-      session.barrierUntilMs && session.barrierUntilMs > nowMs,
+      (session.barrierUntilMs ?? 0) > answeredAtMs || (session.guardUntilMs ?? 0) > answeredAtMs,
     );
     const nextProtectedWrongIds = barrierProtected
       ? [...new Set([...session.protectedWrongIds, currentQuestion.id])]
@@ -868,6 +943,12 @@ export function DailyPage() {
     });
   }
 
+  function guardAttack() {
+    const guardedAt = Date.now();
+    setNowMs(guardedAt);
+    setSession(current => current ? activateDailyGuard(current, guardedAt) : current);
+  }
+
   function activateRelic(type: DailyRelicType) {
     if (
       !session ||
@@ -879,7 +960,8 @@ export function DailyPage() {
     ) {
       return;
     }
-    const now = nowMs;
+    const now = Date.now();
+    if (getDailyRemainingTimeMs(session.questionDeadlineMs, now) <= 0) return;
     const nextRelicUses = { ...session.relicUses, [currentQuestionId]: type };
     const nextSession: DailyPracticeSession = {
       ...session,
@@ -948,6 +1030,7 @@ export function DailyPage() {
         ? undefined
         : Date.now() + DAILY_QUESTION_SECONDS * 1000,
       barrierUntilMs: enterReview || completed ? undefined : session.barrierUntilMs,
+      guardUntilMs: undefined,
     });
   }
 
@@ -978,6 +1061,7 @@ export function DailyPage() {
         ? undefined
         : Date.now() + DAILY_QUESTION_SECONDS * 1000,
       barrierUntilMs: undefined,
+      guardUntilMs: undefined,
     });
   }
 
@@ -1076,9 +1160,6 @@ export function DailyPage() {
     session.relicUses,
     session.protectedWrongIds,
   );
-  const currentRelicUse = currentQuestionId
-    ? session.relicUses[currentQuestionId]
-    : undefined;
   const remainingTimeMs = getDailyRemainingTimeMs(
     session.questionDeadlineMs,
     nowMs,
@@ -1090,19 +1171,25 @@ export function DailyPage() {
   const reviewWrongCount = session.unreviewedWrongIds.length;
   const reviewRank = reviewWrongCount === 0 ? 'S' : reviewWrongCount === 1 ? 'A' : 'B';
   return (
-    <section className={styles.daily}>
-      <DailyBattleScene
-        key={currentStageIndex}
-        session={session}
-        stageIndex={currentStageIndex}
-        remainingTimeMs={remainingTimeMs}
-        barrierActive={barrierActive}
-        answer={session.status === 'failed'
-          ? session.answers[session.questionIds[displayQuestionIndex]]
-          : currentAnswer}
-        lifeState={currentLifeState}
-      />
-      <div className={styles.playLayout}>
+    <section className={styles.daily} data-playing={session.status === 'practice' || undefined}>
+      <div className={styles.battleColumn}>
+        <DailyBattleScene
+          key={currentStageIndex}
+          session={session}
+          stageIndex={currentStageIndex}
+          remainingTimeMs={remainingTimeMs}
+          barrierActive={barrierActive}
+          answer={session.status === 'failed'
+            ? session.answers[session.questionIds[displayQuestionIndex]]
+            : currentAnswer}
+          lifeState={currentLifeState}
+          nowMs={nowMs}
+          onGuard={guardAttack}
+        />
+        {session.status === 'practice' ? (
+          <DailyRelicDock session={session} inventory={currentRelicInventory}
+            disabled={Boolean(currentAnswer)} onActivate={activateRelic} />
+        ) : null}
         {focusSubject ? (
           <aside className={styles.sidebar} aria-label="挑戰資訊">
             <ProgressOverview
@@ -1113,146 +1200,124 @@ export function DailyPage() {
             />
           </aside>
         ) : null}
-
-        <div className={styles.questionArea}>
-          {bank.status === 'loading' || (requiredQuestionMissing && bank.status !== 'error') ? (
-            <div className={styles.loading}><IconLoader2 size={26} /><span>正在載入今日題目…</span></div>
-          ) : bank.status === 'error' && requiredQuestionMissing ? (
-            <div className={styles.loading} role="alert">
-              <IconAlertTriangle size={26} />
-              <span>目前題目載入失敗，進度已保存。</span>
-              <Button onClick={bank.retry}>重新載入</Button>
-            </div>
-          ) : session.status === 'review' ? (
-            <section className={styles.review} aria-labelledby="daily-review-title">
-              <header>
-                <IconShieldX size={30} aria-hidden="true" />
-                <div>
-                  <span>STAGE {reviewLevel} CLEAR・{DAILY_STAGES[reviewLevel - 1].boss}</span>
-                  <h3 id="daily-review-title">
-                    {reviewWrongCount ? '完成錯題檢討再前進' : '無傷通關！'}
-                  </h3>
-                  <p>{reviewWrongCount
-                    ? '確認每題錯誤原因後，補上最後攻擊才能擊敗魔王。'
-                    : '本層全數答對，獲得額外寶具獎勵。'}</p>
-                </div>
-                <strong className={styles.stageRank} aria-label={`本層評級 ${reviewRank}`}>
-                  {reviewRank}
-                </strong>
-              </header>
-              {!reviewWrongCount ? (
-                <div className={styles.flawlessReward} role="status">
-                  <IconSparkles size={28} />
-                  <div>
-                    <strong>PERFECT CLEAR・寶具 +1</strong>
-                    <span>無傷突破第 {reviewLevel} 層，獎勵已放入寶具列。</span>
-                  </div>
-                </div>
-              ) : null}
-              <div className={styles.reviewList}>
-                {session.unreviewedWrongIds.map((questionId) => {
-                  const question = questionById.get(questionId);
-                  const answer = session.answers[questionId];
-                  if (!question || !answer) return null;
-                  const displayedQuestion = applyDailyOptionOrder(
-                    question,
-                    session.optionOrders[questionId],
-                  );
-                  const reviewed = session.reviewedWrongIds.includes(questionId);
-                  return (
-                    <article key={questionId} data-reviewed={reviewed || undefined}>
-                      <div className={styles.questionMeta}>
-                        <Tag>{question.year} 年</Tag>
-                        <Tag tone="green">{subjectShortName(question.subject)}</Tag>
-                        <Tag>{question.primaryCategory}</Tag>
-                        <Tag tone="purple">原題第 {question.questionNumber} 題</Tag>
-                      </div>
-                      <QuestionPrompt question={question} compact />
-                      <QuestionAnswerPanel
-                        question={displayedQuestion}
-                        selectedIndex={answer.selected}
-                        showStatusLabels
-                      />
-                      <DailyExplanation
-                        question={displayedQuestion}
-                        selectedIndex={answer.selected}
-                      />
-                      <div className={styles.noteEditor}>
-                        <ReviewNoteEditor question={displayedQuestion} />
-                      </div>
-                      <Button
-                        variant={reviewed ? 'secondary' : 'primary'}
-                        disabled={reviewed}
-                        onClick={() => markReviewed(questionId)}
-                      >
-                        <IconCircleCheck size={17} />
-                        {reviewed ? '已完成檢討' : '我已理解錯誤原因'}
-                      </Button>
-                    </article>
-                  );
-                })}
+      </div>
+      <div className={styles.questionArea}>
+        {bank.status === 'loading' || (requiredQuestionMissing && bank.status !== 'error') ? (
+          <div className={styles.loading}><IconLoader2 size={26} /><span>正在載入今日題目…</span></div>
+        ) : bank.status === 'error' && requiredQuestionMissing ? (
+          <div className={styles.loading} role="alert">
+            <IconAlertTriangle size={26} />
+            <span>目前題目載入失敗，進度已保存。</span>
+            <Button onClick={bank.retry}>重新載入</Button>
+          </div>
+        ) : session.status === 'review' ? (
+          <section className={styles.review} aria-labelledby="daily-review-title">
+            <header>
+              <IconShieldX size={30} aria-hidden="true" />
+              <div>
+                <span>STAGE {reviewLevel} CLEAR・{DAILY_STAGES[reviewLevel - 1].boss}</span>
+                <h3 id="daily-review-title">
+                  {reviewWrongCount ? '完成錯題檢討再前進' : '無傷通關！'}
+                </h3>
+                <p>{reviewWrongCount
+                  ? '確認每題錯誤原因後，補上最後攻擊才能擊敗魔王。'
+                  : '本層全數答對，獲得額外寶具獎勵。'}</p>
               </div>
-              <footer>
-                <span>{session.reviewedWrongIds.length} / {session.unreviewedWrongIds.length} 題已檢討</span>
-                <Button variant="primary" disabled={!reviewReady} onClick={finishReview}>
-                  繼續闖關
-                </Button>
-              </footer>
-            </section>
-          ) : (session.status === 'completed' || session.status === 'failed') && completedSubject ? (
-            <CompletionSummary
-              session={session}
-              subject={completedSubject}
-              questionById={questionById}
-              failed={session.status === 'failed'}
-              onSelectSubjects={() => returnToSelection(false)}
-            />
-          ) : currentQuestion ? (
-            <article
-              className={styles.challenge}
-              data-result={currentAnswer ? (currentAnswer.correct ? 'correct' : 'wrong') : undefined}
-            >
-              <header>
-                <div className={styles.questionMeta}>
-                  <Tag>本科第 {currentStageIndex + 1} 層・{currentStage.name}</Tag>
-                  <Tag tone="green">本層第 {currentStageQuestionIndex + 1} / {currentStage.questions} 題</Tag>
-                  <Tag>{subjectShortName(currentQuestion.subject)}</Tag>
-                  <Tag tone="purple">{currentQuestion.primaryCategory}</Tag>
-                </div>
-                <div className={styles.challengeActions}>
-                  <DifficultButton
-                    active={state.difficultQuestionIds.includes(currentQuestion.id)}
-                    onClick={() => dispatch({
-                      type: 'toggle-difficult',
-                      questionId: currentQuestion.id,
-                    })}
-                  />
-                  <strong>{currentSubjectQuestionIndex + 1} / {DAILY_QUESTIONS_PER_SUBJECT}</strong>
-                </div>
-              </header>
-              <section className={styles.relicDock} aria-label="本題寶具">
+              <strong className={styles.stageRank} aria-label={`本層評級 ${reviewRank}`}>
+                {reviewRank}
+              </strong>
+            </header>
+            {!reviewWrongCount ? (
+              <div className={styles.flawlessReward} role="status">
+                <IconSparkles size={28} />
                 <div>
-                  <span>RELIC DECK</span>
-                  <small>{currentRelicUse
-                    ? `本題已使用：${relicLabels[currentRelicUse].name}`
-                    : '每題最多使用 1 個寶具'}</small>
+                  <strong>PERFECT CLEAR・寶具 +1</strong>
+                  <span>無傷突破第 {reviewLevel} 層，獎勵已放入寶具列。</span>
                 </div>
-                {DAILY_RELIC_TYPES.map((type) => (
-                  <button
-                    key={type}
-                    type="button"
-                    title={relicLabels[type].description}
-                    aria-label={`${relicLabels[type].name}：${relicLabels[type].description}，持有 ${currentRelicInventory[type]} 個`}
-                    aria-pressed={currentRelicUse === type}
-                    disabled={Boolean(currentAnswer || currentRelicUse || currentRelicInventory[type] <= 0)}
-                    onClick={() => activateRelic(type)}
-                  >
-                    <RelicIcon type={type} />
-                    <span>{relicLabels[type].name}</span>
-                    <b>×{currentRelicInventory[type]}</b>
-                  </button>
-                ))}
-              </section>
+              </div>
+            ) : null}
+            <div className={styles.reviewList}>
+              {session.unreviewedWrongIds.map((questionId) => {
+                const question = questionById.get(questionId);
+                const answer = session.answers[questionId];
+                if (!question || !answer) return null;
+                const displayedQuestion = applyDailyOptionOrder(
+                  question,
+                  session.optionOrders[questionId],
+                );
+                const reviewed = session.reviewedWrongIds.includes(questionId);
+                return (
+                  <article key={questionId} data-reviewed={reviewed || undefined}>
+                    <div className={styles.questionMeta}>
+                      <Tag>{question.year} 年</Tag>
+                      <Tag tone="green">{subjectShortName(question.subject)}</Tag>
+                      <Tag>{question.primaryCategory}</Tag>
+                      <Tag tone="purple">原題第 {question.questionNumber} 題</Tag>
+                    </div>
+                    <QuestionPrompt question={question} compact />
+                    <QuestionAnswerPanel
+                      question={displayedQuestion}
+                      selectedIndex={answer.selected}
+                      showStatusLabels
+                    />
+                    <DailyExplanation
+                      question={displayedQuestion}
+                      selectedIndex={answer.selected}
+                    />
+                    <div className={styles.noteEditor}>
+                      <ReviewNoteEditor question={displayedQuestion} />
+                    </div>
+                    <Button
+                      variant={reviewed ? 'secondary' : 'primary'}
+                      disabled={reviewed}
+                      onClick={() => markReviewed(questionId)}
+                    >
+                      <IconCircleCheck size={17} />
+                      {reviewed ? '已完成檢討' : '我已理解錯誤原因'}
+                    </Button>
+                  </article>
+                );
+              })}
+            </div>
+            <footer>
+              <span>{session.reviewedWrongIds.length} / {session.unreviewedWrongIds.length} 題已檢討</span>
+              <Button variant="primary" disabled={!reviewReady} onClick={finishReview}>
+                繼續闖關
+              </Button>
+            </footer>
+          </section>
+        ) : (session.status === 'completed' || session.status === 'failed') && completedSubject ? (
+          <CompletionSummary
+            session={session}
+            subject={completedSubject}
+            questionById={questionById}
+            failed={session.status === 'failed'}
+            onSelectSubjects={() => returnToSelection(false)}
+          />
+        ) : currentQuestion ? (
+          <article
+            className={styles.challenge}
+            data-result={currentAnswer ? (currentAnswer.correct ? 'correct' : 'wrong') : undefined}
+          >
+            <header>
+              <div className={styles.questionMeta}>
+                <Tag>本科第 {currentStageIndex + 1} 層・{currentStage.name}</Tag>
+                <Tag tone="green">本層第 {currentStageQuestionIndex + 1} / {currentStage.questions} 題</Tag>
+                <Tag>{subjectShortName(currentQuestion.subject)}</Tag>
+                <Tag tone="purple">{currentQuestion.primaryCategory}</Tag>
+              </div>
+              <div className={styles.challengeActions}>
+                <DifficultButton
+                  active={state.difficultQuestionIds.includes(currentQuestion.id)}
+                  onClick={() => dispatch({
+                    type: 'toggle-difficult',
+                    questionId: currentQuestion.id,
+                  })}
+                />
+                <strong>{currentSubjectQuestionIndex + 1} / {DAILY_QUESTIONS_PER_SUBJECT}</strong>
+              </div>
+            </header>
+            <div className={styles.answerBody} ref={answerBodyRef} role="region" aria-label="題目與選項">
               <QuestionPrompt question={currentQuestion} />
               <OptionGroup
                 label={`每日練習第 ${currentSubjectQuestionIndex + 1} 題請選擇答案`}
@@ -1290,7 +1355,9 @@ export function DailyPage() {
                     <strong>{currentAnswer.timedOut
                       ? '時間到，已加入本輪檢討'
                       : session.protectedWrongIds.includes(currentQuestion.id)
-                        ? '結界擋下反擊，本題未扣血'
+                        ? session.guardUses?.[currentQuestion.id] === 'perfect'
+                          ? '完美格擋擋下反擊，本題未扣血'
+                          : '結界擋下反擊，本題未扣血'
                         : '答錯了，魔王反擊造成 1 格傷害'}</strong>
                     <span>正確答案：{formatCorrectAnswer(currentQuestion)}</span>
                   </div>
@@ -1304,21 +1371,23 @@ export function DailyPage() {
                   />
                 </div>
               ) : null}
-              <footer>
-                <span>
-                  <IconHeart size={15} /> {currentLifeState.remaining}/{currentLifeState.maximum}
-                  ・連對 {currentLifeState.streak}/{DAILY_HEAL_STREAK}
-                  ・本層評級 {reviewWrongCount === 0 ? 'S' : reviewRank}
-                </span>
-                {currentAnswer ? (
-                  <Button variant="primary" onClick={continuePractice}>下一題</Button>
-                ) : (
-                  <Button variant="primary" disabled={selectedOption === undefined} onClick={answerQuestion}>確認答案</Button>
-                )}
-              </footer>
-            </article>
-          ) : null}
-        </div>
+            </div>
+            <footer>
+              <span>
+                <IconHeart size={15} /> {currentLifeState.remaining}/{currentLifeState.maximum}
+                ・連對 {currentLifeState.streak}/{DAILY_HEAL_STREAK}
+                ・本層評級 {reviewWrongCount === 0 ? 'S' : reviewRank}
+              </span>
+              {currentAnswer ? (
+                <Button variant="primary" onClick={continuePractice}>下一題</Button>
+              ) : (
+                <Button variant="primary" aria-label="確認答案" disabled={selectedOption === undefined} onClick={answerQuestion}>
+                  <IconSwords size={18} /> 確認答案・出招
+                </Button>
+              )}
+            </footer>
+          </article>
+        ) : null}
       </div>
     </section>
   );
