@@ -151,7 +151,9 @@ function DailyBattleScene({
   const bossDamage = stageIds.filter((id) =>
     session.answers[id]?.correct || session.reviewedWrongIds.includes(id),
   ).length;
-  const bossRemaining = Math.max(0, stage.questions - bossDamage);
+  const victory = session.status === 'completed';
+  const bossRemaining = victory ? 0 : Math.max(0, stage.questions - bossDamage);
+  const defeated = bossRemaining === 0 && session.status !== 'failed';
   const remainingSeconds = Math.ceil(remainingTimeMs / 1000);
   const timerProgress = Math.min(
     100,
@@ -164,6 +166,9 @@ function DailyBattleScene({
       data-stage={stageIndex + 1}
       data-result={answer ? (answer.correct ? 'correct' : 'wrong') : undefined}
       data-barrier={barrierActive || undefined}
+      data-defeated={defeated || undefined}
+      data-victory={victory || undefined}
+      data-failed={session.status === 'failed' || undefined}
       aria-label={`第 ${stageIndex + 1} 層 ${stage.name}，對戰${stage.boss}`}
     >
       <header className={styles.battleHeading}>
@@ -182,6 +187,17 @@ function DailyBattleScene({
           <b className={styles.comboCallout}>{lifeState.streak} COMBO!</b>
         ) : null}
         <div className={styles.bossActor} data-boss={stageIndex + 1} aria-label={stage.boss} />
+        {defeated && !victory ? (
+          <strong className={styles.defeatBanner} role="status">魔王擊破！</strong>
+        ) : null}
+        {victory ? (
+          <div className={styles.victoryScene} role="status" aria-label="六層挑戰勝利">
+            <span className={styles.victoryStars} aria-hidden="true">✦ ✧ ✦ ✧ ✦</span>
+            <IconTrophy size={32} aria-hidden="true" />
+            <strong>VICTORY!</strong>
+            <span>六層制霸・天際龍王擊破</span>
+          </div>
+        ) : null}
       </div>
       <footer className={styles.battleMeters}>
         <div
@@ -1042,6 +1058,7 @@ export function DailyPage() {
   return (
     <section className={styles.daily}>
       <DailyBattleScene
+        key={currentStageIndex}
         session={session}
         stageIndex={currentStageIndex}
         remainingTimeMs={remainingTimeMs}

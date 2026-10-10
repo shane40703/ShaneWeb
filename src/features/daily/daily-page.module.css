@@ -14,7 +14,9 @@
 }
 
 .battleScene {
-  position: relative;
+  position: sticky;
+  top: 76px;
+  z-index: 20;
   overflow: hidden;
   border: 2px solid #18202b;
   border-radius: 12px;
@@ -27,8 +29,8 @@
 }
 
 .battleHeading {
-  min-height: 44px;
-  padding: 8px 14px;
+  min-height: 30px;
+  padding: 5px 12px;
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
@@ -59,23 +61,24 @@
 }
 
 .pixelArena {
-  min-height: clamp(220px, 28vw, 330px);
+  height: clamp(100px, 16vh, 145px);
+  min-height: 0;
   position: relative;
   isolation: isolate;
   overflow: hidden;
   background-image:
     linear-gradient(180deg, rgb(2 5 10 / 4%) 45%, rgb(2 5 10 / 56%) 100%),
-    url('/daily-game/architecture-stage-backgrounds.png');
+    url('/daily-game/stage-1.webp');
   background-repeat: no-repeat;
-  background-size: 100% 100%, 300% 200%;
-  background-position: center, 0 0;
+  background-size: 100% 100%, cover;
+  background-position: center, center 78%;
 }
 
-.battleScene[data-stage='2'] .pixelArena { background-position: center, 50% 0; }
-.battleScene[data-stage='3'] .pixelArena { background-position: center, 100% 0; }
-.battleScene[data-stage='4'] .pixelArena { background-position: center, 0 100%; }
-.battleScene[data-stage='5'] .pixelArena { background-position: center, 50% 100%; }
-.battleScene[data-stage='6'] .pixelArena { background-position: center, 100% 100%; }
+.battleScene[data-stage='2'] .pixelArena { background-image: linear-gradient(180deg, transparent, #02050a88), url('/daily-game/stage-2.webp'); }
+.battleScene[data-stage='3'] .pixelArena { background-image: linear-gradient(180deg, transparent, #02050a88), url('/daily-game/stage-3.webp'); }
+.battleScene[data-stage='4'] .pixelArena { background-image: linear-gradient(180deg, transparent, #02050a88), url('/daily-game/stage-4.webp'); }
+.battleScene[data-stage='5'] .pixelArena { background-image: linear-gradient(180deg, transparent, #02050a88), url('/daily-game/stage-5.webp'); }
+.battleScene[data-stage='6'] .pixelArena { background-image: linear-gradient(180deg, transparent, #02050a88), url('/daily-game/stage-6.webp'); }
 
 .scanlines {
   position: absolute;
@@ -92,14 +95,16 @@
 
 .heroActor,
 .bossActor {
-  width: clamp(180px, 29vw, 310px);
+  height: 100%;
+  width: auto;
   aspect-ratio: 1;
   position: absolute;
   z-index: 3;
-  bottom: -7%;
-  background-image: url('/daily-game/architect-boss-sprites.png');
+  bottom: 0;
+  background-image: url('/daily-game/architect-v2.webp');
   background-repeat: no-repeat;
-  background-size: 400% 200%;
+  background-size: contain;
+  background-position: center bottom;
   filter: drop-shadow(8px 10px 3px rgb(0 0 0 / 38%));
 }
 
@@ -111,19 +116,19 @@
 
 .bossActor {
   right: 2%;
-  background-position: 33.333% 0;
+  background-image: url('/daily-game/boss-1-v2.webp');
   animation: bossIdle 1.6s steps(2, end) infinite;
 }
 
-.bossActor[data-boss='2'] { background-position: 66.666% 0; }
-.bossActor[data-boss='3'] { background-position: 100% 0; }
-.bossActor[data-boss='4'] { background-position: 0 100%; }
-.bossActor[data-boss='5'] { background-position: 33.333% 100%; }
+.bossActor[data-boss='2'] { background-image: url('/daily-game/boss-2-v2.webp'); }
+.bossActor[data-boss='3'] { background-image: url('/daily-game/boss-3-v2.webp'); }
+.bossActor[data-boss='4'] { background-image: url('/daily-game/boss-4-v2.webp'); }
+.bossActor[data-boss='5'] { background-image: url('/daily-game/boss-5-v2.webp'); }
 .bossActor[data-boss='6'] {
-  width: clamp(235px, 38vw, 400px);
-  right: -1%;
-  bottom: -10%;
-  background-position: 66.666% 100%;
+  height: 110%;
+  right: 2%;
+  bottom: 0;
+  background-image: url('/daily-game/boss-6-v2.webp');
 }
 
 .battleScene[data-result='correct'] .heroActor {
@@ -191,8 +196,8 @@
 }
 
 .battleMeters {
-  min-height: 68px;
-  padding: 10px 14px;
+  min-height: 48px;
+  padding: 5px 12px;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
@@ -295,6 +300,75 @@
 
 .turnCounter {
   color: #ffd56a;
+}
+
+.battleScene[data-victory],
+.battleScene[data-failed] {
+  position: relative;
+  top: auto;
+  z-index: auto;
+}
+
+.battleScene[data-defeated] .bossActor {
+  animation: bossDefeat 950ms steps(6, end) forwards;
+}
+
+.defeatBanner {
+  position: absolute;
+  z-index: 7;
+  inset: 20% 20% auto;
+  padding: 8px;
+  color: #ffe479;
+  background: #101827cc;
+  border: 2px solid #ffe479;
+  text-align: center;
+  animation: rewardPop 500ms ease-out;
+}
+
+.victoryScene {
+  position: absolute;
+  z-index: 8;
+  inset: 0;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 3px;
+  background: linear-gradient(90deg, #08221b33, #061c2de6 35%, #061c2de6 65%, #08221b33);
+  color: #fff0ac;
+  text-shadow: 2px 2px #132025;
+  animation: victoryReveal 700ms steps(4, end) both;
+}
+
+.victoryScene strong {
+  font-family: ui-monospace, monospace;
+  font-size: clamp(22px, 3vw, 36px);
+  letter-spacing: .15em;
+}
+
+.victoryScene > span:last-child { font-size: 12px; }
+.victoryStars {
+  position: absolute;
+  inset: 12% 20% auto;
+  color: #fff392;
+  text-align: center;
+  letter-spacing: 1em;
+  animation: victorySparkle 1s steps(2, end) infinite;
+}
+
+@keyframes bossDefeat {
+  0% { opacity: 1; transform: translateY(0) rotate(0); }
+  30% { opacity: 1; transform: translateY(-10px) rotate(8deg); filter: brightness(2); }
+  70% { opacity: .7; transform: translateY(30px) rotate(22deg) scale(.85); }
+  100% { opacity: 0; transform: translateY(100px) rotate(35deg) scale(.5); }
+}
+
+@keyframes victoryReveal {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes victorySparkle {
+  50% { opacity: .4; transform: translateY(-4px); }
 }
 
 .gameHud {
@@ -1328,17 +1402,26 @@
   }
 
   .pixelArena {
-    min-height: 210px;
+    height: 90px;
+    min-height: 0;
   }
 
   .heroActor,
   .bossActor {
-    width: 210px;
+    width: auto;
+    height: 100%;
   }
 
-  .heroActor { left: -12%; }
-  .bossActor { right: -10%; }
-  .bossActor[data-boss='6'] { width: 250px; right: -12%; }
+  .heroActor { left: 0; }
+  .bossActor { right: 0; }
+  .bossActor[data-boss='6'] { width: auto; height: 110%; right: 0; }
+
+  .battleScene { top: 70px; }
+  .battleHeading { min-height: 26px; }
+  .battleHeading strong { grid-row: auto; grid-column: auto; font-size: 12px; }
+  .battleHeading small { display: none; }
+  .battleMeters { min-height: 42px; }
+  .victoryScene svg { display: none; }
 
   .battleMeters {
     grid-template-columns: 1fr 70px 1fr;
@@ -1457,7 +1540,15 @@
   .hitCallout,
   .damageCallout,
   .comboCallout,
-  .barrierAura {
+  .barrierAura,
+  .victoryScene,
+  .victoryStars,
+  .defeatBanner {
     animation: none;
+  }
+
+  .battleScene[data-defeated] .bossActor {
+    animation: none;
+    opacity: 0;
   }
 }

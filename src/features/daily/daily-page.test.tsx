@@ -156,6 +156,9 @@ describe('DailyPage', () => {
     renderDailyPage();
 
     expect(await screen.findByText('法規今日挑戰完成')).toBeInTheDocument();
+    expect(screen.getByLabelText('六層挑戰勝利')).toBeInTheDocument();
+    expect(screen.getByText('VICTORY!')).toBeInTheDocument();
+    expect(screen.getByLabelText(/砌縫咕嚕剩餘 0/)).toBeInTheDocument();
     expect(screen.getByText('本次錯題整理')).toBeInTheDocument();
     expect(screen.getByText('law 第 1 題')).toBeInTheDocument();
     expect(screen.getByText('正確答案：A')).toBeInTheDocument();
@@ -277,6 +280,7 @@ describe('DailyPage', () => {
 
     fireEvent.click((await screen.findByText('選項 A')).closest('label')!);
     fireEvent.click(screen.getByRole('button', { name: '確認答案' }));
+    expect(screen.getByText('魔王擊破！')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: '下一題' }));
     expect(await screen.findByRole('heading', { name: '無傷通關！' })).toBeInTheDocument();
     expect(screen.getByText('PERFECT CLEAR・寶具 +1')).toBeInTheDocument();
