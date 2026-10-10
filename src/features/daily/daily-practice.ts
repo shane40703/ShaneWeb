@@ -4,18 +4,23 @@ import type { Question, SubjectId } from '@/lib/types';
 export const DAILY_PRACTICE_STORAGE_KEY = 'shaneweb:daily-practice';
 export const DAILY_COMPLETION_STORAGE_KEY = 'shaneweb:daily-completions';
 export const DAILY_QUESTIONS_PER_SUBJECT = 50;
-export const DAILY_LEVEL_SIZE = 5;
-export const DAILY_MAX_LIVES = 10;
 export const DAILY_HEAL_STREAK = 3;
 export const DAILY_QUESTION_SECONDS = 60;
-export const DAILY_TIME_BONUS_SECONDS = 10;
-export const DAILY_FREEZE_SECONDS = 8;
+export const DAILY_BARRIER_SECONDS = 10;
+
+export const DAILY_STAGES = [
+  { name: '磚造巷口', boss: '砌縫咕嚕', questions: 5, wrongLimit: 3 },
+  { name: '鋼構工地', boss: '鋼梁鉗獸', questions: 6, wrongLimit: 3 },
+  { name: '鷹架高塔', boss: '鷹架巨像', questions: 7, wrongLimit: 4 },
+  { name: '玻璃天際', boss: '帷幕幽靈', questions: 8, wrongLimit: 4 },
+  { name: '混凝土要塞', boss: '鋼筋堡壘獸', questions: 9, wrongLimit: 3 },
+  { name: '終極屋頂', boss: '天際龍王', questions: 15, wrongLimit: 3 },
+] as const;
+export const DAILY_STAGE_COUNT = DAILY_STAGES.length;
 
 export const DAILY_RELIC_TYPES = [
   'eliminate',
-  'time',
-  'freeze',
-  'shield',
+  'barrier',
 ] as const;
 export type DailyRelicType = (typeof DAILY_RELIC_TYPES)[number];
 
@@ -33,8 +38,9 @@ export interface DailyPracticeSession {
   answers: Record<string, DailyPracticeAnswer>;
   eliminatedOptions: Record<string, number[]>;
   relicUses: Partial<Record<string, DailyRelicType>>;
+  protectedWrongIds: string[];
   questionDeadlineMs?: number;
-  timerFrozenUntilMs?: number;
+  barrierUntilMs?: number;
   currentIndex: number;
   unreviewedWrongIds: string[];
   reviewedWrongIds: string[];
@@ -59,28 +65,60 @@ export function countDailyWrongAnswers(
   return Object.values(answers).filter((answer) => !answer.correct).length;
 }
 
+export function getDailyStageIndex(questionIndex: number) {
+  const safeIndex = Math.max(0, Math.min(questionIndex, DAILY_QUESTIONS_PER_SUBJECT - 1));
+  let boundary = 0;
+  for (const [index, stage] of DAILY_STAGES.entries()) {
+    boundary += stage.questions;
+    if (safeIndex < boundary) return index;
+  }
+  return DAILY_STAGE_COUNT - 1;
+}
+
+export function getDailyStageBounds(stageIndex: number) {
+  const safeStageIndex = Math.max(0, Math.min(stageIndex, DAILY_STAGE_COUNT - 1));
+  const start = DAILY_STAGES
+    .slice(0, safeStageIndex)
+    .reduce((total, stage) => total + stage.questions, 0);
+  return { start, end: start + DAILY_STAGES[safeStageIndex].questions };
+}
+
 export function getDailyLifeState(
   questionIds: readonly string[],
   answers: Readonly<Record<string, DailyPracticeAnswer>>,
-  relicUses: Readonly<Partial<Record<string, DailyRelicType>>> = {},
+  protectedWrongIds: readonly string[] = [],
+  questionIndex = Math.max(0, Math.min(Object.keys(answers).length, questionIds.length - 1)),
 ) {
+  const protectedIds = new Set(protectedWrongIds);
   let streak = 0;
-  let remaining = DAILY_MAX_LIVES;
   let restored = 0;
   let relicsEarned = 0;
+  let currentStageIndex = 0;
+  let remaining: number = DAILY_STAGES[0].wrongLimit;
+  let maximum: number = remaining;
+  let failed = false;
   for (const [index, questionId] of questionIds.entries()) {
+    const stageIndex = getDailyStageIndex(index);
+    if (stageIndex !== currentStageIndex) {
+      currentStageIndex = stageIndex;
+      maximum = DAILY_STAGES[stageIndex].wrongLimit;
+      remaining = maximum;
+    }
     const answer = answers[questionId];
     if (!answer) break;
     if (!answer.correct) {
       streak = 0;
-      if (relicUses[questionId] !== 'shield') {
+      if (!protectedIds.has(questionId)) {
         remaining = Math.max(0, remaining - 1);
       }
-      if (remaining === 0) break;
+      if (remaining === 0) {
+        failed = true;
+        break;
+      }
     } else {
       streak += 1;
       if (streak === DAILY_HEAL_STREAK) {
-        if (remaining < DAILY_MAX_LIVES) {
+        if (remaining < maximum) {
           remaining += 1;
           restored += 1;
         } else {
@@ -90,24 +128,44 @@ export function getDailyLifeState(
       }
     }
 
-    const completedLevel = (index + 1) % DAILY_LEVEL_SIZE === 0;
-    if (completedLevel) {
-      const levelIds = questionIds.slice(index + 1 - DAILY_LEVEL_SIZE, index + 1);
-      if (levelIds.every((id) => answers[id]?.correct)) relicsEarned += 1;
+    const { start, end } = getDailyStageBounds(stageIndex);
+    if (index + 1 === end) {
+      const stageIds = questionIds.slice(start, end);
+      if (stageIds.every((id) => answers[id]?.correct)) relicsEarned += 1;
     }
   }
-  return { remaining, restored, streak, relicsEarned };
+
+  const requestedStageIndex = getDailyStageIndex(questionIndex);
+  if (!failed && requestedStageIndex !== currentStageIndex) {
+    currentStageIndex = requestedStageIndex;
+    maximum = DAILY_STAGES[currentStageIndex].wrongLimit;
+    remaining = maximum;
+  }
+  return {
+    remaining,
+    maximum,
+    restored,
+    streak,
+    relicsEarned,
+    stageIndex: currentStageIndex,
+    failed,
+  };
 }
 
 export function getDailyRelicInventory(
   questionIds: readonly string[],
   answers: Readonly<Record<string, DailyPracticeAnswer>>,
   relicUses: Readonly<Partial<Record<string, DailyRelicType>>> = {},
+  protectedWrongIds: readonly string[] = [],
 ) {
   const inventory = Object.fromEntries(
     DAILY_RELIC_TYPES.map((type) => [type, 0]),
   ) as Record<DailyRelicType, number>;
-  const { relicsEarned } = getDailyLifeState(questionIds, answers, relicUses);
+  const { relicsEarned } = getDailyLifeState(
+    questionIds,
+    answers,
+    protectedWrongIds,
+  );
   for (let index = 0; index < relicsEarned; index += 1) {
     inventory[DAILY_RELIC_TYPES[index % DAILY_RELIC_TYPES.length]] += 1;
   }
@@ -119,14 +177,10 @@ export function getDailyRelicInventory(
 
 export function getDailyRemainingTimeMs(
   deadlineMs: number | undefined,
-  frozenUntilMs: number | undefined,
   nowMs = Date.now(),
 ) {
   if (!deadlineMs) return DAILY_QUESTION_SECONDS * 1000;
-  const effectiveNow = frozenUntilMs && frozenUntilMs > nowMs
-    ? frozenUntilMs
-    : nowMs;
-  return Math.max(0, deadlineMs - effectiveNow);
+  return Math.max(0, deadlineMs - nowMs);
 }
 
 export function createDailyCompletionResult(
@@ -221,6 +275,7 @@ export function createDailyPracticeSession(
     answers: {},
     eliminatedOptions: {},
     relicUses: {},
+    protectedWrongIds: [],
     currentIndex: 0,
     unreviewedWrongIds: [],
     reviewedWrongIds: [],
@@ -249,6 +304,10 @@ export function parseDailyPracticeSession(
   }
   if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
   const session = value as Partial<DailyPracticeSession>;
+  const legacySession = session as Partial<DailyPracticeSession> & {
+    timerFrozenUntilMs?: number;
+    relicUses?: Record<string, string>;
+  };
   const subjects = Array.isArray(session.subjects)
     ? [...new Set(session.subjects.filter(isSubjectId))]
     : [];
@@ -296,12 +355,17 @@ export function parseDailyPracticeSession(
       ]];
     }),
   );
+  const storedRelicUses: Record<string, string> =
+    (value as { relicUses?: Record<string, string> }).relicUses ?? {};
   const relicUses: DailyPracticeSession['relicUses'] = Object.fromEntries(
-    Object.entries(session.relicUses ?? {}).filter(
-      ([id, type]) =>
-        questionIds.includes(id) &&
-        DAILY_RELIC_TYPES.includes(type as DailyRelicType),
-    ),
+    Object.entries(storedRelicUses).flatMap<[string, DailyRelicType]>(([id, type]) => {
+      if (!questionIds.includes(id)) return [];
+      if (type === 'eliminate') return [[id, 'eliminate']];
+      if (['barrier', 'time', 'freeze', 'shield'].includes(String(type))) {
+        return [[id, 'barrier']];
+      }
+      return [];
+    }),
   );
   const validWrongIds = (ids: unknown) =>
     Array.isArray(ids)
@@ -311,10 +375,27 @@ export function parseDailyPracticeSession(
       : [];
   const unreviewedWrongIds = validWrongIds(session.unreviewedWrongIds);
   const reviewedWrongIds = validWrongIds(session.reviewedWrongIds);
-  const lifeState = getDailyLifeState(questionIds, answers, relicUses);
+  const protectedWrongIds = [
+    ...new Set([
+      ...validWrongIds(session.protectedWrongIds),
+      ...Object.entries(storedRelicUses).flatMap(([id, type]) =>
+        type === 'shield' && answers[id] && !answers[id].correct ? [id] : [],
+      ),
+    ]),
+  ];
+  const currentIndex = Math.min(
+    Math.max(0, session.currentIndex as number),
+    questionIds.length,
+  );
+  const lifeState = getDailyLifeState(
+    questionIds,
+    answers,
+    protectedWrongIds,
+    Math.max(0, Math.min(currentIndex, questionIds.length - 1)),
+  );
   const status = session.status === 'completed'
     ? 'completed'
-    : lifeState.remaining <= 0
+    : lifeState.failed || Object.values(answers).some((answer) => answer.timedOut)
       ? 'failed'
       : session.status === 'failed'
         ? 'practice'
@@ -327,16 +408,16 @@ export function parseDailyPracticeSession(
     answers,
     eliminatedOptions,
     relicUses,
+    protectedWrongIds,
     questionDeadlineMs: Number.isFinite(session.questionDeadlineMs)
       ? session.questionDeadlineMs
       : undefined,
-    timerFrozenUntilMs: Number.isFinite(session.timerFrozenUntilMs)
-      ? session.timerFrozenUntilMs
+    barrierUntilMs: Number.isFinite(session.barrierUntilMs)
+      ? session.barrierUntilMs
+      : Number.isFinite(legacySession.timerFrozenUntilMs)
+        ? legacySession.timerFrozenUntilMs
       : undefined,
-    currentIndex: Math.min(
-      Math.max(0, session.currentIndex as number),
-      questionIds.length,
-    ),
+    currentIndex,
     unreviewedWrongIds,
     reviewedWrongIds,
     status,
@@ -389,8 +470,12 @@ export function shouldEnterDailyReview(
   wrongCount: number,
 ) {
   void wrongCount;
+  const stageBoundaries = DAILY_STAGES.reduce<number[]>((boundaries, stage) => {
+    boundaries.push((boundaries.at(-1) ?? 0) + stage.questions);
+    return boundaries;
+  }, []);
   return (
     nextIndex > 0 &&
-    (nextIndex % DAILY_LEVEL_SIZE === 0 || nextIndex >= total)
+    (stageBoundaries.includes(nextIndex) || nextIndex >= total)
   );
 }

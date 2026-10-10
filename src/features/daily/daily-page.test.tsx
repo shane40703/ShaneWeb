@@ -92,7 +92,7 @@ describe('DailyPage', () => {
   it('creates an independent fifty-question run for one selected subject', async () => {
     renderDailyPage();
 
-    expect(await screen.findByText('每日 50 題闖關')).toBeInTheDocument();
+    expect(await screen.findByText('建築師的六層試煉')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('radio', { name: /建築環境控制/ }));
     expect(screen.getByText('已選 環控・今日 50 題')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: /建立今日挑戰/ }));
@@ -104,7 +104,8 @@ describe('DailyPage', () => {
     expect(screen.getByText('測試分類')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '標記為難題' })).toBeInTheDocument();
     expect(screen.getByRole('timer', { name: /本題剩餘 \d+ 秒/ })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /護盾：本題答錯不扣血/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /結界：發動 10 秒防護罩/ })).toBeInTheDocument();
+    expect(screen.getByLabelText(/第 1 層 磚造巷口/)).toBeInTheDocument();
 
     const eliminate = screen.getByRole('button', { name: '刪去選項 A' });
     fireEvent.click(eliminate);
@@ -176,6 +177,7 @@ describe('DailyPage', () => {
     expect(screen.queryByText('答對了，繼續前進！')).not.toBeInTheDocument();
     expect(screen.queryByText(/XP/)).not.toBeInTheDocument();
     expect(screen.getByText('連擊 1 / 3')).toBeInTheDocument();
+    expect(screen.getByText('正確答案：A')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '下一題' })).toBeInTheDocument();
   });
 
@@ -200,8 +202,8 @@ describe('DailyPage', () => {
     fireEvent.click((await screen.findByText('選項 A')).closest('label')!);
     fireEvent.click(screen.getByRole('button', { name: '確認答案' }));
     expect(screen.getByText('血量 +1')).toBeInTheDocument();
-    expect(screen.getByText('目前血量 10 / 10')).toBeInTheDocument();
-    expect(screen.getByLabelText('剩餘 10 點血量')).toBeInTheDocument();
+    expect(screen.getByText('目前血量 3 / 3')).toBeInTheDocument();
+    expect(screen.getByLabelText('建築師剩餘 3 / 3 點血量')).toBeInTheDocument();
   });
 
   it('lets a full-health streak relic remove one incorrect option', async () => {
@@ -225,7 +227,35 @@ describe('DailyPage', () => {
     fireEvent.click(relic);
     expect(relic).toHaveAttribute('aria-pressed', 'true');
     expect(screen.getByRole('button', { name: '恢復選項 B' })).toHaveAttribute('aria-pressed', 'true');
-    expect(screen.getByRole('button', { name: /時砂：本題增加 10 秒/ })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /結界：發動 10 秒防護罩/ })).toBeDisabled();
+  });
+
+  it('lets the ten-second barrier block a boss counterattack', async () => {
+    const session = createDailyPracticeSession(
+      Array.from({ length: 6 }, (_, index) => question('law', index + 1)),
+      ['law'],
+      getTaipeiDateKey(),
+    );
+    session.questionIds.forEach((id) => {
+      session.optionOrders[id] = [0, 1, 2, 3];
+    });
+    session.currentIndex = 5;
+    session.questionIds.slice(0, 5).forEach((id) => {
+      session.answers[id] = { selected: 0, correct: true };
+    });
+    window.localStorage.setItem(DAILY_PRACTICE_STORAGE_KEY, JSON.stringify(session));
+
+    renderDailyPage();
+
+    const barrier = await screen.findByRole('button', {
+      name: /結界：發動 10 秒防護罩.*持有 1 個/,
+    });
+    fireEvent.click(barrier);
+    fireEvent.click(screen.getByText('選項 B').closest('label')!);
+    fireEvent.click(screen.getByRole('button', { name: '確認答案' }));
+
+    expect(screen.getByText('結界擋下反擊，本題未扣血')).toBeInTheDocument();
+    expect(screen.getByLabelText('建築師剩餘 3 / 3 點血量')).toBeInTheDocument();
   });
 
   it('shows a flawless stage clear and awards a relic', async () => {
@@ -253,7 +283,7 @@ describe('DailyPage', () => {
     expect(screen.getByLabelText('本層評級 S')).toBeInTheDocument();
   });
 
-  it('marks an unanswered question wrong when its timer expires', async () => {
+  it('ends the run immediately when the timer expires', async () => {
     const session = createDailyPracticeSession(
       [question('law', 1)],
       ['law'],
@@ -265,34 +295,33 @@ describe('DailyPage', () => {
 
     renderDailyPage();
 
-    expect(await screen.findByText('時間到，已加入本輪檢討', {}, { timeout: 1500 })).toBeInTheDocument();
-    expect(screen.getByLabelText('剩餘 9 點血量')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '下一題' })).toBeInTheDocument();
+    expect(await screen.findByText('法規今日挑戰結束', {}, { timeout: 1500 })).toBeInTheDocument();
+    expect(screen.getByText(/完成 1 題，答對 0 題、答錯 1 題/)).toBeInTheDocument();
   });
 
-  it('ends the current run when the tenth life is lost', async () => {
+  it('ends the current run when the third first-stage life is lost', async () => {
     const session = createDailyPracticeSession(
-      Array.from({ length: 10 }, (_, index) => question('law', index + 1)),
+      Array.from({ length: 5 }, (_, index) => question('law', index + 1)),
       ['law'],
       getTaipeiDateKey(),
     );
     session.questionIds.forEach((id) => {
       session.optionOrders[id] = [0, 1, 2, 3];
     });
-    session.currentIndex = 9;
-    session.questionIds.slice(0, 9).forEach((id) => {
+    session.currentIndex = 2;
+    session.questionIds.slice(0, 2).forEach((id) => {
       session.answers[id] = { selected: 1, correct: false };
     });
-    session.unreviewedWrongIds = session.questionIds.slice(5, 9);
+    session.unreviewedWrongIds = session.questionIds.slice(0, 2);
     window.localStorage.setItem(DAILY_PRACTICE_STORAGE_KEY, JSON.stringify(session));
 
     renderDailyPage();
 
-    expect(await screen.findByLabelText('剩餘 1 點血量')).toBeInTheDocument();
+    expect(await screen.findByLabelText('建築師剩餘 1 / 3 點血量')).toBeInTheDocument();
     fireEvent.click((await screen.findByText('選項 B')).closest('label')!);
     fireEvent.click(screen.getByRole('button', { name: '確認答案' }));
     expect(await screen.findByText('法規今日挑戰結束')).toBeInTheDocument();
-    expect(screen.getByText(/完成 10 題，答對 0 題、答錯 10 題/)).toBeInTheDocument();
+    expect(screen.getByText(/完成 3 題，答對 0 題、答錯 3 題/)).toBeInTheDocument();
   });
 
   it('does not end when the third total mistake is only the first mistake of a new level', async () => {
@@ -314,12 +343,12 @@ describe('DailyPage', () => {
 
     renderDailyPage();
 
-    expect(await screen.findByLabelText('剩餘 9 點血量')).toBeInTheDocument();
+    expect(await screen.findByLabelText('建築師剩餘 3 / 3 點血量')).toBeInTheDocument();
     fireEvent.click(screen.getByText('選項 B').closest('label')!);
     fireEvent.click(screen.getByRole('button', { name: '確認答案' }));
 
     expect(screen.queryByText('法規今日挑戰結束')).not.toBeInTheDocument();
-    expect(screen.getByLabelText('剩餘 8 點血量')).toBeInTheDocument();
+    expect(screen.getByLabelText('建築師剩餘 2 / 3 點血量')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '下一題' })).toBeInTheDocument();
   });
 

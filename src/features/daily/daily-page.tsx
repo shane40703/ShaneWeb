@@ -4,7 +4,6 @@ import {
   IconCalendarClock,
   IconCircleCheck,
   IconClock,
-  IconClockPlus,
   IconEraser,
   IconFlag3,
   IconHeart,
@@ -14,7 +13,6 @@ import {
   IconShieldCheck,
   IconShieldX,
   IconShieldPlus,
-  IconSnowflake,
   IconSparkles,
   IconTargetArrow,
   IconTrophy,
@@ -43,19 +41,19 @@ import {
   applyDailyOptionOrder,
   createDailyCompletionResult,
   createDailyPracticeSession,
+  DAILY_BARRIER_SECONDS,
   DAILY_COMPLETION_STORAGE_KEY,
-  DAILY_FREEZE_SECONDS,
   DAILY_HEAL_STREAK,
-  DAILY_LEVEL_SIZE,
-  DAILY_MAX_LIVES,
   DAILY_PRACTICE_STORAGE_KEY,
   DAILY_QUESTION_SECONDS,
   DAILY_QUESTIONS_PER_SUBJECT,
   DAILY_RELIC_TYPES,
-  DAILY_TIME_BONUS_SECONDS,
+  DAILY_STAGES,
   getDailyLifeState,
   getDailyRelicInventory,
   getDailyRemainingTimeMs,
+  getDailyStageBounds,
+  getDailyStageIndex,
   getTaipeiDateKey,
   getMillisecondsUntilTaipeiMidnight,
   parseDailyCompletionRecord,
@@ -68,30 +66,16 @@ import {
 } from './daily-practice';
 import styles from './daily-page.module.css';
 
-const DAILY_STAGE_NAMES = [
-  '石板之門',
-  '法典迴廊',
-  '迷霧工坊',
-  '構造高塔',
-  '守門試煉',
-  '深層書庫',
-  '尺度迷宮',
-  '職人熔爐',
-  '審查天台',
-  '終極殿堂',
-];
-
 const relicLabels: Record<DailyRelicType, { name: string; description: string }> = {
   eliminate: { name: '破除', description: '自動刪除一個錯誤選項' },
-  time: { name: '時砂', description: `本題增加 ${DAILY_TIME_BONUS_SECONDS} 秒` },
-  freeze: { name: '凝時', description: `暫停倒數 ${DAILY_FREEZE_SECONDS} 秒` },
-  shield: { name: '護盾', description: '本題答錯不扣血' },
+  barrier: {
+    name: '結界',
+    description: `發動 ${DAILY_BARRIER_SECONDS} 秒防護罩，擋下魔王攻擊並延長倒數`,
+  },
 };
 
 function RelicIcon({ type, size = 17 }: { type: DailyRelicType; size?: number }) {
   if (type === 'eliminate') return <IconEraser size={size} />;
-  if (type === 'time') return <IconClockPlus size={size} />;
-  if (type === 'freeze') return <IconSnowflake size={size} />;
   return <IconShieldCheck size={size} />;
 }
 
@@ -145,6 +129,96 @@ function DailyExplanation({
   );
 }
 
+function DailyBattleScene({
+  session,
+  stageIndex,
+  remainingTimeMs,
+  barrierActive,
+  answer,
+  lifeState,
+}: {
+  session: DailyPracticeSession;
+  stageIndex: number;
+  remainingTimeMs: number;
+  barrierActive: boolean;
+  answer: DailyPracticeSession['answers'][string] | undefined;
+  lifeState: ReturnType<typeof getDailyLifeState>;
+}) {
+  const stage = DAILY_STAGES[stageIndex];
+  const { start, end } = getDailyStageBounds(stageIndex);
+  const stageIds = session.questionIds.slice(start, end);
+  const answered = stageIds.filter((id) => session.answers[id]).length;
+  const bossDamage = stageIds.filter((id) =>
+    session.answers[id]?.correct || session.reviewedWrongIds.includes(id),
+  ).length;
+  const bossRemaining = Math.max(0, stage.questions - bossDamage);
+  const remainingSeconds = Math.ceil(remainingTimeMs / 1000);
+  const timerProgress = Math.min(
+    100,
+    (remainingTimeMs / (DAILY_QUESTION_SECONDS * 1000)) * 100,
+  );
+
+  return (
+    <section
+      className={styles.battleScene}
+      data-stage={stageIndex + 1}
+      data-result={answer ? (answer.correct ? 'correct' : 'wrong') : undefined}
+      data-barrier={barrierActive || undefined}
+      aria-label={`第 ${stageIndex + 1} 層 ${stage.name}，對戰${stage.boss}`}
+    >
+      <header className={styles.battleHeading}>
+        <span>STAGE {stageIndex + 1} / {DAILY_STAGES.length}</span>
+        <strong>{stage.name}</strong>
+        <small>{stageIndex === DAILY_STAGES.length - 1 ? 'FINAL BOSS' : 'BOSS BATTLE'}</small>
+      </header>
+      <div className={styles.pixelArena}>
+        <span className={styles.scanlines} aria-hidden="true" />
+        <div className={styles.heroActor} aria-label="建築師勇者">
+          {barrierActive ? <i className={styles.barrierAura} /> : null}
+        </div>
+        {answer?.correct ? <b className={styles.hitCallout}>MEASURE HIT!</b> : null}
+        {answer && !answer.correct ? <b className={styles.damageCallout}>COUNTER!</b> : null}
+        {lifeState.streak >= 2 ? (
+          <b className={styles.comboCallout}>{lifeState.streak} COMBO!</b>
+        ) : null}
+        <div className={styles.bossActor} data-boss={stageIndex + 1} aria-label={stage.boss} />
+      </div>
+      <footer className={styles.battleMeters}>
+        <div
+          className={styles.fighterMeter}
+          aria-label={`建築師剩餘 ${lifeState.remaining} / ${lifeState.maximum} 點血量`}
+        >
+          <span><b>建築師</b><small>HP {lifeState.remaining} / {lifeState.maximum}</small></span>
+          <i><b style={{ width: `${(lifeState.remaining / lifeState.maximum) * 100}%` }} /></i>
+        </div>
+        {session.status === 'practice' && !answer ? (
+          <div
+            className={styles.battleTimer}
+            data-danger={remainingSeconds <= 10 || undefined}
+            data-barrier={barrierActive || undefined}
+            role="timer"
+            aria-label={`本題剩餘 ${remainingSeconds} 秒`}
+          >
+            {barrierActive ? <IconShieldCheck size={18} /> : <IconClock size={18} />}
+            <strong>{remainingSeconds}s</strong>
+            <i style={{ '--timer-progress': `${timerProgress}%` } as CSSProperties} />
+          </div>
+        ) : (
+          <div className={styles.turnCounter}>TURN {Math.min(answered, stage.questions)} / {stage.questions}</div>
+        )}
+        <div
+          className={styles.fighterMeter}
+          data-boss-meter
+          aria-label={`${stage.boss}剩餘 ${bossRemaining} / ${stage.questions} 點血量`}
+        >
+          <span><b>{stage.boss}</b><small>HP {bossRemaining} / {stage.questions}</small></span>
+          <i><b style={{ width: `${(bossRemaining / stage.questions) * 100}%` }} /></i>
+        </div>
+      </footer>
+    </section>
+  );
+}
+
 function DailySetup({
   selectedSubjects,
   completionResults,
@@ -183,17 +257,17 @@ function DailySetup({
         </span>
         <div>
           <span className={styles.eyebrow}>DAILY CHALLENGE</span>
-          <h2 id="daily-practice-title">每日 50 題闖關</h2>
-          <p>選擇一個科目展開十層挑戰；限時作答、維持連擊並蒐集寶具突破關卡。</p>
+          <h2 id="daily-practice-title">建築師的六層試煉</h2>
+          <p>拿起捲尺，在 50 題內穿越六座建築戰場，擊敗從砌縫咕嚕到天際龍王的建築系魔王。</p>
         </div>
       </div>
 
       <div className={styles.rules} aria-label="每日練習規則">
         <div><strong>50</strong><span>每科題數</span></div>
-        <div><strong>5</strong><span>每層題數</span></div>
-        <div><strong>{DAILY_MAX_LIVES}</strong><span>初始血量</span></div>
+        <div><strong>6</strong><span>建築戰場</span></div>
+        <div><strong>3–4</strong><span>每層耐久</span></div>
         <div><strong>{DAILY_QUESTION_SECONDS}s</strong><span>每題限時</span></div>
-        <p>答錯或逾時扣 1 點血；連對 {DAILY_HEAL_STREAK} 題可回血，滿血時改得寶具；每層無傷通關再獎勵 1 個寶具。</p>
+        <p>各層題數 5／6／7／8／9／15；答錯會遭魔王反擊，連對 {DAILY_HEAL_STREAK} 題回復 1 格。倒數歸零立即戰敗，防護結界可擋攻並延長 {DAILY_BARRIER_SECONDS} 秒。</p>
       </div>
 
       <fieldset className={styles.subjectChoices}>
@@ -284,38 +358,38 @@ function ProgressOverview({
   const lifeState = getDailyLifeState(
     session.questionIds,
     session.answers,
-    session.relicUses,
+    session.protectedWrongIds,
+    Math.max(0, Math.min(session.currentIndex, session.questionIds.length - 1)),
   );
   const relicInventory = getDailyRelicInventory(
     session.questionIds,
     session.answers,
     session.relicUses,
+    session.protectedWrongIds,
   );
   const relicCount = Object.values(relicInventory).reduce((sum, count) => sum + count, 0);
   const currentSubjectPosition = Math.min(
     questionIds.filter((id) => session.questionIds.indexOf(id) < session.currentIndex).length,
     Math.max(0, questionIds.length - 1),
   );
-  const currentLevel = Math.floor(currentSubjectPosition / DAILY_LEVEL_SIZE);
-  const levelCount = Math.ceil(questionIds.length / DAILY_LEVEL_SIZE);
+  const currentLevel = getDailyStageIndex(currentSubjectPosition);
   const subjectFinished = session.status === 'completed' || session.status === 'failed';
 
   return (
     <section className={styles.progressOverview} aria-label="每日練習進度與關卡">
       <ol className={styles.levelMap} aria-label={`${subjectShortName(subject)}關卡進度`}>
-        {Array.from({ length: levelCount }, (_, index) => {
-          const levelQuestionIds = questionIds.slice(
-            index * DAILY_LEVEL_SIZE,
-            (index + 1) * DAILY_LEVEL_SIZE,
-          );
-          const complete = levelQuestionIds.every((id) => session.answers[id]);
+        {DAILY_STAGES.map((stage, index) => {
+          const { start, end } = getDailyStageBounds(index);
+          const levelQuestionIds = questionIds.slice(start, end);
+          const complete = levelQuestionIds.length === stage.questions &&
+            levelQuestionIds.every((id) => session.answers[id]);
           const active = !subjectFinished && index === currentLevel;
           return (
             <li
               key={index}
               data-complete={complete || undefined}
               data-active={active || undefined}
-              data-boss={(index + 1) % 5 === 0 || undefined}
+              data-boss
             >
               <span>
                 {complete ? (
@@ -326,7 +400,7 @@ function ProgressOverview({
                   <IconLock size={14} />
                 )}
               </span>
-              <small>{DAILY_STAGE_NAMES[index] ?? `${subjectShortName(subject)} ${index + 1}`}</small>
+              <small>{stage.name}</small>
             </li>
           );
         })}
@@ -578,10 +652,9 @@ export function DailyPage() {
         current.questionIds[current.currentIndex] === currentQuestionId &&
         !current.answers[currentQuestionId] &&
         !current.questionDeadlineMs
-        ? {
+          ? {
             ...current,
             questionDeadlineMs: startedAt + DAILY_QUESTION_SECONDS * 1000,
-            timerFrozenUntilMs: undefined,
           }
         : current);
     });
@@ -627,19 +700,14 @@ export function DailyPage() {
         const nextWrongIds = [
           ...new Set([...current.unreviewedWrongIds, currentQuestionId]),
         ];
-        const failed = getDailyLifeState(
-          current.questionIds,
-          nextAnswers,
-          current.relicUses,
-        ).remaining <= 0;
         return {
           ...current,
           answers: nextAnswers,
           unreviewedWrongIds: nextWrongIds,
-          currentIndex: failed ? current.currentIndex + 1 : current.currentIndex,
-          status: failed ? 'failed' : current.status,
+          currentIndex: current.currentIndex + 1,
+          status: 'failed',
           questionDeadlineMs: undefined,
-          timerFrozenUntilMs: undefined,
+          barrierUntilMs: undefined,
         };
       });
     }, delay);
@@ -723,20 +791,30 @@ export function DailyPage() {
       ...session.answers,
       [currentQuestion.id]: { selected: selectedOption, correct },
     };
+    const barrierProtected = !correct && Boolean(
+      session.barrierUntilMs && session.barrierUntilMs > nowMs,
+    );
+    const nextProtectedWrongIds = barrierProtected
+      ? [...new Set([...session.protectedWrongIds, currentQuestion.id])]
+      : session.protectedWrongIds;
     const nextLifeState = getDailyLifeState(
       session.questionIds,
       nextAnswers,
-      session.relicUses,
+      nextProtectedWrongIds,
+      session.currentIndex,
     );
-    const failed = nextLifeState.remaining <= 0;
+    const failed = nextLifeState.failed;
     setSession({
       ...session,
       answers: nextAnswers,
+      protectedWrongIds: nextProtectedWrongIds,
       unreviewedWrongIds: nextWrongIds,
       currentIndex: failed ? session.currentIndex + 1 : session.currentIndex,
       status: failed ? 'failed' : session.status,
       questionDeadlineMs: undefined,
-      timerFrozenUntilMs: undefined,
+      barrierUntilMs: session.barrierUntilMs && session.barrierUntilMs > nowMs
+        ? session.barrierUntilMs
+        : undefined,
     });
   }
 
@@ -769,19 +847,13 @@ export function DailyPage() {
         ...session.eliminatedOptions,
         [currentQuestionId]: [...eliminated, target],
       };
-    } else if (type === 'time') {
+    } else if (type === 'barrier') {
       const deadline = Math.max(
         session.questionDeadlineMs ?? now + DAILY_QUESTION_SECONDS * 1000,
         now,
       );
-      nextSession.questionDeadlineMs = deadline + DAILY_TIME_BONUS_SECONDS * 1000;
-    } else if (type === 'freeze') {
-      const deadline = Math.max(
-        session.questionDeadlineMs ?? now + DAILY_QUESTION_SECONDS * 1000,
-        now,
-      );
-      nextSession.questionDeadlineMs = deadline + DAILY_FREEZE_SECONDS * 1000;
-      nextSession.timerFrozenUntilMs = now + DAILY_FREEZE_SECONDS * 1000;
+      nextSession.questionDeadlineMs = deadline + DAILY_BARRIER_SECONDS * 1000;
+      nextSession.barrierUntilMs = now + DAILY_BARRIER_SECONDS * 1000;
     }
 
     setNowMs(now);
@@ -825,7 +897,7 @@ export function DailyPage() {
       questionDeadlineMs: enterReview || completed
         ? undefined
         : Date.now() + DAILY_QUESTION_SECONDS * 1000,
-      timerFrozenUntilMs: undefined,
+      barrierUntilMs: enterReview || completed ? undefined : session.barrierUntilMs,
     });
   }
 
@@ -855,7 +927,7 @@ export function DailyPage() {
       questionDeadlineMs: completed
         ? undefined
         : Date.now() + DAILY_QUESTION_SECONDS * 1000,
-      timerFrozenUntilMs: undefined,
+      barrierUntilMs: undefined,
     });
   }
 
@@ -912,15 +984,32 @@ export function DailyPage() {
         .filter((id) => questionById.get(id)?.subject === currentQuestion.subject)
         .length
     : 0;
+  const displayQuestionIndex = session.status === 'review' || session.status === 'completed'
+    ? Math.max(0, session.currentIndex - 1)
+    : Math.max(0, Math.min(session.currentIndex, session.questionIds.length - 1));
+  const currentStageIndex = getDailyStageIndex(displayQuestionIndex);
+  const currentStage = DAILY_STAGES[currentStageIndex];
+  const currentStageBounds = getDailyStageBounds(currentStageIndex);
+  const currentStageQuestionIndex = Math.max(
+    0,
+    Math.min(currentStage.questions - 1, session.currentIndex - currentStageBounds.start),
+  );
   const currentLifeState = getDailyLifeState(
     session.questionIds,
     session.answers,
-    session.relicUses,
+    session.protectedWrongIds,
+    displayQuestionIndex,
   );
+  const previousAnswers = currentQuestionId
+    ? Object.fromEntries(
+        Object.entries(session.answers).filter(([id]) => id !== currentQuestionId),
+      )
+    : session.answers;
   const previousLifeState = getDailyLifeState(
-    session.questionIds.slice(0, session.currentIndex),
-    session.answers,
-    session.relicUses,
+    session.questionIds,
+    previousAnswers,
+    session.protectedWrongIds.filter((id) => id !== currentQuestionId),
+    displayQuestionIndex,
   );
   const completedHealStreak = Boolean(
     currentAnswer?.correct && previousLifeState.streak === DAILY_HEAL_STREAK - 1,
@@ -935,64 +1024,31 @@ export function DailyPage() {
     session.questionIds,
     session.answers,
     session.relicUses,
+    session.protectedWrongIds,
   );
   const currentRelicUse = currentQuestionId
     ? session.relicUses[currentQuestionId]
     : undefined;
   const remainingTimeMs = getDailyRemainingTimeMs(
     session.questionDeadlineMs,
-    session.timerFrozenUntilMs,
     nowMs,
   );
-  const remainingSeconds = Math.ceil(remainingTimeMs / 1000);
-  const timerFrozen = Boolean(
-    session.timerFrozenUntilMs && session.timerFrozenUntilMs > nowMs,
+  const barrierActive = Boolean(
+    session.barrierUntilMs && session.barrierUntilMs > nowMs,
   );
-  const reviewLevel = Math.max(1, Math.ceil(session.currentIndex / DAILY_LEVEL_SIZE));
+  const reviewLevel = getDailyStageIndex(Math.max(0, session.currentIndex - 1)) + 1;
   const reviewWrongCount = session.unreviewedWrongIds.length;
   const reviewRank = reviewWrongCount === 0 ? 'S' : reviewWrongCount === 1 ? 'A' : 'B';
   return (
     <section className={styles.daily}>
-      <section className={styles.gameHud} aria-label="闖關狀態">
-        <div className={styles.lifeBar} aria-label={`剩餘 ${currentLifeState.remaining} 點血量`}>
-          <span>HP</span>
-          <div>
-            {Array.from({ length: DAILY_MAX_LIVES }, (_, index) => (
-              <IconHeart
-                key={index}
-                size={20}
-                data-active={index < currentLifeState.remaining || undefined}
-                aria-hidden="true"
-              />
-            ))}
-          </div>
-          <strong>{currentLifeState.remaining}/{DAILY_MAX_LIVES}</strong>
-        </div>
-        {session.status === 'practice' && currentQuestion && !currentAnswer ? (
-          <div
-            className={styles.timer}
-            data-danger={remainingSeconds <= 10 || undefined}
-            data-frozen={timerFrozen || undefined}
-            role="timer"
-            aria-label={`本題剩餘 ${remainingSeconds} 秒`}
-          >
-            {timerFrozen ? <IconSnowflake size={18} /> : <IconClock size={18} />}
-            <strong>{remainingSeconds}s</strong>
-            <span>{timerFrozen ? 'TIME FREEZE' : 'TIME LEFT'}</span>
-            <i style={{
-              '--timer-progress': `${Math.min(
-                100,
-                (remainingTimeMs / (DAILY_QUESTION_SECONDS * 1000)) * 100,
-              )}%`,
-            } as CSSProperties} />
-          </div>
-        ) : (
-          <div className={styles.stageBadge}>
-            <span>STAGE</span>
-            <strong>{reviewLevel}</strong>
-          </div>
-        )}
-      </section>
+      <DailyBattleScene
+        session={session}
+        stageIndex={currentStageIndex}
+        remainingTimeMs={remainingTimeMs}
+        barrierActive={barrierActive}
+        answer={currentAnswer}
+        lifeState={currentLifeState}
+      />
       {focusSubject ? (
         <ProgressOverview
           session={session}
@@ -1015,12 +1071,12 @@ export function DailyPage() {
           <header>
             <IconShieldX size={30} aria-hidden="true" />
             <div>
-              <span>STAGE {reviewLevel} CLEAR・{DAILY_STAGE_NAMES[reviewLevel - 1]}</span>
+              <span>STAGE {reviewLevel} CLEAR・{DAILY_STAGES[reviewLevel - 1].boss}</span>
               <h3 id="daily-review-title">
                 {reviewWrongCount ? '完成錯題檢討再前進' : '無傷通關！'}
               </h3>
               <p>{reviewWrongCount
-                ? '確認每題錯誤原因後，才能進入下一層。'
+                ? '確認每題錯誤原因後，補上最後攻擊才能擊敗魔王。'
                 : '本層全數答對，獲得額外寶具獎勵。'}</p>
             </div>
             <strong className={styles.stageRank} aria-label={`本層評級 ${reviewRank}`}>
@@ -1101,8 +1157,8 @@ export function DailyPage() {
         >
           <header>
             <div className={styles.questionMeta}>
-              <Tag>本科第 {Math.floor(currentSubjectQuestionIndex / DAILY_LEVEL_SIZE) + 1} 層</Tag>
-              <Tag tone="green">本層第 {(currentSubjectQuestionIndex % DAILY_LEVEL_SIZE) + 1} / {DAILY_LEVEL_SIZE} 題</Tag>
+              <Tag>本科第 {currentStageIndex + 1} 層・{currentStage.name}</Tag>
+              <Tag tone="green">本層第 {currentStageQuestionIndex + 1} / {currentStage.questions} 題</Tag>
               <Tag>{subjectShortName(currentQuestion.subject)}</Tag>
               <Tag tone="purple">{currentQuestion.primaryCategory}</Tag>
             </div>
@@ -1165,7 +1221,7 @@ export function DailyPage() {
                 {relicRewardCount
                   ? '滿血連擊或無傷通關獎勵'
                   : completedHealStreak
-                  ? `目前血量 ${currentLifeState.remaining} / ${DAILY_MAX_LIVES}`
+                  ? `目前血量 ${currentLifeState.remaining} / ${currentLifeState.maximum}`
                   : `再答對 ${DAILY_HEAL_STREAK - currentLifeState.streak} 題回復血量`}
               </span>
             </div>
@@ -1176,16 +1232,24 @@ export function DailyPage() {
               <div>
                 <strong>{currentAnswer.timedOut
                   ? '時間到，已加入本輪檢討'
-                  : session.relicUses[currentQuestion.id] === 'shield'
-                    ? '護盾生效，答錯但未扣血'
-                    : '答錯了，血量 -1，已加入本輪檢討'}</strong>
+                  : session.protectedWrongIds.includes(currentQuestion.id)
+                    ? '結界擋下反擊，本題未扣血'
+                    : '答錯了，魔王反擊造成 1 格傷害'}</strong>
                 <span>正確答案：{formatCorrectAnswer(currentQuestion)}</span>
               </div>
             </div>
           ) : null}
+          {currentAnswer ? (
+            <div className={styles.instantExplanation}>
+              <DailyExplanation
+                question={currentQuestion}
+                selectedIndex={currentAnswer.selected}
+              />
+            </div>
+          ) : null}
           <footer>
             <span>
-              <IconHeart size={15} /> {currentLifeState.remaining}/{DAILY_MAX_LIVES}
+              <IconHeart size={15} /> {currentLifeState.remaining}/{currentLifeState.maximum}
               ・連對 {currentLifeState.streak}/{DAILY_HEAL_STREAK}
               ・本層評級 {reviewWrongCount === 0 ? 'S' : reviewRank}
             </span>

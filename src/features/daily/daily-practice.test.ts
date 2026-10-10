@@ -6,9 +6,12 @@ import {
   createDailyCompletionResult,
   createDailyPracticeSession,
   DAILY_QUESTIONS_PER_SUBJECT,
+  DAILY_STAGES,
   getDailyLifeState,
   getDailyRelicInventory,
   getDailyRemainingTimeMs,
+  getDailyStageBounds,
+  getDailyStageIndex,
   getMillisecondsUntilTaipeiMidnight,
   parseDailyCompletionRecord,
   parseDailyPracticeSession,
@@ -57,8 +60,19 @@ describe('daily practice', () => {
     expect(shouldEnterDailyReview(3, 50, 3)).toBe(false);
     expect(shouldEnterDailyReview(5, 50, 1)).toBe(true);
     expect(shouldEnterDailyReview(5, 50, 0)).toBe(true);
-    expect(shouldEnterDailyReview(4, 50, 1)).toBe(false);
+    expect(shouldEnterDailyReview(10, 50, 1)).toBe(false);
+    expect(shouldEnterDailyReview(11, 50, 1)).toBe(true);
+    expect(shouldEnterDailyReview(18, 50, 0)).toBe(true);
     expect(shouldEnterDailyReview(50, 50, 1)).toBe(true);
+  });
+
+  it('maps all fifty questions into the six requested stages', () => {
+    expect(DAILY_STAGES.map((stage) => stage.questions)).toEqual([5, 6, 7, 8, 9, 15]);
+    expect(DAILY_STAGES.map((stage) => stage.wrongLimit)).toEqual([3, 3, 4, 4, 3, 3]);
+    expect(getDailyStageIndex(0)).toBe(0);
+    expect(getDailyStageIndex(5)).toBe(1);
+    expect(getDailyStageIndex(49)).toBe(5);
+    expect(getDailyStageBounds(4)).toEqual({ start: 26, end: 35 });
   });
 
   it('counts all mistakes even after pending review items are cleared', () => {
@@ -69,33 +83,24 @@ describe('daily practice', () => {
     })).toBe(2);
   });
 
-  it('restores one life after three consecutive correct answers without banking at full health', () => {
-    const questionIds = [
-      'wrong',
-      'first',
-      'second',
-      'third',
-      'full-first',
-      'full-second',
-      'full-third',
-      'wrong-after-full',
-    ];
+  it('restores one stage life after three consecutive correct answers', () => {
+    const questionIds = ['wrong', 'first', 'second', 'third', 'fourth'];
     const answers = {
       wrong: { selected: 1, correct: false },
       first: { selected: 0, correct: true },
       second: { selected: 0, correct: true },
       third: { selected: 0, correct: true },
-      'full-first': { selected: 0, correct: true },
-      'full-second': { selected: 0, correct: true },
-      'full-third': { selected: 0, correct: true },
-      'wrong-after-full': { selected: 1, correct: false },
+      fourth: { selected: 0, correct: true },
     };
 
-    expect(getDailyLifeState(questionIds, answers)).toEqual({
-      remaining: 9,
+    expect(getDailyLifeState(questionIds, answers, [], 4)).toEqual({
+      remaining: 3,
+      maximum: 3,
       restored: 1,
-      streak: 0,
-      relicsEarned: 1,
+      streak: 1,
+      relicsEarned: 0,
+      stageIndex: 0,
+      failed: false,
     });
   });
 
@@ -108,31 +113,41 @@ describe('daily practice', () => {
     expect(getDailyLifeState(questionIds, answers).relicsEarned).toBe(2);
     expect(getDailyRelicInventory(questionIds, answers)).toEqual({
       eliminate: 1,
-      time: 1,
-      freeze: 0,
-      shield: 0,
+      barrier: 1,
     });
     expect(getDailyRelicInventory(questionIds, answers, { sixth: 'eliminate' })).toEqual({
       eliminate: 0,
-      time: 1,
-      freeze: 0,
-      shield: 0,
+      barrier: 1,
     });
   });
 
-  it('prevents one life loss when a shield relic is active', () => {
-    const questionIds = Array.from({ length: 10 }, (_, index) => `wrong-${index}`);
+  it('prevents life loss while the barrier protects a wrong answer', () => {
+    const questionIds = Array.from({ length: 2 }, (_, index) => `wrong-${index}`);
     const answers = Object.fromEntries(
       questionIds.map((id) => [id, { selected: 1, correct: false }]),
     );
 
-    expect(getDailyLifeState(questionIds, answers, { 'wrong-0': 'shield' }).remaining).toBe(1);
+    expect(getDailyLifeState(questionIds, answers, ['wrong-0'], 1).remaining).toBe(2);
   });
 
-  it('keeps the displayed time still while a freeze relic is active', () => {
-    expect(getDailyRemainingTimeMs(undefined, undefined, 12_000)).toBe(60_000);
-    expect(getDailyRemainingTimeMs(38_000, 18_000, 12_000)).toBe(20_000);
-    expect(getDailyRemainingTimeMs(38_000, 18_000, 20_000)).toBe(18_000);
+  it('counts down from the stored question deadline', () => {
+    expect(getDailyRemainingTimeMs(undefined, 12_000)).toBe(60_000);
+    expect(getDailyRemainingTimeMs(38_000, 18_000)).toBe(20_000);
+    expect(getDailyRemainingTimeMs(38_000, 20_000)).toBe(18_000);
+  });
+
+  it('preserves timeout defeat after reloading the session', () => {
+    const session = createDailyPracticeSession(
+      [question('law', 1)], ['law'], '2026-10-07',
+    );
+    session.answers[session.questionIds[0]] = {
+      selected: -1, correct: false, timedOut: true,
+    };
+    session.currentIndex = 1;
+    session.status = 'failed';
+    expect(parseDailyPracticeSession(
+      JSON.stringify(session), '2026-10-07',
+    )?.status).toBe('failed');
   });
 
   it('creates a persisted completion score for the subject selection page', () => {
@@ -179,17 +194,17 @@ describe('daily practice', () => {
     expect(parseDailyPracticeSession('{broken', '2026-10-07')).toBeNull();
   });
 
-  it('fails when the tenth life is lost', () => {
+  it('fails when the first-stage third life is lost', () => {
     const session = createDailyPracticeSession(
-      Array.from({ length: 10 }, (_, index) => question('law', index + 1)),
+      Array.from({ length: 5 }, (_, index) => question('law', index + 1)),
       ['law'],
       '2026-10-07',
     );
-    session.currentIndex = 10;
+    session.currentIndex = 3;
     session.answers = Object.fromEntries(
-      session.questionIds.map((id) => [id, { selected: 1, correct: false }]),
+      session.questionIds.slice(0, 3).map((id) => [id, { selected: 1, correct: false }]),
     );
-    session.unreviewedWrongIds = session.questionIds.slice(5);
+    session.unreviewedWrongIds = session.questionIds.slice(0, 3);
     session.status = 'practice';
 
     expect(
@@ -197,48 +212,57 @@ describe('daily practice', () => {
     ).toBe('failed');
   });
 
-  it('keeps a session active when a three-answer streak restores one life', () => {
+  it('keeps a session active when a three-answer streak restores stage life', () => {
     const session = createDailyPracticeSession(
-      Array.from({ length: 13 }, (_, index) => question('law', index + 1)),
+      Array.from({ length: 5 }, (_, index) => question('law', index + 1)),
       ['law'],
       '2026-10-07',
     );
-    session.currentIndex = 13;
+    session.currentIndex = 4;
     session.answers = Object.fromEntries([
       [session.questionIds[0], { selected: 1, correct: false }],
       ...session.questionIds.slice(1, 4).map((id) => [id, { selected: 0, correct: true }]),
-      ...session.questionIds.slice(4).map((id) => [id, { selected: 1, correct: false }]),
     ]);
-    session.unreviewedWrongIds = session.questionIds.slice(9);
+    session.unreviewedWrongIds = [session.questionIds[0]];
     session.status = 'failed';
 
-    expect(getDailyLifeState(session.questionIds, session.answers)).toEqual({
-      remaining: 1,
+    expect(getDailyLifeState(session.questionIds, session.answers, [], 3)).toEqual({
+      remaining: 3,
+      maximum: 3,
       restored: 1,
       streak: 0,
       relicsEarned: 0,
+      stageIndex: 0,
+      failed: false,
     });
     expect(
       parseDailyPracticeSession(JSON.stringify(session), '2026-10-07')?.status,
     ).toBe('practice');
   });
 
-  it('repairs a session incorrectly failed by mistakes from earlier levels', () => {
+  it('resets stage life after clearing the previous boss', () => {
     const session = createDailyPracticeSession(
       Array.from({ length: 6 }, (_, index) => question('law', index + 1)),
       ['law'],
       '2026-10-07',
     );
     session.currentIndex = 5;
-    session.answers = Object.fromEntries(
-      session.questionIds.slice(0, 3).map((id) => [id, { selected: 1, correct: false }]),
-    );
+    session.answers = Object.fromEntries([
+      ...session.questionIds.slice(0, 2).map((id) => [id, { selected: 1, correct: false }]),
+      ...session.questionIds.slice(2, 5).map((id) => [id, { selected: 0, correct: true }]),
+      [session.questionIds[5], { selected: 1, correct: false }],
+    ]);
     session.unreviewedWrongIds = [];
     session.status = 'failed';
 
-    expect(
-      parseDailyPracticeSession(JSON.stringify(session), '2026-10-07')?.status,
-    ).toBe('practice');
+    const restored = parseDailyPracticeSession(JSON.stringify(session), '2026-10-07');
+    expect(restored?.status).toBe('practice');
+    expect(getDailyLifeState(
+      restored!.questionIds,
+      restored!.answers,
+      restored!.protectedWrongIds,
+      5,
+    ).remaining).toBe(2);
   });
 
   it('keeps completion results only on the recorded date', () => {
