@@ -14,7 +14,7 @@ import {
   IconShieldX,
   IconSparkles,
   IconSwords,
-  IconTargetArrow,
+  IconTextSize,
   IconTrophy,
   IconX,
 } from '@tabler/icons-react';
@@ -23,6 +23,7 @@ import { ReviewNoteEditor } from '@/components/attempt-review';
 import { AttachmentGallery } from '@/components/image-attachments';
 import { QuestionAnswerPanel } from '@/components/question-answer-panel';
 import { RichText } from '@/components/rich-text';
+import { ReadingFontControls } from '@/components/reading-font-controls';
 import { QuestionPrompt, Tag } from '@/components/content/content';
 import { Button, OptionGroup } from '@/components/ui/ui';
 import { useSubjectQuestions } from '@/lib/question-bank-client';
@@ -370,18 +371,7 @@ function DailySetup({
   const selectedSubject = selectedSubjects[0];
 
   return (
-    <section className={styles.setup} aria-labelledby="daily-practice-title">
-      <div className={styles.hero}>
-        <span className={styles.heroIcon} aria-hidden="true">
-          <IconTargetArrow size={34} stroke={1.8} />
-        </span>
-        <div>
-          <span className={styles.eyebrow}>DAILY CHALLENGE</span>
-          <h2 id="daily-practice-title">建築師的六層試煉</h2>
-          <p>選擇適合自己的步調：專心練習，或拿起捲尺挑戰六層魔王。</p>
-        </div>
-      </div>
-
+    <section className={styles.setup} aria-label="每日練習設定">
       <fieldset className={styles.modeChoices}>
         <legend>選擇進行方式</legend>
         <label data-checked={mode === 'normal' || undefined}>
@@ -393,16 +383,6 @@ function DailySetup({
           <span><strong>以闖關模式進行</strong><small>六層魔王・累積血量・答對 50 題才算全破</small></span>
         </label>
       </fieldset>
-      <div className={styles.rules} aria-label="每日練習規則">
-        {mode === 'normal' ? <p>每科抽 50 題（題庫不足時使用可用題目），逐題作答與看詳解。沒有倒數、血量或錯題上限，完成後整理本次錯題。</p> : <>
-          <div><strong>50</strong><span>需答對總數</span></div><div><strong>6</strong><span>科目魔王</span></div>
-          <div><strong>100</strong><span>跨關血量</span></div><div><strong>60s</strong><span>每題限時</span></div>
-          <p>魔王血量 5／6／7／8／9／15，只有答對扣 1 點；答錯用新題補足。每層錯題上限 7／6／5／4／4／3，達到即戰敗；答對不會減少錯題次數。</p>
-          <p>作答時血量每秒 −0.5，答錯另 −10，答對 +15（上限 100），跨關不補滿；血量歸零或本題 60 秒到即戰敗。詳解、關卡檢討與載入題目時暫停耗血。連對三題得寶具，無錯通關額外 +1。</p>
-          <p>結界暫停耗血並擋反擊 10 秒、延時 10 秒；每關一次格擋，亮紅時延時 5 秒且防護 3 秒，提前使用只延時 2 秒。防護不免除答錯次數。題目仍依整科抽選，魔王主題不是題目分類限制。</p>
-        </>}
-      </div>
-
       <fieldset className={styles.subjectChoices}>
         <legend>選擇今日科目</legend>
         {subjects.map((subject) => {
@@ -1069,6 +1049,14 @@ export function DailyPage() {
         ) : null}
       </div>
       <div className={styles.questionArea}>
+        <details className={styles.readingControls}>
+          <summary>
+            <IconTextSize size={18} aria-hidden="true" />
+            <span>字體大小</span>
+            <small>題目 {state.readingPreferences.questionFontSize}px／選項 {state.readingPreferences.optionFontSize}px</small>
+          </summary>
+          <ReadingFontControls className={styles.fontControls} />
+        </details>
         {bank.status === 'loading' || (requiredQuestionMissing && bank.status !== 'error') ? (
           <div className={styles.loading}><IconLoader2 size={26} /><span>正在載入今日題目…</span></div>
         ) : bank.status === 'error' && requiredQuestionMissing ? (

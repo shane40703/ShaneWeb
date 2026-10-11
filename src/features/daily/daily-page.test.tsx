@@ -14,6 +14,7 @@ const appState = vi.hoisted(() => ({
     difficultQuestionIds: [] as string[],
     notes: {} as Record<string, string>,
     noteImages: {} as Record<string, []>,
+    readingPreferences: { questionFontSize: 18, optionFontSize: 18 },
   },
   dispatch: vi.fn(),
   reportPersistence: vi.fn(),
@@ -77,6 +78,7 @@ beforeEach(() => {
   appState.reportPersistence.mockReset();
   appState.state.notes = {};
   appState.state.noteImages = {};
+  appState.state.readingPreferences = { questionFontSize: 18, optionFontSize: 18 };
   sharedDiscussions.posts = [];
 });
 
@@ -108,7 +110,37 @@ function choose(correct: boolean) {
   fireEvent.click(screen.getByRole('button', { name: '確認答案' }));
 }
 
-describe('DailyPage 1.63', () => {
+describe('DailyPage', () => {
+  it('removes the setup hero and detailed rules while preserving mode and subject choices', async () => {
+    renderDailyPage();
+    expect(await screen.findByRole('region', { name: '每日練習設定' })).toBeInTheDocument();
+    expect(screen.queryByText('建築師的六層試煉')).not.toBeInTheDocument();
+    expect(screen.queryByText('DAILY CHALLENGE')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('每日練習規則')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('radio', { name: /以闖關模式進行/ }));
+    expect(screen.queryByLabelText('每日練習規則')).not.toBeInTheDocument();
+    expect(screen.getByRole('group', { name: '選擇今日科目' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /建立今日挑戰/ })).toBeEnabled();
+  });
+
+  it.each(['normal', 'adventure'] as const)('uses saved reading sizes and independent controls in %s practice', async (mode) => {
+    seedSession([], mode);
+    appState.state.readingPreferences = { questionFontSize: 22, optionFontSize: 16 };
+    renderDailyPage();
+    await screen.findByRole('region', { name: '題目與選項' });
+    fireEvent.click(screen.getByText('字體大小', { exact: true }));
+    const questionSize = screen.getByRole('slider', { name: '題目字體' });
+    const optionSize = screen.getByRole('slider', { name: '選項字體' });
+    expect(questionSize).toHaveValue('22');
+    expect(optionSize).toHaveValue('16');
+    fireEvent.change(questionSize, { target: { value: '24' } });
+    expect(appState.dispatch).toHaveBeenCalledWith({ type: 'set-reading-font-size', target: 'question', size: 24 });
+    fireEvent.change(optionSize, { target: { value: '20' } });
+    expect(appState.dispatch).toHaveBeenCalledWith({ type: 'set-reading-font-size', target: 'option', size: 20 });
+    expect(stored().answers).toEqual({});
+    expect(stored().currentIndex).toBe(0);
+  });
+
   it('defaults to accessible normal practice with no battle, timer, or HP', async () => {
     renderDailyPage();
     expect(await screen.findByRole('radio', { name: /正常模式/ })).toBeChecked();

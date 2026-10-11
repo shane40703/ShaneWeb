@@ -49,6 +49,11 @@ async function pauseAtCast(page: Page, phaseMs: number) {
 test('normal mode defaults to familiar fifty-question practice without a battle', async ({ page }) => {
   await page.goto('/daily');
   await expect(page.getByRole('radio', { name: /正常模式/ })).toBeChecked();
+  await expect(page.getByText('建築師的六層試煉')).toHaveCount(0);
+  await expect(page.getByLabel('每日練習規則')).toHaveCount(0);
+  await page.getByRole('radio', { name: /以闖關模式進行/ }).click();
+  await expect(page.getByLabel('每日練習規則')).toHaveCount(0);
+  await page.getByRole('radio', { name: /正常模式/ }).click();
   await page.getByRole('button', { name: '建立今日挑戰' }).click();
   await expect(page.getByRole('region', { name: '題目與選項' })).toBeVisible();
   await expect(page.getByLabel('建築師勇者')).toHaveCount(0);
@@ -56,6 +61,72 @@ test('normal mode defaults to familiar fifty-question practice without a battle'
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('shaneweb:daily-practice')!).questionIds.length)).toBe(50);
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(page.viewportSize()!.width);
 });
+
+for (const mode of ['normal', 'adventure'] as const) {
+  test(`${mode} reading sizes apply to question and options, preserve drafts and survive reload`, async ({ page }) => {
+    await seed(page, [], 0, 'practice', mode);
+    await page.goto('/daily');
+    const body = page.getByRole('region', { name: '題目與選項' });
+    await expect(body).toBeVisible();
+    const prompt = body.locator('[class*="questionPromptText"]').first();
+    const optionText = body.getByRole('radiogroup').locator('label').first().locator('span').last();
+    await expect(prompt).toHaveCSS('font-size', '18px');
+    await expect(optionText).toHaveCSS('font-size', '18px');
+    await page.getByRole('radio').first().click();
+    const before = await page.evaluate(() => JSON.parse(localStorage.getItem('shaneweb:daily-practice')!));
+    await page.getByText('字體大小', { exact: true }).click();
+    const questionSize = page.getByRole('slider', { name: '題目字體' });
+    const optionSize = page.getByRole('slider', { name: '選項字體' });
+    await questionSize.focus();
+    await questionSize.press('End');
+    await optionSize.focus();
+    await optionSize.press('Home');
+    await expect(prompt).toHaveCSS('font-size', '24px');
+    await expect(optionText).toHaveCSS('font-size', '14px');
+    await optionSize.press('End');
+    await expect(optionText).toHaveCSS('font-size', '24px');
+    await expect(page.getByRole('radio').first()).toBeChecked();
+    await expect(page.getByRole('button', { name: '確認答案' })).toBeEnabled();
+    const after = await page.evaluate(() => JSON.parse(localStorage.getItem('shaneweb:daily-practice')!));
+    expect(after.questionIds).toEqual(before.questionIds);
+    expect(after.currentIndex).toBe(before.currentIndex);
+    expect(after.answers).toEqual(before.answers);
+    expect(after.questionDeadlineMs).toBe(before.questionDeadlineMs);
+    if (mode === 'adventure' && page.viewportSize()!.width > 1100) {
+      await expect(page.getByRole('button', { name: '確認答案' })).toBeInViewport({ ratio: 1 });
+    } else {
+      await expect(body).toHaveCSS('overflow-y', 'visible');
+    }
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(page.viewportSize()!.width);
+    await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('shaneweb:state')!).readingPreferences)).toEqual({
+      questionFontSize: 24, optionFontSize: 24,
+    });
+    await page.reload();
+    await expect(prompt).toHaveCSS('font-size', '24px');
+    await expect(optionText).toHaveCSS('font-size', '24px');
+    await page.getByText('字體大小', { exact: true }).click();
+    await expect(questionSize).toHaveValue('24');
+    await expect(optionSize).toHaveValue('24');
+  });
+}
+
+for (const status of ['review', 'completed'] as const) {
+  test(`reading controls also apply to ${status} question and answer panels`, async ({ page }) => {
+    const review = status === 'review';
+    await seed(page, review ? [false,true,true,true,true,true] : Array(50).fill(false), review ? 6 : 50,
+      status, review ? 'adventure' : 'normal');
+    await page.goto('/daily');
+    await expect(page.getByRole('region', { name: '題目選項' }).first()).toBeVisible();
+    await page.getByText('字體大小', { exact: true }).click();
+    await page.getByRole('slider', { name: '題目字體' }).focus();
+    await page.getByRole('slider', { name: '題目字體' }).press('End');
+    await page.getByRole('slider', { name: '選項字體' }).focus();
+    await page.getByRole('slider', { name: '選項字體' }).press('Home');
+    await expect(page.locator('[class*="questionPromptText"]').first()).toHaveCSS('font-size', '24px');
+    await expect(page.getByRole('region', { name: '題目選項' }).first().locator('li > span').first()).toHaveCSS('font-size', '14px');
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(page.viewportSize()!.width);
+  });
+}
 
 test('adventure preserves the desktop split and compact single-scroll mobile layout', async ({ page }) => {
   await seed(page);
