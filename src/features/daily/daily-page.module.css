@@ -124,23 +124,14 @@
   width: 100%;
   height: 100%;
   display: block;
-  background: url('/daily-game/boss-1-v2.webp') center bottom / contain no-repeat;
-  transform: scaleX(-1);
+  background: url('/daily-game/construction-boss-1-v4.svg') center bottom / contain no-repeat;
+  image-rendering: pixelated;
 }
 
-.bossActor[data-boss='2'] .bossSprite { background-image: url('/daily-game/boss-2-v2.webp'); }
-.bossActor[data-boss='3'] .bossSprite { background-image: url('/daily-game/boss-3-v2.webp'); }
-.bossActor[data-boss='4'] .bossSprite { background-image: url('/daily-game/boss-4-v2.webp'); }
-.bossActor[data-boss='5'] .bossSprite { background-image: url('/daily-game/boss-5-v2.webp'); }
 .bossActor[data-boss='6'] {
   height: 110%;
   right: 2%;
   bottom: 0;
-}
-
-.bossActor[data-boss='6'] .bossSprite {
-  background-image: url('/daily-game/boss-6-v2.webp');
-  transform: scaleX(1);
 }
 
 .battleScene[data-result='correct'] .heroActor {
@@ -990,6 +981,8 @@
 
 .instantExplanation {
   margin: 0 24px 16px;
+  display: grid;
+  gap: 14px;
 }
 
 .rewardBurst {
@@ -1644,7 +1637,71 @@
   .battleColumn .pixelArena { height: 110px; }
 }
 
+.stageTransition {
+  display: grid;
+  gap: 16px;
+  padding: 24px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+  text-align: center;
+  animation: stageArrival 1800ms ease-out both;
+}
+
+.stageTransition small { color: var(--muted); font-size: 12px; }
+.stageTransition h3 { margin: 6px 0; font-size: clamp(18px, 3vw, 24px); }
+.stageTransition p { color: var(--muted); font-size: 12px; }
+.transitionSteps { display: flex; justify-content: center; gap: 10px; padding: 0; list-style: none; }
+.transitionSteps li {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border: 2px solid var(--line);
+  color: var(--muted);
+  font: 700 12px ui-monospace, monospace;
+}
+.transitionSteps li[data-reached] { border-color: var(--primary); color: var(--primary); }
+.transitionSteps li[aria-current] { background: var(--primary-solid); color: var(--on-primary); }
+.transitionTrack {
+  position: relative;
+  height: clamp(150px, 24vh, 220px);
+  overflow: hidden;
+  border-radius: 8px;
+  background-color: #d6dcc3;
+  background-position: center 65%;
+  background-size: cover;
+  image-rendering: pixelated;
+}
+.transitionArchitect,
+.transitionBoss {
+  position: absolute;
+  bottom: 8%;
+  width: 80px;
+  aspect-ratio: 1;
+  background: center bottom / contain no-repeat;
+}
+.transitionArchitect {
+  left: 8%;
+  background-image: url('/daily-game/architect-v2.webp');
+  animation: stageWalk 1800ms steps(12, end) both;
+}
+.transitionBoss { right: 6%; background-size: 64px; animation: stageBossReveal 1800ms steps(4, end) both; }
+.stageTransition > footer { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 12px; }
+.stageTransition > footer > span { color: var(--muted); font-size: 12px; }
+@keyframes stageArrival { from { opacity: .25; } 20%, to { opacity: 1; } }
+@keyframes stageWalk { from { left: 8%; transform: translateY(0); } 50% { transform: translateY(-4px); } to { left: 50%; transform: translateY(0); } }
+@keyframes stageBossReveal { 0%, 35% { opacity: 0; transform: translateX(12px); } 65%, 100% { opacity: 1; transform: translateX(0); } }
+@media (max-width: 540px) {
+  .stageTransition { padding: 16px 12px; }
+  .transitionSteps { gap: 8px; }
+  .transitionArchitect, .transitionBoss { width: 64px; }
+  .transitionBoss { background-size: 56px; }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .stageTransition, .transitionArchitect, .transitionBoss { animation: none; }
+  .transitionArchitect { left: 45%; }
   .levelMap li[data-complete] > span,
   .levelMap li[data-active] > span,
   .challenge[data-result],

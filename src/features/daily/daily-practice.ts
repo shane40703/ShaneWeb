@@ -18,29 +18,32 @@ export type DailyMode = 'normal' | 'adventure';
 
 const themedBosses = {
   law: [
-    ['建築法', '建照印章獸', '裁決印章'],
-    ['公寓大廈管理條例', '公寓管家獸', '鑰匙旋風'],
-    ['國土・區域・國家公園', '國土山林靈', '山林結界'],
-    ['營造業法・採購法', '契約工務獸', '契約封印'],
-    ['都市計畫・都市更新', '都市更新獅', '都市重構'],
-    ['建築技術規則', '技規法典龍', '法典龍息'],
+    ['建照印章獸', '裁決印章'],
+    ['公寓管家獸', '鑰匙旋風'],
+    ['國土山林靈', '山林結界'],
+    ['契約工務獸', '契約封印'],
+    ['都市更新獅', '都市重構'],
+    ['技規法典龍', '法典龍息'],
   ],
   env: [
-    ['風之庭', '旋風精靈', '旋風衝擊'], ['光之廊', '日光稜晶獸', '稜光閃擊'],
-    ['水之渠', '水滴管管獸', '水流湧動'], ['音之殿', '回聲音波獸', '回聲震波'],
-    ['設備工坊', '空調機械獸', '風管過載'], ['綠建築森林', '綠建築森龍', '森綠龍息'],
+    ['旋風精靈', '旋風衝擊'], ['日光稜晶獸', '稜光閃擊'],
+    ['水滴管管獸', '水流湧動'], ['回聲音波獸', '回聲震波'],
+    ['空調機械獸', '風管過載'], ['綠建築森龍', '森綠龍息'],
   ],
 } as const;
+
+// Stage names describe the journey, not the category of randomly drawn questions.
+export const DAILY_JOURNEY_NAMES = ['入口', '迴廊', '階梯', '露臺', '高臺', '塔頂'] as const;
 
 export function getDailyStageTheme(subject: SubjectId, stageIndex: number) {
   const index = Math.max(0, Math.min(stageIndex, DAILY_STAGE_COUNT - 1));
   const theme = subject === 'law' || subject === 'env' ? themedBosses[subject][index] : undefined;
   return {
-    ...DAILY_STAGES[index], name: theme?.[0] ?? DAILY_STAGES[index].name,
-    boss: theme?.[1] ?? DAILY_STAGES[index].boss,
-    skill: theme?.[2] ?? DAILY_BOSS_SKILLS[index],
-    sprite: theme ? `/daily-game/${subject}-boss-${index + 1}-v3.webp` : `/daily-game/boss-${index + 1}-v2.webp`,
-    facing: theme || index === 5 ? 1 : -1,
+    ...DAILY_STAGES[index], name: theme ? DAILY_JOURNEY_NAMES[index] : DAILY_STAGES[index].name,
+    boss: theme?.[0] ?? DAILY_STAGES[index].boss,
+    skill: theme?.[1] ?? DAILY_BOSS_SKILLS[index],
+    sprite: `/daily-game/${theme ? subject : 'construction'}-boss-${index + 1}-v4.svg`,
+    facing: 1,
   };
 }
 

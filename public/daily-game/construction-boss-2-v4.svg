@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" shape-rendering="crispEdges">
+  <title>鋼梁鉗獸・少色像素造型</title>
+  <path d="M5 7H27V12H22V22H27V27H5V22H10V12H5Z" fill="#80999e" stroke="#253344" stroke-width="2" stroke-linejoin="miter"/>
+  <path d="M7 9h18M12 23h13" fill="none" stroke="#b6c4c5" stroke-width="2"/>
+  <path d="M12 15h3v4h-3ZM18 15h3v4h-3Z" fill="#253344"/>
+  <path d="M12 15h1v1h-1ZM18 15h1v1h-1Z" fill="#f4ecd8"/>
+</svg>

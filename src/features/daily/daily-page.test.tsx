@@ -22,6 +22,7 @@ const appState = vi.hoisted(() => ({
 
 const sharedDiscussions = vi.hoisted(() => ({
   posts: [] as Array<Record<string, unknown>>,
+  publish: vi.fn(),
 }));
 const bankState = vi.hoisted(() => ({ status: 'ready' as 'ready' | 'loading' | 'error' }));
 
@@ -65,7 +66,7 @@ vi.mock('@/lib/shared-discussions', () => ({
     error: '',
   }),
   useDiscussionPublisher: () => ({
-    publish: vi.fn(),
+    publish: sharedDiscussions.publish,
     enabled: false,
   }),
 }));
@@ -80,6 +81,7 @@ beforeEach(() => {
   appState.state.noteImages = {};
   appState.state.readingPreferences = { questionFontSize: 18, optionFontSize: 18 };
   sharedDiscussions.posts = [];
+  sharedDiscussions.publish.mockReset();
 });
 
 afterEach(cleanup);
@@ -157,7 +159,7 @@ describe('DailyPage', () => {
     fireEvent.click(await screen.findByRole('radio', { name: /以闖關模式進行/ }));
     fireEvent.click(screen.getByRole('radio', { name: /建築環境控制/ }));
     fireEvent.click(screen.getByRole('button', { name: /建立今日挑戰/ }));
-    expect(await screen.findByLabelText(/第 1 層 風之庭/)).toBeInTheDocument();
+    expect(await screen.findByLabelText(/第 1 層 入口/)).toBeInTheDocument();
     expect(screen.getByLabelText('旋風精靈', { selector: 'div' })).toBeInTheDocument();
     expect(screen.getByRole('timer', { name: /本題剩餘/ })).toBeInTheDocument();
     expect(stored().questionIds).toHaveLength(74);
@@ -174,7 +176,7 @@ describe('DailyPage', () => {
     expect(screen.getByText('血量 +15')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: '下一題' }));
     expect(screen.queryByRole('heading', { name: '完成錯題檢討再前進' })).not.toBeInTheDocument();
-    expect(screen.getByLabelText(/第 1 層 建築法/)).toBeInTheDocument();
+    expect(screen.getByLabelText(/第 1 層 入口/)).toBeInTheDocument();
     expect(stored().currentIndex).toBe(5);
     expect(stored().status).toBe('practice');
   });
@@ -203,7 +205,11 @@ describe('DailyPage', () => {
     expect(await screen.findByRole('heading', { name: '無傷通關！' })).toBeInTheDocument();
     expect(screen.getByText('PERFECT CLEAR・寶具 +1')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: '繼續闖關' }));
-    expect(screen.getByLabelText(/第 2 層 公寓大廈管理條例/)).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: '換層過場' })).toBeInTheDocument();
+    expect(stored().status).toBe('review');
+    expect(stored().questionDeadlineMs).toBeUndefined();
+    fireEvent.click(screen.getByRole('button', { name: '略過過場' }));
+    expect(screen.getByLabelText(/第 2 層 迴廊/)).toBeInTheDocument();
     expect(stored().hp).toBeGreaterThan(56);
     expect(stored().hp).toBeLessThanOrEqual(57);
     await waitFor(() => expect(screen.getByRole('button', { name: '架設防禦：每關一次，蓄力亮紅時完美格擋' })).toBeEnabled());
@@ -223,7 +229,69 @@ describe('DailyPage', () => {
     expect(screen.getByRole('button', { name: '繼續闖關' })).toBeDisabled();
     fireEvent.click(screen.getByRole('button', { name: '我已理解錯誤原因' }));
     fireEvent.click(screen.getByRole('button', { name: '繼續闖關' }));
+    fireEvent.click(screen.getByRole('button', { name: '略過過場' }));
     expect(screen.getByLabelText('公寓管家獸剩餘 6 / 6 點血量')).toBeInTheDocument();
+  });
+
+  it('automatically finishes a paused transition and starts the next stage timer only afterwards', async () => {
+    seedSession(Array(5).fill(true), 'adventure', 'review', 5, 63);
+    renderDailyPage();
+    await screen.findByRole('heading', { name: '無傷通關！' });
+    fireEvent.click(screen.getByRole('button', { name: '繼續闖關' }));
+    expect(screen.getByRole('heading', { name: '前往第 2 層・迴廊' })).toBeInTheDocument();
+    expect(screen.queryByRole('timer')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '確認答案' })).not.toBeInTheDocument();
+    expect(stored()).toMatchObject({ status: 'review', hp: 63, currentIndex: 5 });
+    expect(stored().questionDeadlineMs).toBeUndefined();
+    expect(await screen.findByLabelText(/第 2 層 迴廊/, {}, { timeout: 3000 })).toBeInTheDocument();
+    await waitFor(() => expect(stored().questionDeadlineMs).toBeGreaterThan(Date.now()));
+    expect(stored().hp).toBe(63);
+    expect(screen.queryByRole('region', { name: '換層過場' })).not.toBeInTheDocument();
+  });
+
+  it('restores paused review if reloaded during a transition instead of consuming next-stage time', async () => {
+    seedSession(Array(5).fill(true), 'adventure', 'review', 5, 48);
+    const view = renderDailyPage();
+    await screen.findByRole('heading', { name: '無傷通關！' });
+    fireEvent.click(screen.getByRole('button', { name: '繼續闖關' }));
+    expect(screen.getByRole('region', { name: '換層過場' })).toBeInTheDocument();
+    view.unmount();
+    renderDailyPage();
+    expect(await screen.findByRole('heading', { name: '無傷通關！' })).toBeInTheDocument();
+    expect(stored()).toMatchObject({ status: 'review', hp: 48 });
+    expect(screen.queryByRole('timer')).not.toBeInTheDocument();
+  });
+
+  it.each(['normal', 'adventure'] as const)('allows saved notes and shared explanations after a correct %s answer', async mode => {
+    seedSession([], mode);
+    appState.state.notes['law-114-01'] = '既有筆記';
+    renderDailyPage();
+    await screen.findByText('選項 A');
+    expect(screen.queryByRole('textbox', { name: '第 1 題筆記內容' })).not.toBeInTheDocument();
+    choose(true);
+    const editor = screen.getByRole('textbox', { name: '第 1 題筆記內容' });
+    expect(editor).toHaveValue('既有筆記');
+    fireEvent.change(editor, { target: { value: '**答對也要記錄觀念**' } });
+    fireEvent.click(screen.getByRole('button', { name: '儲存筆記' }));
+    expect(appState.dispatch).toHaveBeenCalledWith({
+      type: 'save-note', questionId: 'law-114-01', content: '**答對也要記錄觀念**', images: [],
+    });
+    fireEvent.click(screen.getByRole('button', { name: '分享至詳解與討論' }));
+    await waitFor(() => expect(sharedDiscussions.publish).toHaveBeenCalledWith('explanation', '**答對也要記錄觀念**', []));
+    expect(stored().questionDeadlineMs).toBeUndefined();
+    expect(stored().answers['law-114-01'].correct).toBe(true);
+    fireEvent.click(screen.getByRole('button', { name: '下一題' }));
+    choose(true);
+    expect(screen.getByRole('textbox', { name: '第 2 題筆記內容' })).toHaveValue('');
+  });
+
+  it('does not add a seventh-stage transition after the final review', async () => {
+    seedSession(Array(50).fill(true), 'adventure', 'review', 50, 75);
+    renderDailyPage();
+    await screen.findByRole('heading', { name: '無傷通關！' });
+    fireEvent.click(screen.getByRole('button', { name: '繼續闖關' }));
+    expect(screen.queryByRole('region', { name: '換層過場' })).not.toBeInTheDocument();
+    expect(stored().status).toBe('completed');
   });
 
   it('ends at the seventh first-stage mistake and displays death with a living boss', async () => {

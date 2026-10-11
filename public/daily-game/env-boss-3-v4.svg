@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" shape-rendering="crispEdges">
+  <title>水滴管管獸・少色像素造型</title>
+  <path d="M15 4H18V8H21V12H24V16H27V23H24V26H20V28H12V26H8V23H5V16H8V12H12V8H15Z" fill="#88b8c2" stroke="#253344" stroke-width="2" stroke-linejoin="miter"/>
+  <path d="M23 18v5h-5" fill="none" stroke="#578aab" stroke-width="2"/>
+  <path d="M11 17h3v4h-3ZM17 17h3v4h-3Z" fill="#253344"/>
+  <path d="M11 17h1v1h-1ZM17 17h1v1h-1Z" fill="#f4ecd8"/>
+</svg>

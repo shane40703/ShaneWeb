@@ -159,7 +159,7 @@ test('adventure preserves the desktop split and uses a single page scroll at eve
   const body = page.getByRole('region', { name: '題目與選項' });
   await expect(battle).toBeVisible();
   await expect(body).toBeVisible({ timeout: 20_000 });
-  await expect(page.getByLabel('建照印章獸', { exact: true }).locator('span')).toHaveCSS('background-image', /law-boss-1-v3.webp/);
+  await expect(page.getByLabel('建照印章獸', { exact: true }).locator('span')).toHaveCSS('background-image', /law-boss-1-v4.svg/);
   await expect(page.getByLabel('建照印章獸', { exact: true }).locator('span')).toHaveCSS('transform', 'matrix(1, 0, 0, 1, 0, 0)');
   if (page.viewportSize()!.width > 1100) {
     const scene = await battle.boundingBox();
@@ -176,7 +176,97 @@ test('environmental bosses use distinct subject sprites', async ({ page }) => {
   await seed(page, Array(26).fill(true), 26, 'practice', 'adventure', 'env');
   await page.goto('/daily');
   await expect(page.locator('[data-stage="5"]')).toBeVisible();
-  await expect(page.getByLabel('空調機械獸', { exact: true }).locator('span')).toHaveCSS('background-image', /env-boss-5-v3.webp/);
+  await expect(page.getByLabel('空調機械獸', { exact: true }).locator('span')).toHaveCSS('background-image', /env-boss-5-v4.svg/);
+});
+
+for (const mode of ['normal', 'adventure'] as const) {
+  test(`${mode} correct answers allow notes that persist after reload without changing the answer`, async ({ page }) => {
+    await seed(page, [], 0, 'practice', mode);
+    await page.goto('/daily');
+    await expect(page.getByRole('region', { name: '題目與選項' })).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByRole('textbox', { name: '第 1 題筆記內容' })).toHaveCount(0);
+    await choose(page, true);
+    const note = page.getByRole('textbox', { name: '第 1 題筆記內容' });
+    await note.fill('**答對也要記下觀念**');
+    await page.getByRole('button', { name: '儲存筆記', exact: true }).click();
+    await expect(page.getByRole('button', { name: '分享至詳解與討論' })).toBeVisible();
+    await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('shaneweb:state')!).notes['law-114-01']))
+      .toBe('**答對也要記下觀念**');
+    await page.reload();
+    await expect(note).toHaveValue('**答對也要記下觀念**', { timeout: 20_000 });
+    expect(await page.evaluate(() => JSON.parse(localStorage.getItem('shaneweb:daily-practice')!).answers['law-114-01'].correct)).toBe(true);
+    await expect(page.getByRole('timer')).toHaveCount(0);
+    await expect(page.getByRole('region', { name: '題目與選項' })).toHaveCSS('overflow-y', 'visible');
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(page.viewportSize()!.width);
+    await page.getByRole('button', { name: '下一題', exact: true }).click();
+    await choose(page, true);
+    await expect(page.getByRole('textbox', { name: '第 2 題筆記內容' })).toHaveValue('');
+  });
+}
+
+test('stage transitions pause health and time, animate, then automatically start the next stage', async ({ page }, testInfo) => {
+  await page.clock.install({ time: new Date('2026-10-11T04:00:00+08:00') });
+  await seed(page, Array(5).fill(true), 5, 'review', 'adventure', 'law', 63);
+  await page.goto('/daily');
+  await expect(page.getByRole('heading', { name: '無傷通關！' })).toBeVisible({ timeout: 20_000 });
+  await page.clock.pauseAt(new Date(await page.evaluate(() => Date.now()) + 500));
+  await page.getByRole('button', { name: '繼續闖關' }).click();
+  const transition = page.getByRole('region', { name: '換層過場' });
+  await expect(transition).toBeVisible();
+  await expect(transition.getByRole('heading')).toHaveText('前往第 2 層・迴廊');
+  await expect(transition.locator('[class*="transitionArchitect"]')).toHaveCSS('animation-name', /stageWalk/);
+  await page.clock.runFor(900);
+  const paused = await page.evaluate(() => JSON.parse(localStorage.getItem('shaneweb:daily-practice')!));
+  expect(paused).toMatchObject({ status: 'review', hp: 63, currentIndex: 5 });
+  expect(paused.questionDeadlineMs).toBeUndefined();
+  await expect(page.getByRole('timer')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: '確認答案' })).toHaveCount(0);
+  await transition.screenshot({ path: testInfo.outputPath('stage-transition.png'), animations: 'disabled' });
+  await page.clock.runFor(1000);
+  await expect(transition).toHaveCount(0);
+  await expect(page.locator('[data-stage="2"]')).toBeVisible();
+  await expect(page.getByRole('timer')).toBeVisible();
+  expect(await page.evaluate(() => {
+    const s = JSON.parse(localStorage.getItem('shaneweb:daily-practice')!);
+    return s.questionDeadlineMs - Date.now();
+  })).toBeGreaterThan(59_000);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(page.viewportSize()!.width);
+});
+
+test('reloading a transition safely returns to paused review and allows skipping it', async ({ page }) => {
+  await page.clock.install({ time: new Date('2026-10-11T04:00:00+08:00') });
+  await seed(page, Array(5).fill(true), 5, 'review', 'adventure', 'env', 48);
+  await page.goto('/daily');
+  await expect(page.getByRole('heading', { name: '無傷通關！' })).toBeVisible({ timeout: 20_000 });
+  await page.clock.pauseAt(new Date(await page.evaluate(() => Date.now()) + 500));
+  await page.getByRole('button', { name: '繼續闖關' }).click();
+  await expect(page.getByRole('region', { name: '換層過場' })).toBeVisible();
+  // A frozen requestAnimationFrame prevents Next's hydration after navigation.
+  // Resume before reloading; the persisted review itself has no active timer.
+  await page.clock.resume();
+  await page.reload();
+  await expect(page.getByRole('heading', { name: '無傷通關！' })).toBeVisible({ timeout: 20_000 });
+  await expect(page.getByRole('timer')).toHaveCount(0);
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('shaneweb:daily-practice')!).hp)).toBe(48);
+  await page.getByRole('button', { name: '繼續闖關' }).click();
+  await page.getByRole('button', { name: '略過過場' }).click();
+  await expect(page.locator('[data-stage="2"]')).toBeVisible();
+  await expect(page.getByRole('region', { name: '換層過場' })).toHaveCount(0);
+});
+
+test('stage transitions respect reduced motion and finish without a walking animation', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.clock.install({ time: new Date('2026-10-11T04:00:00+08:00') });
+  await seed(page, Array(5).fill(true), 5, 'review');
+  await page.goto('/daily');
+  await expect(page.getByRole('heading', { name: '無傷通關！' })).toBeVisible({ timeout: 20_000 });
+  await page.clock.pauseAt(new Date(await page.evaluate(() => Date.now()) + 500));
+  await page.getByRole('button', { name: '繼續闖關' }).click();
+  const transition = page.getByRole('region', { name: '換層過場' });
+  await expect(transition.locator('[class*="transitionArchitect"]')).toHaveCSS('animation-name', 'none');
+  await page.clock.runFor(350);
+  await expect(transition).toHaveCount(0);
+  await expect(page.locator('[data-stage="2"]')).toBeVisible();
 });
 
 test('correct attacks injure the boss and heal HP without changing its facing', async ({ page }) => {

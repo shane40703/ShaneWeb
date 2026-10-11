@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" shape-rendering="crispEdges">
+  <title>鷹架巨像・少色像素造型</title>
+  <path d="M6 5H10V9H23V5H27V28H23V24H10V28H6Z" fill="#b39962" stroke="#253344" stroke-width="2" stroke-linejoin="miter"/>
+  <path d="M10 11h13v7H10Zm0 10h13" fill="#846f53" stroke="#253344" stroke-width="2"/>
+  <path d="M11 12h3v4h-3ZM17 12h3v4h-3Z" fill="#253344"/>
+  <path d="M11 12h1v1h-1ZM17 12h1v1h-1Z" fill="#f4ecd8"/>
+</svg>

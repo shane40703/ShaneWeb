@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" shape-rendering="crispEdges">
+  <title>空調機械獸・少色像素造型</title>
+  <path d="M7 6H25V9H28V25H24V28H20V25H12V28H8V25H5V9H7Z" fill="#99aaa5" stroke="#253344" stroke-width="2" stroke-linejoin="miter"/>
+  <path d="M18 10h6v3h-3v3h-3v-3h-3v-3h3V7h3v3M11 22h12" fill="#6c8387" stroke="#6c8387" stroke-width="1"/>
+  <path d="M9 16h3v4h-3ZM15 16h3v4h-3Z" fill="#253344"/>
+  <path d="M9 16h1v1h-1ZM15 16h1v1h-1Z" fill="#f4ecd8"/>
+</svg>
