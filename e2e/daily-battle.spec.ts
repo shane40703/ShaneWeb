@@ -36,6 +36,7 @@ async function choose(page: Page, correct: boolean) {
 }
 
 async function pauseAtCast(page: Page, phaseMs: number) {
+  await expect(page.getByRole('region', { name: '題目與選項' })).toBeVisible({ timeout: 20_000 });
   await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('shaneweb:daily-practice')!).questionDeadlineMs)).toBeGreaterThan(0);
   const target = await page.evaluate(phase => {
     const session = JSON.parse(localStorage.getItem('shaneweb:daily-practice')!);
@@ -92,11 +93,9 @@ for (const mode of ['normal', 'adventure'] as const) {
     expect(after.currentIndex).toBe(before.currentIndex);
     expect(after.answers).toEqual(before.answers);
     expect(after.questionDeadlineMs).toBe(before.questionDeadlineMs);
-    if (mode === 'adventure' && page.viewportSize()!.width > 1100) {
-      await expect(page.getByRole('button', { name: '確認答案' })).toBeInViewport({ ratio: 1 });
-    } else {
-      await expect(body).toHaveCSS('overflow-y', 'visible');
-    }
+    await expect(body).toHaveCSS('overflow-y', 'visible');
+    const size = await body.evaluate(el => ({ height: el.clientHeight, scroll: el.scrollHeight }));
+    expect(size.scroll).toBeLessThanOrEqual(size.height + 1);
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(page.viewportSize()!.width);
     await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('shaneweb:state')!).readingPreferences)).toEqual({
       questionFontSize: 24, optionFontSize: 24,
@@ -128,23 +127,23 @@ for (const status of ['review', 'completed'] as const) {
   });
 }
 
-test('adventure preserves the desktop split and compact single-scroll mobile layout', async ({ page }) => {
+test('adventure preserves the desktop split and uses a single page scroll at every size', async ({ page }) => {
   await seed(page);
   await page.goto('/daily');
   const battle = page.locator('[data-stage="1"]');
   const body = page.getByRole('region', { name: '題目與選項' });
   await expect(battle).toBeVisible();
+  await expect(body).toBeVisible({ timeout: 20_000 });
   await expect(page.getByLabel('建照印章獸', { exact: true }).locator('span')).toHaveCSS('background-image', /law-boss-1-v3.webp/);
   await expect(page.getByLabel('建照印章獸', { exact: true }).locator('span')).toHaveCSS('transform', 'matrix(1, 0, 0, 1, 0, 0)');
   if (page.viewportSize()!.width > 1100) {
     const scene = await battle.boundingBox();
     const card = await page.locator('article').filter({ has: body }).boundingBox();
     expect(card!.x).toBeGreaterThanOrEqual(scene!.x + scene!.width);
-    await expect(page.getByRole('button', { name: '確認答案' })).toBeInViewport({ ratio: 1 });
   } else {
-    await expect(body).toHaveCSS('overflow-y', 'visible');
     expect((await battle.locator('[class*="pixelArena"]').boundingBox())!.height).toBeLessThan(100);
   }
+  await expect(body).toHaveCSS('overflow-y', 'visible');
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(page.viewportSize()!.width);
 });
 
@@ -248,32 +247,66 @@ test('fifty correct defeats the subject final boss and shows victory', async ({ 
   await expect(page.getByLabel('技規法典龍', { exact: true })).toHaveCSS('opacity', '0');
 });
 
-test('long illustrated questions use natural mobile scrolling while desktop keeps its button', async ({ page }) => {
-  await page.route('**/question-data/law/114.json', async route => {
-    const response = await route.fetch();
-    const questions = await response.json();
-    const q = questions.find((item: { id: string }) => item.id === 'law-114-01');
-    q.content = [
-      { kind: 'text', text: Array(35).fill('長題內容完整保留，請自然向下閱讀。').join('\n') },
-      { kind: 'image', src: '/daily-game/stage-1-v2.webp', alt: '長題附圖', width: 512, height: 512 },
-    ];
-    await route.fulfill({ json: questions });
-  });
-  await seed(page);
-  await page.goto('/daily');
-  const body = page.getByRole('region', { name: '題目與選項' });
-  await expect(body).toBeVisible();
-  const sizes = await body.evaluate(el => ({ height: el.clientHeight, scroll: el.scrollHeight }));
-  if (page.viewportSize()!.width <= 1100) {
+for (const mode of ['normal', 'adventure'] as const) {
+  test(`${mode} long questions expand fully and use only the page scroll on desktop and mobile`, async ({ page }) => {
+    await page.route('**/question-data/law/114.json', async route => {
+      const response = await route.fetch();
+      const questions = await response.json();
+      const q = questions.find((item: { id: string }) => item.id === 'law-114-01');
+      q.content = [
+        { kind: 'text', text: Array(35).fill('長題內容完整保留，請自然向下閱讀。').join('\n') },
+        { kind: 'image', src: '/daily-game/stage-1-v2.webp', alt: '長題附圖', width: 512, height: 512 },
+      ];
+      await route.fulfill({ json: questions });
+    });
+    await seed(page, [], 0, 'practice', mode);
+    await page.goto('/daily');
+    const body = page.getByRole('region', { name: '題目與選項' });
+    await expect(body).toBeVisible({ timeout: 20_000 });
+    const sizes = await body.evaluate(el => ({ height: el.clientHeight, scroll: el.scrollHeight }));
+    await expect(body).toHaveCSS('overflow-y', 'visible');
+    const card = page.locator('article').filter({ has: body });
+    await expect(card).toHaveCSS('max-height', 'none');
+    await expect(card.locator('..')).toHaveCSS('max-height', 'none');
     expect(sizes.scroll).toBeLessThanOrEqual(sizes.height + 1);
     await page.getByRole('radio').last().scrollIntoViewIfNeeded();
     expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(100);
+    expect(await body.evaluate(el => el.scrollTop)).toBe(0);
     await expect(page.getByRole('button', { name: /放大題目圖片/ })).toBeAttached();
-  } else {
-    expect(sizes.scroll).toBeGreaterThan(sizes.height + 100);
-    await body.evaluate(el => { el.scrollTop = el.scrollHeight; });
-  }
-  await page.getByRole('radio').last().click();
-  await expect(page.getByRole('button', { name: '確認答案' })).toBeEnabled();
+    await page.getByRole('radio').last().click();
+    await expect(page.getByRole('button', { name: '確認答案' })).toBeEnabled();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(page.viewportSize()!.width);
+  });
+}
+
+test('the construction wall table is fully contained in an expanding question card', async ({ page }) => {
+  await seed(page, [], 0, 'practice', 'adventure', 'construction');
+  await page.addInitScript(() => {
+    const session = JSON.parse(localStorage.getItem('shaneweb:daily-practice')!);
+    session.questionIds[0] = 'construction-104-17';
+    session.optionOrders['construction-104-17'] = [0,1,2,3];
+    localStorage.setItem('shaneweb:daily-practice', JSON.stringify(session));
+  });
+  await page.goto('/daily');
+  const body = page.getByRole('region', { name: '題目與選項' });
+  await expect(body).toBeVisible({ timeout: 20_000 });
+  const image = body.locator('figure img').first();
+  await expect(image).toBeVisible();
+  await expect(image).toHaveCSS('max-height', 'none');
+  await expect.poll(() => image.evaluate(el => (el as HTMLImageElement).naturalWidth)).toBeGreaterThan(0);
+  const content = await body.boundingBox();
+  const picture = await image.boundingBox();
+  const options = await body.getByRole('radiogroup').boundingBox();
+  expect(picture!.y).toBeGreaterThanOrEqual(content!.y);
+  expect(options!.y).toBeGreaterThanOrEqual(picture!.y + picture!.height);
+  expect(content!.y + content!.height).toBeGreaterThanOrEqual(options!.y + options!.height);
+  await expect(body).toHaveCSS('overflow-y', 'visible');
+  const sizes = await body.evaluate(el => ({ height: el.clientHeight, scroll: el.scrollHeight }));
+  expect(sizes.scroll).toBeLessThanOrEqual(sizes.height + 1);
+  await page.getByRole('radio').first().click();
+  const confirm = page.getByRole('button', { name: '確認答案', exact: true });
+  await confirm.scrollIntoViewIfNeeded();
+  await expect(confirm).toBeInViewport({ ratio: 1 });
+  expect(await body.evaluate(el => el.scrollTop)).toBe(0);
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(page.viewportSize()!.width);
 });

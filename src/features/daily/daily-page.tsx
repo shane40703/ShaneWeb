@@ -1,4 +1,4 @@
-import { type CSSProperties, useEffect, useMemo, useRef, useState } from 'react';
+import { type CSSProperties, useEffect, useMemo, useState } from 'react';
 import {
   IconAlertTriangle,
   IconCalendarClock,
@@ -571,7 +571,6 @@ function CompletionSummary({
 }
 
 export function DailyPage() {
-  const answerBodyRef = useRef<HTMLDivElement>(null);
   const ready = useClientReady();
   const { state, dispatch, reportPersistence } = useAppState();
   const [selectedSubjects, setSelectedSubjects] = useState<SubjectId[]>(['law']);
@@ -673,9 +672,6 @@ export function DailyPage() {
     [bank.questions],
   );
   const currentQuestionId = session?.questionIds[session.currentIndex];
-  useEffect(() => {
-    if (answerBodyRef.current) answerBodyRef.current.scrollTop = 0;
-  }, [currentQuestionId]);
   const sourceCurrentQuestion = currentQuestionId
     ? questionById.get(currentQuestionId)
     : undefined;
@@ -1172,7 +1168,7 @@ export function DailyPage() {
                 <strong>{normal ? `${currentSubjectQuestionIndex + 1} / ${session.questionIds.length}` : `答對 ${currentRun.totalCorrect} / 50`}</strong>
               </div>
             </header>
-            <div className={styles.answerBody} ref={answerBodyRef} role="region" aria-label="題目與選項">
+            <div className={styles.answerBody} role="region" aria-label="題目與選項">
               <QuestionPrompt question={currentQuestion} />
               <OptionGroup
                 label={`每日練習第 ${currentSubjectQuestionIndex + 1} 題請選擇答案`}
