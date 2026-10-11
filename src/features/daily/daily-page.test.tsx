@@ -239,6 +239,11 @@ describe('DailyPage', () => {
     await screen.findByRole('heading', { name: '無傷通關！' });
     fireEvent.click(screen.getByRole('button', { name: '繼續闖關' }));
     expect(screen.getByRole('heading', { name: '前往第 2 層・迴廊' })).toBeInTheDocument();
+    const transition = screen.getByRole('region', { name: '換層過場' });
+    expect(transition.closest('[class*="battleColumn"]')).not.toBeNull();
+    expect(transition.closest('[class*="questionArea"]')).toBeNull();
+    expect(screen.getByRole('heading', { name: '無傷通關！' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '正在前往下一層…' })).toBeDisabled();
     expect(screen.queryByRole('timer')).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: '確認答案' })).not.toBeInTheDocument();
     expect(stored()).toMatchObject({ status: 'review', hp: 63, currentIndex: 5 });

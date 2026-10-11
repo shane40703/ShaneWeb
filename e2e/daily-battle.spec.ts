@@ -159,7 +159,7 @@ test('adventure preserves the desktop split and uses a single page scroll at eve
   const body = page.getByRole('region', { name: '題目與選項' });
   await expect(battle).toBeVisible();
   await expect(body).toBeVisible({ timeout: 20_000 });
-  await expect(page.getByLabel('建照印章獸', { exact: true }).locator('span')).toHaveCSS('background-image', /law-boss-1-v4.svg/);
+  await expect(page.getByLabel('建照印章獸', { exact: true }).locator('span')).toHaveCSS('background-image', /law-boss-1-v5\.webp/);
   await expect(page.getByLabel('建照印章獸', { exact: true }).locator('span')).toHaveCSS('transform', 'matrix(1, 0, 0, 1, 0, 0)');
   if (page.viewportSize()!.width > 1100) {
     const scene = await battle.boundingBox();
@@ -176,7 +176,7 @@ test('environmental bosses use distinct subject sprites', async ({ page }) => {
   await seed(page, Array(26).fill(true), 26, 'practice', 'adventure', 'env');
   await page.goto('/daily');
   await expect(page.locator('[data-stage="5"]')).toBeVisible();
-  await expect(page.getByLabel('空調機械獸', { exact: true }).locator('span')).toHaveCSS('background-image', /env-boss-5-v4.svg/);
+  await expect(page.getByLabel('空調機械獸', { exact: true }).locator('span')).toHaveCSS('background-image', /env-boss-5-v5\.webp/);
 });
 
 for (const mode of ['normal', 'adventure'] as const) {
@@ -209,10 +209,25 @@ test('stage transitions pause health and time, animate, then automatically start
   await seed(page, Array(5).fill(true), 5, 'review', 'adventure', 'law', 63);
   await page.goto('/daily');
   await expect(page.getByRole('heading', { name: '無傷通關！' })).toBeVisible({ timeout: 20_000 });
+  const review = page.locator('[class*="questionArea"]');
+  const beforeReview = await review.boundingBox();
+  const beforeArena = await page.locator('[class*="pixelArena"]').boundingBox();
   await page.clock.pauseAt(new Date(await page.evaluate(() => Date.now()) + 500));
   await page.getByRole('button', { name: '繼續闖關' }).click();
   const transition = page.getByRole('region', { name: '換層過場' });
   await expect(transition).toBeVisible();
+  await expect(page.locator('[class*="battleColumn"]').getByRole('region', { name: '換層過場' })).toBeVisible();
+  await expect(review.getByRole('region', { name: '換層過場' })).toHaveCount(0);
+  await expect(review.getByRole('heading', { name: '無傷通關！' })).toBeVisible();
+  await expect(page.getByRole('button', { name: '正在前往下一層…' })).toBeDisabled();
+  expect((await transition.locator('[class*="pixelArena"]').boundingBox())!.height).toBe(beforeArena!.height);
+  const afterReview = await review.boundingBox();
+  expect(afterReview!.x).toBe(beforeReview!.x);
+  expect(afterReview!.width).toBe(beforeReview!.width);
+  if (page.viewportSize()!.width > 1100) {
+    const scene = await transition.boundingBox();
+    expect(scene!.x + scene!.width).toBeLessThanOrEqual(afterReview!.x);
+  }
   await expect(transition.getByRole('heading')).toHaveText('前往第 2 層・迴廊');
   await expect(transition.locator('[class*="transitionArchitect"]')).toHaveCSS('animation-name', /stageWalk/);
   await page.clock.runFor(900);

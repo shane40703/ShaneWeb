@@ -340,6 +340,7 @@ function DailyStageTransition({ nextSession, onComplete }: {
 }) {
   const stageIndex = getDailyRunState(nextSession).stageIndex;
   const stage = getDailyStageTheme(nextSession.subjects[0], stageIndex);
+  const hp = Math.ceil(nextSession.hp ?? DAILY_MAX_HP);
 
   useEffect(() => {
     const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
@@ -348,24 +349,34 @@ function DailyStageTransition({ nextSession, onComplete }: {
   }, [onComplete]);
 
   return (
-    <section className={styles.stageTransition} aria-label="換層過場">
-      <div role="status">
-        <small>前一層已完成</small>
-        <h3>前往第 {stageIndex + 1} 層・{stage.name}</h3>
-        <p>保留目前 HP・過場不扣血、不倒數</p>
+    <section className={`${styles.battleScene} ${styles.stageTransition}`} data-stage={stageIndex + 1} aria-label="換層過場">
+      <header className={styles.battleHeading}>
+        <span>STAGE {stageIndex + 1} / {DAILY_STAGES.length}</span>
+        <strong>{stage.name}</strong>
+        <small>NEXT STAGE</small>
+      </header>
+      <div className={styles.pixelArena}>
+        <h3 className={styles.transitionCaption}><span role="status">前往第 {stageIndex + 1} 層・{stage.name}</span></h3>
+        <span className={`${styles.heroActor} ${styles.transitionArchitect}`} aria-hidden="true" />
+        <span className={`${styles.bossActor} ${styles.transitionBoss}`} data-boss={stageIndex + 1} aria-hidden="true">
+          <span className={styles.bossSprite} style={{ backgroundImage: `url('${stage.sprite}')` }} />
+        </span>
       </div>
-      <ol className={styles.transitionSteps} aria-label="六層旅程">
-        {DAILY_STAGES.map((_, index) => (
-          <li key={index} data-reached={index <= stageIndex || undefined}
-            aria-current={index === stageIndex ? 'step' : undefined}>{index + 1}</li>
-        ))}
-      </ol>
-      <div className={styles.transitionTrack} aria-hidden="true"
-        style={{ backgroundImage: `url('/daily-game/stage-${stageIndex + 1}-v2.webp')` }}>
-        <span className={styles.transitionArchitect} />
-        <span className={styles.transitionBoss} style={{ backgroundImage: `url('${stage.sprite}')` }} />
+      <footer className={styles.battleMeters}>
+        <div className={styles.fighterMeter}>
+          <span><b>建築師</b><small>HP {hp} / {DAILY_MAX_HP}</small></span>
+          <i><b style={{ width: `${hp}%` }} /></i>
+        </div>
+        <div className={styles.turnCounter}>換層中</div>
+        <div className={styles.fighterMeter} data-boss-meter>
+          <span><b>{stage.boss}</b><small>HP {stage.questions} / {stage.questions}</small></span>
+          <i><b style={{ width: '100%' }} /></i>
+        </div>
+      </footer>
+      <div className={styles.bossIntent}>
+        <div><strong>前一層已完成</strong><small>保留目前 HP・過場不扣血、不倒數</small></div>
+        <button type="button" onClick={onComplete}>略過過場</button>
       </div>
-      <footer><span>下一位對手：{stage.boss}</span><Button onClick={onComplete}>略過過場</Button></footer>
     </section>
   );
 }
@@ -969,7 +980,7 @@ export function DailyPage() {
   }
 
   function finishReview() {
-    if (!session) return;
+    if (!session || stageTransition) return;
     const next = finishDailyStageReview(session);
     if (next === session) return;
     if (next.status === 'completed') markSubjectCompleted(session.subjects[0], next.answers, 'completed');
@@ -1070,7 +1081,9 @@ export function DailyPage() {
     <section className={styles.daily} data-mode={session.mode} data-playing={session.status === 'practice' || undefined}>
       {session.migrated ? <p className={styles.migrationNotice}>舊版進度已保留於正常模式；新的闖關規則請重新選科／模式開始。</p> : null}
       <div className={styles.battleColumn}>
-        {!normal ? <DailyBattleScene
+        {!normal ? stageTransition ? (
+          <DailyStageTransition nextSession={stageTransition} onComplete={finishTransition} />
+        ) : <DailyBattleScene
           key={currentStageIndex}
           session={session}
           stageIndex={currentStageIndex}
@@ -1098,9 +1111,7 @@ export function DailyPage() {
         ) : null}
       </div>
       <div className={styles.questionArea}>
-        {stageTransition ? (
-          <DailyStageTransition nextSession={stageTransition} onComplete={finishTransition} />
-        ) : bank.status === 'loading' || (requiredQuestionMissing && bank.status !== 'error') ? (
+        {bank.status === 'loading' || (requiredQuestionMissing && bank.status !== 'error') ? (
           <div className={styles.loading}><IconLoader2 size={26} /><span>正在載入今日題目…</span></div>
         ) : bank.status === 'error' && requiredQuestionMissing ? (
           <div className={styles.loading} role="alert">
@@ -1179,8 +1190,8 @@ export function DailyPage() {
             </div>
             <footer>
               <span>{session.reviewedWrongIds.length} / {session.unreviewedWrongIds.length} 題已檢討</span>
-              <Button variant="primary" disabled={!reviewReady} onClick={finishReview}>
-                繼續闖關
+              <Button variant="primary" disabled={!reviewReady || Boolean(stageTransition)} onClick={finishReview}>
+                {stageTransition ? '正在前往下一層…' : '繼續闖關'}
               </Button>
             </footer>
           </section>

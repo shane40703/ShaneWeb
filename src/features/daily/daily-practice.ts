@@ -42,7 +42,7 @@ export function getDailyStageTheme(subject: SubjectId, stageIndex: number) {
     ...DAILY_STAGES[index], name: theme ? DAILY_JOURNEY_NAMES[index] : DAILY_STAGES[index].name,
     boss: theme?.[0] ?? DAILY_STAGES[index].boss,
     skill: theme?.[1] ?? DAILY_BOSS_SKILLS[index],
-    sprite: `/daily-game/${theme ? subject : 'construction'}-boss-${index + 1}-v4.svg`,
+    sprite: `/daily-game/${theme ? subject : 'construction'}-boss-${index + 1}-v5.webp`,
     facing: 1,
   };
 }

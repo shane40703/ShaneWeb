@@ -220,7 +220,7 @@ describe('daily practice 1.63', () => {
     expect(getDailyCombatState(advanceDailyQuestion(session)).bossRemaining).toBe(4);
   });
   it('selects subject-specific bosses and retains construction and structure fallback', () => {
-    expect(getDailyStageTheme('law', 5)).toMatchObject({ boss: '技規法典龍', sprite: '/daily-game/law-boss-6-v4.svg', facing: 1 });
+    expect(getDailyStageTheme('law', 5)).toMatchObject({ boss: '技規法典龍', sprite: '/daily-game/law-boss-6-v5.webp', facing: 1 });
     expect(getDailyStageTheme('env', 0)).toMatchObject({ boss: '旋風精靈', skill: '旋風衝擊' });
     expect(getDailyStageTheme('construction', 0).boss).toBe('砌縫咕嚕');
     expect(getDailyStageTheme('structure', 5).boss).toBe('天際龍王');
@@ -233,7 +233,7 @@ describe('daily practice 1.63', () => {
         expect(getDailyStageTheme(subject, index)).toMatchObject({ questions: stage.questions, wrongLimit: stage.wrongLimit });
       }
     }
-    expect(getDailyStageTheme('structure', 0).sprite).toBe('/daily-game/construction-boss-1-v4.svg');
+    expect(getDailyStageTheme('structure', 0).sprite).toBe('/daily-game/construction-boss-1-v5.webp');
   });
   it('keeps option-answer mappings and rejects malformed orders', () => {
     expect(applyDailyOptionOrder(questions[0], [2, 0, 3, 1]).answerKey).toEqual({ kind: 'accepted', options: [1] });
