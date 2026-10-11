@@ -123,20 +123,15 @@ describe('DailyPage', () => {
     expect(screen.getByRole('button', { name: /建立今日挑戰/ })).toBeEnabled();
   });
 
-  it.each(['normal', 'adventure'] as const)('uses saved reading sizes and independent controls in %s practice', async (mode) => {
+  it.each(['normal', 'adventure'] as const)('does not duplicate the global reading controls in %s practice', async (mode) => {
     seedSession([], mode);
     appState.state.readingPreferences = { questionFontSize: 22, optionFontSize: 16 };
     renderDailyPage();
     await screen.findByRole('region', { name: '題目與選項' });
-    fireEvent.click(screen.getByText('字體大小', { exact: true }));
-    const questionSize = screen.getByRole('slider', { name: '題目字體' });
-    const optionSize = screen.getByRole('slider', { name: '選項字體' });
-    expect(questionSize).toHaveValue('22');
-    expect(optionSize).toHaveValue('16');
-    fireEvent.change(questionSize, { target: { value: '24' } });
-    expect(appState.dispatch).toHaveBeenCalledWith({ type: 'set-reading-font-size', target: 'question', size: 24 });
-    fireEvent.change(optionSize, { target: { value: '20' } });
-    expect(appState.dispatch).toHaveBeenCalledWith({ type: 'set-reading-font-size', target: 'option', size: 20 });
+    expect(screen.queryByText('字體大小', { exact: true })).not.toBeInTheDocument();
+    expect(screen.queryByRole('slider', { name: '題目字體' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('slider', { name: '選項字體' })).not.toBeInTheDocument();
+    expect(appState.state.readingPreferences).toEqual({ questionFontSize: 22, optionFontSize: 16 });
     expect(stored().answers).toEqual({});
     expect(stored().currentIndex).toBe(0);
   });

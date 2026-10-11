@@ -14,7 +14,6 @@ import {
   IconShieldX,
   IconSparkles,
   IconSwords,
-  IconTextSize,
   IconTrophy,
   IconX,
 } from '@tabler/icons-react';
@@ -23,7 +22,6 @@ import { ReviewNoteEditor } from '@/components/attempt-review';
 import { AttachmentGallery } from '@/components/image-attachments';
 import { QuestionAnswerPanel } from '@/components/question-answer-panel';
 import { RichText } from '@/components/rich-text';
-import { ReadingFontControls } from '@/components/reading-font-controls';
 import { QuestionPrompt, Tag } from '@/components/content/content';
 import { Button, OptionGroup } from '@/components/ui/ui';
 import { useSubjectQuestions } from '@/lib/question-bank-client';
@@ -1045,14 +1043,6 @@ export function DailyPage() {
         ) : null}
       </div>
       <div className={styles.questionArea}>
-        <details className={styles.readingControls}>
-          <summary>
-            <IconTextSize size={18} aria-hidden="true" />
-            <span>字體大小</span>
-            <small>題目 {state.readingPreferences.questionFontSize}px／選項 {state.readingPreferences.optionFontSize}px</small>
-          </summary>
-          <ReadingFontControls className={styles.fontControls} />
-        </details>
         {bank.status === 'loading' || (requiredQuestionMissing && bank.status !== 'error') ? (
           <div className={styles.loading}><IconLoader2 size={26} /><span>正在載入今日題目…</span></div>
         ) : bank.status === 'error' && requiredQuestionMissing ? (

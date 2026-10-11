@@ -33,7 +33,7 @@ describe('ReadingFontControls', () => {
     ]);
   });
 
-  it('keeps datalist IDs unique when daily and the settings dialog are both rendered', () => {
+  it('keeps datalist IDs unique when multiple settings panels are rendered', () => {
     render(<><ReadingFontControls /><ReadingFontControls /></>);
     const ids = screen.getAllByRole('slider').map((slider) => slider.getAttribute('list'));
     expect(new Set(ids).size).toBe(4);

@@ -1534,13 +1534,6 @@
 
 .battleColumn { min-width: 0; display: grid; gap: 10px; position: sticky; top: 88px; }
 .questionArea { min-width: 0; }
-.readingControls { flex: 0 0 auto; margin-bottom: 10px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
-.readingControls > summary { min-height: 40px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 8px 12px; cursor: pointer; font-size: 13px; }
-.readingControls > summary::after { content: '+'; margin-left: auto; color: var(--primary); font-size: 18px; line-height: 1; }
-.readingControls[open] > summary::after { content: '−'; }
-.readingControls > summary:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; border-radius: 12px; }
-.readingControls > summary > small { color: var(--muted); font-size: 11px; }
-.readingControls > .fontControls { padding: 8px 14px 12px; border-top: 1px solid var(--line); }
 .battleColumn .battleScene { position: relative; top: auto; z-index: auto; }
 .battleColumn .pixelArena { height: clamp(210px, 30vh, 300px); background-position: center, center 65%; }
 .battleColumn .heroActor, .battleColumn .bossActor { height: 54%; bottom: 3%; }

@@ -47,6 +47,23 @@ async function pauseAtCast(page: Page, phaseMs: number) {
   await page.clock.pauseAt(new Date(target));
 }
 
+async function openReadingSettings(page: Page) {
+  const menu = page.getByRole('button', { name: '開啟選單' });
+  if (await menu.isVisible()) await menu.click();
+  await page.getByRole('link', { name: '設定', exact: true }).click();
+  const dialog = page.getByRole('dialog', { name: '設定', exact: true });
+  await expect(dialog).toBeVisible();
+  await expect(page).toHaveURL(/\/daily$/);
+  await dialog.locator('summary').getByText('閱讀設定', { exact: true }).click();
+  return dialog;
+}
+
+async function closeReadingSettings(page: Page) {
+  const dialog = page.getByRole('dialog', { name: '設定', exact: true });
+  await dialog.locator('header').getByRole('button', { name: '關閉設定' }).click();
+  await expect(dialog).toHaveCount(0);
+}
+
 test('normal mode defaults to familiar fifty-question practice without a battle', async ({ page }) => {
   await page.goto('/daily');
   await expect(page.getByRole('radio', { name: /正常模式/ })).toBeChecked();
@@ -64,20 +81,22 @@ test('normal mode defaults to familiar fifty-question practice without a battle'
 });
 
 for (const mode of ['normal', 'adventure'] as const) {
-  test(`${mode} reading sizes apply to question and options, preserve drafts and survive reload`, async ({ page }) => {
+  test(`${mode} global reading settings apply to questions and options, preserve drafts and survive reload`, async ({ page }) => {
     await seed(page, [], 0, 'practice', mode);
     await page.goto('/daily');
     const body = page.getByRole('region', { name: '題目與選項' });
-    await expect(body).toBeVisible();
+    await expect(body).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByText('字體大小', { exact: true })).toHaveCount(0);
+    await expect(page.getByRole('slider')).toHaveCount(0);
     const prompt = body.locator('[class*="questionPromptText"]').first();
     const optionText = body.getByRole('radiogroup').locator('label').first().locator('span').last();
     await expect(prompt).toHaveCSS('font-size', '18px');
     await expect(optionText).toHaveCSS('font-size', '18px');
     await page.getByRole('radio').first().click();
     const before = await page.evaluate(() => JSON.parse(localStorage.getItem('shaneweb:daily-practice')!));
-    await page.getByText('字體大小', { exact: true }).click();
-    const questionSize = page.getByRole('slider', { name: '題目字體' });
-    const optionSize = page.getByRole('slider', { name: '選項字體' });
+    const settings = await openReadingSettings(page);
+    const questionSize = settings.getByRole('slider', { name: '題目字體' });
+    const optionSize = settings.getByRole('slider', { name: '選項字體' });
     await questionSize.focus();
     await questionSize.press('End');
     await optionSize.focus();
@@ -86,6 +105,7 @@ for (const mode of ['normal', 'adventure'] as const) {
     await expect(optionText).toHaveCSS('font-size', '14px');
     await optionSize.press('End');
     await expect(optionText).toHaveCSS('font-size', '24px');
+    await closeReadingSettings(page);
     await expect(page.getByRole('radio').first()).toBeChecked();
     await expect(page.getByRole('button', { name: '確認答案' })).toBeEnabled();
     const after = await page.evaluate(() => JSON.parse(localStorage.getItem('shaneweb:daily-practice')!));
@@ -103,24 +123,29 @@ for (const mode of ['normal', 'adventure'] as const) {
     await page.reload();
     await expect(prompt).toHaveCSS('font-size', '24px');
     await expect(optionText).toHaveCSS('font-size', '24px');
-    await page.getByText('字體大小', { exact: true }).click();
+    await expect(page.getByText('字體大小', { exact: true })).toHaveCount(0);
+    await openReadingSettings(page);
     await expect(questionSize).toHaveValue('24');
     await expect(optionSize).toHaveValue('24');
+    await closeReadingSettings(page);
   });
 }
 
 for (const status of ['review', 'completed'] as const) {
-  test(`reading controls also apply to ${status} question and answer panels`, async ({ page }) => {
+  test(`global reading settings also apply to ${status} question and answer panels`, async ({ page }) => {
     const review = status === 'review';
     await seed(page, review ? [false,true,true,true,true,true] : Array(50).fill(false), review ? 6 : 50,
       status, review ? 'adventure' : 'normal');
     await page.goto('/daily');
-    await expect(page.getByRole('region', { name: '題目選項' }).first()).toBeVisible();
-    await page.getByText('字體大小', { exact: true }).click();
-    await page.getByRole('slider', { name: '題目字體' }).focus();
-    await page.getByRole('slider', { name: '題目字體' }).press('End');
-    await page.getByRole('slider', { name: '選項字體' }).focus();
-    await page.getByRole('slider', { name: '選項字體' }).press('Home');
+    await expect(page.getByRole('region', { name: '題目選項' }).first()).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByText('字體大小', { exact: true })).toHaveCount(0);
+    await expect(page.getByRole('slider')).toHaveCount(0);
+    const settings = await openReadingSettings(page);
+    await settings.getByRole('slider', { name: '題目字體' }).focus();
+    await settings.getByRole('slider', { name: '題目字體' }).press('End');
+    await settings.getByRole('slider', { name: '選項字體' }).focus();
+    await settings.getByRole('slider', { name: '選項字體' }).press('Home');
+    await closeReadingSettings(page);
     await expect(page.locator('[class*="questionPromptText"]').first()).toHaveCSS('font-size', '24px');
     await expect(page.getByRole('region', { name: '題目選項' }).first().locator('li > span').first()).toHaveCSS('font-size', '14px');
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(page.viewportSize()!.width);
