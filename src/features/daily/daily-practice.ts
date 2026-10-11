@@ -4,21 +4,56 @@ import type { Question, SubjectId } from '@/lib/types';
 export const DAILY_PRACTICE_STORAGE_KEY = 'shaneweb:daily-practice';
 export const DAILY_COMPLETION_STORAGE_KEY = 'shaneweb:daily-completions';
 export const DAILY_QUESTIONS_PER_SUBJECT = 50;
-export const DAILY_HEAL_STREAK = 3;
+export const DAILY_COMBO_STREAK = 3;
 export const DAILY_QUESTION_SECONDS = 60;
 export const DAILY_BARRIER_SECONDS = 10;
 export const DAILY_GUARD_WINDOW_MS = 3000;
+export const DAILY_MAX_HP = 100;
+export const DAILY_HP_DRAIN_PER_SECOND = .5;
+export const DAILY_CORRECT_HEAL = 15;
+export const DAILY_WRONG_DAMAGE = 10;
+// 50 correct + at most 23 survivable mistakes, plus the terminal mistake.
+export const DAILY_MAX_RUN_QUESTIONS = 74;
+export type DailyMode = 'normal' | 'adventure';
+
+const themedBosses = {
+  law: [
+    ['建築法', '建照印章獸', '裁決印章'],
+    ['公寓大廈管理條例', '公寓管家獸', '鑰匙旋風'],
+    ['國土・區域・國家公園', '國土山林靈', '山林結界'],
+    ['營造業法・採購法', '契約工務獸', '契約封印'],
+    ['都市計畫・都市更新', '都市更新獅', '都市重構'],
+    ['建築技術規則', '技規法典龍', '法典龍息'],
+  ],
+  env: [
+    ['風之庭', '旋風精靈', '旋風衝擊'], ['光之廊', '日光稜晶獸', '稜光閃擊'],
+    ['水之渠', '水滴管管獸', '水流湧動'], ['音之殿', '回聲音波獸', '回聲震波'],
+    ['設備工坊', '空調機械獸', '風管過載'], ['綠建築森林', '綠建築森龍', '森綠龍息'],
+  ],
+} as const;
+
+export function getDailyStageTheme(subject: SubjectId, stageIndex: number) {
+  const index = Math.max(0, Math.min(stageIndex, DAILY_STAGE_COUNT - 1));
+  const theme = subject === 'law' || subject === 'env' ? themedBosses[subject][index] : undefined;
+  return {
+    ...DAILY_STAGES[index], name: theme?.[0] ?? DAILY_STAGES[index].name,
+    boss: theme?.[1] ?? DAILY_STAGES[index].boss,
+    skill: theme?.[2] ?? DAILY_BOSS_SKILLS[index],
+    sprite: theme ? `/daily-game/${subject}-boss-${index + 1}-v3.webp` : `/daily-game/boss-${index + 1}-v2.webp`,
+    facing: theme || index === 5 ? 1 : -1,
+  };
+}
 
 export const DAILY_BOSS_SKILLS = [
   '紅磚投擲', '鋼梁橫掃', '鷹架震擊', '玻璃風刃', '地基震波', '屋頂龍息',
 ] as const;
 
 export const DAILY_STAGES = [
-  { name: '磚造巷口', boss: '砌縫咕嚕', questions: 5, wrongLimit: 3 },
-  { name: '鋼構工地', boss: '鋼梁鉗獸', questions: 6, wrongLimit: 3 },
-  { name: '鷹架高塔', boss: '鷹架巨像', questions: 7, wrongLimit: 4 },
+  { name: '磚造巷口', boss: '砌縫咕嚕', questions: 5, wrongLimit: 7 },
+  { name: '鋼構工地', boss: '鋼梁鉗獸', questions: 6, wrongLimit: 6 },
+  { name: '鷹架高塔', boss: '鷹架巨像', questions: 7, wrongLimit: 5 },
   { name: '玻璃天際', boss: '帷幕幽靈', questions: 8, wrongLimit: 4 },
-  { name: '混凝土要塞', boss: '鋼筋堡壘獸', questions: 9, wrongLimit: 3 },
+  { name: '混凝土要塞', boss: '鋼筋堡壘獸', questions: 9, wrongLimit: 4 },
   { name: '終極屋頂', boss: '天際龍王', questions: 15, wrongLimit: 3 },
 ] as const;
 export const DAILY_STAGE_COUNT = DAILY_STAGES.length;
@@ -36,6 +71,13 @@ export interface DailyPracticeAnswer {
 }
 
 export interface DailyPracticeSession {
+  rulesVersion?: 3;
+  mode?: DailyMode;
+  hp?: number;
+  hpUpdatedAtMs?: number;
+  questionRemainingMs?: number;
+  failureReason?: 'time' | 'health' | 'mistakes' | 'questions';
+  migrated?: boolean;
   date: string;
   subjects: SubjectId[];
   questionIds: string[];
@@ -72,8 +114,8 @@ export function countDailyWrongAnswers(
   return Object.values(answers).filter((answer) => !answer.correct).length;
 }
 
-export function getDailyStageIndex(questionIndex: number) {
-  const safeIndex = Math.max(0, Math.min(questionIndex, DAILY_QUESTIONS_PER_SUBJECT - 1));
+export function getDailyStageIndex(correctCount: number) {
+  const safeIndex = Math.max(0, Math.min(correctCount, DAILY_QUESTIONS_PER_SUBJECT - 1));
   let boundary = 0;
   for (const [index, stage] of DAILY_STAGES.entries()) {
     boundary += stage.questions;
@@ -90,74 +132,62 @@ export function getDailyStageBounds(stageIndex: number) {
   return { start, end: start + DAILY_STAGES[safeStageIndex].questions };
 }
 
-export function getDailyLifeState(
+/** Stages advance on correct answers, never on attempted-question boundaries. */
+export function getDailyStagesState(
   questionIds: readonly string[],
   answers: Readonly<Record<string, DailyPracticeAnswer>>,
-  protectedWrongIds: readonly string[] = [],
-  questionIndex = Math.max(0, Math.min(Object.keys(answers).length, questionIds.length - 1)),
 ) {
-  const protectedIds = new Set(protectedWrongIds);
+  const stages = DAILY_STAGES.map(() => ({ correct: 0, wrong: 0, answered: 0 }));
+  const answerStages: Record<string, number> = {};
+  let totalCorrect = 0;
   let streak = 0;
-  let restored = 0;
   let relicsEarned = 0;
-  let currentStageIndex = 0;
-  let remaining: number = DAILY_STAGES[0].wrongLimit;
-  let maximum: number = remaining;
-  let failed = false;
-  for (const [index, questionId] of questionIds.entries()) {
-    const stageIndex = getDailyStageIndex(index);
-    if (stageIndex !== currentStageIndex) {
-      currentStageIndex = stageIndex;
-      maximum = DAILY_STAGES[stageIndex].wrongLimit;
-      remaining = maximum;
-    }
-    const answer = answers[questionId];
+  let failedAt: number | undefined;
+  for (const id of questionIds) {
+    const answer = answers[id];
     if (!answer) break;
-    if (!answer.correct) {
-      streak = 0;
-      if (!protectedIds.has(questionId)) {
-        remaining = Math.max(0, remaining - 1);
-      }
-      if (remaining === 0) {
-        failed = true;
-        break;
-      }
-    } else {
-      streak += 1;
-      if (streak === DAILY_HEAL_STREAK) {
-        if (remaining < maximum) {
-          remaining += 1;
-          restored += 1;
-        } else {
-          relicsEarned += 1;
-        }
+    const index = getDailyStageIndex(totalCorrect);
+    const stage = stages[index];
+    answerStages[id] = index;
+    stage.answered++;
+    if (answer.correct) {
+      stage.correct++;
+      totalCorrect++;
+      streak++;
+      if (streak % DAILY_COMBO_STREAK === 0) relicsEarned++;
+      if (stage.correct === DAILY_STAGES[index].questions) {
+        if (stage.wrong === 0) relicsEarned++;
         streak = 0;
       }
-    }
-
-    const { start, end } = getDailyStageBounds(stageIndex);
-    if (index + 1 === end) {
-      const stageIds = questionIds.slice(start, end);
-      if (stageIds.every((id) => answers[id]?.correct)) relicsEarned += 1;
+    } else {
+      stage.wrong++;
+      streak = 0;
+      if (stage.wrong >= DAILY_STAGES[index].wrongLimit) {
+        failedAt = index;
+        break;
+      }
     }
   }
-
-  const requestedStageIndex = getDailyStageIndex(questionIndex);
-  if (!failed && requestedStageIndex !== currentStageIndex) {
-    currentStageIndex = requestedStageIndex;
-    maximum = DAILY_STAGES[currentStageIndex].wrongLimit;
-    remaining = maximum;
-  }
-  return {
-    remaining,
-    maximum,
-    restored,
-    streak,
-    relicsEarned,
-    stageIndex: currentStageIndex,
-    failed,
-  };
+  return { stages, answerStages, totalCorrect, streak, relicsEarned, failedAt };
 }
+
+export function getDailyRunState(session: DailyPracticeSession) {
+  const progress = getDailyStagesState(session.questionIds, session.answers);
+  const currentId = session.questionIds[session.currentIndex];
+  const previousId = session.questionIds[Math.max(0, session.currentIndex - 1)];
+  const stageIndex = progress.failedAt ?? (
+    session.status === 'completed' ? DAILY_STAGE_COUNT - 1
+      : session.status === 'review' || session.status === 'failed'
+        ? progress.answerStages[previousId] ?? getDailyStageIndex(progress.totalCorrect)
+        : progress.answerStages[currentId] ?? getDailyStageIndex(progress.totalCorrect)
+  );
+  const stage = DAILY_STAGES[stageIndex];
+  const counts = progress.stages[stageIndex];
+  return { ...progress, stageIndex, bossRemaining: Math.max(0, stage.questions - counts.correct),
+    remaining: Math.max(0, stage.wrongLimit - counts.wrong), maximum: stage.wrongLimit,
+    failed: progress.failedAt !== undefined };
+}
+
 
 export function getDailyRelicInventory(
   questionIds: readonly string[],
@@ -165,21 +195,27 @@ export function getDailyRelicInventory(
   relicUses: Readonly<Partial<Record<string, DailyRelicType>>> = {},
   protectedWrongIds: readonly string[] = [],
 ) {
-  const inventory = Object.fromEntries(
-    DAILY_RELIC_TYPES.map((type) => [type, 0]),
-  ) as Record<DailyRelicType, number>;
-  const { relicsEarned } = getDailyLifeState(
-    questionIds,
-    answers,
-    protectedWrongIds,
-  );
-  for (let index = 0; index < relicsEarned; index += 1) {
-    inventory[DAILY_RELIC_TYPES[index % DAILY_RELIC_TYPES.length]] += 1;
-  }
-  Object.values(relicUses).forEach((type) => {
-    if (type) inventory[type] = Math.max(0, inventory[type] - 1);
-  });
+  void protectedWrongIds;
+  const inventory = { eliminate: 0, barrier: 0 };
+  const { relicsEarned } = getDailyStagesState(questionIds, answers);
+  for (let index = 0; index < relicsEarned; index++) inventory[DAILY_RELIC_TYPES[index % 2]]++;
+  for (const type of Object.values(relicUses)) if (type) inventory[type] = Math.max(0, inventory[type] - 1);
   return inventory;
+}
+
+export function getDailyHealth(session: DailyPracticeSession, nowMs = Date.now()) {
+  if (session.status === 'failed' && session.failureReason !== 'questions') return 0;
+  const hp = session.hp ?? DAILY_MAX_HP;
+  if (session.mode === 'normal' || session.hpUpdatedAtMs === undefined || session.status !== 'practice' ||
+    session.answers[session.questionIds[session.currentIndex]]) return hp;
+  const protectedUntil = Math.max(session.barrierUntilMs ?? 0, session.guardUntilMs ?? 0);
+  const pausedMs = Math.max(0, Math.min(nowMs, protectedUntil) - session.hpUpdatedAtMs);
+  const elapsedMs = Math.max(0, nowMs - session.hpUpdatedAtMs - pausedMs);
+  return Math.max(0, hp - elapsedMs / 1000 * DAILY_HP_DRAIN_PER_SECOND);
+}
+
+export function settleDailyHealth(session: DailyPracticeSession, nowMs = Date.now()): DailyPracticeSession {
+  return { ...session, hp: getDailyHealth(session, nowMs), hpUpdatedAtMs: nowMs };
 }
 
 export function getDailyRemainingTimeMs(
@@ -190,58 +226,104 @@ export function getDailyRemainingTimeMs(
   return Math.max(0, deadlineMs - nowMs);
 }
 
-/** The timed HP is this question's danger meter, not an additional mistake penalty. */
 export function getDailyCombatState(session: DailyPracticeSession, nowMs = Date.now()) {
-  const index = session.status === 'practice'
-    ? Math.max(0, Math.min(session.currentIndex, session.questionIds.length - 1))
-    : Math.max(0, session.currentIndex - 1);
-  const stageIndex = getDailyStageIndex(index);
-  const stage = DAILY_STAGES[stageIndex];
-  const { start, end } = getDailyStageBounds(stageIndex);
-  const ids = session.questionIds.slice(start, end);
-  const answer = session.answers[session.questionIds[index]];
-  const active = session.status === 'practice' && Boolean(session.questionIds[session.currentIndex]) && !answer;
-  const bossRemaining = session.status === 'completed' ? 0 : stage.questions - ids.filter(
-    id => session.answers[id]?.correct || session.reviewedWrongIds.includes(id),
-  ).length;
-  const enraged = bossRemaining > 0 && bossRemaining <= Math.ceil(stage.questions / 3);
-  const cycleMs = enraged ? 5000 : stageIndex >= 4 ? 6000 : 8000;
-  const remainingMs = getDailyRemainingTimeMs(session.questionDeadlineMs, nowMs);
-  const elapsedMs = Math.max(0, DAILY_QUESTION_SECONDS * 1000 - remainingMs);
-  const castProgress = (elapsedMs % cycleMs) / cycleMs;
-  const guarding = Boolean(
-    (session.barrierUntilMs ?? 0) > nowMs || (session.guardUntilMs ?? 0) > nowMs,
-  );
-  const life = getDailyLifeState(session.questionIds, session.answers, session.protectedWrongIds, index);
-  const timeRatio = active ? Math.min(1, remainingMs / (DAILY_QUESTION_SECONDS * 1000)) : 1;
+  const run = getDailyRunState(session);
+  const id = session.questionIds[session.currentIndex];
+  const active = session.mode !== 'normal' && session.status === 'practice' && Boolean(id) &&
+    !session.answers[id] && session.questionDeadlineMs !== undefined && session.hpUpdatedAtMs !== undefined;
+  const enraged = run.bossRemaining > 0 && run.bossRemaining <= Math.ceil(DAILY_STAGES[run.stageIndex].questions / 3);
+  const cycleMs = enraged ? 5000 : run.stageIndex >= 4 ? 6000 : 8000;
+  const elapsedMs = Math.max(0, DAILY_QUESTION_SECONDS * 1000 - getDailyRemainingTimeMs(session.questionDeadlineMs, nowMs));
+  const guarding = Math.max(session.barrierUntilMs ?? 0, session.guardUntilMs ?? 0) > nowMs;
   let chain = 0;
-  for (const id of ids.filter(id => session.answers[id]).reverse()) {
-    if (!session.answers[id].correct) break;
-    chain += 1;
-  }
-  return {
-    active, guarding, enraged, chain, bossRemaining, cycleMs, castProgress,
-    attackNumber: Math.floor(elapsedMs / cycleMs),
-    skill: DAILY_BOSS_SKILLS[stageIndex],
-    timedHpRatio: session.status === 'failed' ? 0 : life.remaining / life.maximum * timeRatio,
-    guardAvailable: active && !Object.keys(session.guardUses ?? {}).some(
-      id => getDailyStageIndex(session.questionIds.indexOf(id)) === stageIndex,
-    ),
-  };
+  const ids = session.questionIds.filter(qid => run.answerStages[qid] === run.stageIndex && session.answers[qid]);
+  for (const qid of ids.reverse()) { if (!session.answers[qid].correct) break; chain++; }
+  return { active, guarding, enraged, chain, bossRemaining: run.bossRemaining, cycleMs,
+    castProgress: elapsedMs % cycleMs / cycleMs, attackNumber: Math.floor(elapsedMs / cycleMs),
+    skill: getDailyStageTheme(session.subjects[0], run.stageIndex).skill,
+    timedHpRatio: getDailyHealth(session, nowMs) / DAILY_MAX_HP,
+    guardAvailable: active && !Object.keys(session.guardUses ?? {}).some(qid => (
+      run.answerStages[qid] ?? (qid === id ? run.stageIndex : -1)
+    ) === run.stageIndex) };
 }
 
 export function activateDailyGuard(session: DailyPracticeSession, nowMs = Date.now()): DailyPracticeSession {
   const combat = getDailyCombatState(session, nowMs);
-  if (!combat.guardAvailable || getDailyRemainingTimeMs(session.questionDeadlineMs, nowMs) <= 0) return session;
+  if (!combat.guardAvailable || getDailyRemainingTimeMs(session.questionDeadlineMs, nowMs) <= 0 || getDailyHealth(session, nowMs) <= 0) return session;
   const perfect = combat.castProgress >= .65;
   const questionId = session.questionIds[session.currentIndex];
-  return {
-    ...session,
+  return { ...settleDailyHealth(session, nowMs),
     guardUses: { ...session.guardUses, [questionId]: perfect ? 'perfect' : 'early' },
     guardUntilMs: perfect ? nowMs + DAILY_GUARD_WINDOW_MS : undefined,
-    questionDeadlineMs: (session.questionDeadlineMs ?? nowMs + DAILY_QUESTION_SECONDS * 1000)
-      + (perfect ? 5 : 2) * 1000,
-  };
+    questionDeadlineMs: (session.questionDeadlineMs ?? nowMs + DAILY_QUESTION_SECONDS * 1000) + (perfect ? 5 : 2) * 1000 };
+}
+
+export function startDailyQuestion(session: DailyPracticeSession, nowMs = Date.now()): DailyPracticeSession {
+  return { ...session, hpUpdatedAtMs: session.mode === 'normal' ? undefined : nowMs,
+    questionDeadlineMs: session.mode === 'normal' ? undefined : nowMs + (session.questionRemainingMs ?? DAILY_QUESTION_SECONDS * 1000),
+    questionRemainingMs: undefined,
+    barrierUntilMs: (session.barrierUntilMs ?? 0) > nowMs ? session.barrierUntilMs : undefined,
+    guardUntilMs: undefined };
+}
+
+export function pauseDailyQuestion(session: DailyPracticeSession, nowMs = Date.now()): DailyPracticeSession {
+  if (session.mode === 'normal' || session.status !== 'practice' || !session.questionDeadlineMs ||
+    session.answers[session.questionIds[session.currentIndex]]) return session;
+  return { ...settleDailyHealth(session, nowMs), hpUpdatedAtMs: undefined,
+    questionRemainingMs: getDailyRemainingTimeMs(session.questionDeadlineMs, nowMs), questionDeadlineMs: undefined };
+}
+
+export function answerDailyQuestion(session: DailyPracticeSession, selected: number, correct: boolean, nowMs = Date.now()): DailyPracticeSession {
+  const id = session.questionIds[session.currentIndex];
+  if (!id || session.status !== 'practice' || session.answers[id]) return session;
+  const normal = session.mode === 'normal';
+  const health = getDailyHealth(session, nowMs);
+  const timedOut = !normal && getDailyRemainingTimeMs(session.questionDeadlineMs, nowMs) <= 0;
+  if (!normal && (timedOut || health <= 0)) {
+    return { ...session, hp: 0, hpUpdatedAtMs: undefined, questionDeadlineMs: undefined,
+      answers: { ...session.answers, [id]: { selected: -1, correct: false, timedOut: true } },
+      unreviewedWrongIds: [...session.unreviewedWrongIds, id], currentIndex: session.currentIndex + 1,
+      status: 'failed', failureReason: timedOut ? 'time' : 'health' };
+  }
+  const protectedHit = !correct && !normal && getDailyCombatState(session, nowMs).guarding;
+  const hp = normal ? health : Math.max(0, Math.min(DAILY_MAX_HP,
+    health + (correct ? DAILY_CORRECT_HEAL : protectedHit ? 0 : -DAILY_WRONG_DAMAGE)));
+  const next: DailyPracticeSession = { ...session, hp, hpUpdatedAtMs: undefined, questionDeadlineMs: undefined,
+    answers: { ...session.answers, [id]: { selected, correct } },
+    unreviewedWrongIds: correct ? session.unreviewedWrongIds : [...session.unreviewedWrongIds, id],
+    protectedWrongIds: protectedHit ? [...session.protectedWrongIds, id] : session.protectedWrongIds };
+  const run = getDailyRunState(next);
+  if (!normal && (run.failed || hp <= 0)) {
+    return { ...next, currentIndex: session.currentIndex + 1, status: 'failed', hp: 0,
+      failureReason: run.failed ? 'mistakes' : 'health' };
+  }
+  return next;
+}
+
+export function advanceDailyQuestion(session: DailyPracticeSession): DailyPracticeSession {
+  const id = session.questionIds[session.currentIndex];
+  if (session.status !== 'practice' || !session.answers[id]) return session;
+  const run = getDailyRunState(session);
+  const nextIndex = session.currentIndex + 1;
+  if (session.mode !== 'normal' && run.bossRemaining === 0) {
+    return { ...session, currentIndex: nextIndex, status: 'review', hpUpdatedAtMs: undefined,
+      questionDeadlineMs: undefined, barrierUntilMs: undefined, guardUntilMs: undefined };
+  }
+  const exhausted = nextIndex >= session.questionIds.length;
+  return { ...session, currentIndex: nextIndex, status: exhausted ? session.mode === 'normal' ? 'completed' : 'failed' : 'practice',
+    failureReason: exhausted && session.mode !== 'normal' ? 'questions' : undefined,
+    hpUpdatedAtMs: undefined, questionDeadlineMs: undefined,
+    barrierUntilMs: exhausted ? undefined : session.barrierUntilMs, guardUntilMs: undefined };
+}
+
+export function finishDailyStageReview(session: DailyPracticeSession): DailyPracticeSession {
+  if (session.status !== 'review' || !session.unreviewedWrongIds.every(id => session.reviewedWrongIds.includes(id))) return session;
+  const completed = session.mode === 'normal' ? session.currentIndex >= session.questionIds.length
+    : getDailyRunState(session).totalCorrect >= DAILY_QUESTIONS_PER_SUBJECT;
+  const exhausted = !completed && session.currentIndex >= session.questionIds.length;
+  return { ...session, status: completed ? 'completed' : exhausted ? 'failed' : 'practice',
+    failureReason: exhausted ? 'questions' : undefined, unreviewedWrongIds: [], reviewedWrongIds: [],
+    hpUpdatedAtMs: undefined, questionDeadlineMs: undefined, barrierUntilMs: undefined, guardUntilMs: undefined };
 }
 
 export function createDailyCompletionResult(
@@ -309,6 +391,7 @@ export function createDailyPracticeSession(
   subjects: readonly SubjectId[],
   date = getTaipeiDateKey(),
   random: () => number = Math.random,
+  mode: DailyMode = 'adventure',
 ): DailyPracticeSession {
   const selectedSubjects = [...new Set(subjects)].slice(0, 1);
   const questionIds = selectedSubjects.flatMap((subject) =>
@@ -317,7 +400,7 @@ export function createDailyPracticeSession(
         (question) =>
           question.subject === subject && question.answerKey.kind !== 'written',
       ),
-      DAILY_QUESTIONS_PER_SUBJECT,
+      mode === 'normal' ? DAILY_QUESTIONS_PER_SUBJECT : DAILY_MAX_RUN_QUESTIONS,
       random,
     ).map((question) => question.id),
   );
@@ -329,6 +412,9 @@ export function createDailyPracticeSession(
     }),
   );
   return {
+    rulesVersion: 3,
+    mode,
+    hp: DAILY_MAX_HP,
     date,
     subjects: selectedSubjects,
     questionIds,
@@ -373,7 +459,7 @@ export function parseDailyPracticeSession(
   const subjects = Array.isArray(session.subjects)
     ? [...new Set(session.subjects.filter(isSubjectId))]
     : [];
-  const maximumQuestions = subjects.length * DAILY_QUESTIONS_PER_SUBJECT;
+  const maximumQuestions = DAILY_MAX_RUN_QUESTIONS;
   const questionIds = Array.isArray(session.questionIds)
     ? [...new Set(session.questionIds.filter((id): id is string => typeof id === 'string'))]
         .slice(0, maximumQuestions)
@@ -449,61 +535,57 @@ export function parseDailyPracticeSession(
     Math.max(0, session.currentIndex as number),
     questionIds.length,
   );
-  // One guard per stage, including after a reload. Ignore unknown/duplicate entries.
+  const versioned = session.rulesVersion === 3;
+  // Pre-1.63 runs have incompatible attempted-question stage boundaries. Preserve
+  // their answers in normal mode rather than inventing a new victory or deleting data.
+  const mode: DailyMode = versioned && session.mode === 'adventure' ? 'adventure' : 'normal';
+  const base: DailyPracticeSession = {
+    rulesVersion: 3, mode, migrated: !versioned || session.migrated || undefined,
+    date: session.date, subjects, questionIds, optionOrders, answers, eliminatedOptions,
+    relicUses, protectedWrongIds, currentIndex, unreviewedWrongIds, reviewedWrongIds,
+    status: session.status as DailyPracticeSession['status'],
+    hp: Number.isFinite(session.hp) ? Math.max(0, Math.min(DAILY_MAX_HP, session.hp!)) : DAILY_MAX_HP,
+    hpUpdatedAtMs: mode === 'adventure' && Number.isFinite(session.hpUpdatedAtMs) ? session.hpUpdatedAtMs : undefined,
+    questionRemainingMs: mode === 'adventure' && Number.isFinite(session.questionRemainingMs)
+      ? Math.max(0, Math.min(DAILY_QUESTION_SECONDS * 1000 + 15000, session.questionRemainingMs!)) : undefined,
+    questionDeadlineMs: mode === 'adventure' && Number.isFinite(session.questionDeadlineMs) ? session.questionDeadlineMs : undefined,
+    barrierUntilMs: mode === 'adventure' && Number.isFinite(session.barrierUntilMs)
+      ? session.barrierUntilMs : mode === 'adventure' && Number.isFinite(legacySession.timerFrozenUntilMs)
+        ? legacySession.timerFrozenUntilMs : undefined,
+    failureReason: ['time', 'health', 'mistakes', 'questions'].includes(session.failureReason ?? '')
+      ? session.failureReason : undefined,
+  };
+  const run = getDailyRunState(base);
   const guardUses: NonNullable<DailyPracticeSession['guardUses']> = {};
   const guardedStages = new Set<number>();
-  for (const [index, id] of questionIds.entries()) {
+  for (const id of questionIds) {
     const use = session.guardUses?.[id];
-    const stageIndex = getDailyStageIndex(index);
-    if ((use === 'early' || use === 'perfect') && !guardedStages.has(stageIndex)) {
+    const stageIndex = run.answerStages[id] ?? (id === questionIds[currentIndex] ? run.stageIndex : -1);
+    if (stageIndex >= 0 && (use === 'early' || use === 'perfect') && !guardedStages.has(stageIndex)) {
       guardUses[id] = use;
       guardedStages.add(stageIndex);
     }
   }
-  const lifeState = getDailyLifeState(
-    questionIds,
-    answers,
-    protectedWrongIds,
-    Math.max(0, Math.min(
-      session.status === 'failed' && !answers[questionIds[currentIndex]]
-        ? currentIndex - 1
-        : currentIndex,
-      questionIds.length - 1,
-    )),
-  );
-  const status = session.status === 'completed'
-    ? 'completed'
-    : lifeState.failed || Object.values(answers).some((answer) => answer.timedOut)
-      ? 'failed'
-      : session.status === 'failed'
-        ? 'practice'
-        : session.status as DailyPracticeSession['status'];
-  return {
-    date: session.date,
-    subjects,
-    questionIds,
-    optionOrders,
-    answers,
-    eliminatedOptions,
-    relicUses,
-    protectedWrongIds,
-    guardUses,
-    guardUntilMs: Object.values(guardUses).includes('perfect') && Number.isFinite(session.guardUntilMs)
-      ? session.guardUntilMs
-      : undefined,
-    questionDeadlineMs: Number.isFinite(session.questionDeadlineMs)
-      ? session.questionDeadlineMs
-      : undefined,
-    barrierUntilMs: Number.isFinite(session.barrierUntilMs)
-      ? session.barrierUntilMs
-      : Number.isFinite(legacySession.timerFrozenUntilMs)
-        ? legacySession.timerFrozenUntilMs
-      : undefined,
-    currentIndex,
-    unreviewedWrongIds,
-    reviewedWrongIds,
-    status,
-  };
+  base.guardUses = guardUses;
+  base.guardUntilMs = mode === 'adventure' && Object.values(guardUses).includes('perfect') && Number.isFinite(session.guardUntilMs)
+    ? session.guardUntilMs : undefined;
+  if (mode === 'adventure') {
+    if (run.failed) { base.status = 'failed'; base.failureReason = 'mistakes'; base.hp = 0; }
+    if (Object.values(answers).some(answer => answer.timedOut)) {
+      base.status = 'failed'; base.failureReason ??= 'time'; base.hp = 0;
+    }
+    // Reloading a defeated run must never resurrect it. Completion requires 50 correct.
+    if (base.status === 'failed') base.failureReason ??= 'health';
+    if (base.status === 'completed' && run.totalCorrect < DAILY_QUESTIONS_PER_SUBJECT) {
+      base.status = currentIndex < questionIds.length ? 'practice' : 'failed';
+      if (base.status === 'failed') base.failureReason = 'questions';
+    }
+    if (base.status === 'practice' && currentIndex >= questionIds.length) {
+      base.status = run.totalCorrect >= DAILY_QUESTIONS_PER_SUBJECT ? 'completed' : 'failed';
+      if (base.status === 'failed') base.failureReason = 'questions';
+    }
+  }
+  return base;
 }
 
 export function parseDailyCompletionRecord(
@@ -527,7 +609,7 @@ export function parseDailyCompletionRecord(
         result &&
         Number.isInteger(result.answered) &&
         result.answered >= 0 &&
-        result.answered <= DAILY_QUESTIONS_PER_SUBJECT &&
+        result.answered <= DAILY_MAX_RUN_QUESTIONS &&
         Number.isInteger(result.correct) &&
         result.correct >= 0 &&
         result.correct <= result.answered &&
@@ -544,20 +626,4 @@ export function parseDailyCompletionRecord(
   } catch {
     return { date: today, subjects: [], results: {} };
   }
-}
-
-export function shouldEnterDailyReview(
-  nextIndex: number,
-  total: number,
-  wrongCount: number,
-) {
-  void wrongCount;
-  const stageBoundaries = DAILY_STAGES.reduce<number[]>((boundaries, stage) => {
-    boundaries.push((boundaries.at(-1) ?? 0) + stage.questions);
-    return boundaries;
-  }, []);
-  return (
-    nextIndex > 0 &&
-    (stageBoundaries.includes(nextIndex) || nextIndex >= total)
-  );
 }

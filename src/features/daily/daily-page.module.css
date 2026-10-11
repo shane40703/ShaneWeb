@@ -1784,3 +1784,63 @@
     display: none;
   }
 }
+
+/* 1.63: plain practice and a readable, single-scroll mobile adventure. */
+.modeChoices { margin: 0; padding: 18px 24px; border: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.modeChoices legend { padding-top: 14px; font-weight: 800; }
+.modeChoices label { display: flex; align-items: center; gap: 10px; padding: 16px; border: 1px solid var(--line); border-radius: 12px; cursor: pointer; }
+.modeChoices label[data-checked] { background: var(--primary-soft); border-color: var(--primary); }
+.modeChoices label span { display: grid; gap: 6px; }
+.modeChoices small { color: var(--muted); line-height: 1.6; }
+.migrationNotice { grid-column: 1 / -1; padding: 12px; margin: 0; border: 1px solid var(--line); border-radius: 10px; }
+.fighterMeter[data-danger] > i > b { background: linear-gradient(90deg, #df4050, #ff876d); }
+.daily[data-mode='normal'] { grid-template-columns: minmax(0, 1fr) 240px; width: min(100%, 1180px); }
+.daily[data-mode='normal'] .battleColumn { grid-column: 2; grid-row: 1; }
+.daily[data-mode='normal'] .questionArea { grid-column: 1; grid-row: 1; }
+.daily[data-mode='normal'] .challenge { max-height: none; }
+.daily[data-mode='normal'] .answerBody { overflow: visible; }
+.daily[data-mode='normal'] .scoreboard { grid-template-columns: 1fr; }
+.daily[data-mode='normal'] .questionMeta > * { display: inline-flex; }
+
+@media (max-width: 1100px) {
+  .daily[data-mode='normal'] { grid-template-columns: 1fr; }
+  .daily[data-mode='normal'] .battleColumn { display: block; grid-column: 1; grid-row: 2; position: static; }
+  .daily[data-mode='normal'] .questionArea { grid-column: 1; grid-row: 1; }
+  .daily[data-mode='normal'] .scoreboard { grid-template-columns: repeat(3, 1fr); }
+  .daily .challenge { max-height: none; min-height: 0; overflow: visible; }
+  .daily .challenge > .answerBody { overflow: visible; scrollbar-gutter: auto; overscroll-behavior: auto; }
+  .daily .battleColumn { position: static; }
+  .daily .challenge > footer { position: static; background: var(--surface); }
+}
+
+@media (max-width: 540px) {
+  .modeChoices { grid-template-columns: 1fr; padding: 12px; }
+  .modeChoices label { padding: 12px; }
+  .daily .battleColumn .pixelArena { height: 84px; }
+  .daily .battleColumn .heroActor, .daily .battleColumn .bossActor { height: 80%; }
+  .daily .battleColumn .bossActor[data-boss='6'] { height: 94%; }
+  .daily .battleColumn .battleHeading small { display: none; }
+  .daily .battleColumn .battleHeading { grid-template-columns: auto 1fr; }
+  .daily .battleColumn .battleHeading { min-height: 22px; padding: 3px 6px; }
+  .daily .battleColumn .battleHeading strong { font-size: 12px; line-height: 1.2; }
+  .daily .bossIntent small { display: none; }
+  .daily .bossIntent { padding: 5px 8px; }
+  .daily .bossIntent button { min-height: 36px; }
+  .daily .relicDock { padding: 5px 8px; }
+  .daily .relicDock > div span, .daily .relicDock > div small { font-size: 9px; }
+  .daily .challenge { max-height: none; min-height: 0; }
+  .daily .answerBody { --question-font-size: 16px; }
+  .daily .answerBody figure img { max-height: 240px; width: auto; object-fit: contain; }
+  .daily .answerBody [role='radiogroup'] label { font-size: 14px; min-height: 44px; }
+  .daily .answerBody [role='radiogroup'] label { grid-template-columns: 20px minmax(0, 1fr); gap: 8px; padding-left: 10px; padding-right: 44px; }
+  .daily .answerBody [role='radiogroup'] label > [role='radio'] { position: absolute; width: 1px; height: 1px; opacity: 0; }
+  .daily .answerBody [role='radiogroup'] label > :nth-child(2) { width: 20px; }
+  .daily .answerBody > div:first-child { padding: 12px 12px 8px; }
+  .daily .answerBody > div:nth-child(2) { padding: 4px 12px 12px; }
+  .daily .challenge > footer > button { min-height: 44px; font-size: 13px; }
+  .daily .challenge > footer > span { font-size: 11px; }
+  .daily .questionMeta { gap: 4px; }
+  .daily .challengeActions { flex-shrink: 0; }
+  .daily .challengeActions > button { min-width: 36px; min-height: 36px; padding: 6px; font-size: 0; }
+  .daily[data-mode='normal'] .questionMeta > :nth-child(3), .daily[data-mode='normal'] .questionMeta > :nth-child(4) { display: none; }
+}
