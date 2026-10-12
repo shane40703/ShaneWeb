@@ -1,44 +1,54 @@
 .page { display: grid; gap: 20px; max-width: 1100px; margin: 0 auto; }
-.intro, .card { padding: 24px; border: 1px solid var(--line); border-radius: 18px; background: var(--surface); min-width: 0; }
-.heading, .controls, .card header, .card footer, .lawHeading { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.intro, .card, .summary { padding: 24px; border: 1px solid var(--line); border-radius: 18px; background: var(--surface); min-width: 0; }
+.heading, .card header, .card footer, .lawHeading { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .heading { color: var(--primary-strong); }
 .heading h2 { color: var(--text); margin: 0; font-size: 24px; }
 .heading > span, .tags span { padding: 4px 9px; background: var(--primary-soft); border-radius: 8px; font-size: 12px; }
 .intro p { margin: 12px 0 8px; }
-.intro small, .instruction, .storageNote { color: var(--muted); line-height: 1.7; }
-.controls { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--line); justify-content: space-between; }
-.controls label { display: grid; gap: 6px; font-size: 13px; font-weight: 700; }
-.controls select { border: 1px solid var(--control-line); border-radius: 9px; background: var(--surface-2); color: var(--text); padding: 10px 14px; min-width: 180px; }
-.controls > span { font-size: 13px; color: var(--primary-strong); }
+.instruction, .storageNote, .sources { color: var(--muted); line-height: 1.7; font-size: 13px; }
+.sources summary { cursor: pointer; }
+.sources a { color: var(--primary-strong); }
+.controls { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, .65fr) auto; align-items: end; gap: 12px; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--line); }
+.controls label { display: grid; gap: 6px; font-size: 13px; font-weight: 700; min-width: 0; }
+.controls select { width: 100%; min-width: 0; border: 1px solid var(--control-line); border-radius: 9px; background: var(--surface-2); color: var(--text); padding: 10px 8px; }
+.score { font-size: 14px; color: var(--primary-strong); margin-top: 15px; }
 .card header, .card footer, .lawHeading { justify-content: space-between; }
-.tags { display: flex; gap: 8px; flex-wrap: wrap; }
+.tags { display: flex; gap: 8px; flex-wrap: wrap; overflow-wrap: anywhere; }
 .card h3 { margin: 18px 0 12px; font-size: 21px; }
-.instruction { font-size: 13px; }
-.passage { margin: 20px 0; padding: 20px; border-radius: 12px; background: var(--surface-2); white-space: pre-wrap; overflow-wrap: anywhere; font-size: var(--question-font-size, 18px); line-height: 2; }
-.blankMark { display: inline-block; color: var(--primary-strong); background: var(--primary-soft); border-bottom: 2px solid var(--primary); margin: 0 3px; line-height: 1.4; }
-.fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
-.field { display: grid; gap: 8px; font-size: 14px; min-width: 0; }
-.field > div { display: flex; align-items: center; gap: 10px; }
-.field input { width: 100%; min-width: 0; min-height: 44px; padding: 10px 12px; color: var(--text); background: var(--surface-2); border: 1px solid var(--control-line); border-radius: 9px; font: inherit; font-size: var(--option-font-size, 16px); }
-.field input:focus-visible, .controls select:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
-.field input:disabled { opacity: 1; }
-.field input[aria-invalid='true'] { border-color: var(--danger); }
-.field small { white-space: nowrap; color: var(--muted); }
-.fieldResult { display: flex; align-items: center; gap: 5px; color: var(--danger); }
-.fieldResult[data-correct='true'] { color: var(--success); }
+.lawName { font-size: 12px; color: var(--muted); margin: 15px 0 0; }
+.passage { margin: 20px 0; padding: 20px; border-radius: 12px; background: var(--surface-2); white-space: pre-wrap; overflow-wrap: anywhere; font-size: var(--question-font-size, 18px); line-height: 2.7; }
+.inlineBlank { display: inline-flex; align-items: baseline; gap: 2px; vertical-align: baseline; white-space: nowrap; margin: 0 4px; max-width: 100%; }
+.inlineBlank sup { font-size: 11px; color: var(--primary-strong); }
+.inlineBlank input { box-sizing: content-box; max-width: 10ch; min-height: 32px; border: 1px solid var(--control-line); border-bottom: 2px solid var(--primary); border-radius: 6px; padding: 4px 7px; background: var(--surface); color: var(--text); font: inherit; line-height: 1.4; text-align: center; }
+.inlineBlank input:focus-visible, .controls select:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.inlineBlank input:disabled { opacity: 1; }
+.inlineBlank input[aria-invalid='true'] { border-color: var(--danger); }
+.inlineBlank input[data-correct='true'] { border-color: var(--success); }
+.results { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding: 0; list-style: none; font-size: 13px; }
+.results li { display: flex; align-items: flex-start; gap: 6px; line-height: 1.8; color: var(--danger); overflow-wrap: anywhere; }
+.results li svg { flex-shrink: 0; margin-top: 4px; }
+.results li[data-correct='true'] { color: var(--success); }
+.results strong { font-weight: 500; color: var(--text); }
 .card footer { margin-top: 24px; border-top: 1px solid var(--line); padding-top: 18px; }
 .card footer > span { color: var(--muted); font-size: 13px; }
-.lawHeading h3 { margin: 0; }
+.lawHeading h3 { margin: 0; overflow-wrap: anywhere; }
 .lawHeading a, .evidence a { color: var(--primary-strong); font-size: 13px; }
 .fullText { font: inherit; font-size: var(--question-font-size, 18px); line-height: 1.85; margin: 16px 0; white-space: pre-wrap; overflow-wrap: anywhere; overflow-x: auto; max-width: 100%; }
+.answerText { color: var(--danger); font-weight: 700; }
 .lawImage { display: block; max-width: 100%; height: auto; border-radius: 8px; background: white; margin: 14px 0; }
 .evidence { border-top: 1px solid var(--line); padding-top: 16px; color: var(--muted); font-size: 13px; }
 .evidence summary { cursor: pointer; color: var(--primary-strong); font-weight: 700; }
 .evidence div { display: flex; flex-wrap: wrap; gap: 10px 15px; }
+.summary { border-color: var(--primary); background: var(--primary-soft); }
+.summary h3 { margin: 0; }
+.summary ol { padding-left: 24px; font-size: 14px; }
+.summary li { padding: 4px; }
+.summary li span { float: right; margin-left: 8px; font-variant-numeric: tabular-nums; }
 .storageNote { font-size: 12px; margin: 0; }
+@media (max-width: 850px) { .controls { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 600px) {
-  .intro, .card { padding: 16px; }
-  .fields { grid-template-columns: minmax(0, 1fr); }
+  .intro, .card, .summary { padding: 16px; }
+  .controls, .results { grid-template-columns: minmax(0, 1fr); }
   .passage { padding: 14px; }
-  .controls label, .controls select { width: 100%; }
+  .card footer { gap: 16px; }
 }

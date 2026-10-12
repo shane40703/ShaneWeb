@@ -6,18 +6,22 @@ import { Button } from '@/components/ui/ui';
 import { useAppState } from '@/state/app-state';
 import { readStoredValue, writeStoredValue } from '@/lib/storage';
 import { useClientReady } from '@/lib/use-client-ready';
-import { CLOZE_STORAGE_KEY, clozeBank, clozeCategories, createClozeSession, gradeCloze, parseClozeSession, type ClozeSession } from './cloze';
+import { CLOZE_COUNTS, CLOZE_STORAGE_KEY, clozeBank, getClozeCategories, getClozePool, getFullArticleParts, createClozeSession, gradeCloze, parseClozeSession, type ClozeOptions, type ClozeSession } from './cloze';
 import styles from './law-cloze-page.module.css';
 
 export function LawClozePage() {
   const ready = useClientReady();
   const { reportPersistence } = useAppState();
   const [session, setSession] = useState<ClozeSession | null>(null);
+  const [options, setOptions] = useState<ClozeOptions>({ lawId: '全部', category: '全部', count: 10 });
   useEffect(() => {
     if (!ready) return;
     let active = true;
     void Promise.resolve().then(() => {
-      if (active) setSession(parseClozeSession(readStoredValue(CLOZE_STORAGE_KEY)) ?? createClozeSession());
+      if (!active) return;
+      const restored = parseClozeSession(readStoredValue(CLOZE_STORAGE_KEY)) ?? createClozeSession();
+      setSession(restored);
+      setOptions({ lawId: restored.lawId, category: restored.category, count: restored.count });
     });
     return () => { active = false; };
   }, [ready]);
@@ -27,80 +31,103 @@ export function LawClozePage() {
 
   if (!session) return <p role='status'>正在準備法規克漏字…</p>;
   const question = clozeBank.questions.find((q) => q.id === session.order[session.index])!;
+  const law = clozeBank.laws.find((law) => law.id === question.lawId)!;
   const grades = gradeCloze(question, session.answers);
   const completed = Object.entries(session.results);
-  const correctQuestions = completed.filter(([id, answers]) => gradeCloze(clozeBank.questions.find((q) => q.id === id)!, answers).every(Boolean)).length;
+  const resultGrades = completed.map(([id, answers]) => gradeCloze(clozeBank.questions.find((q) => q.id === id)!, answers));
+  const correctQuestions = resultGrades.filter((result) => result.every(Boolean)).length;
+  const correctBlanks = resultGrades.flat().filter(Boolean).length;
+  const totalBlanks = resultGrades.flat().length;
   const last = session.index === session.order.length - 1;
   const complete = last && session.submitted;
-  const fullArticleUrl = 'https://law.moj.gov.tw/LawClass/LawSingle.aspx?pcode=D0070115&flno=' + question.articleNumber;
+  const poolSize = getClozePool(options).length;
+  const changed = options.lawId !== session.lawId || options.category !== session.category || options.count !== session.count;
 
   function submit(event: FormEvent) {
     event.preventDefault();
     if (!session || session.submitted || question.blanks.some((_, i) => !session.answers[i]?.trim())) return;
     setSession({ ...session, submitted: true, results: { ...session.results, [question.id]: [...session.answers] } });
   }
-  function restart(category = session!.category) {
-    setSession(createClozeSession(category));
-  }
 
   return (
     <div className={styles.page}>
       <section className={styles.intro} aria-labelledby='cloze-title'>
-        <div className={styles.heading}><IconBook size={25} aria-hidden='true' /><h2 id='cloze-title'>法規克漏字</h2><span>試作版</span></div>
-        <p>{clozeBank.lawName}・{clozeBank.questions.length} 個數字題型</p>
-        <small>修正：115.02.23 ／ 核對：115.10.12。練習現行已施行條文，不以現行答案回推舊年度試題。</small>
+        <div className={styles.heading}><IconBook size={25} aria-hidden='true' /><h2 id='cloze-title'>法規克漏字</h2><span>數字填空</span></div>
+        <p>{clozeBank.laws.length} 部法規・{clozeBank.questions.length} 個數字題型。直接在條文空格中填答，每次隨機抽題、不重複。</p>
+        <details className={styles.sources}>
+          <summary>法規版本與官方來源</summary>
+          {clozeBank.laws.map((law) => <p key={law.id}><a href={law.sourceUrl} target='_blank' rel='noreferrer'>{law.name} ↗</a><br />{law.note} 核對：{law.verifiedOn}。</p>)}
+          <p>練習現行規定；不以現行答案回推舊年度試題。</p>
+        </details>
         <div className={styles.controls}>
-          <label>練習考點
-            <select value={session.category} onChange={(event) => restart(event.target.value)}>
-              <option value='全部'>全部考點</option>
-              {clozeCategories.map((category) => <option key={category} value={category}>{category}</option>)}
-            </select>
-          </label>
-          <span>本輪已提交 {completed.length} 題・全對 {correctQuestions} 題</span>
-          <Button onClick={() => restart()}><IconRefresh size={16} />重新練習</Button>
+          <label>法規<select value={options.lawId} onChange={(event) => setOptions({ ...options, lawId: event.target.value, category: '全部' })}>
+            <option value='全部'>全部法規</option>
+            {clozeBank.laws.map((law) => <option key={law.id} value={law.id}>{law.name}</option>)}
+          </select></label>
+          <label>考點<select value={options.category} onChange={(event) => setOptions({ ...options, category: event.target.value })}>
+            <option value='全部'>隨機考點（全部）</option>
+            {getClozeCategories(options.lawId).map((category) => <option key={category} value={category}>{category}</option>)}
+          </select></label>
+          <label>每次測驗題數<select value={options.count} onChange={(event) => setOptions({ ...options, count: Number(event.target.value) })}>
+            {CLOZE_COUNTS.map((count) => <option key={count} value={count}>{count} 題</option>)}
+          </select></label>
+          <Button onClick={() => setSession(createClozeSession(options))} disabled={!poolSize}><IconRefresh size={16} />開始新測驗</Button>
         </div>
+        <p className={styles.instruction}>可用題型 {poolSize} 題；本輪將抽 {Math.min(options.count, poolSize)} 題。{poolSize < options.count ? '此考點題數不足，使用全部可用題型，不重複湊題。' : ''} 設定調整後按「開始新測驗」才會取代目前進度。{changed ? '（有尚未套用的設定）' : ''}</p>
+        <div className={styles.score}>本輪已提交 {completed.length} / {session.order.length} 題・全對 {correctQuestions} 題・答對 {correctBlanks} / {totalBlanks} 空</div>
       </section>
 
+      {complete ? <section className={styles.summary} aria-labelledby='cloze-summary-title'>
+        <h3 id='cloze-summary-title'>本輪測驗完成</h3>
+        <p>{session.order.length} 題中 {correctQuestions} 題全對；{totalBlanks} 空中答對 {correctBlanks} 空（{Math.round(correctBlanks / totalBlanks * 100)}%）。</p>
+        <ol>{session.order.map((id) => {
+          const item = clozeBank.questions.find((q) => q.id === id)!;
+          const result = gradeCloze(item, session.results[id]);
+          return <li key={id}>{item.title}<span>{result.filter(Boolean).length} / {result.length} 空</span></li>;
+        })}</ol>
+      </section> : null}
+
       <form className={styles.card} onSubmit={submit} aria-labelledby='cloze-question-title'>
-        <header>
-          <div className={styles.tags}><span>{question.category}</span><span>第 {question.articleNumber} 條</span></div>
-          <strong>{session.index + 1} / {session.order.length}</strong>
-        </header>
+        <header><div className={styles.tags}><span>{question.category}</span><span>{question.articleLabel}</span></div><strong>{session.index + 1} / {session.order.length}</strong></header>
+        <p className={styles.lawName}>{law.name}</p>
         <h3 id='cloze-question-title'>{question.title}</h3>
-        <p className={styles.instruction}>填入原文數字；分數、比值、小數及「半」須維持法條的表示方式，不互相換算。例如八分之一可填「八分之一」或「1/8」，不能填「0.125」。</p>
+        <p className={styles.instruction}>直接填入原文數字；分數、比值、小數及「半」須維持法條表示方式，不互相換算。例如八分之一可填「八分之一」或「1/8」，不能填「0.125」。相同空號會同步填答。</p>
         <div className={styles.passage} aria-label='填空條文節錄'>
           {question.template.split(/(\{\{\d+\}\})/).map((part, i) => {
             const match = part.match(/^\{\{(\d+)\}\}$/);
-            return match ? <strong className={styles.blankMark} key={i}>〔{Number(match[1]) + 1}〕</strong> : <span key={i}>{part}</span>;
-          })}
-        </div>
-        <div className={styles.fields}>
-          {question.blanks.map((blank, index) => (
-            <label key={index} className={styles.field}>
-              <span>{index + 1}. {blank.label}</span>
-              <div><input
+            if (!match) return <span key={i}>{part}</span>;
+            const index = Number(match[1]);
+            const blank = question.blanks[index];
+            return <span className={styles.inlineBlank} key={i}>
+              <sup aria-hidden='true'>〔{index + 1}〕</sup><input
                 aria-label={`第 ${index + 1} 空：${blank.label}`}
-                autoComplete='off' inputMode={blank.unit === '比例' || blank.unit === '比值' || blank.original.startsWith('半') ? 'text' : 'decimal'}
+                aria-describedby={session.submitted ? `cloze-result-${index}` : undefined}
+                title={blank.label + (blank.unit ? '（' + blank.unit + '）' : '')}
+                autoComplete='off' spellCheck={false}
+                inputMode={blank.unit === '比例' || blank.unit === '比值' || blank.original === '半' ? 'text' : 'decimal'}
                 required maxLength={50} value={session.answers[index] ?? ''} disabled={session.submitted}
-                aria-invalid={session.submitted && !grades[index]}
+                style={{ width: Math.max(4, Math.min(10, (session.answers[index]?.length ?? 0) + 1)) + 'ch' }}
+                aria-invalid={session.submitted && !grades[index]} data-correct={session.submitted ? grades[index] : undefined}
                 onChange={(event) => {
                   const answers = question.blanks.map((_, i) => session.answers[i] ?? '');
                   answers[index] = event.target.value;
                   setSession({ ...session, answers });
                 }}
-              /><small>{blank.unit}</small></div>
-              {session.submitted ? <span className={styles.fieldResult} data-correct={grades[index]}>
-                {grades[index] ? <IconCheck size={16} /> : <IconX size={16} />}
-                {grades[index] ? '正確' : `正確：${blank.answer}（原文：${blank.original}）`}
-              </span> : null}
-            </label>
-          ))}
+              />
+            </span>;
+          })}
         </div>
+        {session.submitted ? <ol className={styles.results} aria-label='逐空比對結果'>
+          {question.blanks.map((blank, index) => <li id={`cloze-result-${index}`} key={index} data-correct={grades[index]}>
+            {grades[index] ? <IconCheck size={16} aria-hidden='true' /> : <IconX size={16} aria-hidden='true' />}
+            <span>{index + 1}. {blank.label}：{grades[index] ? '正確' : '錯誤'}<br /><strong>正確：{blank.answer}{blank.unit && !['比例', '比值'].includes(blank.unit) ? ' ' + blank.unit : ''}（原文：{blank.original}）</strong></span>
+          </li>)}
+        </ol> : null}
         <footer>
           {session.submitted ? <>
             <span role='status'>{complete ? '本輪完成・' : ''}本題答對 {grades.filter(Boolean).length} / {grades.length} 空</span>
-            <Button variant='primary' onClick={() => {
-              if (last) restart();
+            <Button type='button' variant='primary' onClick={() => {
+              if (last) setSession(createClozeSession({ lawId: session.lawId, category: session.category, count: session.count }));
               else setSession({ ...session, index: session.index + 1, answers: [], submitted: false });
             }}>{last ? '再練一輪' : '下一題'}<IconArrowRight size={17} /></Button>
           </> : <><span>填完全部 {question.blanks.length} 空後提交</span><Button type='submit' variant='primary' disabled={question.blanks.some((_, i) => !session.answers[i]?.trim())}>提交答案</Button></>}
@@ -108,12 +135,12 @@ export function LawClozePage() {
       </form>
 
       {session.submitted ? <section className={styles.card} aria-labelledby='cloze-law-title'>
-        <div className={styles.lawHeading}><h3 id='cloze-law-title'>完整條文・第 {question.articleNumber} 條</h3><a href={fullArticleUrl} target='_blank' rel='noreferrer'>核對官方原文與附圖 ↗</a></div>
-        <p className={styles.instruction}>完整顯示本條文字，包含未挖空的條件、但書及其他款項；原始附圖／附表請由官方原文查看。</p>
-        <pre className={styles.fullText}>{question.fullText}</pre>
-        {question.fullFileUrl ? <a href={question.fullFileUrl} target='_blank' rel='noreferrer'>官方完整條文檔（含附表）↗</a> : null}
+        <div className={styles.lawHeading}><h3 id='cloze-law-title'>完整{question.lawId === 'accessibility' ? '規範' : ''}條文・{question.articleLabel}</h3><a href={question.sourceUrl} target='_blank' rel='noreferrer'>核對官方原文與附圖 ↗</a></div>
+        <p className={styles.instruction}>紅字為本題填空的原文答案；保留未挖空的條件、但書及款次。無障礙規範顯示題目涉及之各編號完整文字；附圖仍屬規定的一部分，請由官方 PDF 核對。</p>
+        <pre className={styles.fullText}>{getFullArticleParts(question).map((part, index) => part.isAnswer ? <strong className={styles.answerText} key={index}>{part.text}</strong> : <span key={index}>{part.text}</span>)}</pre>
+        {question.fullFileUrl ? <a href={question.fullFileUrl} target='_blank' rel='noreferrer'>官方完整檔（含附圖／附表）↗</a> : null}
         {question.images.map((image, index) => <a href={image.url} key={image.url} target='_blank' rel='noreferrer'>
-          <Image src={image.url} width={1100} height={800} unoptimized className={styles.lawImage} alt={`第 ${question.articleNumber} 條官方附圖／附表 ${index + 1}`} />
+          <Image src={image.url} width={1100} height={800} unoptimized className={styles.lawImage} alt={`${question.articleLabel} 官方附圖／附表 ${index + 1}`} />
           開啟官方附圖／附表 {index + 1} ↗
         </a>)}
         <details className={styles.evidence}>
@@ -122,7 +149,7 @@ export function LawClozePage() {
           <div>{question.evidence.map((item) => <Link href={`/questions/law/${item.year}/${String(item.number).padStart(2, '0')}`} key={item.id}>{item.year} 年・第 {item.number} 題</Link>)}</div>
         </details>
       </section> : null}
-      <p className={styles.storageNote}>作答進度與本輪成績保存在目前瀏覽器；切換考點或重新練習會開始新一輪。</p>
+      <p className={styles.storageNote}>本輪抽題順序、設定、草稿與成績保存在目前瀏覽器，不同步雲端；開始新測驗或再練一輪會重新抽題。</p>
     </div>
   );
 }

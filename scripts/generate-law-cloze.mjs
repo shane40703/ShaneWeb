@@ -1,5 +1,7 @@
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { topics } from './law-cloze-topics.mjs';
+import { accessibilityTopics } from './accessibility-cloze-topics.mjs';
+import { maskReviewedExcerpts } from './cloze-excerpts.mjs';
 
 const source = JSON.parse(await readFile('ref/law-cloze/design-construction-snapshot.json', 'utf8'));
 const evidence = JSON.parse(await readFile('ref/law-cloze/past-paper-evidence.json', 'utf8'));
@@ -13,26 +15,40 @@ const questions = topics.map(([id, category, title, articleNumber, starts, defin
     if (matches.length !== 1) throw new Error('Ambiguous excerpt: ' + id + ' / ' + prefix);
     return { prefix, text: matches[0] };
   });
-  const blanks = definitions.map(([prefix, text, answer, label, unit], index) => {
-    const line = selected.find((item) => item.prefix === prefix);
-    if (!line?.text.includes(text)) throw new Error('Numeral missing: ' + id + ' / ' + text);
-    // Include units in the mask when a numeral contains one, e.g. 半小時.
-    const replacement = '{{' + index + '}}' + (text.endsWith('小時') ? '小時' : text.endsWith('人') ? '人' : text.endsWith('輛') ? '輛' : '');
-    // Repeated thresholds must not give away their own answer; single-character
-    // numerals stay targeted to avoid masking unrelated clause numbers.
-    line.text = text.length > 1 ? line.text.replaceAll(text, replacement) : line.text.replace(text, replacement);
-    return { answer: text === '半小時' ? '半' : unit === '比值' ? answer.replace('/', ':') : answer, label, unit, original: text };
-  });
+  const excerpt = maskReviewedExcerpts(selected, definitions, article.text);
   const matches = evidence.filter((q) => new RegExp(pattern).test(q.fineTopic + '\n' + q.text));
   if (!matches.length) throw new Error('No exam evidence: ' + id);
   const supplement = supplements[articleNumber];
-  return { id, category, title, articleNumber, template: selected.map((item) => item.text).join('\n'), blanks, fullText: article.text + (supplement ? '\n\n' + supplement.text : ''), fullFileUrl: supplement?.sourceUrl ?? null, images: article.images ?? [], evidence: matches.map(({ id, year, number }) => ({ id, year, number })) };
+  return { id, lawId: 'design-construction', category, title, articleNumber, articleLabel: '第 ' + articleNumber + ' 條', ...excerpt, fullText: article.text + (supplement ? '\n\n' + supplement.text : ''), sourceUrl: 'https://law.moj.gov.tw/LawClass/LawSingle.aspx?pcode=D0070115&flno=' + articleNumber, fullFileUrl: supplement?.sourceUrl ?? null, images: article.images ?? [], evidence: matches.map(({ id, year, number }) => ({ id, year, number })) };
 });
+const accessibility = JSON.parse(await readFile('ref/law-cloze/accessibility-source.json', 'utf8'));
+const provisions = JSON.parse(await readFile('ref/law-cloze/accessibility-provisions.json', 'utf8'));
+const accessibilityEvidence = JSON.parse(await readFile('ref/law-cloze/accessibility-evidence.json', 'utf8'));
+const tables = JSON.parse(await readFile('ref/law-cloze/accessibility-supplements.json', 'utf8'));
+const pdfUrl = accessibility.files.find((file) => file.name === 'accessibility-current.pdf').url;
+for (const [id, category, title, codes, definitions, pattern] of accessibilityTopics) {
+  const selected = codes.map((code) => {
+    const matches = provisions.filter((p) => p.number === code);
+    if (matches.length !== 1) throw new Error('Ambiguous provision: ' + code);
+    const provision = matches[0];
+    const table = tables[code];
+    if (table && !provision.text.endsWith(table.rawTable)) throw new Error('Review changed table: ' + code);
+    const text = table ? provision.text.slice(0, -table.rawTable.length) + table.text : provision.text;
+    return { prefix: code, text, page: provision.page };
+  });
+  const fullText = selected.map((line) => line.text).join('\n');
+  const matches = accessibilityEvidence.filter((q) => new RegExp(pattern).test(q.fineTopic + '\n' + q.text));
+  if (!matches.length) throw new Error('No exam evidence: ' + id);
+  questions.push({ id, lawId: 'accessibility', category, title, articleNumber: codes.join('、'), articleLabel: '規範 ' + codes.join('、'), ...maskReviewedExcerpts(selected, definitions, fullText), fullText, sourceUrl: pdfUrl + '#page=' + selected[0].page, fullFileUrl: pdfUrl, images: [], evidence: matches.map(({ id, year, number }) => ({ id, year, number })) });
+}
 await mkdir('src/features/law-cloze', { recursive: true });
 await writeFile('src/features/law-cloze/bank.json', JSON.stringify({
-  lawName: source.lawName, amendedOn: source.amendedOn, verifiedOn: source.verifiedOn,
-  sourceUrl: source.sourceUrl, version: '1.66-2026-10-12',
-  note: '以 115 年 2 月 23 日修正版、截至 115 年 10 月 12 日已施行條文出題。相關考古題數代表同題型線索，並非每題直接考本條；歷史試題答案仍依當年版本。',
+  version: '1.67-2026-10-12',
+  laws: [
+    { id: 'design-construction', name: source.lawName, amendedOn: source.amendedOn, correctedOn: null, verifiedOn: source.verifiedOn, sourceUrl: source.sourceUrl, note: '115.02.23 修正；僅練習核對日已施行條文，第301條不出題。' },
+    { id: 'accessibility', name: accessibility.lawName, amendedOn: accessibility.amendedOn, correctedOn: accessibility.correctedOn, verifiedOn: accessibility.verifiedOn, sourceUrl: accessibility.sourceUrl, note: '108.01.04 修正、108.07.01 施行，含109.05.11勘誤；參考附錄不作強制條文出題。' },
+  ],
+  note: '相關考古題數代表同題型線索，並非每題直接考本條；歷史試題答案仍依當年版本。',
   questions,
 }, null, 2) + '\n');
 console.log('Generated ' + questions.length + ' cloze questions; ' + questions.reduce((n,q)=>n+q.blanks.length,0) + ' numeric blanks.');

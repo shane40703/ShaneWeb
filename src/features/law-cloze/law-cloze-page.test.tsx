@@ -1,13 +1,13 @@
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { CLOZE_STORAGE_KEY, clozeBank, createClozeSession } from './cloze';
+import { CLOZE_STORAGE_KEY, clozeBank, createClozeSession, parseClozeSession } from './cloze';
 import { LawClozePage } from './law-cloze-page';
 
 vi.mock('@/state/app-state', () => ({ useAppState: () => ({ reportPersistence: vi.fn() }) }));
 beforeEach(() => {
   window.localStorage.clear();
   const session = createClozeSession();
-  session.order = ['daylight', ...session.order.filter((id) => id !== 'daylight')];
+  session.order = ['daylight', ...session.order.filter((id) => id !== 'daylight')].slice(0, session.count);
   window.localStorage.setItem(CLOZE_STORAGE_KEY, JSON.stringify(session));
 });
 afterEach(cleanup);
@@ -17,6 +17,7 @@ describe('LawClozePage', () => {
     const view = render(<LawClozePage />);
     const inputs = await screen.findAllByRole('textbox');
     expect(inputs).toHaveLength(3);
+    expect(inputs.every((input) => input.closest('[aria-label="填空條文節錄"]'))).toBe(true);
     expect(screen.queryByText('完整條文・第 41 條')).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: '提交答案' })).toBeDisabled();
     ['1/5', '0.125', '75'].forEach((value, i) => fireEvent.change(inputs[i], { target: { value } }));
@@ -26,6 +27,7 @@ describe('LawClozePage', () => {
     expect(screen.getByText(/正確：1\/8/)).toBeInTheDocument();
     const article = clozeBank.questions.find((q) => q.id === 'daylight')!.fullText;
     expect(document.querySelector('pre')?.textContent).toBe(article);
+    expect([...document.querySelectorAll('pre strong')].map((element) => element.textContent)).toEqual(['五分之一', '八分之一', '七十五']);
     await waitFor(() => expect(JSON.parse(window.localStorage.getItem(CLOZE_STORAGE_KEY)!).submitted).toBe(true));
     view.unmount();
     render(<LawClozePage />);
@@ -33,5 +35,26 @@ describe('LawClozePage', () => {
     fireEvent.click(screen.getByRole('button', { name: '下一題' }));
     expect(screen.getAllByRole('textbox').every((element) => !(element as HTMLInputElement).value)).toBe(true);
     expect(screen.queryByText('完整條文・第 41 條')).not.toBeInTheDocument();
+  });
+
+  it('applies settings only on start and completes a short pool with a summary', async () => {
+    render(<LawClozePage />);
+    await screen.findAllByRole('textbox');
+    fireEvent.change(screen.getByRole('combobox', { name: '法規' }), { target: { value: 'accessibility' } });
+    fireEvent.change(screen.getByRole('combobox', { name: '考點' }), { target: { value: '無障礙客房' } });
+    fireEvent.change(screen.getByRole('combobox', { name: '每次測驗題數' }), { target: { value: '30' } });
+    expect(screen.getByRole('heading', { name: '居室採光面積' })).toBeInTheDocument();
+    expect(screen.getByText(/此考點題數不足/)).toHaveTextContent('本輪將抽 1 題');
+    fireEvent.click(screen.getByRole('button', { name: '開始新測驗' }));
+    const q = clozeBank.questions.find((q) => q.id === 'a-room')!;
+    q.blanks.forEach((blank, index) => fireEvent.change(screen.getAllByRole('textbox', { name: `第 ${index + 1} 空：${blank.label}` })[0], { target: { value: blank.answer } }));
+    fireEvent.click(screen.getByRole('button', { name: '提交答案' }));
+    expect(screen.getByRole('heading', { name: '本輪測驗完成' })).toBeInTheDocument();
+    expect(screen.getByText(/1 題中 1 題全對/)).toHaveTextContent('100%');
+    expect(screen.getByRole('link', { name: '核對官方原文與附圖 ↗' })).toHaveAttribute('href', q.sourceUrl);
+    await waitFor(() => expect(parseClozeSession(window.localStorage.getItem(CLOZE_STORAGE_KEY))?.order).toEqual(['a-room']));
+    fireEvent.click(screen.getByRole('button', { name: '再練一輪' }));
+    expect(screen.queryByRole('heading', { name: '本輪測驗完成' })).not.toBeInTheDocument();
+    expect(screen.getAllByRole('textbox').every((element) => !(element as HTMLInputElement).value)).toBe(true);
   });
 });

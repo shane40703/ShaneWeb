@@ -1,0 +1,22 @@
+{
+  "lawName": "建築物無障礙設施設計規範",
+  "sourceUrl": "https://www.nlma.gov.tw/ch/legislation/regsearch/927",
+  "amendedOn": "2019-01-04",
+  "effectiveOn": "2019-07-01",
+  "correctedOn": "2020-05-11",
+  "verifiedOn": "2026-10-12",
+  "files": [
+    {
+      "name": "accessibility-current.pdf",
+      "url": "https://www.nlma.gov.tw/uploads/files/e9abb44ff171074d23a7d1d5ee35b4a4.pdf",
+      "bytes": 3122328,
+      "sha256": "1ff0c1cc4cb27c6f74219bfb0d264cac056f88fe9109e36031c53cd6358c0245"
+    },
+    {
+      "name": "accessibility-corrections.pdf",
+      "url": "https://www.nlma.gov.tw/uploads/files/df0f22f7c943c902f0a5d4a7cc5c2046.pdf",
+      "bytes": 1989141,
+      "sha256": "57f0d98045450d9c451a05878c66b2f83971c82964c658c09d9f841dac048e1b"
+    }
+  ]
+}

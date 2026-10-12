@@ -8,11 +8,15 @@ export interface ClozeBlank {
 }
 export interface ClozeQuestion {
   id: string;
+  lawId: string;
   category: string;
   title: string;
   articleNumber: string;
+  articleLabel: string;
+  sourceUrl: string;
   template: string;
   blanks: ClozeBlank[];
+  answerRanges: Array<{ start: number; end: number; blankIndex: number }>;
   fullText: string;
   images: Array<{ url: string; alt: string }>;
   fullFileUrl: string | null;
@@ -20,7 +24,22 @@ export interface ClozeQuestion {
 }
 export const clozeBank: Omit<typeof data, 'questions'> & { questions: ClozeQuestion[] } = data;
 export const CLOZE_STORAGE_KEY = 'shaneweb:law-cloze';
-export const clozeCategories = [...new Set(data.questions.map((q) => q.category))];
+export const CLOZE_COUNTS = [5, 10, 15, 20, 25, 30] as const;
+export function getClozeCategories(lawId = '全部') {
+  return [...new Set(data.questions.filter((q) => lawId === '全部' || q.lawId === lawId).map((q) => q.category))];
+}
+
+export function getFullArticleParts(question: ClozeQuestion) {
+  const parts: Array<{ text: string; isAnswer: boolean }> = [];
+  let cursor = 0;
+  for (const range of question.answerRanges) {
+    parts.push({ text: question.fullText.slice(cursor, range.start), isAnswer: false });
+    parts.push({ text: question.fullText.slice(range.start, range.end), isAnswer: true });
+    cursor = range.end;
+  }
+  parts.push({ text: question.fullText.slice(cursor), isAnswer: false });
+  return parts;
+}
 
 const digits: Record<string, number> = {
   '零': 0, '〇': 0, '○': 0, '一': 1, '二': 2, '兩': 2, '三': 3,
@@ -88,9 +107,13 @@ export function gradeCloze(question: ClozeQuestion, answers: readonly string[]) 
   });
 }
 
-export interface ClozeSession {
-  version: string;
+export interface ClozeOptions {
+  lawId: string;
   category: string;
+  count: number;
+}
+export interface ClozeSession extends ClozeOptions {
+  version: string;
   order: string[];
   index: number;
   answers: string[];
@@ -98,33 +121,46 @@ export interface ClozeSession {
   results: Record<string, string[]>;
 }
 
-export function createClozeSession(category = '全部', random = Math.random): ClozeSession {
-  const pool = data.questions.filter((q) => category === '全部' || q.category === category);
+export function getClozePool(options: Pick<ClozeOptions, 'lawId' | 'category'>) {
+  return clozeBank.questions.filter((q) => (options.lawId === '全部' || q.lawId === options.lawId) && (options.category === '全部' || q.category === options.category));
+}
+function validOptions(options: ClozeOptions) {
+  return ['全部', ...data.laws.map((law) => law.id)].includes(options.lawId)
+    && ['全部', ...getClozeCategories(options.lawId)].includes(options.category)
+    && CLOZE_COUNTS.some((count) => count === options.count);
+}
+export function createClozeSession(options: Partial<ClozeOptions> = {}, random = Math.random): ClozeSession {
+  const settings = { lawId: '全部', category: '全部', count: 10, ...options };
+  if (!validOptions(settings)) throw new Error('Invalid cloze options');
+  const pool = getClozePool(settings);
   const order = pool.map((q) => q.id);
   for (let i = order.length - 1; i > 0; i--) {
     const j = Math.floor(random() * (i + 1));
     [order[i], order[j]] = [order[j], order[i]];
   }
-  return { version: data.version, category, order, index: 0, answers: [], submitted: false, results: {} };
+  return { version: data.version, ...settings, order: order.slice(0, settings.count), index: 0, answers: [], submitted: false, results: {} };
 }
 
 export function parseClozeSession(raw: string | null): ClozeSession | null {
   try {
     const value = JSON.parse(raw ?? 'null') as ClozeSession | null;
-    if (!value || value.version !== data.version || !['全部', ...clozeCategories].includes(value.category)) return null;
-    const pool = data.questions.filter((q) => value.category === '全部' || q.category === value.category);
-    if (!Array.isArray(value.order) || value.order.length !== pool.length || new Set(value.order).size !== pool.length || !value.order.every((id) => pool.some((q) => q.id === id))) return null;
+    if (!value || value.version !== data.version || !validOptions(value)) return null;
+    const pool = getClozePool(value);
+    const expectedLength = Math.min(value.count, pool.length);
+    if (!Array.isArray(value.order) || value.order.length !== expectedLength || new Set(value.order).size !== expectedLength || !value.order.every((id) => pool.some((q) => q.id === id))) return null;
     if (!Number.isInteger(value.index) || value.index < 0 || value.index >= value.order.length || typeof value.submitted !== 'boolean') return null;
-    const validAnswers = (answers: unknown): answers is string[] => Array.isArray(answers) && answers.length <= 10 && answers.every((a) => typeof a === 'string' && a.length <= 50);
+    const validAnswers = (answers: unknown): answers is string[] => Array.isArray(answers) && answers.every((a) => typeof a === 'string' && a.length <= 50);
     if (!validAnswers(value.answers) || !value.results || typeof value.results !== 'object' || Array.isArray(value.results)) return null;
     const results: Record<string, string[]> = {};
     for (const [id, answers] of Object.entries(value.results)) {
       const question = pool.find((q) => q.id === id);
-      if (question && validAnswers(answers) && answers.length === question.blanks.length) results[id] = answers;
+      if (!question || !value.order.slice(0, value.index + Number(value.submitted)).includes(id) || !validAnswers(answers) || answers.length !== question.blanks.length || answers.some((a) => !a.trim())) return null;
+      results[id] = answers;
     }
     const question = pool.find((q) => q.id === value.order[value.index])!;
+    if (Object.keys(results).length !== value.index + Number(value.submitted) || (value.answers.length !== 0 && value.answers.length !== question.blanks.length)) return null;
     if (value.submitted && (!results[question.id] || value.answers.length !== question.blanks.length || value.answers.some((a, i) => a !== results[question.id][i]))) return null;
-    return { ...value, results };
+    return { version: value.version, lawId: value.lawId, category: value.category, count: value.count, order: value.order, index: value.index, answers: value.answers, submitted: value.submitted, results };
   } catch {
     return null;
   }
