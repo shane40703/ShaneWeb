@@ -3,6 +3,7 @@
   "version": "2.0.0",
   "private": true,
   "scripts": {
+    "generate:law-cloze": "node scripts/generate-law-cloze.mjs",
     "generate:question-data": "tsx scripts/generate-question-data.ts",
     "predev": "npm run generate:question-data",
     "dev": "next dev",
