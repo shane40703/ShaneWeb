@@ -67,7 +67,7 @@ test('law/count/category selections start a new round and disclose small pools',
   await page.reload();
   await expect(page.getByRole('combobox', { name: '每次測驗題數' })).toHaveValue('30');
   await page.getByRole('combobox', { name: '考點', exact: true }).selectOption('無障礙客房');
-  await expect(page.getByText(/此考點題數不足/)).toContainText('本輪將抽 1 題');
+  await expect(page.getByText(/此考點題數不足/)).toContainText('新測驗將抽 1 題');
   await page.getByRole('button', { name: '開始新測驗' }).click();
   await expect(page.getByRole('heading', { name: '客房衛浴與房內通路' })).toBeVisible();
   await page.screenshot({ path: `test-results/law-cloze-inline-${testInfo.project.name}.png`, fullPage: true });
@@ -88,4 +88,58 @@ test('repeated thresholds synchronize the same inline blank', async ({ page }) =
   }
   await page.getByRole('button', { name: '提交答案' }).click();
   await expect(page.getByRole('status')).toHaveText('本題答對 3 / 3 空');
+});
+
+test('bank expansion keeps the previous saved two-question underground round', async ({ page }) => {
+  const session = createClozeSession({ lawId: 'design-construction', category: '地下建築', count: 30 });
+  session.version = clozeBank.legacyVersion;
+  session.order = ['underground', 'underground-stair'];
+  session.answers = ['6', '1:12', '3'];
+  session.results.underground = [...session.answers];
+  session.submitted = true;
+  await page.addInitScript(({ key, value }) => {
+    if (!localStorage.getItem(key)) localStorage.setItem(key, JSON.stringify(value));
+  }, { key: CLOZE_STORAGE_KEY, value: session });
+  await page.goto('/law-cloze');
+  await expect(page.getByRole('heading', { name: '地下通道尺寸' })).toBeVisible();
+  await expect(page.getByRole('status')).toHaveText('本題答對 3 / 3 空');
+  await expect(page.getByRole('note')).toContainText('保留先前的 2 題順序、草稿與成績');
+  await page.reload();
+  await expect(page.getByRole('status')).toHaveText('本題答對 3 / 3 空');
+  const before = await page.evaluate((key) => JSON.parse(localStorage.getItem(key)!), CLOZE_STORAGE_KEY);
+  expect(before.order).toEqual(session.order);
+  expect(before.answers).toEqual(session.answers);
+  await page.getByRole('button', { name: '開始新測驗' }).click();
+  await expect.poll(async () => page.evaluate((key) => JSON.parse(localStorage.getItem(key)!).version, CLOZE_STORAGE_KEY)).toBe(clozeBank.version);
+  const after = await page.evaluate((key) => JSON.parse(localStorage.getItem(key)!), CLOZE_STORAGE_KEY);
+  expect(after.order.length).toBeGreaterThan(2);
+  expect(after.order.some((id: string) => id.startsWith('d-'))).toBe(true);
+  expect(after.results).toEqual({});
+  await expect(page.getByRole('note')).toHaveCount(0);
+});
+
+test('expanded construction topics support inline notation and exact red original answers', async ({ page }, testInfo) => {
+  const session = createClozeSession({ lawId: 'design-construction', count: 5 });
+  session.order = ['d-windowless-definition', 'd-shadow-height', 'd-slope-retaining', 'd-highrise-drift', 'd-detention'];
+  await page.addInitScript(({ key, value }) => localStorage.setItem(key, JSON.stringify(value)), { key: CLOZE_STORAGE_KEY, value: session });
+  await page.goto('/law-cloze');
+  for (const id of session.order) {
+    const q = clozeBank.questions.find((q) => q.id === id)!;
+    await expect(page.getByRole('heading', { name: q.title, exact: true })).toBeVisible();
+    for (const [i, blank] of q.blanks.entries()) await page.getByRole('textbox', { name: `第 ${i + 1} 空：${blank.label}`, exact: true }).first().fill(blank.answer);
+    await page.getByRole('button', { name: '提交答案' }).click();
+    await expect(page.getByRole('status')).toContainText(`本題答對 ${q.blanks.length} / ${q.blanks.length} 空`);
+    await expect(page.locator('pre')).toHaveText(q.fullText);
+    const highlighted = await page.locator('pre strong').allTextContents();
+    expect(highlighted).toEqual(q.answerRanges.map((range) => q.fullText.slice(range.start, range.end)));
+    if (id === 'd-shadow-height') {
+      const width = await page.evaluate(() => ({ scroll: document.documentElement.scrollWidth, viewport: innerWidth }));
+      expect(width.scroll).toBeLessThanOrEqual(width.viewport + 1);
+      await page.evaluate(() => window.scrollTo(0, 0));
+      await page.screenshot({ path: `test-results/law-cloze-expanded-${testInfo.project.name}.png`, fullPage: true });
+    }
+    if (id !== 'd-detention') await page.getByRole('button', { name: '下一題' }).click();
+  }
+  await expect(page.getByRole('heading', { name: '本輪測驗完成' })).toBeVisible();
+  await expect(page.getByText(/5 題中 5 題全對/)).toBeVisible();
 });

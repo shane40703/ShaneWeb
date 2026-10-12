@@ -21,10 +21,11 @@ export function maskReviewedExcerpts(selected, definitions, fullText) {
         // 百分之 is a unit prefix, not part of the integer blank.
         const percentPrefix = unit === '%' && line.text.slice(0, offset).endsWith('百分之');
         const partialFraction = line.text.slice(0, offset).endsWith('分之') || line.text.slice(offset + numeral.length).startsWith('分之');
-        const partialGroup = /[、,]/.test(after) && numericChar.test(line.text[offset + numeral.length + 1] ?? '') || /[、,]/.test(before) && numericChar.test(line.text[offset - 2] ?? '');
+        const partialGroup = /[、,]/.test(after) && numericChar.test(line.text[offset + numeral.length + 1] ?? '') || offset > structural && /[、,]/.test(before) && numericChar.test(line.text[offset - 2] ?? '');
         const unitMatches = !unit || ['比例', '比值'].includes(unit)
-          || (unit === '%' ? percentPrefix || after === '%' : line.text.slice(offset + numeral.length).startsWith(unit.split(/[／/]/)[0]));
-        if (offset >= structural && (!numericChar.test(before) || percentPrefix) && !numericChar.test(after) && before !== '第' && !partialGroup && unitMatches && (!partialFraction || percentPrefix)) {
+          || (unit === '%' ? percentPrefix || after === '%' : line.text.slice(offset + numeral.length).replace(/^[（(]/, '').startsWith(unit.split(/[／/]/)[0]));
+        const citation = before === '第' && /^(條|款|項|目|章|節)/.test(line.text.slice(offset + numeral.length));
+        if (offset >= structural && (!numericChar.test(before) || percentPrefix) && !numericChar.test(after) && !citation && !partialGroup && unitMatches && (!partialFraction || percentPrefix)) {
           ranges.push({ prefix: line.prefix, start: offset, end: offset + numeral.length, blankIndex: index, articleStart });
           if (line.prefix === prefix) found++;
         }

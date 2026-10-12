@@ -73,7 +73,8 @@ export function LawClozePage() {
           </select></label>
           <Button onClick={() => setSession(createClozeSession(options))} disabled={!poolSize}><IconRefresh size={16} />開始新測驗</Button>
         </div>
-        <p className={styles.instruction}>可用題型 {poolSize} 題；本輪將抽 {Math.min(options.count, poolSize)} 題。{poolSize < options.count ? '此考點題數不足，使用全部可用題型，不重複湊題。' : ''} 設定調整後按「開始新測驗」才會取代目前進度。{changed ? '（有尚未套用的設定）' : ''}</p>
+        <p className={styles.instruction}>可用題型 {poolSize} 題；新測驗將抽 {Math.min(options.count, poolSize)} 題。{poolSize < options.count ? '此考點題數不足，使用全部可用題型，不重複湊題。' : ''} 設定調整後按「開始新測驗」才會取代目前進度。{changed ? '（有尚未套用的設定）' : ''}</p>
+        {session.version === clozeBank.legacyVersion ? <p className={styles.instruction} role='note'>題庫已擴充，保留先前的 {session.order.length} 題順序、草稿與成績；按「開始新測驗」即可抽取擴充後的題庫。</p> : null}
         <div className={styles.score}>本輪已提交 {completed.length} / {session.order.length} 題・全對 {correctQuestions} 題・答對 {correctBlanks} / {totalBlanks} 空</div>
       </section>
 

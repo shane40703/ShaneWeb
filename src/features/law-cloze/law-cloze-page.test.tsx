@@ -44,7 +44,7 @@ describe('LawClozePage', () => {
     fireEvent.change(screen.getByRole('combobox', { name: '考點' }), { target: { value: '無障礙客房' } });
     fireEvent.change(screen.getByRole('combobox', { name: '每次測驗題數' }), { target: { value: '30' } });
     expect(screen.getByRole('heading', { name: '居室採光面積' })).toBeInTheDocument();
-    expect(screen.getByText(/此考點題數不足/)).toHaveTextContent('本輪將抽 1 題');
+    expect(screen.getByText(/此考點題數不足/)).toHaveTextContent('新測驗將抽 1 題');
     fireEvent.click(screen.getByRole('button', { name: '開始新測驗' }));
     const q = clozeBank.questions.find((q) => q.id === 'a-room')!;
     q.blanks.forEach((blank, index) => fireEvent.change(screen.getAllByRole('textbox', { name: `第 ${index + 1} 空：${blank.label}` })[0], { target: { value: blank.answer } }));

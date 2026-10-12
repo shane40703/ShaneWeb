@@ -89,7 +89,7 @@ export function normalizeStatutoryAnswer(value: string, unit = ''): string | nul
   if (fraction || ratio) {
     const numerator = numericValue(fraction ? fraction[2] : ratio![1]);
     const denominator = numericValue(fraction ? fraction[1] : ratio![2]);
-    if (numerator === null || denominator === null || denominator <= 0 || !Number.isInteger(numerator) || !Number.isInteger(denominator)) return null;
+    if (numerator === null || denominator === null || denominator <= 0 || !Number.isFinite(numerator) || !Number.isFinite(denominator)) return null;
     const kind = fraction || normalized.includes('/') ? 'fraction' : 'ratio';
     return kind + ':' + numerator + '/' + denominator;
   }
@@ -144,8 +144,9 @@ export function createClozeSession(options: Partial<ClozeOptions> = {}, random =
 export function parseClozeSession(raw: string | null): ClozeSession | null {
   try {
     const value = JSON.parse(raw ?? 'null') as ClozeSession | null;
-    if (!value || value.version !== data.version || !validOptions(value)) return null;
-    const pool = getClozePool(value);
+    if (!value || ![data.version, data.legacyVersion].includes(value.version) || !validOptions(value)) return null;
+    // A previously capped round must not grow or lose its saved answers when the bank expands.
+    const pool = getClozePool(value).filter((q) => value.version === data.version || data.legacyQuestionIds.includes(q.id));
     const expectedLength = Math.min(value.count, pool.length);
     if (!Array.isArray(value.order) || value.order.length !== expectedLength || new Set(value.order).size !== expectedLength || !value.order.every((id) => pool.some((q) => q.id === id))) return null;
     if (!Number.isInteger(value.index) || value.index < 0 || value.index >= value.order.length || typeof value.submitted !== 'boolean') return null;

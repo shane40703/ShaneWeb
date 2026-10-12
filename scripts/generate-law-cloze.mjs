@@ -1,12 +1,13 @@
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { topics } from './law-cloze-topics.mjs';
+import { designConstructionTopics } from './design-construction-cloze-topics.mjs';
 import { accessibilityTopics } from './accessibility-cloze-topics.mjs';
 import { maskReviewedExcerpts } from './cloze-excerpts.mjs';
 
 const source = JSON.parse(await readFile('ref/law-cloze/design-construction-snapshot.json', 'utf8'));
 const evidence = JSON.parse(await readFile('ref/law-cloze/past-paper-evidence.json', 'utf8'));
 const supplements = JSON.parse(await readFile('ref/law-cloze/article-supplements.json', 'utf8'));
-const questions = topics.map(([id, category, title, articleNumber, starts, definitions, pattern]) => {
+const questions = [...topics, ...designConstructionTopics].map(([id, category, title, articleNumber, starts, definitions, pattern]) => {
   const article = source.articles.find((item) => item.number === articleNumber);
   if (!article || articleNumber === '301') throw new Error('Invalid article: ' + articleNumber);
   const lines = article.text.split('\n');
@@ -14,7 +15,7 @@ const questions = topics.map(([id, category, title, articleNumber, starts, defin
     const matches = lines.filter((line) => line.startsWith(prefix));
     if (matches.length !== 1) throw new Error('Ambiguous excerpt: ' + id + ' / ' + prefix);
     return { prefix, text: matches[0] };
-  });
+  }).sort((a, b) => lines.indexOf(a.text) - lines.indexOf(b.text));
   const excerpt = maskReviewedExcerpts(selected, definitions, article.text);
   const matches = evidence.filter((q) => new RegExp(pattern).test(q.fineTopic + '\n' + q.text));
   if (!matches.length) throw new Error('No exam evidence: ' + id);
@@ -43,7 +44,9 @@ for (const [id, category, title, codes, definitions, pattern] of accessibilityTo
 }
 await mkdir('src/features/law-cloze', { recursive: true });
 await writeFile('src/features/law-cloze/bank.json', JSON.stringify({
-  version: '1.67-2026-10-12',
+  version: '1.67-expanded-2026-10-12',
+  legacyVersion: '1.67-2026-10-12',
+  legacyQuestionIds: [...topics.map((q) => q[0]), ...accessibilityTopics.map((q) => q[0])],
   laws: [
     { id: 'design-construction', name: source.lawName, amendedOn: source.amendedOn, correctedOn: null, verifiedOn: source.verifiedOn, sourceUrl: source.sourceUrl, note: '115.02.23 修正；僅練習核對日已施行條文，第301條不出題。' },
     { id: 'accessibility', name: accessibility.lawName, amendedOn: accessibility.amendedOn, correctedOn: accessibility.correctedOn, verifiedOn: accessibility.verifiedOn, sourceUrl: accessibility.sourceUrl, note: '108.01.04 修正、108.07.01 施行，含109.05.11勘誤；參考附錄不作強制條文出題。' },

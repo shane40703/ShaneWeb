@@ -23,6 +23,32 @@ describe('statutory cloze answers and source text', () => {
     expect(normalizeStatutoryAnswer('1,500', '平方公尺')).toBe('integer:1500');
   });
 
+  it('expands construction coverage with distinct reviewed numeric topics', () => {
+    const questions = clozeBank.questions.filter((q) => q.lawId === 'design-construction');
+    expect(questions.length).toBeGreaterThanOrEqual(162);
+    expect(questions.reduce((n, q) => n + q.blanks.length, 0)).toBeGreaterThanOrEqual(517);
+    expect(new Set(questions.map((q) => q.articleNumber + ':' + q.template)).size).toBe(questions.length);
+    for (const category of ['用語定義', '基地與容積', '施工安全', '特定建築', '地下建築', '高層建築', '山坡地', '工廠建築', '綠建築']) expect(getClozeCategories('design-construction')).toContain(category);
+    expect(clozeBank.questions.filter((q) => q.lawId === 'accessibility')).toHaveLength(39);
+  });
+
+  it('preserves decimal ratio/fraction notation without equivalent conversion', () => {
+    const shadow = clozeBank.questions.find((q) => q.id === 'd-shadow-height')!;
+    expect(gradeCloze(shadow, ['3.6:1'])).toEqual([true]);
+    expect(gradeCloze(shadow, ['三‧六比一'])).toEqual([true]);
+    expect(gradeCloze(shadow, ['3.6/1'])).toEqual([false]);
+    expect(gradeCloze(shadow, ['18:5'])).toEqual([false]);
+    const drift = clozeBank.questions.find((q) => q.id === 'd-highrise-drift')!;
+    expect(gradeCloze(drift, ['2.5/1000', '10'])).toEqual([true, true]);
+    expect(gradeCloze(drift, ['千分之二‧五', '十'])).toEqual([true, true]);
+    expect(gradeCloze(drift, ['0.0025', '10'])).toEqual([false, true]);
+    expect(gradeCloze(drift, ['25/10000', '10'])).toEqual([false, true]);
+    const retaining = clozeBank.questions.find((q) => q.id === 'd-slope-retaining')!;
+    expect(gradeCloze(retaining, ['1.5', '6', '1:1.5'])).toEqual([true, true, true]);
+    expect(gradeCloze(retaining, ['1.5', '6', '2:3'])).toEqual([true, true, false]);
+    expect(normalizeStatutoryAnswer('1/Infinity')).toBeNull();
+  });
+
   it('keeps clause numbers, provision numbers and non-numeric wording intact', () => {
     const underground = clozeBank.questions.find((q) => q.id === 'underground')!;
     expect(underground.template).toContain('三、地下通道及地下廣場之天花板淨高不得小於{{2}}公尺');
@@ -33,10 +59,15 @@ describe('statutory cloze answers and source text', () => {
     expect(clozeBank.questions.find((q) => q.id === 'a-car')!.template).not.toContain('600公分');
     expect(clozeBank.questions.find((q) => q.id === 'shelter')!.template).not.toContain('二百四十平方公尺');
     expect(clozeBank.questions.find((q) => q.id === 'a-stair-step')!.template).toContain('304.1級高及級深');
+    expect(clozeBank.questions.find((q) => q.id === 'd-building-area')!.template).toContain('三、建築面積');
+    expect(clozeBank.questions.find((q) => q.id === 'd-general-lift')!.template).toContain('一、{{0}}層以上');
+    expect(clozeBank.questions.find((q) => q.id === 'd-emergency-opening')!.template).toContain('第{{1}}層以下');
+    expect(clozeBank.questions.find((q) => q.id === 'd-detention')!.template).toContain('{{1}}（立方公尺／平方公尺）');
     for (const q of clozeBank.questions) {
       for (const line of q.template.split('\n')) {
         expect(line).not.toMatch(/^\{\{\d+\}\}[、）)]/);
         if (q.lawId === 'accessibility') expect(line).not.toMatch(/^\{\{\d+\}\}\./);
+        expect(line).not.toMatch(/第\{\{\d+\}\}(條|款|項|目|章|節)/);
       }
     }
   });
@@ -122,5 +153,24 @@ describe('cloze exam selection and restoration', () => {
     expect(parseClozeSession(JSON.stringify(draft))).toEqual(draft);
     expect(parseClozeSession(JSON.stringify({ ...draft, answers: [null] }))).toBeNull();
     expect(parseClozeSession(JSON.stringify({ ...draft, index: 1 }))).toBeNull();
+  });
+
+  it('preserves the previous capped round when the question bank expands', () => {
+    const old = createClozeSession({ lawId: 'design-construction', category: '地下建築', count: 30 });
+    old.version = clozeBank.legacyVersion;
+    old.order = ['underground', 'underground-stair'];
+    old.answers = ['6', '', '3'];
+    expect(parseClozeSession(JSON.stringify(old))).toEqual(old);
+    old.answers = ['6', '1:12', '3'];
+    old.submitted = true;
+    old.results.underground = [...old.answers];
+    expect(parseClozeSession(JSON.stringify(old))).toEqual(old);
+    expect(gradeCloze(clozeBank.questions.find((q) => q.id === 'underground')!, old.answers)).toEqual([true, true, true]);
+    const fresh = createClozeSession({ lawId: old.lawId, category: old.category, count: old.count });
+    expect(fresh.version).toBe(clozeBank.version);
+    expect(fresh.order.length).toBeGreaterThan(2);
+    expect(fresh.order.some((id) => id.startsWith('d-'))).toBe(true);
+    expect(parseClozeSession(JSON.stringify({ ...old, order: fresh.order }))).toBeNull();
+    expect(parseClozeSession(JSON.stringify({ ...fresh, order: old.order }))).toBeNull();
   });
 });
