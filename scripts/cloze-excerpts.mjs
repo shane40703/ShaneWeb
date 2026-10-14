@@ -1,5 +1,5 @@
 // Mask reviewed numeric tokens, never enumeration prefixes, headings or citations.
-const numericChar = /[\d零〇○一二兩三四五六七八九十百千萬點.．‧比/:]/;
+const numericChar = /[\d零〇○一二兩三四五六七八九十百千萬億點.．‧比/:]/;
 export function maskReviewedExcerpts(selected, definitions, fullText) {
   const ranges = [];
   const blanks = definitions.map(([prefix, target, answer, label, unit], index) => {
@@ -25,7 +25,8 @@ export function maskReviewedExcerpts(selected, definitions, fullText) {
         const unitMatches = !unit || ['比例', '比值'].includes(unit)
           || (unit === '%' ? percentPrefix || after === '%' : line.text.slice(offset + numeral.length).replace(/^[（(]/, '').startsWith(unit.split(/[／/]/)[0]));
         const citation = before === '第' && /^(條|款|項|目|章|節)/.test(line.text.slice(offset + numeral.length));
-        if (offset >= structural && (!numericChar.test(before) || percentPrefix) && !numericChar.test(after) && !citation && !partialGroup && unitMatches && (!partialFraction || percentPrefix)) {
+        const numericUnit = unit && !['%', '比例', '比值'].includes(unit) && unitMatches && numericChar.test(unit[0]);
+        if (offset >= structural && (!numericChar.test(before) || percentPrefix) && (!numericChar.test(after) || numericUnit) && !citation && !partialGroup && unitMatches && (!partialFraction || percentPrefix)) {
           ranges.push({ prefix: line.prefix, start: offset, end: offset + numeral.length, blankIndex: index, articleStart });
           if (line.prefix === prefix) found++;
         }

@@ -13,6 +13,21 @@ beforeEach(() => {
 afterEach(cleanup);
 
 describe('LawClozePage', () => {
+  it('shows every paragraph and clause before answering, not just the isolated cloze item', async () => {
+    const session = createClozeSession({ count: 5 });
+    session.order = ['ar-suspension', ...session.order.filter((id) => id !== 'ar-suspension')].slice(0, 5);
+    window.localStorage.setItem(CLOZE_STORAGE_KEY, JSON.stringify(session));
+    render(<LawClozePage />);
+    const passage = await screen.findByLabelText('填空完整條文');
+    expect(passage).toHaveTextContent('建築師之懲戒處分如下');
+    expect(passage).toHaveTextContent('一、警告');
+    expect(passage).toHaveTextContent('二、申誡');
+    expect(passage).toHaveTextContent('四、撤銷或廢止開業證書');
+    expect(passage).toHaveTextContent('建築師受申誡處分三次以上者');
+    expect(passage.querySelectorAll('input')).toHaveLength(2);
+    expect(screen.getByRole('button', { name: '提交答案' })).toBeDisabled();
+    expect(screen.queryByText('完整條文・第 45 條')).not.toBeInTheDocument();
+  });
   it('can show answers with incomplete drafts, restores ungraded reading, and resumes normal grading on the next question', async () => {
     const view = render(<LawClozePage />);
     const inputs = await screen.findAllByRole('textbox');
@@ -54,7 +69,7 @@ describe('LawClozePage', () => {
     const view = render(<LawClozePage />);
     const inputs = await screen.findAllByRole('textbox');
     expect(inputs).toHaveLength(3);
-    expect(inputs.every((input) => input.closest('[aria-label="填空條文節錄"]'))).toBe(true);
+    expect(inputs.every((input) => input.closest('[aria-label="填空完整條文"]'))).toBe(true);
     expect(screen.queryByText('完整條文・第 41 條')).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: '提交答案' })).toBeDisabled();
     ['1/5', '0.125', '75'].forEach((value, i) => fireEvent.change(inputs[i], { target: { value } }));

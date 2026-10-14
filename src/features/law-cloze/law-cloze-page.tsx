@@ -97,11 +97,11 @@ export function LawClozePage() {
         <h3 id='cloze-question-title'>{question.title}</h3>
         <p className={styles.instruction}>直接填入原文數字；分數、比值、小數及「半」須維持法條表示方式，不互相換算。例如八分之一可填「八分之一」或「1/8」，不能填「0.125」。相同空號會同步填答。</p>
         {revealed ? <p className={styles.instruction}>本題為閱讀練習，紅字顯示原文答案；草稿保留，但本題不計分。重新填答請開始新測驗。</p> : null}
-        <div className={styles.passage} aria-label='填空條文節錄'>
-          {question.template.split(/(\{\{\d+\}\})/).map((part, i) => {
-            const match = part.match(/^\{\{(\d+)\}\}$/);
-            if (!match) return <span key={i}>{part}</span>;
-            const index = Number(match[1]);
+        <p className={styles.instruction}>下方完整呈現本題所屬條文，保留所有項、款、前提與但書；只在本題考點數字挖空。規範題呈現所涉編號的完整文字。</p>
+        <div className={styles.passage} aria-label='填空完整條文'>
+          {getFullArticleParts(question).map((part, i) => {
+            if (!part.isAnswer) return <span key={i}>{part.text}</span>;
+            const index = part.blankIndex!;
             const blank = question.blanks[index];
             return <span className={styles.inlineBlank} key={i}>
               <sup aria-hidden='true'>〔{index + 1}〕</sup>{revealed ? <strong className={styles.answerText} aria-label={`第 ${index + 1} 空答案：${blank.original}`}>{blank.original}</strong> : <input
@@ -144,7 +144,7 @@ export function LawClozePage() {
         <p className={styles.instruction}>紅字為本題填空的原文答案；保留未挖空的條件、但書及款次。無障礙規範顯示題目涉及之各編號完整文字；附圖仍屬規定的一部分，請由官方 PDF 核對。</p>
         {question.evidenceKind === 'extension' ? <p className={styles.instruction}>本題為相關考點的條文延伸練習，下面連結僅供題型參考，不代表考古題直接考過本題數字。</p> : null}
         <pre className={styles.fullText}>{getFullArticleParts(question).map((part, index) => part.isAnswer ? <strong className={styles.answerText} key={index}>{part.text}</strong> : <span key={index}>{part.text}</span>)}</pre>
-        {question.fullFileUrl ? <a href={question.fullFileUrl} target='_blank' rel='noreferrer'>官方完整檔（含附圖／附表）↗</a> : null}
+        {question.fullFileUrl ? <a href={question.fullFileUrl} target='_blank' rel='noreferrer'>官方完整法源（含附圖／附表）↗</a> : null}
         {question.images.map((image, index) => <a href={image.url} key={image.url} target='_blank' rel='noreferrer'>
           <Image src={image.url} width={1100} height={800} unoptimized className={styles.lawImage} alt={`${question.articleLabel} 官方附圖／附表 ${index + 1}`} />
           開啟官方附圖／附表 {index + 1} ↗

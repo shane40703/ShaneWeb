@@ -31,11 +31,11 @@ export function getClozeCategories(lawId = '全部') {
 }
 
 export function getFullArticleParts(question: ClozeQuestion) {
-  const parts: Array<{ text: string; isAnswer: boolean }> = [];
+  const parts: Array<{ text: string; isAnswer: boolean; blankIndex?: number }> = [];
   let cursor = 0;
   for (const range of question.answerRanges) {
     parts.push({ text: question.fullText.slice(cursor, range.start), isAnswer: false });
-    parts.push({ text: question.fullText.slice(range.start, range.end), isAnswer: true });
+    parts.push({ text: question.fullText.slice(range.start, range.end), isAnswer: true, blankIndex: range.blankIndex });
     cursor = range.end;
   }
   parts.push({ text: question.fullText.slice(cursor), isAnswer: false });
@@ -48,8 +48,8 @@ const digits: Record<string, number> = {
 };
 function numericValue(raw: string): number | null {
   if (/^\d+(?:\.\d+)?$/.test(raw)) return Number(raw);
-  const scaled = raw.match(/^(\d+)([十百千萬])$/);
-  if (scaled) return Number(scaled[1]) * ({ '十': 10, '百': 100, '千': 1000, '萬': 10000 }[scaled[2]] ?? 0);
+  const scaled = raw.match(/^(\d+)([十百千萬億])$/);
+  if (scaled) return Number(scaled[1]) * ({ '十': 10, '百': 100, '千': 1000, '萬': 10000, '億': 100000000 }[scaled[2]] ?? 0);
   if (raw.includes('點') || raw.includes('.')) {
     const parts = raw.split(/[點.]/);
     if (parts.length !== 2 || !parts[1]) return null;
@@ -58,8 +58,8 @@ function numericValue(raw: string): number | null {
     return integer !== null && decimals.every((char) => char !== undefined)
       ? integer + Number('0.' + decimals.join('')) : null;
   }
-  if (!/^[零〇○一二兩三四五六七八九十百千萬]+$/.test(raw)) return null;
-  if (![...raw].some((char) => '十百千萬'.includes(char))) {
+  if (!/^[零〇○一二兩三四五六七八九十百千萬億]+$/.test(raw)) return null;
+  if (![...raw].some((char) => '十百千萬億'.includes(char))) {
     return Number([...raw].map((char) => digits[char]).join(''));
   }
   let total = 0;
@@ -67,7 +67,11 @@ function numericValue(raw: string): number | null {
   let number = 0;
   for (const char of raw) {
     if (char in digits) number = digits[char];
-    else if (char === '萬') {
+    else if (char === '億') {
+      total = (total + section + number) * 100000000;
+      section = 0;
+      number = 0;
+    } else if (char === '萬') {
       total += (section + number) * 10000;
       section = 0;
       number = 0;
@@ -96,7 +100,7 @@ export function normalizeStatutoryAnswer(value: string, unit = ''): string | nul
     const kind = fraction || normalized.includes('/') ? 'fraction' : 'ratio';
     return kind + ':' + numerator + '/' + denominator;
   }
-  if (!/^[\d零〇○一二兩三四五六七八九十百千萬點.]+$/.test(normalized)) return null;
+  if (!/^[\d零〇○一二兩三四五六七八九十百千萬億點.]+$/.test(normalized)) return null;
   const number = numericValue(normalized);
   return number !== null && Number.isFinite(number)
     ? (/[點.]/.test(normalized) ? 'decimal:' : 'integer:') + number : null;

@@ -3,6 +3,24 @@ import { describe, expect, it } from 'vitest';
 import { CLOZE_COUNTS, clozeBank, createClozeSession, getClozeCategories, getClozePool, getFullArticleParts, gradeCloze, normalizeStatutoryAnswer, parseClozeSession, revealClozeAnswer } from './cloze';
 
 describe('statutory cloze answers and source text', () => {
+  it('adds four more reviewed statutes with exact fractions, decimals, large amounts and deadline contexts', () => {
+    expect(clozeBank.laws).toHaveLength(10);
+    const get = (id: string) => clozeBank.questions.find((q) => q.id === id)!;
+    for (const lawId of ['condominium-act', 'nonurban-land-rules', 'procurement-act', 'construction-industry-act']) expect(getClozePool({ lawId, category: '全部' }).length).toBeGreaterThanOrEqual(19);
+    expect(clozeBank.laws.find((l) => l.id === 'nonurban-land-rules')!.amendedOn).toBe('2026-05-27');
+    expect(gradeCloze(get('co-resolution'), ['2/3', '3/4'])).toEqual([true, true]);
+    expect(gradeCloze(get('co-resolution'), ['0.6666667', '0.75'])).toEqual([false, false]);
+    expect(gradeCloze(get('co-notice'), ['10', '2'])).toEqual([true, true]);
+    expect(gradeCloze(get('nu-investment'), ['四億五千萬', '10000000', '1', '15'])).toEqual([true, true, true, true]);
+    expect(normalizeStatutoryAnswer('四億五千萬元', '元')).toBe('integer:450000000');
+    expect(gradeCloze(get('nu-parcel'), ['0.12', '0.12', '20', '10'])).toEqual([true, true, true, true]);
+    expect(gradeCloze(get('nu-small-parcel'), ['12/1000', '10', '4'])).toEqual([false, true, true]);
+    expect(get('pr-progress-payment').fullText).toContain('實際工作日，不包括例假日');
+    expect(gradeCloze(get('pr-exclusion-graduated'), ['5', '3', '1', '6', '2', '1'])).toEqual(Array(6).fill(true));
+    expect(gradeCloze(get('ci-upgrade-a'), ['3', '5', '300000000'])).toEqual([true, true, true]);
+    expect(get('co-danger-extension').evidenceKind).toBe('extension');
+    expect(get('nu-small-parcel').fullFileUrl).toContain('D0060013');
+  });
   it('adds four current statutes focused on durations and distinct penalties, without changing units or fraction notation', () => {
     const coreLaws = ['building-act', 'architects-act', 'urban-planning-act', 'national-land-planning-act'];
     for (const lawId of coreLaws) expect(getClozePool({ lawId, category: '全部' }).length).toBeGreaterThanOrEqual(14);
@@ -98,7 +116,7 @@ describe('statutory cloze answers and source text', () => {
     const supplements = JSON.parse(readFileSync('ref/law-cloze/article-supplements.json', 'utf8')) as Record<string, { text: string }>;
     const provisions = JSON.parse(readFileSync('ref/law-cloze/accessibility-provisions.json', 'utf8')) as Array<{ number: string; text: string }>;
     const tables = JSON.parse(readFileSync('ref/law-cloze/accessibility-supplements.json', 'utf8')) as Record<string, { rawTable: string; text: string }>;
-    const core = JSON.parse(readFileSync('ref/law-cloze/core-laws-snapshot.json', 'utf8')) as Array<{ id: string; articles: Array<{ number: string; text: string }> }>;
+    const core = [...JSON.parse(readFileSync('ref/law-cloze/core-laws-snapshot.json', 'utf8')), ...JSON.parse(readFileSync('ref/law-cloze/additional-laws-snapshot.json', 'utf8'))] as Array<{ id: string; articles: Array<{ number: string; text: string }> }>;
     expect(source.articles).toHaveLength(389);
     expect(new Set(clozeBank.questions.map((q) => q.id)).size).toBe(clozeBank.questions.length);
     const evidencePaths = new Set<string>();
@@ -117,6 +135,7 @@ describe('statutory cloze answers and source text', () => {
       const restored = q.template.replace(/\{\{(\d+)\}\}/g, (_match, index: string) => q.blanks[Number(index)].original);
       for (const line of restored.split('\n')) expect(expectedText.split('\n'), q.id).toContain(line);
       expect(getFullArticleParts(q).map((part) => part.text).join('')).toBe(q.fullText);
+      for (const part of getFullArticleParts(q).filter((p) => p.isAnswer)) expect(part.text).toBe(q.blanks[part.blankIndex!].original);
       expect(new Set(q.answerRanges.map((r) => r.blankIndex)).size).toBe(q.blanks.length);
       let end = 0;
       for (const range of q.answerRanges) {
@@ -138,6 +157,19 @@ describe('statutory cloze answers and source text', () => {
 });
 
 describe('cloze exam selection and restoration', () => {
+  it('preserves 1.68 wrong answers, drafts and reading status without inserting 1.69 questions', () => {
+    const session = createClozeSession({ count: 5 });
+    session.version = '1.68-2026-10-14';
+    session.order = ['daylight', 'ar-suspension', 'b-start', 'u-fine', 'n-fund'];
+    session.index = 1;
+    session.answers = ['99', ''];
+    session.results = { daylight: ['1/5', '0.125', '75'] };
+    session.revealed = ['ar-suspension'];
+    expect(parseClozeSession(JSON.stringify(session))).toEqual(session);
+    expect(parseClozeSession(JSON.stringify({ ...session, order: ['daylight', 'co-resolution', ...session.order.slice(2)] }))).toBeNull();
+    const restored = parseClozeSession(JSON.stringify(session))!;
+    expect(gradeCloze(clozeBank.questions.find((q) => q.id === 'daylight')!, restored.results.daylight)).toEqual([true, false, true]);
+  });
   it('reveals answers without fabricating scores, keeps drafts, and rejects corrupt reading progress', () => {
     const session = createClozeSession({ count: 5 });
     const q = clozeBank.questions.find((q) => q.id === session.order[0])!;

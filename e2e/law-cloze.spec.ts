@@ -3,6 +3,48 @@ import { clozeBank, CLOZE_STORAGE_KEY, createClozeSession } from '../src/feature
 
 test.use({ channel: process.env.PLAYWRIGHT_BROWSER_CHANNEL });
 
+test('every question presents its complete article before submission with only reviewed ranges masked', async ({ page }, testInfo) => {
+  const session = createClozeSession({ count: 5 });
+  session.order = ['ar-suspension', 'co-resolution', 'nu-investment', 'pr-progress-payment', 'ci-upgrade-a'];
+  await page.addInitScript(({ key, value }) => {
+    if (!localStorage.getItem(key)) localStorage.setItem(key, JSON.stringify(value));
+  }, { key: CLOZE_STORAGE_KEY, value: session });
+  await page.goto('/law-cloze');
+  for (const id of session.order) {
+    const q = clozeBank.questions.find((q) => q.id === id)!;
+    const passage = page.getByLabel('填空完整條文', { exact: true });
+    await expect(page.getByRole('heading', { name: q.title, exact: true })).toBeVisible();
+    const before = await passage.evaluate((element, blanks) => {
+      const clone = element.cloneNode(true) as HTMLElement;
+      clone.querySelectorAll('sup').forEach((el) => el.remove());
+      clone.querySelectorAll('input').forEach((input) => {
+        const match = input.getAttribute('aria-label')!.match(/^第 (\d+) 空/)!;
+        input.replaceWith(document.createTextNode(blanks[Number(match[1]) - 1].original));
+      });
+      return clone.textContent;
+    }, q.blanks);
+    expect(before).toBe(q.fullText);
+    await expect(page.locator('pre')).toHaveCount(0);
+    if (id === 'ar-suspension') {
+      await expect(passage).toContainText('一、警告');
+      await expect(passage).toContainText('二、申誡');
+      await expect(passage).toContainText('四、撤銷或廢止開業證書');
+      await expect(passage).toContainText('累計滿五年');
+      await page.evaluate(() => window.scrollTo(0, 0));
+      await page.screenshot({ path: `test-results/law-cloze-full-context-${testInfo.project.name}.png`, fullPage: true });
+    }
+    for (const [i, blank] of q.blanks.entries()) await page.getByRole('textbox', { name: `第 ${i + 1} 空：${blank.label}`, exact: true }).first().fill(blank.answer);
+    await page.getByRole('button', { name: '提交答案' }).click();
+    await expect(page.locator('pre')).toHaveText(q.fullText);
+    await page.reload();
+    await expect(page.getByRole('status')).toContainText(`本題答對 ${q.blanks.length} / ${q.blanks.length} 空`);
+    if (id !== 'ci-upgrade-a') await page.getByRole('button', { name: '下一題' }).click();
+  }
+  await expect(page.getByText(/5 題中 5 題全對/)).toBeVisible();
+  const width = await page.evaluate(() => ({ scroll: document.documentElement.scrollWidth, viewport: innerWidth }));
+  expect(width.scroll).toBeLessThanOrEqual(width.viewport + 1);
+});
+
 test('four added statutes support answer-only reading and mixed scores across reloads', async ({ page }, testInfo) => {
   const session = createClozeSession({ count: 5 });
   session.order = ['b-start', 'ar-renewal', 'u-fine', 'n-implementation', 'n-controlled-fine'];
@@ -47,7 +89,7 @@ test('four added statutes support answer-only reading and mixed scores across re
 
 test('new-law selections disclose capped counts and only draw from that law', async ({ page }) => {
   await page.goto('/law-cloze');
-  for (const lawId of ['building-act', 'architects-act', 'urban-planning-act', 'national-land-planning-act']) {
+  for (const lawId of ['building-act', 'architects-act', 'urban-planning-act', 'national-land-planning-act', 'condominium-act', 'nonurban-land-rules', 'procurement-act', 'construction-industry-act']) {
     await page.getByRole('combobox', { name: '法規', exact: true }).selectOption(lawId);
     await page.getByRole('combobox', { name: '每次測驗題數' }).selectOption('30');
     const expected = clozeBank.questions.filter((q) => q.lawId === lawId).length;
@@ -70,7 +112,7 @@ test('law cloze preserves statute notation, shows full articles and saves progre
   await page.goto('/law-cloze');
   const inputs = page.getByRole('textbox');
   await expect(inputs).toHaveCount(3);
-  await expect(page.locator('[aria-label="填空條文節錄"] input')).toHaveCount(3);
+  await expect(page.locator('[aria-label="填空完整條文"] input')).toHaveCount(3);
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('法規克漏字');
   await expect(page.getByRole('heading', { name: '完整條文・第 41 條' })).toHaveCount(0);
   // Fill a later blank first to exercise partial-draft restoration.
@@ -99,7 +141,7 @@ test('law cloze preserves statute notation, shows full articles and saves progre
   for (const id of session.order.slice(1)) {
     const q = clozeBank.questions.find((q) => q.id === id)!;
     await expect(page.getByRole('heading', { name: q.title, exact: true })).toBeVisible();
-    if (id === 'underground') await expect(page.locator('[aria-label="填空條文節錄"]')).toContainText('三、地下通道及地下廣場');
+    if (id === 'underground') await expect(page.locator('[aria-label="填空完整條文"]')).toContainText('三、地下通道及地下廣場');
     for (const [i, blank] of q.blanks.entries()) await page.getByRole('textbox', { name: `第 ${i + 1} 空：${blank.label}`, exact: true }).first().fill(blank.answer);
     await page.getByRole('button', { name: '提交答案' }).click();
     await expect(page.locator('pre')).toHaveText(q.fullText);
