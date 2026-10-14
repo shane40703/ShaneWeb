@@ -70,6 +70,23 @@ describe('CommunityPage question loading', () => {
     router.replace.mockReset();
   });
 
+  it('preserves note-style whitespace when adding and editing explanations', async () => {
+    const content = '  第一行\n\n\t第二行 **格式重點**  對齊\n';
+    renderPage();
+    fireEvent.change(screen.getByLabelText('內容'), { target: { value: content } });
+    fireEvent.click(screen.getByRole('button', { name: '送出共享投稿' }));
+    const bold = await screen.findByText('格式重點');
+    expect(bold.tagName).toBe('STRONG');
+    expect(bold.closest('p')!.textContent).toBe(content.replace('**格式重點**', '格式重點'));
+    fireEvent.click(screen.getByRole('button', { name: '編輯' }));
+    expect(screen.getByLabelText('編輯投稿內容')).toHaveValue(content);
+    const changed = '  修正第一行\n\n\t下一行  留空\n';
+    fireEvent.change(screen.getByLabelText('編輯投稿內容'), { target: { value: changed } });
+    fireEvent.click(screen.getByRole('button', { name: '儲存修改' }));
+    const edited = await screen.findByText(/修正第一行/);
+    expect(edited.textContent).toBe(changed);
+  });
+
   it('shows the current question category beside its subject and year', () => {
     renderPage();
 

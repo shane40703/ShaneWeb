@@ -3,6 +3,64 @@ import { clozeBank, CLOZE_STORAGE_KEY, createClozeSession } from '../src/feature
 
 test.use({ channel: process.env.PLAYWRIGHT_BROWSER_CHANNEL });
 
+test('four added statutes support answer-only reading and mixed scores across reloads', async ({ page }, testInfo) => {
+  const session = createClozeSession({ count: 5 });
+  session.order = ['b-start', 'ar-renewal', 'u-fine', 'n-implementation', 'n-controlled-fine'];
+  await page.addInitScript(({ key, value }) => {
+    if (!localStorage.getItem(key)) localStorage.setItem(key, JSON.stringify(value));
+  }, { key: CLOZE_STORAGE_KEY, value: session });
+  await page.goto('/law-cloze');
+  for (const [index, id] of session.order.entries()) {
+    const q = clozeBank.questions.find((q) => q.id === id)!;
+    await expect(page.getByRole('heading', { name: q.title, exact: true })).toBeVisible();
+    if (index === 0 || index === 4) {
+      if (index === 0) await page.getByRole('textbox').first().fill('99');
+      await page.getByRole('button', { name: '直接看答案' }).click();
+      await expect(page.getByRole('status')).toContainText('本題不計分');
+      await expect(page.getByRole('button', { name: '提交答案' })).toHaveCount(0);
+      for (const [i, blank] of q.blanks.entries()) await expect(page.getByLabel(`第 ${i + 1} 空答案：${blank.original}`, { exact: true }).first()).toHaveText(blank.original);
+    } else {
+      for (const [i, blank] of q.blanks.entries()) await page.getByRole('textbox', { name: `第 ${i + 1} 空：${blank.label}`, exact: true }).first().fill(blank.answer);
+      await page.getByRole('button', { name: '提交答案' }).click();
+      await expect(page.getByRole('status')).toContainText(`本題答對 ${q.blanks.length} / ${q.blanks.length} 空`);
+    }
+    await expect(page.locator('pre')).toHaveText(q.fullText);
+    await page.reload();
+    await expect(page.locator('pre')).toHaveText(q.fullText);
+    if (index === 0) {
+      const stored = await page.evaluate((key) => JSON.parse(localStorage.getItem(key)!), CLOZE_STORAGE_KEY);
+      expect(stored.answers[0]).toBe('99');
+      expect(stored.results).toEqual({});
+      expect(stored.revealed).toEqual(['b-start']);
+    }
+    if (index < 4) await page.getByRole('button', { name: '下一題' }).click();
+  }
+  await expect(page.getByText(/3 題中 3 題全對/)).toContainText('另 2 題直接看答案，不納入成績');
+  await expect(page.getByRole('heading', { name: '本輪測驗完成' })).toBeVisible();
+  const width = await page.evaluate(() => ({ scroll: document.documentElement.scrollWidth, viewport: innerWidth }));
+  expect(width.scroll).toBeLessThanOrEqual(width.viewport + 1);
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.screenshot({ path: `test-results/law-cloze-1.68-${testInfo.project.name}.png`, fullPage: true });
+  await page.getByRole('button', { name: '再練一輪' }).click();
+  await expect(page.getByRole('button', { name: '直接看答案' })).toBeVisible();
+});
+
+test('new-law selections disclose capped counts and only draw from that law', async ({ page }) => {
+  await page.goto('/law-cloze');
+  for (const lawId of ['building-act', 'architects-act', 'urban-planning-act', 'national-land-planning-act']) {
+    await page.getByRole('combobox', { name: '法規', exact: true }).selectOption(lawId);
+    await page.getByRole('combobox', { name: '每次測驗題數' }).selectOption('30');
+    const expected = clozeBank.questions.filter((q) => q.lawId === lawId).length;
+    await expect(page.getByText(/此考點題數不足/)).toContainText(`新測驗將抽 ${expected} 題`);
+    await page.getByRole('button', { name: '開始新測驗' }).click();
+    await expect.poll(async () => page.evaluate((key) => JSON.parse(localStorage.getItem(key)!).lawId, CLOZE_STORAGE_KEY)).toBe(lawId);
+    const stored = await page.evaluate((key) => JSON.parse(localStorage.getItem(key)!), CLOZE_STORAGE_KEY);
+    expect(stored.order.length).toBe(expected);
+    expect(new Set(stored.order).size).toBe(expected);
+    expect(stored.order.every((id: string) => clozeBank.questions.find((q) => q.id === id)?.lawId === lawId)).toBe(true);
+  }
+});
+
 test('law cloze preserves statute notation, shows full articles and saves progress', async ({ page }, testInfo) => {
   const session = createClozeSession({ count: 5 });
   session.order = ['daylight', 'underground', 'a-ramp-slope', 'a-stair-step', 'a-motorcycle'];

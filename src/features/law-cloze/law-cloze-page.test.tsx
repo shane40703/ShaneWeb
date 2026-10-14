@@ -13,6 +13,43 @@ beforeEach(() => {
 afterEach(cleanup);
 
 describe('LawClozePage', () => {
+  it('can show answers with incomplete drafts, restores ungraded reading, and resumes normal grading on the next question', async () => {
+    const view = render(<LawClozePage />);
+    const inputs = await screen.findAllByRole('textbox');
+    fireEvent.change(inputs[1], { target: { value: '0.125' } });
+    fireEvent.click(screen.getByRole('button', { name: '直接看答案' }));
+    expect(screen.getByRole('status')).toHaveTextContent('本題不計分');
+    expect(screen.queryByRole('button', { name: '提交答案' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('list', { name: '逐空比對結果' })).not.toBeInTheDocument();
+    expect(screen.getByLabelText('第 2 空答案：八分之一')).toHaveTextContent('八分之一');
+    await waitFor(() => expect(parseClozeSession(window.localStorage.getItem(CLOZE_STORAGE_KEY))?.revealed).toEqual(['daylight']));
+    const reading = parseClozeSession(window.localStorage.getItem(CLOZE_STORAGE_KEY))!;
+    expect(reading.answers[1]).toBe('0.125');
+    expect(reading.results).toEqual({});
+    view.unmount();
+    render(<LawClozePage />);
+    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('本題不計分'));
+    fireEvent.click(screen.getByRole('button', { name: '下一題' }));
+    expect(screen.queryByText('完整條文・第 41 條')).not.toBeInTheDocument();
+    const next = clozeBank.questions.find((q) => q.id === reading.order[1])!;
+    next.blanks.forEach((blank, i) => fireEvent.change(screen.getAllByRole('textbox', { name: `第 ${i + 1} 空：${blank.label}` })[0], { target: { value: blank.answer } }));
+    fireEvent.click(screen.getByRole('button', { name: '提交答案' }));
+    expect(screen.getByRole('status')).toHaveTextContent(`本題答對 ${next.blanks.length} / ${next.blanks.length}`);
+    await waitFor(() => expect(Object.keys(parseClozeSession(window.localStorage.getItem(CLOZE_STORAGE_KEY))!.results)).toEqual([next.id]));
+  });
+
+  it('completes an answer-only round without a fabricated success rate', async () => {
+    const session = createClozeSession({ lawId: 'accessibility', category: '無障礙客房', count: 5 });
+    window.localStorage.setItem(CLOZE_STORAGE_KEY, JSON.stringify(session));
+    render(<LawClozePage />);
+    fireEvent.click(await screen.findByRole('button', { name: '直接看答案' }));
+    expect(screen.getByRole('heading', { name: '本輪測驗完成' })).toBeInTheDocument();
+    expect(screen.getByText(/本輪未提交作答/)).toHaveTextContent('不計答對率');
+    expect(document.body.textContent).not.toContain('NaN');
+    fireEvent.click(screen.getByRole('button', { name: '再練一輪' }));
+    expect(screen.queryByRole('heading', { name: '本輪測驗完成' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '直接看答案' })).toBeEnabled();
+  });
   it('grades multiple blanks and reveals the entire article only after submission', async () => {
     const view = render(<LawClozePage />);
     const inputs = await screen.findAllByRole('textbox');

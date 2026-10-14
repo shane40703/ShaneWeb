@@ -21,8 +21,9 @@ export interface ClozeQuestion {
   images: Array<{ url: string; alt: string }>;
   fullFileUrl: string | null;
   evidence: Array<{ id: string; year: number; number: number }>;
+  evidenceKind?: 'topic' | 'extension';
 }
-export const clozeBank: Omit<typeof data, 'questions'> & { questions: ClozeQuestion[] } = data;
+export const clozeBank: Omit<typeof data, 'questions'> & { questions: ClozeQuestion[] } = { ...data, questions: data.questions as ClozeQuestion[] };
 export const CLOZE_STORAGE_KEY = 'shaneweb:law-cloze';
 export const CLOZE_COUNTS = [5, 10, 15, 20, 25, 30] as const;
 export function getClozeCategories(lawId = '全部') {
@@ -47,6 +48,8 @@ const digits: Record<string, number> = {
 };
 function numericValue(raw: string): number | null {
   if (/^\d+(?:\.\d+)?$/.test(raw)) return Number(raw);
+  const scaled = raw.match(/^(\d+)([十百千萬])$/);
+  if (scaled) return Number(scaled[1]) * ({ '十': 10, '百': 100, '千': 1000, '萬': 10000 }[scaled[2]] ?? 0);
   if (raw.includes('點') || raw.includes('.')) {
     const parts = raw.split(/[點.]/);
     if (parts.length !== 2 || !parts[1]) return null;
@@ -119,6 +122,7 @@ export interface ClozeSession extends ClozeOptions {
   answers: string[];
   submitted: boolean;
   results: Record<string, string[]>;
+  revealed: string[];
 }
 
 export function getClozePool(options: Pick<ClozeOptions, 'lawId' | 'category'>) {
@@ -138,30 +142,45 @@ export function createClozeSession(options: Partial<ClozeOptions> = {}, random =
     const j = Math.floor(random() * (i + 1));
     [order[i], order[j]] = [order[j], order[i]];
   }
-  return { version: data.version, ...settings, order: order.slice(0, settings.count), index: 0, answers: [], submitted: false, results: {} };
+  return { version: data.version, ...settings, order: order.slice(0, settings.count), index: 0, answers: [], submitted: false, results: {}, revealed: [] };
+}
+
+export function revealClozeAnswer(session: ClozeSession): ClozeSession {
+  const id = session.order[session.index];
+  if (session.submitted || session.revealed.includes(id)) return session;
+  // Preserve drafts, but never fabricate correct answers or graded results.
+  return { ...session, revealed: [...session.revealed, id] };
 }
 
 export function parseClozeSession(raw: string | null): ClozeSession | null {
   try {
     const value = JSON.parse(raw ?? 'null') as ClozeSession | null;
-    if (!value || ![data.version, data.legacyVersion].includes(value.version) || !validOptions(value)) return null;
+    if (!value || !validOptions(value)) return null;
+    const compatible = data.compatibleVersions.find((entry) => entry.version === value.version);
+    if (value.version !== data.version && !compatible) return null;
     // A previously capped round must not grow or lose its saved answers when the bank expands.
-    const pool = getClozePool(value).filter((q) => value.version === data.version || data.legacyQuestionIds.includes(q.id));
+    const pool = getClozePool(value).filter((q) => value.version === data.version || compatible!.questionIds.includes(q.id));
     const expectedLength = Math.min(value.count, pool.length);
     if (!Array.isArray(value.order) || value.order.length !== expectedLength || new Set(value.order).size !== expectedLength || !value.order.every((id) => pool.some((q) => q.id === id))) return null;
     if (!Number.isInteger(value.index) || value.index < 0 || value.index >= value.order.length || typeof value.submitted !== 'boolean') return null;
     const validAnswers = (answers: unknown): answers is string[] => Array.isArray(answers) && answers.every((a) => typeof a === 'string' && a.length <= 50);
     if (!validAnswers(value.answers) || !value.results || typeof value.results !== 'object' || Array.isArray(value.results)) return null;
+    const revealed: unknown = value.revealed === undefined ? [] : value.revealed;
+    if (!Array.isArray(revealed) || revealed.some((id) => typeof id !== 'string') || new Set(revealed).size !== revealed.length) return null;
+    const currentId = value.order[value.index];
+    const resolved = value.submitted || revealed.includes(currentId);
+    const visited = value.order.slice(0, value.index + Number(resolved));
+    if (revealed.some((id) => !visited.includes(id) || Object.hasOwn(value.results, id))) return null;
     const results: Record<string, string[]> = {};
     for (const [id, answers] of Object.entries(value.results)) {
       const question = pool.find((q) => q.id === id);
-      if (!question || !value.order.slice(0, value.index + Number(value.submitted)).includes(id) || !validAnswers(answers) || answers.length !== question.blanks.length || answers.some((a) => !a.trim())) return null;
+      if (!question || !visited.includes(id) || !validAnswers(answers) || answers.length !== question.blanks.length || answers.some((a) => !a.trim())) return null;
       results[id] = answers;
     }
     const question = pool.find((q) => q.id === value.order[value.index])!;
-    if (Object.keys(results).length !== value.index + Number(value.submitted) || (value.answers.length !== 0 && value.answers.length !== question.blanks.length)) return null;
+    if (Object.keys(results).length + revealed.length !== visited.length || (value.answers.length !== 0 && value.answers.length !== question.blanks.length)) return null;
     if (value.submitted && (!results[question.id] || value.answers.length !== question.blanks.length || value.answers.some((a, i) => a !== results[question.id][i]))) return null;
-    return { version: value.version, lawId: value.lawId, category: value.category, count: value.count, order: value.order, index: value.index, answers: value.answers, submitted: value.submitted, results };
+    return { version: value.version, lawId: value.lawId, category: value.category, count: value.count, order: value.order, index: value.index, answers: value.answers, submitted: value.submitted, results, revealed };
   } catch {
     return null;
   }

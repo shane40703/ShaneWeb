@@ -4,6 +4,7 @@ import {
   QuestionCard,
 } from '@/components/content/content';
 import { ReviewNoteEditor } from '@/components/attempt-review';
+import { RichText } from '@/components/rich-text';
 import {
   QuestionSelector,
   type SelectorYear,
@@ -257,8 +258,7 @@ export function DifficultPage({
                           >
                             <span>詳解</span>
                             <p>
-                              {question.explanation?.trim() ||
-                                '目前尚無詳解。'}
+                              <RichText>{question.explanation?.trim() ? question.explanation : '目前尚無詳解。'}</RichText>
                             </p>
                           </section>
                           <div className={styles.noteEditor}>

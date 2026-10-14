@@ -195,6 +195,11 @@ export function parseCloudDiscussionReply(id: string, data: DocumentData) {
   } satisfies DiscussionReply & { authorId: string };
 }
 
+// Validation trims only to detect empty content; saved notes retain their indentation and blank lines.
+export function normalizeDiscussionContent(content: string) {
+  return content.trim() ? content : '';
+}
+
 export function useDiscussionPublisher(questionId: QuestionId) {
   const { state, dispatch } = useAppState();
   const enabled = firebaseConfigurationAvailable();
@@ -205,8 +210,8 @@ export function useDiscussionPublisher(questionId: QuestionId) {
       content: string,
       images: DiscussionPost['images'] = [],
     ) => {
-      const trimmed = content.trim();
-      if (!trimmed && !images.length) {
+      const formatted = normalizeDiscussionContent(content);
+      if (!formatted && !images.length) {
         throw new Error('請先輸入要分享的內容或加入圖片。');
       }
       if (!enabled) {
@@ -219,7 +224,7 @@ export function useDiscussionPublisher(questionId: QuestionId) {
           dispatch({
             type: 'edit-discussion-post',
             postId: existingPost.id,
-            content: trimmed,
+            content: formatted,
             images,
           });
           return { imagesShared: true } satisfies DiscussionPublishResult;
@@ -231,7 +236,7 @@ export function useDiscussionPublisher(questionId: QuestionId) {
             id: `post-${questionId}-${now}`,
             questionId,
             type,
-            content: trimmed,
+            content: formatted,
             images,
             createdAt: now,
             likes: 0,
@@ -290,7 +295,7 @@ export function useDiscussionPublisher(questionId: QuestionId) {
         // images remain in the local note while the text is still published.
         uploadedImages = [];
       }
-      if (!trimmed && images.length && !uploadedImages.length) {
+      if (!formatted && images.length && !uploadedImages.length) {
         throw new Error(
           '目前方案無法共享圖片。請加入文字後再分享；圖片仍會保存在本機筆記。',
         );
@@ -300,7 +305,7 @@ export function useDiscussionPublisher(questionId: QuestionId) {
           await updateDoc(
             postRef,
             createCloudDiscussionPostUpdateData(
-              trimmed,
+              formatted,
               uploadedImages,
               sortedExistingPosts[0].data().images,
             ),
@@ -314,7 +319,7 @@ export function useDiscussionPublisher(questionId: QuestionId) {
           await setDoc(replacementRef, createCloudDiscussionPostData({
             questionId,
             type,
-            content: trimmed,
+            content: formatted,
             images: uploadedImages,
             authorId: user.uid,
             createdAt: serverTimestamp(),
@@ -324,7 +329,7 @@ export function useDiscussionPublisher(questionId: QuestionId) {
         await setDoc(postRef, createCloudDiscussionPostData({
           questionId,
           type,
-          content: trimmed,
+          content: formatted,
           images: uploadedImages,
           authorId: user.uid,
           createdAt: serverTimestamp(),
@@ -506,8 +511,8 @@ export function useSharedDiscussions(questionId: QuestionId) {
 
   const addPost = useCallback(
     async (type: DiscussionPostType, content: string) => {
-      const trimmed = content.trim();
-      if (!trimmed) return;
+      const formatted = normalizeDiscussionContent(content);
+      if (!formatted) return;
       if (!enabled) {
         const now = new Date().toISOString();
         dispatch({
@@ -516,7 +521,7 @@ export function useSharedDiscussions(questionId: QuestionId) {
             id: `post-${now}`,
             questionId,
             type,
-            content: trimmed,
+            content: formatted,
             images: [],
             createdAt: now,
             likes: 0,
@@ -532,7 +537,7 @@ export function useSharedDiscussions(questionId: QuestionId) {
       await addDoc(collection(firebase.db, 'discussionPosts'), createCloudDiscussionPostData({
         questionId,
         type,
-        content: trimmed,
+        content: formatted,
         images: [],
         authorId: activeUser.uid,
         createdAt: serverTimestamp(),
@@ -543,15 +548,15 @@ export function useSharedDiscussions(questionId: QuestionId) {
 
   const addReply = useCallback(
     async (postId: string, content: string) => {
-      const trimmed = content.trim();
-      if (!trimmed) return;
+      const formatted = normalizeDiscussionContent(content);
+      if (!formatted) return;
       if (!enabled) {
         dispatch({
           type: 'add-discussion-reply',
           postId,
           reply: {
             id: `reply-${postId}-${new Date().toISOString()}`,
-            content: trimmed,
+            content: formatted,
             createdAt: new Date().toISOString(),
           },
         });
@@ -561,7 +566,7 @@ export function useSharedDiscussions(questionId: QuestionId) {
       const firebase = getFirebaseServices();
       if (!firebase) return;
       await addDoc(collection(firebase.db, 'discussionPosts', postId, 'replies'), {
-        content: trimmed,
+        content: formatted,
         authorId: activeUser.uid,
         authorName: '匿名使用者',
         createdAt: serverTimestamp(),
@@ -611,10 +616,10 @@ export function useSharedDiscussions(questionId: QuestionId) {
 
   const editPost = useCallback(
     async (postId: string, content: string) => {
-      const trimmed = content.trim();
-      if (!trimmed) throw new Error('投稿內容不可為空白。');
+      const formatted = normalizeDiscussionContent(content);
+      if (!formatted) throw new Error('投稿內容不可為空白。');
       if (!enabled) {
-        dispatch({ type: 'edit-discussion-post', postId, content: trimmed });
+        dispatch({ type: 'edit-discussion-post', postId, content: formatted });
         return;
       }
       requireUser();
@@ -624,7 +629,7 @@ export function useSharedDiscussions(questionId: QuestionId) {
       if (!post) throw new Error('找不到要編輯的投稿，請重新整理後再試。');
       await updateDoc(
         doc(firebase.db, 'discussionPosts', postId),
-        createCloudDiscussionPostEditData(trimmed, post.images),
+        createCloudDiscussionPostEditData(formatted, post.images),
       );
     },
     [dispatch, enabled, posts, requireUser],

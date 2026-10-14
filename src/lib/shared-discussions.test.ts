@@ -5,6 +5,7 @@ import {
   createCloudDiscussionPostUpdateData,
   deduplicateAuthorExplanations,
   isFirestorePermissionDenied,
+  normalizeDiscussionContent,
   parseCloudDiscussionPost,
   parseCloudDiscussionReply,
   withUploadTimeout,
@@ -15,6 +16,13 @@ const timestamp = {
 };
 
 describe('shared discussion parsing', () => {
+  it('retains note indentation and blank lines when publishing or editing, but rejects whitespace-only text', () => {
+    const content = '\n  第一行\n\n\t第二行  對齊 **重點**\n';
+    expect(normalizeDiscussionContent(content)).toBe(content);
+    expect(createCloudDiscussionPostEditData(normalizeDiscussionContent(content), []).content).toBe(content);
+    expect(createCloudDiscussionPostUpdateData(normalizeDiscussionContent(content), [], []).content).toBe(content);
+    expect(normalizeDiscussionContent(' \n\t ')).toBe('');
+  });
   it('includes the images field required by Firestore rules for text posts', () => {
     expect(
       createCloudDiscussionPostData({

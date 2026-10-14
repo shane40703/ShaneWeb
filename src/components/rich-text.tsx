@@ -3,7 +3,7 @@ import styles from './rich-text.module.css';
 
 const tokenPattern = /(https?:\/\/[^\s<]+|\*\*[^*\n]+\*\*|!![^!\n]+!!|_[^_\n]+_|\^[^^\n]+\^|~[^~\n]+~)/g;
 
-export function RichText({ children }: { children: string }) {
+function renderRichText(children: string) {
   const parts: ReactNode[] = [];
   let cursor = 0;
 
@@ -20,25 +20,29 @@ export function RichText({ children }: { children: string }) {
     } else if (token.startsWith('**')) {
       parts.push(
         <strong key={`${index}-${token}`}>
-          <RichText>{token.slice(2, -2)}</RichText>
+          {renderRichText(token.slice(2, -2))}
         </strong>,
       );
     } else if (token.startsWith('!!')) {
       parts.push(
         <span className={styles.red} key={`${index}-${token}`}>
-          <RichText>{token.slice(2, -2)}</RichText>
+          {renderRichText(token.slice(2, -2))}
         </span>,
       );
     } else if (token.startsWith('_')) {
-      parts.push(<em key={`${index}-${token}`}><RichText>{token.slice(1, -1)}</RichText></em>);
+      parts.push(<em key={`${index}-${token}`}>{renderRichText(token.slice(1, -1))}</em>);
     } else if (token.startsWith('^')) {
-      parts.push(<sup key={`${index}-${token}`}><RichText>{token.slice(1, -1)}</RichText></sup>);
+      parts.push(<sup key={`${index}-${token}`}>{renderRichText(token.slice(1, -1))}</sup>);
     } else {
-      parts.push(<sub key={`${index}-${token}`}><RichText>{token.slice(1, -1)}</RichText></sub>);
+      parts.push(<sub key={`${index}-${token}`}>{renderRichText(token.slice(1, -1))}</sub>);
     }
     cursor = index + token.length;
   }
   if (cursor < children.length) parts.push(children.slice(cursor));
 
-  return <>{parts}</>;
+  return parts;
+}
+
+export function RichText({ children }: { children: string }) {
+  return <span className={styles.content}>{renderRichText(children)}</span>;
 }

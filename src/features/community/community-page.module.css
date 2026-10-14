@@ -49,7 +49,7 @@
 
 .replies { margin: 12px 0; padding-left: 13px; display: grid; gap: 8px; border-left: 2px solid var(--line-strong); }
 .replies > div { padding: 10px; border-radius: 10px; background: var(--surface); }
-.replies span { color: var(--muted); font-size: 10px; }
+.replies > div > span { color: var(--muted); font-size: 10px; }
 .replies p { margin: 5px 0 0; font-size: 13px; line-height: 1.6; }
 
 .replyForm { margin-top: 8px; display: grid; gap: 6px; }

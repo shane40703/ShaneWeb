@@ -1,8 +1,18 @@
-import { render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { cleanup, render, screen } from '@testing-library/react';
+import { afterEach, describe, expect, it } from 'vitest';
 import { RichText } from '@/components/rich-text';
+afterEach(cleanup);
 
 describe('RichText', () => {
+  it('preserves notes whitespace, blank lines and tabs without parsing arbitrary HTML', () => {
+    const content = '  第一行  對齊\n\n\t第二行 **重點**\n<script>alert(1)</script>';
+    const { container } = render(<p><RichText>{content}</RichText></p>);
+    const text = container.querySelector('p > span')!;
+    expect(text).toHaveClass(/content/);
+    expect(text.textContent).toBe(content.replace('**重點**', '重點'));
+    expect(container.querySelector('script')).toBeNull();
+    expect(screen.getByText('重點').tagName).toBe('STRONG');
+  });
   it('renders bold notation and safe external links', () => {
     render(<p><RichText>請看 **重點** https://example.com/rule</RichText></p>);
 

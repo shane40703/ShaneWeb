@@ -225,8 +225,8 @@ export function CommunityPage({
 
   async function addPost(event: FormEvent) {
     event.preventDefault();
-    const content = postContent.trim();
-    if (!content) return;
+    const content = postContent;
+    if (!content.trim()) return;
     try {
       await shared.addPost(postType, content);
       setPostContent('');
@@ -241,7 +241,7 @@ export function CommunityPage({
 
   function savePostToNote(post: DiscussionPost) {
     const currentContent = state.notes[activeQuestion.id] ?? '';
-    const importedContent = post.content.trim();
+    const importedContent = post.content;
     const content = [currentContent, importedContent].filter(Boolean).join('\n\n');
     const existingImages = state.noteImages[activeQuestion.id] ?? [];
     const imageIds = new Set(existingImages.map((image) => image.id));
@@ -260,8 +260,8 @@ export function CommunityPage({
 
   async function addReply(postId: string, event: FormEvent) {
     event.preventDefault();
-    const content = replyDrafts[postId]?.trim();
-    if (!content) return;
+    const content = replyDrafts[postId] ?? '';
+    if (!content.trim()) return;
     try {
       await shared.addReply(postId, content);
       setReplyDrafts((current) => ({ ...current, [postId]: '' }));

@@ -417,7 +417,7 @@ function NoteEditor({
     dispatch({ type: 'save-note', questionId: question.id, content, images });
     setSharing(true);
     try {
-      const result = await discussion.publish('explanation', trimmed, images);
+      const result = await discussion.publish('explanation', content, images);
       notify(
         '已分享至詳解與討論',
         discussion.enabled && images.length

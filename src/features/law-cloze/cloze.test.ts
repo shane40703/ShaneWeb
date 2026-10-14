@@ -1,8 +1,29 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { CLOZE_COUNTS, clozeBank, createClozeSession, getClozeCategories, getClozePool, getFullArticleParts, gradeCloze, normalizeStatutoryAnswer, parseClozeSession } from './cloze';
+import { CLOZE_COUNTS, clozeBank, createClozeSession, getClozeCategories, getClozePool, getFullArticleParts, gradeCloze, normalizeStatutoryAnswer, parseClozeSession, revealClozeAnswer } from './cloze';
 
 describe('statutory cloze answers and source text', () => {
+  it('adds four current statutes focused on durations and distinct penalties, without changing units or fraction notation', () => {
+    const coreLaws = ['building-act', 'architects-act', 'urban-planning-act', 'national-land-planning-act'];
+    for (const lawId of coreLaws) expect(getClozePool({ lawId, category: '全部' }).length).toBeGreaterThanOrEqual(14);
+    expect(clozeBank.laws.find((l) => l.id === 'architects-act')!.amendedOn).toBe('2023-12-06');
+    expect(clozeBank.laws.find((l) => l.id === 'national-land-planning-act')!.amendedOn).toBe('2025-01-20');
+    const get = (id: string) => clozeBank.questions.find((q) => q.id === id)!;
+    expect(gradeCloze(get('b-start'), ['6', '1', '3'])).toEqual([true, true, true]);
+    expect(gradeCloze(get('ar-renewal'), ['6', '3'])).toEqual([true, true]);
+    expect(gradeCloze(get('ar-suspension'), ['2', '2'])).toEqual([true, true]);
+    expect(gradeCloze(get('n-implementation'), ['2', '3', '10'])).toEqual([true, true, true]);
+    expect(gradeCloze(get('n-implementation'), ['2', '3', '4'])).toEqual([true, true, false]);
+    expect(get('n-implementation').template).toContain('區域計畫法停止適用');
+    expect(gradeCloze(get('u-fine'), ['六萬元', '30萬元'])).toEqual([true, true]);
+    expect(gradeCloze(get('b-unlicensed-build'), ['50/1000', '千分之五十'])).toEqual([true, true]);
+    expect(gradeCloze(get('b-unlicensed-build'), ['5%', '1/20'])).toEqual([false, false]);
+    expect(get('n-incompatible-fine').evidenceKind).toBe('extension');
+    expect(get('n-unlicensed-fine').blanks.map((b) => b.answer)).toEqual(['300000', '1500000']);
+    expect(get('n-controlled-fine').blanks.map((b) => b.answer)).toEqual(['60000', '300000']);
+    expect(get('n-fund').blanks.find((b) => b.unit === '億元')!.answer).toBe('500');
+    expect(get('ar-suspension').template).toMatch(/^三、/);
+  });
   it('requires statute notation rather than mathematically equivalent values', () => {
     const daylight = clozeBank.questions.find((q) => q.id === 'daylight')!;
     expect(gradeCloze(daylight, ['1/5', '八分之一', '７５'])).toEqual([true, true, true]);
@@ -77,12 +98,14 @@ describe('statutory cloze answers and source text', () => {
     const supplements = JSON.parse(readFileSync('ref/law-cloze/article-supplements.json', 'utf8')) as Record<string, { text: string }>;
     const provisions = JSON.parse(readFileSync('ref/law-cloze/accessibility-provisions.json', 'utf8')) as Array<{ number: string; text: string }>;
     const tables = JSON.parse(readFileSync('ref/law-cloze/accessibility-supplements.json', 'utf8')) as Record<string, { rawTable: string; text: string }>;
+    const core = JSON.parse(readFileSync('ref/law-cloze/core-laws-snapshot.json', 'utf8')) as Array<{ id: string; articles: Array<{ number: string; text: string }> }>;
     expect(source.articles).toHaveLength(389);
     expect(new Set(clozeBank.questions.map((q) => q.id)).size).toBe(clozeBank.questions.length);
     const evidencePaths = new Set<string>();
     for (const q of clozeBank.questions) {
       const expectedText = q.lawId === 'design-construction'
         ? source.articles.find((a) => a.number === q.articleNumber)!.text + (supplements[q.articleNumber] ? '\n\n' + supplements[q.articleNumber].text : '')
+        : q.lawId !== 'accessibility' ? core.find((law) => law.id === q.lawId)!.articles.find((a) => a.number === q.articleNumber)!.text
         : q.articleNumber.split('、').map((code) => {
           const text = provisions.find((p) => p.number === code)!.text;
           return tables[code] ? text.replace(tables[code].rawTable, tables[code].text) : text;
@@ -115,12 +138,44 @@ describe('statutory cloze answers and source text', () => {
 });
 
 describe('cloze exam selection and restoration', () => {
+  it('reveals answers without fabricating scores, keeps drafts, and rejects corrupt reading progress', () => {
+    const session = createClozeSession({ count: 5 });
+    const q = clozeBank.questions.find((q) => q.id === session.order[0])!;
+    session.answers = q.blanks.map(() => '');
+    session.answers[0] = '123';
+    const reading = revealClozeAnswer(session);
+    expect(reading.answers).toEqual(session.answers);
+    expect(reading.results).toEqual({});
+    expect(reading.submitted).toBe(false);
+    expect(reading.revealed).toEqual([q.id]);
+    expect(revealClozeAnswer(reading)).toBe(reading);
+    expect(parseClozeSession(JSON.stringify(reading))).toEqual(reading);
+    const next = { ...reading, index: 1, answers: [] };
+    expect(parseClozeSession(JSON.stringify(next))).toEqual(next);
+    for (const invalid of [{ revealed: [q.id, q.id] }, { revealed: [session.order[4]] }, { revealed: null }, { revealed: [1] }, { results: { [q.id]: q.blanks.map((b) => b.answer) } }]) expect(parseClozeSession(JSON.stringify({ ...reading, ...invalid }))).toBeNull();
+    const submitted = { ...session, submitted: true, answers: q.blanks.map((b) => b.answer), results: { [q.id]: q.blanks.map((b) => b.answer) } };
+    expect(revealClozeAnswer(submitted)).toBe(submitted);
+    const oldWithoutReading = { ...session } as Partial<typeof session>;
+    delete oldWithoutReading.revealed;
+    expect(parseClozeSession(JSON.stringify(oldWithoutReading))).toEqual(session);
+  });
+
+  it('restores both 1.67 banks without inserting new laws into saved rounds', () => {
+    const old = createClozeSession({ count: 30 });
+    old.version = '1.67-expanded-2026-10-12';
+    old.order = clozeBank.compatibleVersions.find((v) => v.version === old.version)!.questionIds.slice(0, 30);
+    delete (old as Partial<typeof old>).revealed;
+    expect(parseClozeSession(JSON.stringify(old))).toEqual({ ...old, revealed: [] });
+    expect(parseClozeSession(JSON.stringify({ ...old, order: ['b-review', ...old.order.slice(1)] }))).toBeNull();
+  });
+
   it('supports every requested count with unique random questions from the selected law', () => {
     for (const lawId of ['全部', ...clozeBank.laws.map((law) => law.id)]) {
       for (const count of CLOZE_COUNTS) {
         const session = createClozeSession({ lawId, count });
-        expect(session.order).toHaveLength(count);
-        expect(new Set(session.order).size).toBe(count);
+        const expectedCount = Math.min(count, getClozePool(session).length);
+        expect(session.order).toHaveLength(expectedCount);
+        expect(new Set(session.order).size).toBe(expectedCount);
         expect(session.order.every((id) => getClozePool(session).some((q) => q.id === id))).toBe(true);
         expect(parseClozeSession(JSON.stringify(session))).toEqual(session);
       }

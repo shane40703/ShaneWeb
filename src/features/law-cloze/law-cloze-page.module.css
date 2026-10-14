@@ -31,6 +31,7 @@
 .results strong { font-weight: 500; color: var(--text); }
 .card footer { margin-top: 24px; border-top: 1px solid var(--line); padding-top: 18px; }
 .card footer > span { color: var(--muted); font-size: 13px; }
+.answerActions { display: flex; flex-wrap: wrap; gap: 10px; }
 .lawHeading h3 { margin: 0; overflow-wrap: anywhere; }
 .lawHeading a, .evidence a { color: var(--primary-strong); font-size: 13px; }
 .fullText { font: inherit; font-size: var(--question-font-size, 18px); line-height: 1.85; margin: 16px 0; white-space: pre-wrap; overflow-wrap: anywhere; overflow-x: auto; max-width: 100%; }

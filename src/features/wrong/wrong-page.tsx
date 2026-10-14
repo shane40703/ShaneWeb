@@ -8,6 +8,7 @@ import {
   IconX,
 } from '@tabler/icons-react';
 import { ReviewNoteEditor } from '@/components/attempt-review';
+import { RichText } from '@/components/rich-text';
 import { EmptyState, QuestionCard } from '@/components/content/content';
 import {
   QuestionSelector,
@@ -318,7 +319,7 @@ export function WrongPage({
                               aria-label={`第 ${question.questionNumber} 題詳解`}
                             >
                               <span>詳解</span>
-                              <p>{question.explanation?.trim() || '目前尚無詳解。'}</p>
+                              <p><RichText>{question.explanation?.trim() ? question.explanation : '目前尚無詳解。'}</RichText></p>
                             </section>
                             <div className={styles.noteEditor}>
                               <ReviewNoteEditor question={question} />

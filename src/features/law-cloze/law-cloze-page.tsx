@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/ui';
 import { useAppState } from '@/state/app-state';
 import { readStoredValue, writeStoredValue } from '@/lib/storage';
 import { useClientReady } from '@/lib/use-client-ready';
-import { CLOZE_COUNTS, CLOZE_STORAGE_KEY, clozeBank, getClozeCategories, getClozePool, getFullArticleParts, createClozeSession, gradeCloze, parseClozeSession, type ClozeOptions, type ClozeSession } from './cloze';
+import { CLOZE_COUNTS, CLOZE_STORAGE_KEY, clozeBank, getClozeCategories, getClozePool, getFullArticleParts, createClozeSession, gradeCloze, parseClozeSession, revealClozeAnswer, type ClozeOptions, type ClozeSession } from './cloze';
 import styles from './law-cloze-page.module.css';
 
 export function LawClozePage() {
@@ -39,13 +39,15 @@ export function LawClozePage() {
   const correctBlanks = resultGrades.flat().filter(Boolean).length;
   const totalBlanks = resultGrades.flat().length;
   const last = session.index === session.order.length - 1;
-  const complete = last && session.submitted;
+  const revealed = session.revealed.includes(question.id);
+  const resolved = session.submitted || revealed;
+  const complete = last && resolved;
   const poolSize = getClozePool(options).length;
   const changed = options.lawId !== session.lawId || options.category !== session.category || options.count !== session.count;
 
   function submit(event: FormEvent) {
     event.preventDefault();
-    if (!session || session.submitted || question.blanks.some((_, i) => !session.answers[i]?.trim())) return;
+    if (!session || resolved || question.blanks.some((_, i) => !session.answers[i]?.trim())) return;
     setSession({ ...session, submitted: true, results: { ...session.results, [question.id]: [...session.answers] } });
   }
 
@@ -74,15 +76,16 @@ export function LawClozePage() {
           <Button onClick={() => setSession(createClozeSession(options))} disabled={!poolSize}><IconRefresh size={16} />開始新測驗</Button>
         </div>
         <p className={styles.instruction}>可用題型 {poolSize} 題；新測驗將抽 {Math.min(options.count, poolSize)} 題。{poolSize < options.count ? '此考點題數不足，使用全部可用題型，不重複湊題。' : ''} 設定調整後按「開始新測驗」才會取代目前進度。{changed ? '（有尚未套用的設定）' : ''}</p>
-        {session.version === clozeBank.legacyVersion ? <p className={styles.instruction} role='note'>題庫已擴充，保留先前的 {session.order.length} 題順序、草稿與成績；按「開始新測驗」即可抽取擴充後的題庫。</p> : null}
-        <div className={styles.score}>本輪已提交 {completed.length} / {session.order.length} 題・全對 {correctQuestions} 題・答對 {correctBlanks} / {totalBlanks} 空</div>
+        {session.version !== clozeBank.version ? <p className={styles.instruction} role='note'>題庫已擴充，保留先前的 {session.order.length} 題順序、草稿與成績；按「開始新測驗」即可抽取擴充後的題庫。</p> : null}
+        <div className={styles.score}>本輪已提交 {completed.length} / {session.order.length} 題・全對 {correctQuestions} 題・答對 {correctBlanks} / {totalBlanks} 空{session.revealed.length ? `・直接看答案 ${session.revealed.length} 題（不計分）` : ''}</div>
       </section>
 
       {complete ? <section className={styles.summary} aria-labelledby='cloze-summary-title'>
         <h3 id='cloze-summary-title'>本輪測驗完成</h3>
-        <p>{session.order.length} 題中 {correctQuestions} 題全對；{totalBlanks} 空中答對 {correctBlanks} 空（{Math.round(correctBlanks / totalBlanks * 100)}%）。</p>
+        <p>{completed.length} 題中 {correctQuestions} 題全對；{totalBlanks ? `${totalBlanks} 空中答對 ${correctBlanks} 空（${Math.round(correctBlanks / totalBlanks * 100)}%）。` : '本輪未提交作答，不計答對率。'}{session.revealed.length ? `另 ${session.revealed.length} 題直接看答案，不納入成績。` : ''}</p>
         <ol>{session.order.map((id) => {
           const item = clozeBank.questions.find((q) => q.id === id)!;
+          if (session.revealed.includes(id)) return <li key={id}>{item.title}<span>直接看答案・不計分</span></li>;
           const result = gradeCloze(item, session.results[id]);
           return <li key={id}>{item.title}<span>{result.filter(Boolean).length} / {result.length} 空</span></li>;
         })}</ol>
@@ -93,6 +96,7 @@ export function LawClozePage() {
         <p className={styles.lawName}>{law.name}</p>
         <h3 id='cloze-question-title'>{question.title}</h3>
         <p className={styles.instruction}>直接填入原文數字；分數、比值、小數及「半」須維持法條表示方式，不互相換算。例如八分之一可填「八分之一」或「1/8」，不能填「0.125」。相同空號會同步填答。</p>
+        {revealed ? <p className={styles.instruction}>本題為閱讀練習，紅字顯示原文答案；草稿保留，但本題不計分。重新填答請開始新測驗。</p> : null}
         <div className={styles.passage} aria-label='填空條文節錄'>
           {question.template.split(/(\{\{\d+\}\})/).map((part, i) => {
             const match = part.match(/^\{\{(\d+)\}\}$/);
@@ -100,7 +104,7 @@ export function LawClozePage() {
             const index = Number(match[1]);
             const blank = question.blanks[index];
             return <span className={styles.inlineBlank} key={i}>
-              <sup aria-hidden='true'>〔{index + 1}〕</sup><input
+              <sup aria-hidden='true'>〔{index + 1}〕</sup>{revealed ? <strong className={styles.answerText} aria-label={`第 ${index + 1} 空答案：${blank.original}`}>{blank.original}</strong> : <input
                 aria-label={`第 ${index + 1} 空：${blank.label}`}
                 aria-describedby={session.submitted ? `cloze-result-${index}` : undefined}
                 title={blank.label + (blank.unit ? '（' + blank.unit + '）' : '')}
@@ -114,7 +118,7 @@ export function LawClozePage() {
                   answers[index] = event.target.value;
                   setSession({ ...session, answers });
                 }}
-              />
+              />}
             </span>;
           })}
         </div>
@@ -125,19 +129,20 @@ export function LawClozePage() {
           </li>)}
         </ol> : null}
         <footer>
-          {session.submitted ? <>
-            <span role='status'>{complete ? '本輪完成・' : ''}本題答對 {grades.filter(Boolean).length} / {grades.length} 空</span>
+          {resolved ? <>
+            <span role='status'>{complete ? '本輪完成・' : ''}{revealed ? '直接看答案・本題不計分' : `本題答對 ${grades.filter(Boolean).length} / ${grades.length} 空`}</span>
             <Button type='button' variant='primary' onClick={() => {
               if (last) setSession(createClozeSession({ lawId: session.lawId, category: session.category, count: session.count }));
               else setSession({ ...session, index: session.index + 1, answers: [], submitted: false });
             }}>{last ? '再練一輪' : '下一題'}<IconArrowRight size={17} /></Button>
-          </> : <><span>填完全部 {question.blanks.length} 空後提交</span><Button type='submit' variant='primary' disabled={question.blanks.some((_, i) => !session.answers[i]?.trim())}>提交答案</Button></>}
+          </> : <><span>填完全部 {question.blanks.length} 空後提交；直接看答案不計分。</span><div className={styles.answerActions}><Button type='button' onClick={() => setSession(revealClozeAnswer(session))}>直接看答案</Button><Button type='submit' variant='primary' disabled={question.blanks.some((_, i) => !session.answers[i]?.trim())}>提交答案</Button></div></>}
         </footer>
       </form>
 
-      {session.submitted ? <section className={styles.card} aria-labelledby='cloze-law-title'>
+      {resolved ? <section className={styles.card} aria-labelledby='cloze-law-title'>
         <div className={styles.lawHeading}><h3 id='cloze-law-title'>完整{question.lawId === 'accessibility' ? '規範' : ''}條文・{question.articleLabel}</h3><a href={question.sourceUrl} target='_blank' rel='noreferrer'>核對官方原文與附圖 ↗</a></div>
         <p className={styles.instruction}>紅字為本題填空的原文答案；保留未挖空的條件、但書及款次。無障礙規範顯示題目涉及之各編號完整文字；附圖仍屬規定的一部分，請由官方 PDF 核對。</p>
+        {question.evidenceKind === 'extension' ? <p className={styles.instruction}>本題為相關考點的條文延伸練習，下面連結僅供題型參考，不代表考古題直接考過本題數字。</p> : null}
         <pre className={styles.fullText}>{getFullArticleParts(question).map((part, index) => part.isAnswer ? <strong className={styles.answerText} key={index}>{part.text}</strong> : <span key={index}>{part.text}</span>)}</pre>
         {question.fullFileUrl ? <a href={question.fullFileUrl} target='_blank' rel='noreferrer'>官方完整檔（含附圖／附表）↗</a> : null}
         {question.images.map((image, index) => <a href={image.url} key={image.url} target='_blank' rel='noreferrer'>
