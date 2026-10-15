@@ -6,6 +6,7 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   reporter: 'html',
   use: {
+    channel: process.env.PLAYWRIGHT_BROWSER_CHANNEL || undefined,
     baseURL: 'http://127.0.0.1:3000',
     trace: 'on-first-retry',
   },

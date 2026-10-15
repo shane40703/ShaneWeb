@@ -76,6 +76,7 @@ import {
   type DailyRelicType,
 } from './daily-practice';
 import styles from './daily-page.module.css';
+import { DailyPaperPanel } from './daily-paper-panel';
 
 const relicLabels: Record<DailyRelicType, { name: string; description: string }> = {
   eliminate: { name: '破除', description: '自動刪除一個錯誤選項' },
@@ -1111,6 +1112,10 @@ export function DailyPage() {
         ) : null}
       </div>
       <div className={styles.questionArea}>
+        <DailyPaperPanel
+          key={`${session.date}:${session.questionIds.join(',')}`}
+          session={session} questionById={questionById} onRetry={bank.retry}
+        />
         {bank.status === 'loading' || (requiredQuestionMissing && bank.status !== 'error') ? (
           <div className={styles.loading}><IconLoader2 size={26} /><span>正在載入今日題目…</span></div>
         ) : bank.status === 'error' && requiredQuestionMissing ? (
