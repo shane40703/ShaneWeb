@@ -1,4 +1,4 @@
-import { type CSSProperties, useCallback, useEffect, useMemo, useState } from 'react';
+import { type CSSProperties, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   IconAlertTriangle,
   IconCalendarClock,
@@ -82,6 +82,7 @@ import styles from './daily-page.module.css';
 import { DailyPaperPanel } from './daily-paper-panel';
 import { createDailyPaper } from './daily-paper';
 import { useDailyPaperDownload } from './daily-paper-download';
+import { getDailyNormalSession, parseDailyQuestionSets, rememberDailyNormalSet, type DailyQuestionSets } from './daily-question-sets';
 
 const relicLabels: Record<DailyRelicType, { name: string; description: string }> = {
   eliminate: { name: '破除', description: '自動刪除一個錯誤選項' },
@@ -431,12 +432,12 @@ function DailySetup({
         <div className={styles.normalChoice} data-checked={mode === 'normal' || undefined}>
           <label>
             <input type="radio" name="daily-mode" checked={mode === 'normal'} onChange={() => onModeChange('normal')} />
-            <span><strong>正常模式</strong><small>50 題・不限時・答錯不會結束，安心閱讀詳解</small></span>
+            <span><strong>正常模式</strong><small>每天每科固定一份 50 題・不限時・答錯不會結束</small></span>
           </label>
         </div>
         <label data-checked={mode === 'adventure' || undefined}>
           <input type="radio" name="daily-mode" checked={mode === 'adventure'} onChange={() => onModeChange('adventure')} />
-          <span><strong>以闖關模式進行</strong><small>六層魔王・累積血量・答對 50 題才算全破</small></span>
+          <span><strong>以闖關模式進行</strong><small>每次重新抽題・六層魔王・累積血量・答對 50 題才算全破</small></span>
         </label>
       </fieldset>
 
@@ -488,6 +489,7 @@ function DailySetup({
       ) : null}
 
       {mode === 'normal' ? <div className={styles.paperHelp}>
+        <p>每天每科僅抽一份題組，紙本與線上共用相同題目及選項順序；當天重複挑戰不會重新抽題，隔日依臺灣時間更新。</p>
         <p>選定科目後，可製作紙本或線上作答。紙本含獨立參考答案，不會開始線上作答；列印後也可用同一份題目線上練習。</p>
         <p>下載時優先讀取本機新細明體／Times New Roman；未提供時使用開源明體／Times 風格字型並提示。</p>
       </div> : null}
@@ -653,7 +655,7 @@ export function DailyPage() {
     results: {},
   });
   const [session, setSession] = useState<DailyPracticeSession | null>(null);
-  const [paperSession, setPaperSession] = useState<DailyPracticeSession | null>(null);
+  const dailyQuestionSets = useRef<DailyQuestionSets>({ date: getTaipeiDateKey(), sets: {} });
   const [stageTransition, setStageTransition] = useState<DailyPracticeSession | null>(null);
   const [draftAnswer, setDraftAnswer] = useState<{
     questionId: string;
@@ -685,9 +687,12 @@ export function DailyPage() {
         readStoredValue(DAILY_COMPLETION_STORAGE_KEY),
         today,
       );
-      const storedPaper = parseDailyPracticeSession(readStoredValue(DAILY_PAPER_STORAGE_KEY), today);
-      if (storedPaper?.mode === 'normal' && storedPaper.status === 'practice' && !Object.keys(storedPaper.answers).length) {
-        setPaperSession(storedPaper);
+      const storedSets = parseDailyQuestionSets(readStoredValue(DAILY_PAPER_STORAGE_KEY), today);
+      // Existing online progress wins during migration, without changing its answers.
+      dailyQuestionSets.current = storedSession?.mode === 'normal'
+        ? rememberDailyNormalSet(storedSets, storedSession) : storedSets;
+      if (Object.keys(dailyQuestionSets.current.sets).length) {
+        reportPersistence('daily-paper', writeStoredValue(DAILY_PAPER_STORAGE_KEY, JSON.stringify(dailyQuestionSets.current)));
       }
       let normalizedCompletions = storedCompletions;
       const storedSubject = storedSession?.subjects[0];
@@ -719,14 +724,14 @@ export function DailyPage() {
     return () => {
       active = false;
     };
-  }, [ready, restored, today]);
+  }, [ready, restored, today, reportPersistence]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
       const nextDate = getTaipeiDateKey();
       removeStoredSession();
       setSession(null);
-      setPaperSession(null);
+      dailyQuestionSets.current = { date: nextDate, sets: {} };
       setStageTransition(null);
       setDraftAnswer(undefined);
       setCompletionRecord({ date: nextDate, subjects: [], results: {} });
@@ -892,7 +897,7 @@ export function DailyPage() {
   }
 
   function startPractice() {
-    const next = selectedMode === 'normal' ? getPaperSession()
+    const next = selectedMode === 'normal' ? getNormalSession()
       : createDailyPracticeSession(bank.questions, selectedSubjects, today, Math.random, selectedMode);
     if (next.questionIds.length) {
       const startedAt = Date.now();
@@ -902,23 +907,23 @@ export function DailyPage() {
     }
   }
 
-  function getPaperSession() {
-    const reusable = paperSession?.date === today && paperSession.subjects[0] === selectedSubjects[0] &&
-      paperSession.questionIds.every(id => {
-        const question = questionById.get(id);
-        return question && isDailyPracticeQuestion(question);
-      });
-    const next = reusable ? paperSession
-      : createDailyPracticeSession(bank.questions, selectedSubjects, today, Math.random, 'normal');
-    return next;
+  function getNormalSession() {
+    // Merge the latest stored subjects when switching or opening another tab.
+    const stored = parseDailyQuestionSets(readStoredValue(DAILY_PAPER_STORAGE_KEY), today);
+    const record: DailyQuestionSets = {
+      date: today,
+      sets: { ...(dailyQuestionSets.current.date === today ? dailyQuestionSets.current.sets : {}), ...stored.sets },
+    };
+    const next = getDailyNormalSession(record, bank.questions, selectedSubjects[0], today);
+    dailyQuestionSets.current = next.record;
+    if (next.session.questionIds.length) {
+      reportPersistence('daily-paper', writeStoredValue(DAILY_PAPER_STORAGE_KEY, JSON.stringify(next.record)));
+    }
+    return next.session;
   }
 
   function makePaper() {
-    const next = getPaperSession();
-    const paper = createDailyPaper(next, questionById);
-    setPaperSession(next);
-    reportPersistence('daily-paper', writeStoredValue(DAILY_PAPER_STORAGE_KEY, JSON.stringify(next)));
-    return paper;
+    return createDailyPaper(getNormalSession(), questionById);
   }
 
   function markSubjectCompleted(

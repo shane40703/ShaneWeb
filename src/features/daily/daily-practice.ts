@@ -2,6 +2,7 @@ import { isSubjectId, pickRandomItems } from '@/lib/study';
 import type { Question, SubjectId } from '@/lib/types';
 
 export const DAILY_PRACTICE_STORAGE_KEY = 'shaneweb:daily-practice';
+// Shared per-subject normal assignments; keep the key for older paper snapshots.
 export const DAILY_PAPER_STORAGE_KEY = 'shaneweb:daily-paper';
 export const DAILY_COMPLETION_STORAGE_KEY = 'shaneweb:daily-completions';
 export const DAILY_QUESTIONS_PER_SUBJECT = 50;

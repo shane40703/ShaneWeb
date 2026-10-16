@@ -55,6 +55,88 @@ test('completed daily paper previews every question in assigned order, survives 
 });
 
 const subjectNames = { law: '建築法規與實務', env: '建築環境控制', construction: '建築構造與施工', structure: '建築結構' };
+
+test('online-first normal assignments stay fixed by subject across replays, reload and subsequent paper download', async ({ page }, testInfo) => {
+  await page.addInitScript(() => Object.defineProperty(window, 'queryLocalFonts', { value: undefined, configurable: true }));
+  page.on('dialog', dialog => dialog.accept());
+  await page.goto('/daily');
+  await page.getByRole('button', { name: '線上作答' }).click();
+  await expect(page.getByRole('region', { name: '題目與選項' })).toBeVisible();
+  const first = await page.evaluate(() => JSON.parse(localStorage.getItem('shaneweb:daily-practice')!));
+  await page.getByRole('radio').first().click();
+  await page.getByRole('button', { name: '確認答案', exact: true }).click();
+  expect(await page.evaluate(() => Object.keys(JSON.parse(localStorage.getItem('shaneweb:daily-practice')!).answers))).toHaveLength(1);
+  await page.getByRole('button', { name: /重新選科／模式/ }).click();
+  await page.getByRole('radio', { name: /建築環境控制/ }).click();
+  await page.getByRole('button', { name: '線上作答' }).click();
+  await expect(page.getByRole('region', { name: '題目與選項' })).toBeVisible();
+  const env = await page.evaluate(() => JSON.parse(localStorage.getItem('shaneweb:daily-practice')!));
+  await page.getByRole('button', { name: /重新選科／模式/ }).click();
+  await page.getByRole('radio', { name: /建築法規與實務/ }).click();
+  await page.getByRole('button', { name: '線上作答' }).click();
+  await expect(page.getByRole('region', { name: '題目與選項' })).toBeVisible();
+  const replay = await page.evaluate(() => JSON.parse(localStorage.getItem('shaneweb:daily-practice')!));
+  expect(replay).toMatchObject({ questionIds: first.questionIds, optionOrders: first.optionOrders, answers: {}, currentIndex: 0 });
+  await page.reload();
+  await expect(page.getByRole('region', { name: '題目與選項' })).toBeVisible();
+  await page.getByRole('button', { name: /重新選科／模式/ }).click();
+  const downloadEvent = page.waitForEvent('download');
+  await page.getByRole('button', { name: '製作每日練習紙本檔案' }).click();
+  const download = await downloadEvent;
+  await download.saveAs(testInfo.outputPath('online-first-law.pdf'));
+  const record = await page.evaluate(() => JSON.parse(localStorage.getItem('shaneweb:daily-paper')!));
+  expect(record.sets.law).toMatchObject({ questionIds: first.questionIds, optionOrders: first.optionOrders, answers: {}, currentIndex: 0 });
+  expect(record.sets.env.questionIds).toEqual(env.questionIds);
+  expect(await page.evaluate(() => localStorage.getItem('shaneweb:daily-practice'))).toBeNull();
+});
+
+test('completed normal practice reuses its assignment for another online attempt', async ({ page }) => {
+  await seedPaper(page, 'construction', 'normal', 'completed');
+  await page.goto('/daily');
+  await expect(page.getByRole('button', { name: '選擇其他科目' })).toBeVisible();
+  const first = await page.evaluate(() => JSON.parse(localStorage.getItem('shaneweb:daily-practice')!));
+  await page.getByRole('button', { name: '選擇其他科目' }).click();
+  await page.getByRole('button', { name: '線上作答' }).click();
+  await expect(page.getByRole('region', { name: '題目與選項' })).toBeVisible();
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('shaneweb:daily-practice')!)))
+    .toMatchObject({ questionIds: first.questionIds, optionOrders: first.optionOrders, answers: {}, currentIndex: 0 });
+});
+
+test('a new Taipei day expires the fixed normal assignments', async ({ page }) => {
+  await page.clock.setFixedTime(new Date('2026-10-20T15:00:00Z'));
+  await page.goto('/daily');
+  await page.getByRole('button', { name: '線上作答' }).click();
+  await expect(page.getByRole('region', { name: '題目與選項' })).toBeVisible();
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('shaneweb:daily-paper')!).date)).toBe('2026-10-20');
+  await page.clock.setFixedTime(new Date('2026-10-20T16:01:00Z'));
+  await page.reload();
+  await expect(page.getByRole('region', { name: '每日練習設定' })).toBeVisible();
+  await page.getByRole('button', { name: '線上作答' }).click();
+  await expect(page.getByRole('region', { name: '題目與選項' })).toBeVisible();
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('shaneweb:daily-paper')!).date)).toBe('2026-10-21');
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('shaneweb:daily-practice')!).date)).toBe('2026-10-21');
+});
+
+test('adventures redraw on every new run without replacing the daily normal assignment', async ({ page }) => {
+  page.on('dialog', dialog => dialog.accept());
+  await page.goto('/daily');
+  await page.getByRole('button', { name: '線上作答' }).click();
+  await expect(page.getByRole('region', { name: '題目與選項' })).toBeVisible();
+  const normal = await page.evaluate(() => localStorage.getItem('shaneweb:daily-paper'));
+  await page.getByRole('button', { name: /重新選科／模式/ }).click();
+  await page.getByRole('radio', { name: /以闖關模式進行/ }).click();
+  await page.getByRole('button', { name: /建立今日挑戰/ }).click();
+  await expect(page.getByRole('region', { name: '題目與選項' })).toBeVisible();
+  const first = await page.evaluate(() => JSON.parse(localStorage.getItem('shaneweb:daily-practice')!));
+  await page.getByRole('button', { name: /重新選科／模式/ }).click();
+  await page.getByRole('button', { name: /建立今日挑戰/ }).click();
+  await expect(page.getByRole('region', { name: '題目與選項' })).toBeVisible();
+  const next = await page.evaluate(() => JSON.parse(localStorage.getItem('shaneweb:daily-practice')!));
+  expect(next.questionIds).toHaveLength(74);
+  expect(next.questionIds).not.toEqual(first.questionIds);
+  expect(await page.evaluate(() => localStorage.getItem('shaneweb:daily-paper'))).toBe(normal);
+});
+
 for (const subject of ['law', 'env', 'construction', 'structure'] as const) {
   test(`${subject} downloads an actual PDF with a reference-answer page without changing progress`, async ({ page }, testInfo) => {
     await seedPaper(page, subject, 'normal', 'paper');
@@ -107,7 +189,7 @@ test('normal setup directly downloads a paper without starting online practice, 
   const cached = await page.evaluate(() => {
     expectNoOnline();
     function expectNoOnline() { if (localStorage.getItem('shaneweb:daily-practice')) throw new Error('paper started online practice'); }
-    return JSON.parse(localStorage.getItem('shaneweb:daily-paper')!);
+    return JSON.parse(localStorage.getItem('shaneweb:daily-paper')!).sets.construction;
   });
   expect(cached.answers).toEqual({});
   expect(cached.questionIds).toHaveLength(50);

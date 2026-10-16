@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Question, SubjectId } from '@/lib/types';
 import { ToastProvider } from '@/components/ui/ui';
@@ -88,7 +88,7 @@ beforeEach(() => {
   sharedDiscussions.publish.mockReset();
 });
 
-afterEach(cleanup);
+afterEach(() => { cleanup(); vi.restoreAllMocks(); });
 
 function renderDailyPage() {
   return render(
@@ -117,6 +117,79 @@ function choose(correct: boolean) {
 }
 
 describe('DailyPage', () => {
+  it('locks online-first normal practice per subject through replays, subject switching, reload and later paper download', async () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    const view = renderDailyPage();
+    fireEvent.click(await screen.findByRole('button', { name: '線上作答' }));
+    await screen.findByRole('region', { name: '題目與選項' });
+    const law = stored();
+    choose(true);
+    expect(Object.keys(stored().answers)).toHaveLength(1);
+    fireEvent.click(screen.getByRole('button', { name: /重新選科／模式/ }));
+    await screen.findByRole('region', { name: '每日練習設定' });
+    fireEvent.click(screen.getByRole('radio', { name: /建築環境控制/ }));
+    fireEvent.click(screen.getByRole('button', { name: '線上作答' }));
+    await screen.findByRole('region', { name: '題目與選項' });
+    const env = stored();
+    expect(env.questionIds.every((id: string) => id.startsWith('env-'))).toBe(true);
+    fireEvent.click(screen.getByRole('button', { name: /重新選科／模式/ }));
+    fireEvent.click(await screen.findByRole('radio', { name: /建築法規與實務/ }));
+    fireEvent.click(screen.getByRole('button', { name: '線上作答' }));
+    await screen.findByRole('region', { name: '題目與選項' });
+    expect(stored()).toMatchObject({ questionIds: law.questionIds, optionOrders: law.optionOrders, answers: {}, currentIndex: 0 });
+    const record = JSON.parse(window.localStorage.getItem(DAILY_PAPER_STORAGE_KEY)!);
+    expect(record.sets.law.questionIds).toEqual(law.questionIds);
+    expect(record.sets.env.questionIds).toEqual(env.questionIds);
+    expect(record.sets.law.answers).toEqual({});
+    view.unmount();
+    renderDailyPage();
+    await screen.findByRole('region', { name: '題目與選項' });
+    fireEvent.click(screen.getByRole('button', { name: /重新選科／模式/ }));
+    fireEvent.click(await screen.findByRole('button', { name: '製作每日練習紙本檔案' }));
+    await waitFor(() => expect(paperDownload).toHaveBeenCalledTimes(1));
+    expect(paperDownload.mock.calls[0][0].questions.map((question: Question) => question.id)).toEqual(law.questionIds);
+    expect(paperDownload.mock.calls[0][0].questions[0].options).toEqual(
+      law.optionOrders[law.questionIds[0]].map((index: number) => allQuestions.find(q => q.id === law.questionIds[0])!.options[index]),
+    );
+    expect(window.localStorage.getItem(DAILY_PRACTICE_STORAGE_KEY)).toBeNull();
+  });
+
+  it('adopts existing normal progress as the daily set without resetting saved answers', async () => {
+    const active = seedSession([false, true], 'normal');
+    const oldPaper = createDailyPracticeSession(allQuestions, ['env'], getTaipeiDateKey(), () => .7, 'normal');
+    window.localStorage.setItem(DAILY_PAPER_STORAGE_KEY, JSON.stringify(oldPaper));
+    renderDailyPage();
+    await screen.findByRole('region', { name: '題目與選項' });
+    expect(stored()).toMatchObject({ questionIds: active.questionIds, optionOrders: active.optionOrders, answers: active.answers, currentIndex: 2 });
+    const record = JSON.parse(window.localStorage.getItem(DAILY_PAPER_STORAGE_KEY)!);
+    expect(record.sets.law).toMatchObject({ questionIds: active.questionIds, optionOrders: active.optionOrders, answers: {}, currentIndex: 0 });
+    expect(record.sets.env.questionIds).toEqual(oldPaper.questionIds);
+  });
+
+  it('always redraws adventures without changing the fixed normal assignment', async () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    const random = vi.spyOn(Math, 'random').mockReturnValue(.2);
+    try {
+      renderDailyPage();
+      fireEvent.click(await screen.findByRole('button', { name: '線上作答' }));
+      await screen.findByRole('region', { name: '題目與選項' });
+      const fixed = window.localStorage.getItem(DAILY_PAPER_STORAGE_KEY);
+      fireEvent.click(screen.getByRole('button', { name: /重新選科／模式/ }));
+      fireEvent.click(await screen.findByRole('radio', { name: /以闖關模式進行/ }));
+      fireEvent.click(screen.getByRole('button', { name: /建立今日挑戰/ }));
+      await screen.findByRole('region', { name: '題目與選項' });
+      const first = stored();
+      expect(first.questionIds).toHaveLength(74);
+      fireEvent.click(screen.getByRole('button', { name: /重新選科／模式/ }));
+      await screen.findByRole('region', { name: '每日練習設定' });
+      random.mockReturnValue(.8);
+      fireEvent.click(screen.getByRole('button', { name: /建立今日挑戰/ }));
+      await screen.findByRole('region', { name: '題目與選項' });
+      expect(stored().questionIds).not.toEqual(first.questionIds);
+      expect(window.localStorage.getItem(DAILY_PAPER_STORAGE_KEY)).toBe(fixed);
+    } finally { random.mockRestore(); }
+  });
+
   it.each([
     ['normal', 'practice'], ['adventure', 'practice'], ['adventure', 'review'],
   ] as const)('hides paper tools and the full preview during %s %s', async (mode, status) => {
@@ -132,9 +205,12 @@ describe('DailyPage', () => {
   it.each([
     ['normal', 'completed'], ['adventure', 'completed'], ['adventure', 'failed'],
   ] as const)('shows the complete preview below results and wrong answers after %s %s', async (mode, status) => {
-    const session = seedSession(Array(50).fill(true), mode, status);
+    const session = status === 'failed'
+      ? seedSession(Array(7).fill(false), mode, status, 7, 0)
+      : seedSession(Array(50).fill(true), mode, status);
     renderDailyPage();
     const panel = await screen.findByRole('region', { name: '當日考題預覽工具' });
+    await act(async () => {});
     const wrongAnswers = screen.getByRole('region', { name: '本次錯題整理' });
     expect(wrongAnswers.compareDocumentPosition(panel) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(panel.parentElement!.lastElementChild).toBe(panel);
@@ -179,7 +255,7 @@ describe('DailyPage', () => {
     expect(window.localStorage.getItem(DAILY_PRACTICE_STORAGE_KEY)).toBeNull();
     expect(appState.dispatch).not.toHaveBeenCalled();
     expect(screen.queryByRole('region', { name: '題目與選項' })).not.toBeInTheDocument();
-    const savedPaper = JSON.parse(window.localStorage.getItem(DAILY_PAPER_STORAGE_KEY)!);
+    const savedPaper = JSON.parse(window.localStorage.getItem(DAILY_PAPER_STORAGE_KEY)!).sets.env;
     view.unmount();
     renderDailyPage();
     await screen.findByRole('radio', { name: /正常模式/ });
@@ -427,17 +503,23 @@ describe('DailyPage', () => {
   });
 
   it('stops immediately at timeout and preserves defeat after reload', async () => {
-    const session = seedSession();
-    session.questionDeadlineMs = Date.now() + 40;
-    session.hpUpdatedAtMs = Date.now();
-    window.localStorage.setItem(DAILY_PRACTICE_STORAGE_KEY, JSON.stringify(session));
-    const view = renderDailyPage();
-    expect(await screen.findByText('法規今日挑戰結束')).toBeInTheDocument();
-    expect(screen.getByLabelText('每日挑戰戰敗')).toHaveTextContent('時間耗盡，遭魔王擊倒');
-    view.unmount();
-    renderDailyPage();
-    expect(await screen.findByLabelText('每日挑戰戰敗')).toBeInTheDocument();
-    expect(stored().status).toBe('failed');
+    vi.useFakeTimers();
+    try {
+      const session = seedSession();
+      session.questionDeadlineMs = Date.now() + 40;
+      session.hpUpdatedAtMs = Date.now();
+      window.localStorage.setItem(DAILY_PRACTICE_STORAGE_KEY, JSON.stringify(session));
+      const view = renderDailyPage();
+      await act(async () => {});
+      await act(async () => { await vi.advanceTimersByTimeAsync(80); });
+      expect(screen.getByText('法規今日挑戰結束')).toBeInTheDocument();
+      expect(screen.getByLabelText('每日挑戰戰敗')).toHaveTextContent('時間耗盡，遭魔王擊倒');
+      view.unmount();
+      renderDailyPage();
+      await act(async () => { await vi.advanceTimersByTimeAsync(0); });
+      expect(screen.getByLabelText('每日挑戰戰敗')).toBeInTheDocument();
+      expect(stored().status).toBe('failed');
+    } finally { vi.useRealTimers(); }
   });
 
   it('normal mode completes even with all fifty wrong and lists them for review', async () => {
@@ -455,14 +537,19 @@ describe('DailyPage', () => {
     expect(screen.getByRole('button', { name: '當日考題預覽' })).toBeEnabled();
   });
   it('dies from cumulative HP depletion even while the sixty-second timer still has time', async () => {
-    const session = seedSession([], 'adventure', 'practice', 0, .03);
-    session.hpUpdatedAtMs = Date.now();
-    session.questionDeadlineMs = Date.now() + 60_000;
-    window.localStorage.setItem(DAILY_PRACTICE_STORAGE_KEY, JSON.stringify(session));
-    renderDailyPage();
-    expect(await screen.findByLabelText('每日挑戰戰敗')).toHaveTextContent('累積血量耗盡，建築師倒下了');
-    expect(stored().failureReason).toBe('health');
-    expect(stored().hp).toBe(0);
+    vi.useFakeTimers();
+    try {
+      const session = seedSession([], 'adventure', 'practice', 0, .03);
+      session.hpUpdatedAtMs = Date.now();
+      session.questionDeadlineMs = Date.now() + 60_000;
+      window.localStorage.setItem(DAILY_PRACTICE_STORAGE_KEY, JSON.stringify(session));
+      renderDailyPage();
+      await act(async () => {});
+      await act(async () => { await vi.advanceTimersByTimeAsync(100); });
+      expect(screen.getByLabelText('每日挑戰戰敗')).toHaveTextContent('累積血量耗盡，建築師倒下了');
+      expect(stored().failureReason).toBe('health');
+      expect(stored().hp).toBe(0);
+    } finally { vi.useRealTimers(); }
   });
   it('does not restart time or drain HP while a cached question is still loading', async () => {
     const session = seedSession([], 'adventure', 'practice', 0, 70);
