@@ -74,6 +74,15 @@ test('normal setup directly downloads a paper without starting online practice, 
   await page.getByRole('radio', { name: /建築構造與施工/ }).click();
   const make = page.getByRole('button', { name: '製作每日練習紙本檔案' });
   await expect(make).toBeEnabled();
+  const setup = page.getByRole('region', { name: '每日練習設定' });
+  const footer = setup.locator('footer');
+  await expect(footer.getByRole('button', { name: '製作每日練習紙本檔案' })).toBeVisible();
+  await expect(footer.getByRole('button', { name: '線上作答' })).toBeVisible();
+  const subjectBounds = await setup.getByRole('group', { name: '選擇今日科目' }).boundingBox();
+  const footerBounds = await footer.boundingBox();
+  expect(footerBounds!.y).toBeGreaterThanOrEqual(subjectBounds!.y + subjectBounds!.height);
+  expect(await setup.evaluate(element => element.lastElementChild?.tagName)).toBe('FOOTER');
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(page.viewportSize()!.width);
   await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
   await page.screenshot({ path: testInfo.outputPath('setup-paper-online.png'), fullPage: true });
   const event = page.waitForEvent('download');

@@ -117,6 +117,23 @@ function choose(correct: boolean) {
 }
 
 describe('DailyPage', () => {
+  it('places paper and online actions at the bottom, after mode and subject selection', async () => {
+    renderDailyPage();
+    const setup = await screen.findByRole('region', { name: '每日練習設定' });
+    const footer = setup.querySelector('footer')!;
+    const subjects = within(setup).getByRole('group', { name: '選擇今日科目' });
+    expect(setup.lastElementChild).toBe(footer);
+    expect(subjects.compareDocumentPosition(footer) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(within(footer).getByRole('button', { name: '製作每日練習紙本檔案' })).toBeEnabled();
+    expect(within(footer).getByRole('button', { name: '線上作答' })).toBeEnabled();
+    expect(within(screen.getByRole('group', { name: '選擇進行方式' })).queryByRole('button')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('radio', { name: /以闖關模式進行/ }));
+    expect(within(footer).queryByRole('button', { name: '製作每日練習紙本檔案' })).not.toBeInTheDocument();
+    expect(within(footer).queryByRole('button', { name: '線上作答' })).not.toBeInTheDocument();
+    expect(within(footer).getByRole('button', { name: /建立今日挑戰/ })).toBeEnabled();
+  });
+
   it('makes a persistent paper directly from setup without starting online practice, then reuses it online', async () => {
     const view = renderDailyPage();
     await screen.findByRole('radio', { name: /正常模式/ });

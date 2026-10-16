@@ -1718,9 +1718,10 @@
 .modeChoices { align-items: start; }
 .modeChoices .normalChoice > label { border: 0; }
 .normalChoice[data-checked] { background: var(--primary-soft); border-color: var(--primary); }
-.normalActions { padding: 0 16px 16px; display: flex; flex-wrap: wrap; gap: 10px; }
-.normalActions small { flex-basis: 100%; }
+.normalActions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; }
 .normalActions button { min-width: 0; white-space: normal; }
+.paperHelp { margin: 0 24px 16px; display: grid; gap: 6px; color: var(--muted); font-size: 13px; line-height: 1.7; }
+.paperHelp p { margin: 0; }
 .paperNotice { margin: 0 24px 16px; line-height: 1.7; color: var(--muted); font-size: 13px; }
 .migrationNotice { grid-column: 1 / -1; padding: 12px; margin: 0; border: 1px solid var(--line); border-radius: 10px; }
 .fighterMeter[data-danger] > i > b { background: linear-gradient(90deg, #df4050, #ff876d); }
@@ -1742,6 +1743,8 @@
 @media (max-width: 540px) {
   .modeChoices { grid-template-columns: 1fr; padding: 12px; }
   .modeChoices label { padding: 12px; }
+  .normalActions { flex-direction: column; }
+  .paperHelp { margin-inline: 17px; }
   .daily .battleColumn .pixelArena { height: 84px; }
   .daily .battleColumn .heroActor, .daily .battleColumn .bossActor { height: 80%; }
   .daily .battleColumn .bossActor[data-boss='6'] { height: 94%; }

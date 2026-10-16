@@ -433,17 +433,6 @@ function DailySetup({
             <input type="radio" name="daily-mode" checked={mode === 'normal'} onChange={() => onModeChange('normal')} />
             <span><strong>正常模式</strong><small>50 題・不限時・答錯不會結束，安心閱讀詳解</small></span>
           </label>
-          {mode === 'normal' ? <div className={styles.normalActions}>
-            <Button disabled={loading || !readyToStart || paperDownload.downloading}
-              onClick={() => paperDownload.download(onMakePaper)}>
-              <IconFileTypePdf size={17} />{paperDownload.downloading ? '正在製作 PDF…' : '製作每日練習紙本檔案'}
-            </Button>
-            <Button variant="primary" disabled={loading || !readyToStart || paperDownload.downloading} onClick={onStart}>
-              線上作答
-            </Button>
-            <small>先選下方科目。紙本含獨立參考答案，不會開始線上作答；列印後也可用同一份題目線上練習。</small>
-            <small>下載時優先讀取本機新細明體／Times New Roman；未提供時使用開源明體／Times 風格字型並提示。</small>
-          </div> : null}
         </div>
         <label data-checked={mode === 'adventure' || undefined}>
           <input type="radio" name="daily-mode" checked={mode === 'adventure'} onChange={() => onModeChange('adventure')} />
@@ -498,6 +487,11 @@ function DailySetup({
         </div>
       ) : null}
 
+      {mode === 'normal' ? <div className={styles.paperHelp}>
+        <p>選定科目後，可製作紙本或線上作答。紙本含獨立參考答案，不會開始線上作答；列印後也可用同一份題目線上練習。</p>
+        <p>下載時優先讀取本機新細明體／Times New Roman；未提供時使用開源明體／Times 風格字型並提示。</p>
+      </div> : null}
+
       <footer className={styles.setupFooter}>
         <span>
           {loading ? (
@@ -508,14 +502,22 @@ function DailySetup({
             <>請選擇今日要挑戰的科目。</>
           )}
         </span>
-        {mode === 'adventure' ? <Button
+        {mode === 'normal' ? <div className={styles.normalActions}>
+          <Button disabled={loading || !readyToStart || paperDownload.downloading}
+            onClick={() => paperDownload.download(onMakePaper)}>
+            <IconFileTypePdf size={17} />{paperDownload.downloading ? '正在製作 PDF…' : '製作每日練習紙本檔案'}
+          </Button>
+          <Button variant="primary" disabled={loading || !readyToStart || paperDownload.downloading} onClick={onStart}>
+            線上作答
+          </Button>
+        </div> : <Button
           variant="primary"
           disabled={loading || !selectedSubjects.length || !readyToStart}
           onClick={onStart}
         >
           <IconFlag3 size={18} aria-hidden="true" />
           建立今日挑戰
-        </Button> : null}
+        </Button>}
       </footer>
     </section>
   );
