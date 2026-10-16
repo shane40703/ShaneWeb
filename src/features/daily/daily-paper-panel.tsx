@@ -6,6 +6,7 @@ import type { Question } from '@/lib/types';
 import type { DailyPracticeSession } from './daily-practice';
 import { createDailyPaper } from './daily-paper';
 import styles from './daily-paper-panel.module.css';
+import { useDailyPaperDownload } from './daily-paper-download';
 
 export const DailyPaperPanel = memo(function DailyPaperPanel({ session, questionById, onRetry }: {
   session: DailyPracticeSession;
@@ -13,22 +14,9 @@ export const DailyPaperPanel = memo(function DailyPaperPanel({ session, question
   onRetry: () => void;
 }) {
   const [open, setOpen] = useState(false);
-  const [downloading, setDownloading] = useState(false);
-  const [error, setError] = useState('');
+  const { downloading, error, fontNotice, download } = useDailyPaperDownload();
   const ready = session.questionIds.every(id => questionById.has(id));
   const paper = ready ? createDailyPaper(session, questionById) : null;
-
-  async function download() {
-    if (!paper || downloading) return;
-    setDownloading(true); setError('');
-    try {
-      // Keep the PDF engine and font off the initial daily-practice download.
-      const { downloadDailyPaperPdf } = await import('./daily-paper-pdf');
-      await downloadDailyPaperPdf(paper);
-    } catch (reason) {
-      setError(reason instanceof Error ? reason.message : 'PDF 下載失敗，請稍後再試。');
-    } finally { setDownloading(false); }
-  }
 
   return <section className={styles.panel} aria-label="當日試題工具">
     <header>
@@ -37,7 +25,7 @@ export const DailyPaperPanel = memo(function DailyPaperPanel({ session, question
         <Button disabled={!ready} aria-expanded={open} aria-controls="daily-paper-preview" onClick={() => setOpen(value => !value)}>
           <IconListSearch size={17} />{open ? '收合當日考題' : '當日考題預覽'}
         </Button>
-        <Button disabled={!ready || downloading} onClick={download}>
+        <Button disabled={!ready || downloading} onClick={() => paper && download(() => paper)}>
           <IconFileTypePdf size={17} />{downloading ? '正在製作 PDF…' : '列印／下載 PDF'}
         </Button>
       </div>
@@ -46,6 +34,7 @@ export const DailyPaperPanel = memo(function DailyPaperPanel({ session, question
       {session.mode === 'adventure' && session.status === 'practice' ? ' 闖關計時照常進行。' : ''}</p>
     {!ready ? <p role="status">當日題目尚未完整載入。<Button onClick={onRetry}>重新載入試題</Button></p> : null}
     {error ? <p role="alert">{error} 請重新點選下載；不會影響作答進度。</p> : null}
+    {fontNotice ? <p role="status">{fontNotice}</p> : null}
     {open && paper ? <div id="daily-paper-preview" role="region" aria-label="當日考題預覽" className={styles.preview}>
       <h3>{paper.subjectName}・當日完整考題</h3>
       <p>包含本次所有派發題目；不顯示答案、詳解或筆記。</p>

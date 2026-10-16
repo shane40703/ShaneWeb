@@ -4,7 +4,8 @@ import { formatCorrectAnswer } from '@/lib/study';
 import { applyDailyOptionOrder, type DailyPracticeSession } from './daily-practice';
 
 export const DAILY_PAPER_TITLE = '專門職業及技術人員高等考試建築師每日練習試題';
-export const DAILY_PAPER_FONT = '/fonts/daily-paper/paper-kai.ttf';
+export const DAILY_PAPER_FONT = '/fonts/daily-paper/paper-ming.ttf';
+export const DAILY_PAPER_LATIN_FONT = '/fonts/daily-paper/paper-times.ttf';
 
 // Questions omit answers; the separate key is used only on the PDF's final page.
 export type DailyPaperQuestion = Pick<Question, 'id' | 'year' | 'questionNumber' | 'content' | 'options'>;

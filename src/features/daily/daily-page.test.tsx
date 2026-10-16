@@ -4,6 +4,7 @@ import type { Question, SubjectId } from '@/lib/types';
 import { ToastProvider } from '@/components/ui/ui';
 import {
   DAILY_PRACTICE_STORAGE_KEY,
+  DAILY_PAPER_STORAGE_KEY,
   createDailyPracticeSession,
   getTaipeiDateKey,
 } from './daily-practice';
@@ -25,6 +26,8 @@ const sharedDiscussions = vi.hoisted(() => ({
   publish: vi.fn(),
 }));
 const bankState = vi.hoisted(() => ({ status: 'ready' as 'ready' | 'loading' | 'error' }));
+const paperDownload = vi.hoisted(() => vi.fn());
+vi.mock('./daily-paper-pdf', () => ({ downloadDailyPaperPdf: paperDownload }));
 
 function question(subject: SubjectId, number: number): Question {
   return {
@@ -73,6 +76,7 @@ vi.mock('@/lib/shared-discussions', () => ({
 
 beforeEach(() => {
   bankState.status = 'ready';
+  paperDownload.mockReset().mockResolvedValue(undefined);
   vi.spyOn(window, 'scrollTo').mockImplementation(() => {});
   window.localStorage.clear();
   appState.dispatch.mockReset();
@@ -113,6 +117,48 @@ function choose(correct: boolean) {
 }
 
 describe('DailyPage', () => {
+  it('makes a persistent paper directly from setup without starting online practice, then reuses it online', async () => {
+    const view = renderDailyPage();
+    await screen.findByRole('radio', { name: /正常模式/ });
+    expect(screen.queryByRole('button', { name: '建立今日挑戰' })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('radio', { name: /建築環境控制/ }));
+    fireEvent.click(screen.getByRole('button', { name: '製作每日練習紙本檔案' }));
+    await waitFor(() => expect(paperDownload).toHaveBeenCalledTimes(1));
+    const first = paperDownload.mock.calls[0][0];
+    expect(first.subjectName).toBe('建築環境控制');
+    expect(first.questions).toHaveLength(50);
+    expect(window.localStorage.getItem(DAILY_PRACTICE_STORAGE_KEY)).toBeNull();
+    expect(appState.dispatch).not.toHaveBeenCalled();
+    expect(screen.queryByRole('region', { name: '題目與選項' })).not.toBeInTheDocument();
+    const savedPaper = JSON.parse(window.localStorage.getItem(DAILY_PAPER_STORAGE_KEY)!);
+    view.unmount();
+    renderDailyPage();
+    await screen.findByRole('radio', { name: /正常模式/ });
+    fireEvent.click(screen.getByRole('radio', { name: /建築環境控制/ }));
+    fireEvent.click(screen.getByRole('button', { name: '製作每日練習紙本檔案' }));
+    await waitFor(() => expect(paperDownload).toHaveBeenCalledTimes(2));
+    expect(paperDownload.mock.calls[1][0]).toEqual(first);
+    await waitFor(() => expect(screen.getByRole('button', { name: '線上作答' })).toBeEnabled());
+    fireEvent.click(screen.getByRole('button', { name: '線上作答' }));
+    await screen.findByRole('region', { name: '題目與選項' });
+    expect(stored().questionIds).toEqual(savedPaper.questionIds);
+    expect(stored().optionOrders).toEqual(savedPaper.optionOrders);
+    expect(stored().answers).toEqual({});
+  });
+
+  it('keeps the same paper on a failed download and retry, without creating answer records', async () => {
+    paperDownload.mockRejectedValueOnce(new Error('測試下載失敗')).mockResolvedValue(undefined);
+    renderDailyPage();
+    fireEvent.click(await screen.findByRole('button', { name: '製作每日練習紙本檔案' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent('測試下載失敗');
+    const saved = window.localStorage.getItem(DAILY_PAPER_STORAGE_KEY);
+    fireEvent.click(screen.getByRole('button', { name: '製作每日練習紙本檔案' }));
+    await waitFor(() => expect(paperDownload).toHaveBeenCalledTimes(2));
+    expect(window.localStorage.getItem(DAILY_PAPER_STORAGE_KEY)).toBe(saved);
+    expect(window.localStorage.getItem(DAILY_PRACTICE_STORAGE_KEY)).toBeNull();
+    expect(paperDownload.mock.calls[0][0]).toEqual(paperDownload.mock.calls[1][0]);
+    expect(appState.dispatch).not.toHaveBeenCalled();
+  });
   it('removes the setup hero and detailed rules while preserving mode and subject choices', async () => {
     renderDailyPage();
     expect(await screen.findByRole('region', { name: '每日練習設定' })).toBeInTheDocument();
@@ -141,7 +187,7 @@ describe('DailyPage', () => {
   it('defaults to accessible normal practice with no battle, timer, or HP', async () => {
     renderDailyPage();
     expect(await screen.findByRole('radio', { name: /正常模式/ })).toBeChecked();
-    fireEvent.click(screen.getByRole('button', { name: /建立今日挑戰/ }));
+    fireEvent.click(screen.getByRole('button', { name: '線上作答' }));
     expect(await screen.findByRole('region', { name: '題目與選項' })).toBeInTheDocument();
     expect(screen.queryByRole('timer')).not.toBeInTheDocument();
     expect(screen.queryByLabelText('建築師勇者')).not.toBeInTheDocument();
@@ -398,7 +444,7 @@ describe('DailyPage', () => {
     vi.spyOn(window, 'confirm').mockReturnValue(true);
     fireEvent.click(screen.getByRole('button', { name: /重新選科／模式/ }));
     expect(await screen.findByRole('radio', { name: /正常模式/ })).toBeChecked();
-    fireEvent.click(screen.getByRole('button', { name: /建立今日挑戰/ }));
+    fireEvent.click(screen.getByRole('button', { name: '線上作答' }));
     expect(await screen.findByRole('region', { name: '題目與選項' })).toBeInTheDocument();
   });
 });

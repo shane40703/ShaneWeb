@@ -2,6 +2,7 @@ import { isSubjectId, pickRandomItems } from '@/lib/study';
 import type { Question, SubjectId } from '@/lib/types';
 
 export const DAILY_PRACTICE_STORAGE_KEY = 'shaneweb:daily-practice';
+export const DAILY_PAPER_STORAGE_KEY = 'shaneweb:daily-paper';
 export const DAILY_COMPLETION_STORAGE_KEY = 'shaneweb:daily-completions';
 export const DAILY_QUESTIONS_PER_SUBJECT = 50;
 export const DAILY_COMBO_STREAK = 3;
@@ -389,6 +390,11 @@ export function applyDailyOptionOrder(
   };
 }
 
+export function isDailyPracticeQuestion(question: Question) {
+  return question.answerKey.kind === 'accepted' && question.answerKey.options.length > 0 &&
+    question.answerKey.options.length < question.options.length;
+}
+
 export function createDailyPracticeSession(
   questions: readonly Question[],
   subjects: readonly SubjectId[],
@@ -401,7 +407,7 @@ export function createDailyPracticeSession(
     pickRandomItems(
       questions.filter(
         (question) =>
-          question.subject === subject && question.answerKey.kind !== 'written',
+          question.subject === subject && isDailyPracticeQuestion(question),
       ),
       mode === 'normal' ? DAILY_QUESTIONS_PER_SUBJECT : DAILY_MAX_RUN_QUESTIONS,
       random,

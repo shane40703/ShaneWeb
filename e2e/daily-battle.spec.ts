@@ -72,7 +72,7 @@ test('normal mode defaults to familiar fifty-question practice without a battle'
   await page.getByRole('radio', { name: /以闖關模式進行/ }).click();
   await expect(page.getByLabel('每日練習規則')).toHaveCount(0);
   await page.getByRole('radio', { name: /正常模式/ }).click();
-  await page.getByRole('button', { name: '建立今日挑戰' }).click();
+  await page.getByRole('button', { name: '線上作答' }).click();
   await expect(page.getByRole('region', { name: '題目與選項' })).toBeVisible();
   await expect(page.getByLabel('建築師勇者')).toHaveCount(0);
   await expect(page.getByRole('timer')).toHaveCount(0);

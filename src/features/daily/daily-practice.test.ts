@@ -29,6 +29,23 @@ function review(session: DailyPracticeSession, at = 1000) {
 }
 
 describe('daily practice 1.63', () => {
+  it.each(['normal', 'adventure'] as const)('excludes all-credit and written questions from every new %s assignment', mode => {
+    const excluded: Question[] = [
+      { ...questions[0], id: 'all-credit', answerKey: { kind: 'all-credit' } },
+      { ...questions[0], id: 'every-option', answerKey: { kind: 'accepted', options: [0, 1, 2, 3] } },
+      { ...questions[0], id: 'written', answerKey: { kind: 'written' } },
+    ];
+    const session = createDailyPracticeSession([...excluded, ...questions], ['law'], '2026-10-16', () => 0, mode);
+    expect(session.questionIds).not.toContain('all-credit');
+    expect(session.questionIds).not.toContain('every-option');
+    expect(session.questionIds).not.toContain('written');
+    expect(session.questionIds).toHaveLength(mode === 'normal' ? 50 : 74);
+    expect(createDailyPracticeSession(excluded, ['law']).questionIds).toEqual([]);
+    expect(createDailyPracticeSession([...excluded, questions[0]], ['law'], undefined, undefined, mode).questionIds).toEqual([questions[0].id]);
+    const legacy = { ...session, questionIds: ['all-credit', ...session.questionIds], answers: { 'all-credit': { selected: 0, correct: true } }, currentIndex: 1 };
+    expect(parseDailyPracticeSession(JSON.stringify(legacy), legacy.date)?.questionIds[0]).toBe('all-credit');
+    expect(parseDailyPracticeSession(JSON.stringify(legacy), legacy.date)?.answers['all-credit']).toEqual({ selected: 0, correct: true });
+  });
   it('uses fixed boss HP, latest mistake caps, and unique single-subject reserves', () => {
     expect(DAILY_STAGES.map(s => s.questions)).toEqual([5, 6, 7, 8, 9, 15]);
     expect(DAILY_STAGES.map(s => s.wrongLimit)).toEqual([7, 6, 5, 4, 4, 3]);

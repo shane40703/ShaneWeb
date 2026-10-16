@@ -6,6 +6,7 @@ import {
   IconClock,
   IconEraser,
   IconFlag3,
+  IconFileTypePdf,
   IconHeart,
   IconLoader2,
   IconLock,
@@ -51,6 +52,8 @@ import {
   DAILY_COMPLETION_STORAGE_KEY,
   DAILY_COMBO_STREAK,
   DAILY_PRACTICE_STORAGE_KEY,
+  DAILY_PAPER_STORAGE_KEY,
+  isDailyPracticeQuestion,
   DAILY_QUESTION_SECONDS,
   DAILY_RELIC_TYPES,
   DAILY_STAGES,
@@ -77,6 +80,8 @@ import {
 } from './daily-practice';
 import styles from './daily-page.module.css';
 import { DailyPaperPanel } from './daily-paper-panel';
+import { createDailyPaper } from './daily-paper';
+import { useDailyPaperDownload } from './daily-paper-download';
 
 const relicLabels: Record<DailyRelicType, { name: string; description: string }> = {
   eliminate: { name: '破除', description: '自動刪除一個錯誤選項' },
@@ -389,6 +394,7 @@ function DailySetup({
   completionResults,
   onToggleSubject,
   onStart,
+  onMakePaper,
   questions,
   loading,
   loadFailed,
@@ -400,15 +406,17 @@ function DailySetup({
   completionResults: DailyCompletionRecord['results'];
   onToggleSubject: (subject: SubjectId) => void;
   onStart: () => void;
+  onMakePaper: () => ReturnType<typeof createDailyPaper>;
   questions: Question[];
   loading: boolean;
   loadFailed: boolean;
   onRetry: () => void;
 }) {
+  const paperDownload = useDailyPaperDownload();
   const subjectCounts = Object.fromEntries(
     selectedSubjects.map((subject) => [
       subject,
-      questions.filter((question) => question.subject === subject && question.answerKey.kind !== 'written').length,
+      questions.filter((question) => question.subject === subject && isDailyPracticeQuestion(question)).length,
     ]),
   ) as Partial<Record<SubjectId, number>>;
   const readyToStart = selectedSubjects.every(
@@ -418,18 +426,34 @@ function DailySetup({
 
   return (
     <section className={styles.setup} aria-label="每日練習設定">
-      <fieldset className={styles.modeChoices}>
+      <fieldset className={styles.modeChoices} disabled={paperDownload.downloading}>
         <legend>選擇進行方式</legend>
-        <label data-checked={mode === 'normal' || undefined}>
-          <input type="radio" name="daily-mode" checked={mode === 'normal'} onChange={() => onModeChange('normal')} />
-          <span><strong>正常模式</strong><small>50 題・不限時・答錯不會結束，安心閱讀詳解</small></span>
-        </label>
+        <div className={styles.normalChoice} data-checked={mode === 'normal' || undefined}>
+          <label>
+            <input type="radio" name="daily-mode" checked={mode === 'normal'} onChange={() => onModeChange('normal')} />
+            <span><strong>正常模式</strong><small>50 題・不限時・答錯不會結束，安心閱讀詳解</small></span>
+          </label>
+          {mode === 'normal' ? <div className={styles.normalActions}>
+            <Button disabled={loading || !readyToStart || paperDownload.downloading}
+              onClick={() => paperDownload.download(onMakePaper)}>
+              <IconFileTypePdf size={17} />{paperDownload.downloading ? '正在製作 PDF…' : '製作每日練習紙本檔案'}
+            </Button>
+            <Button variant="primary" disabled={loading || !readyToStart || paperDownload.downloading} onClick={onStart}>
+              線上作答
+            </Button>
+            <small>先選下方科目。紙本含獨立參考答案，不會開始線上作答；列印後也可用同一份題目線上練習。</small>
+            <small>下載時優先讀取本機新細明體／Times New Roman；未提供時使用開源明體／Times 風格字型並提示。</small>
+          </div> : null}
+        </div>
         <label data-checked={mode === 'adventure' || undefined}>
           <input type="radio" name="daily-mode" checked={mode === 'adventure'} onChange={() => onModeChange('adventure')} />
           <span><strong>以闖關模式進行</strong><small>六層魔王・累積血量・答對 50 題才算全破</small></span>
         </label>
       </fieldset>
-      <fieldset className={styles.subjectChoices}>
+
+      {paperDownload.error ? <p className={styles.paperNotice} role="alert">{paperDownload.error} 可重新點選製作，不影響作答進度。</p> : null}
+      {paperDownload.fontNotice ? <p className={styles.paperNotice} role="status">{paperDownload.fontNotice}</p> : null}
+      <fieldset className={styles.subjectChoices} disabled={paperDownload.downloading}>
         <legend>選擇今日科目</legend>
         {subjects.map((subject) => {
           const checked = selectedSubjects.includes(subject.id);
@@ -479,19 +503,19 @@ function DailySetup({
           {loading ? (
             <><IconLoader2 size={18} aria-hidden="true" /> 正在準備題庫…</>
           ) : selectedSubject ? (
-            <>已選 {subjectShortName(selectedSubject)}・{mode === 'normal' ? '今日 50 題' : '目標答對 50 題'}{!readyToStart ? '・闖關需至少 74 題，請改用正常模式' : ''}</>
+            <>已選 {subjectShortName(selectedSubject)}・{mode === 'normal' ? `今日 ${Math.min(50, subjectCounts[selectedSubject] ?? 0)} 題` : '目標答對 50 題'}{!readyToStart ? mode === 'normal' ? '・目前沒有可用選擇題' : '・闖關需至少 74 題，請改用正常模式' : ''}</>
           ) : (
             <>請選擇今日要挑戰的科目。</>
           )}
         </span>
-        <Button
+        {mode === 'adventure' ? <Button
           variant="primary"
           disabled={loading || !selectedSubjects.length || !readyToStart}
           onClick={onStart}
         >
           <IconFlag3 size={18} aria-hidden="true" />
           建立今日挑戰
-        </Button>
+        </Button> : null}
       </footer>
     </section>
   );
@@ -627,6 +651,7 @@ export function DailyPage() {
     results: {},
   });
   const [session, setSession] = useState<DailyPracticeSession | null>(null);
+  const [paperSession, setPaperSession] = useState<DailyPracticeSession | null>(null);
   const [stageTransition, setStageTransition] = useState<DailyPracticeSession | null>(null);
   const [draftAnswer, setDraftAnswer] = useState<{
     questionId: string;
@@ -658,6 +683,10 @@ export function DailyPage() {
         readStoredValue(DAILY_COMPLETION_STORAGE_KEY),
         today,
       );
+      const storedPaper = parseDailyPracticeSession(readStoredValue(DAILY_PAPER_STORAGE_KEY), today);
+      if (storedPaper?.mode === 'normal' && storedPaper.status === 'practice' && !Object.keys(storedPaper.answers).length) {
+        setPaperSession(storedPaper);
+      }
       let normalizedCompletions = storedCompletions;
       const storedSubject = storedSession?.subjects[0];
       if (storedSession && storedSubject) {
@@ -695,6 +724,7 @@ export function DailyPage() {
       const nextDate = getTaipeiDateKey();
       removeStoredSession();
       setSession(null);
+      setPaperSession(null);
       setStageTransition(null);
       setDraftAnswer(undefined);
       setCompletionRecord({ date: nextDate, subjects: [], results: {} });
@@ -860,13 +890,33 @@ export function DailyPage() {
   }
 
   function startPractice() {
-    const next = createDailyPracticeSession(bank.questions, selectedSubjects, today, Math.random, selectedMode);
+    const next = selectedMode === 'normal' ? getPaperSession()
+      : createDailyPracticeSession(bank.questions, selectedSubjects, today, Math.random, selectedMode);
     if (next.questionIds.length) {
       const startedAt = Date.now();
       setNowMs(startedAt);
       setSession(startDailyQuestion(next, startedAt));
       window.scrollTo({ top: 0, behavior: 'instant' });
     }
+  }
+
+  function getPaperSession() {
+    const reusable = paperSession?.date === today && paperSession.subjects[0] === selectedSubjects[0] &&
+      paperSession.questionIds.every(id => {
+        const question = questionById.get(id);
+        return question && isDailyPracticeQuestion(question);
+      });
+    const next = reusable ? paperSession
+      : createDailyPracticeSession(bank.questions, selectedSubjects, today, Math.random, 'normal');
+    return next;
+  }
+
+  function makePaper() {
+    const next = getPaperSession();
+    const paper = createDailyPaper(next, questionById);
+    setPaperSession(next);
+    reportPersistence('daily-paper', writeStoredValue(DAILY_PAPER_STORAGE_KEY, JSON.stringify(next)));
+    return paper;
   }
 
   function markSubjectCompleted(
@@ -1029,6 +1079,7 @@ export function DailyPage() {
         completionResults={completionRecord.results}
         onToggleSubject={toggleSubject}
         onStart={startPractice}
+        onMakePaper={makePaper}
         questions={bank.questions}
         loading={bank.status === 'loading'}
         loadFailed={bank.status === 'error'}

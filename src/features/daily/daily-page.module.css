@@ -1714,6 +1714,14 @@
 .modeChoices label[data-checked] { background: var(--primary-soft); border-color: var(--primary); }
 .modeChoices label span { display: grid; gap: 6px; }
 .modeChoices small { color: var(--muted); line-height: 1.6; }
+.normalChoice { border: 1px solid var(--line); border-radius: 12px; min-width: 0; }
+.modeChoices { align-items: start; }
+.modeChoices .normalChoice > label { border: 0; }
+.normalChoice[data-checked] { background: var(--primary-soft); border-color: var(--primary); }
+.normalActions { padding: 0 16px 16px; display: flex; flex-wrap: wrap; gap: 10px; }
+.normalActions small { flex-basis: 100%; }
+.normalActions button { min-width: 0; white-space: normal; }
+.paperNotice { margin: 0 24px 16px; line-height: 1.7; color: var(--muted); font-size: 13px; }
 .migrationNotice { grid-column: 1 / -1; padding: 12px; margin: 0; border: 1px solid var(--line); border-radius: 10px; }
 .fighterMeter[data-danger] > i > b { background: linear-gradient(90deg, #df4050, #ff876d); }
 .daily[data-mode='normal'] { grid-template-columns: minmax(0, 1fr) 240px; width: min(100%, 1180px); }
