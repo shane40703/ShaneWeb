@@ -1165,10 +1165,6 @@ export function DailyPage() {
         ) : null}
       </div>
       <div className={styles.questionArea}>
-        <DailyPaperPanel
-          key={`${session.date}:${session.questionIds.join(',')}`}
-          session={session} questionById={questionById} onRetry={bank.retry}
-        />
         {bank.status === 'loading' || (requiredQuestionMissing && bank.status !== 'error') ? (
           <div className={styles.loading}><IconLoader2 size={26} /><span>正在載入今日題目…</span></div>
         ) : bank.status === 'error' && requiredQuestionMissing ? (
@@ -1254,13 +1250,19 @@ export function DailyPage() {
             </footer>
           </section>
         ) : (session.status === 'completed' || session.status === 'failed') && completedSubject ? (
-          <CompletionSummary
-            session={session}
-            subject={completedSubject}
-            questionById={questionById}
-            failed={session.status === 'failed'}
-            onSelectSubjects={() => returnToSelection(false)}
-          />
+          <>
+            <CompletionSummary
+              session={session}
+              subject={completedSubject}
+              questionById={questionById}
+              failed={session.status === 'failed'}
+              onSelectSubjects={() => returnToSelection(false)}
+            />
+            <DailyPaperPanel
+              key={`${session.date}:${session.questionIds.join(',')}`}
+              session={session} questionById={questionById} onRetry={bank.retry}
+            />
+          </>
         ) : currentQuestion ? (
           <article
             className={styles.challenge}

@@ -1,4 +1,4 @@
-.panel { margin-bottom: 14px; padding: 16px; border: 1px solid var(--line); border-radius: 16px; background: var(--surface); min-width: 0; }
+.panel { margin-top: 14px; padding: 16px; border: 1px solid var(--line); border-radius: 16px; background: var(--surface); min-width: 0; }
 .panel > header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
 .panel > header > div:first-child { display: grid; gap: 5px; }
 .panel small, .panel p, .preview article header span { color: var(--muted); font-size: 12px; }

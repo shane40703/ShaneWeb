@@ -117,6 +117,38 @@ function choose(correct: boolean) {
 }
 
 describe('DailyPage', () => {
+  it.each([
+    ['normal', 'practice'], ['adventure', 'practice'], ['adventure', 'review'],
+  ] as const)('hides paper tools and the full preview during %s %s', async (mode, status) => {
+    seedSession([], mode, status);
+    renderDailyPage();
+    await screen.findByLabelText('每日練習進度與關卡');
+    expect(screen.queryByRole('region', { name: '當日試題工具' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('region', { name: '當日考題預覽工具' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '當日考題預覽' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '列印／下載 PDF' })).not.toBeInTheDocument();
+  });
+
+  it.each([
+    ['normal', 'completed'], ['adventure', 'completed'], ['adventure', 'failed'],
+  ] as const)('shows the complete preview below results and wrong answers after %s %s', async (mode, status) => {
+    const session = seedSession(Array(50).fill(true), mode, status);
+    renderDailyPage();
+    const panel = await screen.findByRole('region', { name: '當日考題預覽工具' });
+    const wrongAnswers = screen.getByRole('region', { name: '本次錯題整理' });
+    expect(wrongAnswers.compareDocumentPosition(panel) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(panel.parentElement!.lastElementChild).toBe(panel);
+    expect(screen.queryByRole('button', { name: '列印／下載 PDF' })).not.toBeInTheDocument();
+    const before = window.localStorage.getItem(DAILY_PRACTICE_STORAGE_KEY);
+    fireEvent.click(within(panel).getByRole('button', { name: '當日考題預覽' }));
+    const preview = within(panel).getByRole('region', { name: '當日考題預覽' });
+    expect(within(preview).getAllByRole('article')).toHaveLength(session.questionIds.length);
+    expect(within(preview).queryByText('正確答案')).not.toBeInTheDocument();
+    fireEvent.click(within(panel).getByRole('button', { name: '收合當日考題' }));
+    expect(window.localStorage.getItem(DAILY_PRACTICE_STORAGE_KEY)).toBe(before);
+    expect(paperDownload).not.toHaveBeenCalled();
+  });
+
   it('places paper and online actions at the bottom, after mode and subject selection', async () => {
     renderDailyPage();
     const setup = await screen.findByRole('region', { name: '每日練習設定' });
@@ -372,6 +404,7 @@ describe('DailyPage', () => {
     expect(screen.getByLabelText('建築師剩餘 0 / 100 點血量')).toBeInTheDocument();
     expect(screen.getByLabelText('建照印章獸剩餘 5 / 5 點血量')).toBeInTheDocument();
     expect(stored().failureReason).toBe('mistakes');
+    expect(screen.getByRole('button', { name: '當日考題預覽' })).toBeEnabled();
   });
 
   it('perfect guard protects HP but still counts a mistake and persists consumption', async () => {
@@ -411,6 +444,7 @@ describe('DailyPage', () => {
     seedSession(Array(49).fill(false), 'normal');
     renderDailyPage();
     await screen.findByText('選項 B');
+    expect(screen.queryByRole('button', { name: '當日考題預覽' })).not.toBeInTheDocument();
     choose(false);
     expect(screen.queryByLabelText('每日挑戰戰敗')).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: '下一題' }));
@@ -418,6 +452,7 @@ describe('DailyPage', () => {
     expect(screen.getByText('本次錯題整理')).toBeInTheDocument();
     expect(screen.queryByText('VICTORY!')).not.toBeInTheDocument();
     expect(stored().status).toBe('completed');
+    expect(screen.getByRole('button', { name: '當日考題預覽' })).toBeEnabled();
   });
   it('dies from cumulative HP depletion even while the sixty-second timer still has time', async () => {
     const session = seedSession([], 'adventure', 'practice', 0, .03);
