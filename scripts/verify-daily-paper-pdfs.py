@@ -24,6 +24,7 @@ for file in sorted(RESULTS.glob('*-desktop/*.pdf')):
     pdf = pymupdf.open(file)
     assert pdf.metadata['title'] == '專門職業及技術人員高等考試建築師每日練習試題'
     assert len(pdf) > 2
+    assert '字型：' not in ''.join(page.get_text() for page in pdf), (subject, 'font information must not be printed')
     paper_text = ''.join(page.get_text() for page in list(pdf)[:-1])
     assert '原題：' not in paper_text
     assert re.findall(r'\(\d{3}-\d+\)', paper_text) == [f"({q['year']}-{q['questionNumber']})" for q in questions], (subject, 'missing or repeated source markers')

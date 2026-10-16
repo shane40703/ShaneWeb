@@ -1,8 +1,8 @@
 // @vitest-environment node
 import { readFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
-import { describe, expect, it, vi } from 'vitest';
-import { PDFDocument, PageSizes } from 'pdf-lib';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { PDFDocument, PDFPage, PageSizes } from 'pdf-lib';
 import type { Question } from '@/lib/types';
 import { createDailyPracticeSession } from './daily-practice';
 import { createDailyPaper, dailyPaperFilename, DAILY_PAPER_TITLE } from './daily-paper';
@@ -51,7 +51,10 @@ describe('daily paper snapshot', () => {
 });
 
 describe('exam PDF layout', () => {
+  afterEach(() => vi.restoreAllMocks());
+
   it.skipIf(!existsSync('C:/Windows/Fonts/mingliu.ttc'))('embeds the actual locally supplied PMingLiU and Times New Roman faces, never publishing font files', async () => {
+    const drawText = vi.spyOn(PDFPage.prototype, 'drawText');
     const paper = createDailyPaper(createDailyPracticeSession(questions, ['law'], '2026-10-16', () => .5, 'normal'), bank);
     const onFontNotice = vi.fn();
     const bytes = await generateDailyPaperPdf(paper, { ...await fonts(), localFonts: {
@@ -60,6 +63,7 @@ describe('exam PDF layout', () => {
     }, image: vi.fn(), onFontNotice });
     expect(onFontNotice).toHaveBeenCalledWith('本次使用 新細明體 / Times New Roman。');
     expect((await PDFDocument.load(bytes)).getKeywords()).toContain('新細明體 / Times New Roman');
+    expect(drawText.mock.calls.map(([text]) => text).join('')).not.toContain('字型：');
   });
   it('respects installable/editable font permissions and rejects restricted embedding', () => {
     expect(allowsDailyFontEmbedding(0)).toBe(true);
@@ -77,9 +81,13 @@ describe('exam PDF layout', () => {
   });
 
   it('generates a real A4, embedded-font multi-page PDF with an independent final answer sheet', async () => {
+    const drawText = vi.spyOn(PDFPage.prototype, 'drawText');
+    const onFontNotice = vi.fn();
     const session = createDailyPracticeSession(questions, ['law'], '2026-10-15', () => .5, 'normal');
     const paper = createDailyPaper(session, bank);
-    const bytes = await generateDailyPaperPdf(paper, { ...await fonts(), image: vi.fn() });
+    const bytes = await generateDailyPaperPdf(paper, { ...await fonts(), image: vi.fn(), onFontNotice });
+    expect(onFontNotice).toHaveBeenCalledWith(expect.stringContaining('未取得完整指定字型'));
+    expect(drawText.mock.calls.map(([text]) => text).join('')).not.toContain('字型：');
     expect(Buffer.from(bytes.subarray(0, 5)).toString()).toBe('%PDF-');
     const pdf = await PDFDocument.load(bytes);
     expect(pdf.getTitle()).toBe(DAILY_PAPER_TITLE);

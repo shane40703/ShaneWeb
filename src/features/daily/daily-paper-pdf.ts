@@ -212,7 +212,6 @@ export async function generateDailyPaperPdf(paper: DailyPaper, assets: DailyPape
     y -= rowHeight * 2 + 15;
   }
   draw('註：多個字母表示任一所列選項均可。', MARGIN, y - 8, 10);
-  draw(`字型：${fontLabel}`, MARGIN, y - 25, 8);
   const pages = pdf.getPages();
   for (const [index, current] of pages.entries()) {
     page = current;
