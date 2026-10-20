@@ -25,6 +25,12 @@ async function enterGallery(page: Page) {
   await page.getByRole('link', { name: '速記圖庫', exact: true }).click();
   await expect(page.getByRole('dialog', { name: '主要功能', exact: true })).toHaveCount(0);
 }
+async function enterPopulatedGallery(page: Page) {
+  await routeImages(page);
+  await page.route('**/_next/data/**/memory-gallery.json*', route => route.fulfill({ json: { pageProps: { items }, __N_SSG: true } }));
+  await enterGallery(page);
+  return page.getByRole('region', { name: '速記圖庫', exact: true });
+}
 
 test('gallery is publicly accessible from navigation without exposing an upload form', async ({ page }, testInfo) => {
   await enterGallery(page);
@@ -37,10 +43,7 @@ test('gallery is publicly accessible from navigation without exposing an upload 
 });
 
 test('public gallery filters, searches and enlarges images on desktop and mobile', async ({ page }, testInfo) => {
-  await routeImages(page);
-  await page.route('**/_next/data/**/memory-gallery.json*', route => route.fulfill({ json: { pageProps: { items }, __N_SSG: true } }));
-  await enterGallery(page);
-  const gallery = page.getByRole('region', { name: '速記圖庫', exact: true });
+  const gallery = await enterPopulatedGallery(page);
   await expect(gallery.getByRole('article')).toHaveCount(3);
   await page.screenshot({ path: testInfo.outputPath('gallery-populated.png'), fullPage: true });
   await gallery.getByRole('button', { name: /^構造/ }).click();
@@ -55,6 +58,111 @@ test('public gallery filters, searches and enlarges images on desktop and mobile
   await page.keyboard.press('Escape');
   await expect(dialog).toHaveCount(0);
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(page.viewportSize()!.width);
+});
+
+test('gallery zoom controls stay accessible and block ordinary image saving', async ({ page }, testInfo) => {
+  const gallery = await enterPopulatedGallery(page);
+  expect(await gallery.locator('a[href*="/memory-gallery/assets/"]').count()).toBe(0);
+  const thumbnail = gallery.getByRole('img').first();
+  await expect(thumbnail).toHaveAttribute('draggable', 'false');
+  expect(await thumbnail.evaluate(image => !image.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true })))).toBe(true);
+  expect(await thumbnail.evaluate(image => !image.dispatchEvent(new Event('dragstart', { bubbles: true, cancelable: true })))).toBe(true);
+  const trigger = gallery.getByRole('button', { name: '放大圖片 法規整理測試圖', exact: true });
+  await trigger.click();
+  const dialog = page.getByRole('dialog', { name: '放大檢視 法規整理測試圖' });
+  const image = dialog.getByRole('img');
+  await expect.poll(() => image.evaluate(node => (node as HTMLImageElement).naturalWidth)).toBeGreaterThan(0);
+  await expect(image).toHaveAttribute('draggable', 'false');
+  const slider = dialog.getByRole('slider', { name: '圖片縮放比例' });
+  await dialog.getByRole('button', { name: '放大圖片', exact: true }).click();
+  await expect(slider).toHaveValue('125');
+  await slider.focus();
+  await slider.press('End');
+  await expect(slider).toHaveValue('800');
+  await expect(dialog.getByRole('button', { name: '放大圖片', exact: true })).toBeDisabled();
+  await dialog.getByRole('button', { name: '符合畫面' }).click();
+  await expect(slider).toHaveValue('100');
+  const viewport = dialog.getByRole('region', { name: '圖片縮放與拖曳區' });
+  await viewport.focus();
+  await viewport.press('+');
+  await expect(slider).toHaveValue('125');
+  expect(await viewport.evaluate(node => !node.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true })))).toBe(true);
+  expect(await viewport.evaluate(node => !node.dispatchEvent(new Event('dragstart', { bubbles: true, cancelable: true })))).toBe(true);
+  expect(await dialog.evaluate(node => !node.dispatchEvent(new KeyboardEvent('keydown', { key: 's', ctrlKey: true, bubbles: true, cancelable: true })))).toBe(true);
+  await page.screenshot({ path: testInfo.outputPath('gallery-zoom.png') });
+  for (let index = 0; index < 9; index++) {
+    await page.keyboard.press('Tab');
+    await expect.poll(() => dialog.evaluate(node => node.contains(document.activeElement))).toBe(true);
+  }
+  await page.keyboard.press('Escape');
+  await expect(dialog).toHaveCount(0);
+  await expect(trigger).toBeFocused();
+  await trigger.click();
+  await expect(dialog.getByRole('slider')).toHaveValue('100');
+  await page.emulateMedia({ media: 'print' });
+  await expect(dialog).toBeHidden();
+  await expect(page.locator('article img').first()).toHaveCSS('visibility', 'hidden');
+  await page.emulateMedia({ media: 'screen' });
+  await expect(dialog).toBeVisible();
+});
+
+test('desktop wheel zoom and captured mouse dragging keep the page still', async ({ page, isMobile }) => {
+  test.skip(isMobile, 'Mouse/trackpad interaction is covered in the desktop project.');
+  const gallery = await enterPopulatedGallery(page);
+  await gallery.getByRole('button', { name: '放大圖片 法規整理測試圖', exact: true }).click();
+  const dialog = page.getByRole('dialog', { name: '放大檢視 法規整理測試圖' });
+  const viewport = dialog.getByRole('region', { name: '圖片縮放與拖曳區' });
+  const slider = dialog.getByRole('slider');
+  const rect = (await viewport.boundingBox())!;
+  const scrollBefore = await page.evaluate(() => window.scrollY);
+  await page.mouse.move(rect.x + rect.width / 2, rect.y + rect.height / 2);
+  await page.mouse.wheel(0, -400);
+  await expect.poll(async () => Number(await slider.inputValue())).toBeGreaterThan(100);
+  expect(await page.evaluate(() => window.scrollY)).toBe(scrollBefore);
+  await slider.focus();
+  await slider.press('End');
+  const transform = dialog.getByRole('img').locator('..');
+  const before = await transform.getAttribute('style');
+  await page.mouse.move(rect.x + rect.width / 2, rect.y + rect.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(rect.x + rect.width / 2 + 75, rect.y + rect.height / 2 + 60, { steps: 6 });
+  await page.mouse.up();
+  expect(await transform.getAttribute('style')).not.toBe(before);
+  await expect(slider).toHaveValue('800');
+  await dialog.getByRole('button', { name: '符合畫面' }).click();
+  await expect(transform).toHaveAttribute('style', 'transform: translate(0px, 0px) scale(1);');
+  await viewport.dblclick();
+  await expect(slider).toHaveValue('250');
+  await viewport.dblclick();
+  await expect(slider).toHaveValue('100');
+});
+
+test('mobile two-finger pinch and single-finger pan work inside the image', async ({ page, isMobile, context }) => {
+  test.skip(!isMobile, 'Real touch contacts are covered in the mobile project.');
+  const gallery = await enterPopulatedGallery(page);
+  await gallery.getByRole('button', { name: '放大圖片 法規整理測試圖', exact: true }).click();
+  const dialog = page.getByRole('dialog', { name: '放大檢視 法規整理測試圖' });
+  const viewport = dialog.getByRole('region', { name: '圖片縮放與拖曳區' });
+  const rect = (await viewport.boundingBox())!;
+  const x = rect.x + rect.width / 2;
+  const y = rect.y + rect.height / 2;
+  await expect(viewport).toHaveCSS('touch-action', 'none');
+  const cdp = await context.newCDPSession(page);
+  try {
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ id: 1, x: x - 35, y }, { id: 2, x: x + 35, y }] });
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ id: 1, x: x - 70, y }, { id: 2, x: x + 70, y }] });
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+    await expect(dialog.getByRole('slider')).toHaveValue('200');
+    const transform = dialog.getByRole('img').locator('..');
+    const before = await transform.getAttribute('style');
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ id: 3, x, y }] });
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ id: 3, x: x + 40, y: y + 55 }] });
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchCancel', touchPoints: [] });
+    expect(await transform.getAttribute('style')).not.toBe(before);
+    await dialog.getByRole('button', { name: '符合畫面' }).click();
+    await expect(dialog.getByRole('slider')).toHaveValue('100');
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(page.viewportSize()!.width);
+  } finally { await cdp.detach(); }
 });
 
 test('admin uploads, edits and unlists with a key and clear deployment instructions', async ({ page }, testInfo) => {

@@ -1,5 +1,6 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it } from 'vitest';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { filterMemoryGalleryImages, readMemoryGalleryMetadata, type MemoryGalleryImage } from '@/lib/memory-gallery';
 import { MemoryGalleryPage } from './memory-gallery-page';
 
@@ -8,7 +9,11 @@ const base: MemoryGalleryImage = { id: '00000000-0000-4000-8000-000000000001', t
   width: 600, height: 900, createdAt: '2026-10-20T00:00:00Z', updatedAt: '2026-10-20T00:00:00Z' };
 const items: MemoryGalleryImage[] = [base, { ...base, id: '2', title: '混凝土構造', category: 'construction', description: '鋼筋接續' },
   { ...base, id: '3', title: '空調系統', category: 'env', description: '空氣線圖' }];
-afterEach(cleanup);
+beforeEach(() => {
+  vi.stubGlobal('ResizeObserver', class { observe() {} unobserve() {} disconnect() {} });
+  vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockReturnValue({ width: 800, height: 600, left: 0, top: 0, right: 800, bottom: 600, x: 0, y: 0, toJSON() {} });
+});
+afterEach(() => { cleanup(); vi.restoreAllMocks(); vi.unstubAllGlobals(); });
 
 describe('memory gallery browsing', () => {
   it('filters by all three categories and searches image titles/descriptions', () => {
@@ -26,13 +31,75 @@ describe('memory gallery browsing', () => {
     fireEvent.click(screen.getByRole('button', { name: '清除篩選' }));
     expect(screen.getAllByRole('article')).toHaveLength(3);
   });
-  it('opens the image lightbox and closes it with Escape', () => {
+  it('opens the image lightbox, restores trigger focus, and never links to raw images', async () => {
+    const user = userEvent.setup();
     render(<MemoryGalleryPage items={[base]} />);
-    fireEvent.click(screen.getByRole('button', { name: '放大圖片 防火避難整理' }));
-    expect(screen.getByRole('dialog', { name: '放大檢視 防火避難整理' })).toBeInTheDocument();
-    fireEvent.keyDown(window, { key: 'Escape' });
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-    expect(screen.getByRole('link', { name: '開啟完整圖片' })).toHaveAttribute('href', base.src);
+    const trigger = screen.getByRole('button', { name: '放大圖片 防火避難整理' });
+    await user.click(trigger);
+    expect(await screen.findByRole('dialog', { name: '放大檢視 防火避難整理' })).toBeInTheDocument();
+    await user.keyboard('{Escape}');
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    await waitFor(() => expect(trigger).toHaveFocus());
+    expect(screen.queryByRole('link', { name: '開啟完整圖片' })).not.toBeInTheDocument();
+    expect(document.querySelector(`a[href="${base.src}"]`)).toBeNull();
+  });
+  it('supports continuous zoom, button limits, fitting, and resets zoom on reopen', async () => {
+    const user = userEvent.setup();
+    render(<MemoryGalleryPage items={[base]} />);
+    await user.click(screen.getByRole('button', { name: '放大圖片 防火避難整理' }));
+    const dialog = within(await screen.findByRole('dialog'));
+    const slider = dialog.getByRole('slider', { name: '圖片縮放比例' });
+    expect(dialog.getByRole('button', { name: '縮小圖片' })).toBeDisabled();
+    await user.click(dialog.getByRole('button', { name: '放大圖片' }));
+    expect(slider).toHaveValue('125');
+    fireEvent.change(slider, { target: { value: '347' } });
+    expect(dialog.getByLabelText('目前縮放比例')).toHaveTextContent('347%');
+    fireEvent.change(slider, { target: { value: '800' } });
+    expect(dialog.getByRole('button', { name: '放大圖片' })).toBeDisabled();
+    await user.click(dialog.getByRole('button', { name: '符合畫面' }));
+    expect(slider).toHaveValue('100');
+    fireEvent.change(slider, { target: { value: '400' } });
+    await user.click(dialog.getByRole('button', { name: '關閉放大圖片' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    await user.click(screen.getByRole('button', { name: '放大圖片 防火避難整理' }));
+    expect(within(await screen.findByRole('dialog')).getByRole('slider')).toHaveValue('100');
+  });
+  it('zooms with a non-passive wheel listener and viewport keyboard shortcuts', async () => {
+    const user = userEvent.setup();
+    render(<MemoryGalleryPage items={[base]} />);
+    await user.click(screen.getByRole('button', { name: '放大圖片 防火避難整理' }));
+    const dialog = within(await screen.findByRole('dialog'));
+    const viewport = dialog.getByRole('region', { name: '圖片縮放與拖曳區' });
+    expect(fireEvent.wheel(viewport, { deltaY: -400, clientX: 400, clientY: 300, cancelable: true })).toBe(false);
+    expect(Number((dialog.getByRole('slider') as HTMLInputElement).value)).toBeGreaterThan(100);
+    fireEvent.keyDown(viewport, { key: '0' });
+    expect(dialog.getByRole('slider')).toHaveValue('100');
+    fireEvent.keyDown(viewport, { key: '+' });
+    expect(dialog.getByRole('slider')).toHaveValue('125');
+    fireEvent.doubleClick(viewport, { clientX: 400, clientY: 300 });
+    expect(dialog.getByRole('slider')).toHaveValue('100');
+    fireEvent.doubleClick(viewport, { clientX: 400, clientY: 300 });
+    expect(dialog.getByRole('slider')).toHaveValue('250');
+  });
+  it('blocks ordinary context-menu saving, dragging, copying, and in-viewer save shortcuts', async () => {
+    const user = userEvent.setup();
+    render(<MemoryGalleryPage items={[base]} />);
+    const thumbnail = screen.getByRole('img');
+    expect(thumbnail).toHaveAttribute('draggable', 'false');
+    expect(fireEvent.contextMenu(thumbnail)).toBe(false);
+    expect(fireEvent.dragStart(thumbnail)).toBe(false);
+    await user.click(screen.getByRole('button', { name: '放大圖片 防火避難整理' }));
+    const popup = await screen.findByRole('dialog');
+    const dialog = within(popup);
+    const viewport = dialog.getByRole('region', { name: '圖片縮放與拖曳區' });
+    expect(dialog.getByRole('img')).toHaveAttribute('draggable', 'false');
+    expect(fireEvent.contextMenu(viewport)).toBe(false);
+    expect(fireEvent.dragStart(viewport)).toBe(false);
+    expect(fireEvent.copy(viewport)).toBe(false);
+    expect(fireEvent.keyDown(popup, { key: 's', ctrlKey: true })).toBe(false);
+    expect(fireEvent.keyDown(popup, { key: 's', metaKey: true })).toBe(false);
+    fireEvent.error(dialog.getByRole('img'));
+    expect(within(viewport).getByRole('status')).toHaveTextContent('圖片載入失敗');
   });
   it('shows an honest empty state, never an ordinary-user upload form', () => {
     render(<MemoryGalleryPage items={[]} />);

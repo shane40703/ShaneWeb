@@ -14,15 +14,14 @@
 .count { margin: 0; color: var(--muted); font-size: 12px; }
 .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
 .card { overflow: hidden; min-width: 0; border: 1px solid var(--line); border-radius: 16px; background: var(--surface); }
-.picture { position: relative; height: 245px; background: var(--surface-2); }
-.picture > img { width: 100%; height: 100%; object-fit: contain; }
+.picture { position: relative; height: 245px; background: var(--surface-2); user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+.picture > img { width: 100%; height: 100%; object-fit: contain; pointer-events: none; -webkit-user-drag: none; }
 .picture .zoom { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; border-radius: 0; background: transparent; }
 .picture .zoom > span { position: absolute; right: 12px; bottom: 12px; display: grid; place-items: center; width: 34px; height: 34px; border-radius: 9px; background: var(--surface); color: var(--primary-strong); box-shadow: var(--shadow-sm); }
 .caption { padding: 17px; display: grid; gap: 10px; overflow-wrap: anywhere; }
 .badge { justify-self: start; padding: 5px 9px; border-radius: 7px; background: var(--primary-soft); color: var(--primary-strong); font-size: 11px; font-weight: 800; }
 .caption h3 { margin: 0; font-size: 17px; line-height: 1.6; }
 .caption p { margin: 0; white-space: pre-wrap; color: var(--muted); font-size: 13px; line-height: 1.8; }
-.caption a { justify-self: start; color: var(--primary-strong); font-size: 12px; }
 .empty { display: grid; justify-items: center; gap: 12px; padding: 65px 20px; border: 1px dashed var(--line); border-radius: 18px; background: var(--surface); text-align: center; color: var(--muted); }
 .empty h3, .empty p { margin: 0; }
 .empty h3 { color: var(--text); font-size: 20px; }
@@ -39,3 +38,4 @@
   .categories button { flex: 1; justify-content: center; gap: 6px; padding-inline: 9px; }
   .picture { height: 280px; }
 }
+@media print { .picture { visibility: hidden; } }

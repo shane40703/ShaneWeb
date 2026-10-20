@@ -2,13 +2,13 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { IconPhoto, IconSearch, IconShieldLock } from '@tabler/icons-react';
-import { ImageLightbox } from '@/components/image-lightbox';
 import { Button } from '@/components/ui/ui';
 import {
   MEMORY_GALLERY_CATEGORIES, filterMemoryGalleryImages, memoryGalleryCategoryLabel,
   type MemoryGalleryCategory, type MemoryGalleryImage,
 } from '@/lib/memory-gallery';
 import styles from './memory-gallery-page.module.css';
+import { MemoryGalleryLightbox } from './memory-gallery-lightbox';
 
 export function MemoryGalleryPage({ items }: { items: MemoryGalleryImage[] }) {
   const [category, setCategory] = useState<MemoryGalleryCategory | 'all'>('all');
@@ -18,7 +18,7 @@ export function MemoryGalleryPage({ items }: { items: MemoryGalleryImage[] }) {
   return <section className={styles.page} aria-label="速記圖庫">
     <header className={styles.heading}>
       <div><span className={styles.eyebrow}>VISUAL NOTES</span><h2><IconPhoto size={27} aria-hidden="true" />速記圖庫</h2>
-        <p>將重點整理成圖，快速複習法規、構造與環控。點選圖片即可放大閱讀。</p></div>
+        <p>將重點整理成圖，快速複習法規、構造與環控。點選圖片可自由縮放、拖曳閱讀；僅供線上檢視。</p></div>
       <Button role="link" render={<Link href="/admin/memory-gallery" />}><IconShieldLock size={17} aria-hidden="true" />管理者上傳</Button>
     </header>
     <section className={styles.filters} aria-label="篩選速記圖片">
@@ -35,13 +35,12 @@ export function MemoryGalleryPage({ items }: { items: MemoryGalleryImage[] }) {
     <p className={styles.count} role="status">{visible.length} 張圖片</p>
     {visible.length ? <div className={styles.grid}>
       {visible.map(item => <article key={item.id} className={styles.card}>
-        <div className={styles.picture}>
-          <Image src={item.thumbnailSrc} alt={item.title} width={item.width} height={item.height} unoptimized loading="lazy" />
-          <ImageLightbox src={item.src} alt={item.title} triggerClassName={styles.zoom} triggerLabel={`放大圖片 ${item.title}`} />
+        <div className={styles.picture} onContextMenu={event => event.preventDefault()} onDragStart={event => event.preventDefault()}>
+          <Image src={item.thumbnailSrc} alt={item.title} width={item.width} height={item.height} unoptimized loading="lazy" draggable={false} />
+          <MemoryGalleryLightbox item={item} triggerClassName={styles.zoom} />
         </div>
         <div className={styles.caption}><span className={styles.badge}>{memoryGalleryCategoryLabel(item.category)}</span>
           <h3>{item.title}</h3>{item.description ? <p>{item.description}</p> : null}
-          <a href={item.src} target="_blank" rel="noopener noreferrer">開啟完整圖片</a>
         </div>
       </article>)}
     </div> : <div className={styles.empty}><IconPhoto size={40} stroke={1.4} aria-hidden="true" />
