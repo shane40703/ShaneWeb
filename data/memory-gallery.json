@@ -48,6 +48,54 @@
       "height": 1491,
       "createdAt": "2026-10-20T08:40:15.305Z",
       "updatedAt": "2026-10-20T08:40:15.305Z"
+    },
+    {
+      "id": "6cf890bc-767c-4e35-bb3c-73516a802bd5",
+      "title": "公眾建築物",
+      "description": "建築技術規則",
+      "category": "law",
+      "src": "/memory-gallery/assets/6cf890bc-767c-4e35-bb3c-73516a802bd5.webp",
+      "thumbnailSrc": "/memory-gallery/assets/6cf890bc-767c-4e35-bb3c-73516a802bd5-thumb.webp",
+      "width": 1055,
+      "height": 1491,
+      "createdAt": "2026-10-22T01:59:14.068Z",
+      "updatedAt": "2026-10-22T02:19:59.423Z"
+    },
+    {
+      "id": "7037d1d0-e2df-4739-be07-ee658ad432a3",
+      "title": "昇降機設置整理",
+      "description": "建築技術規則",
+      "category": "law",
+      "src": "/memory-gallery/assets/7037d1d0-e2df-4739-be07-ee658ad432a3.webp",
+      "thumbnailSrc": "/memory-gallery/assets/7037d1d0-e2df-4739-be07-ee658ad432a3-thumb.webp",
+      "width": 1055,
+      "height": 1491,
+      "createdAt": "2026-10-22T01:59:29.150Z",
+      "updatedAt": "2026-10-22T02:19:40.053Z"
+    },
+    {
+      "id": "26fe2ccb-9f84-4876-9b27-8b6626147d71",
+      "title": "採購法、都市計畫法、都市更新條例、國土計畫法、非都市使用管制規則有關期限整理",
+      "description": "",
+      "category": "law",
+      "src": "/memory-gallery/assets/26fe2ccb-9f84-4876-9b27-8b6626147d71.webp",
+      "thumbnailSrc": "/memory-gallery/assets/26fe2ccb-9f84-4876-9b27-8b6626147d71-thumb.webp",
+      "width": 1054,
+      "height": 1492,
+      "createdAt": "2026-10-22T02:00:08.148Z",
+      "updatedAt": "2026-10-22T02:00:08.148Z"
+    },
+    {
+      "id": "a6a60784-08d3-498d-8e8a-a5a1e909aaaa",
+      "title": "都市更新條例各種方式對應門檻",
+      "description": "都市更新條例",
+      "category": "law",
+      "src": "/memory-gallery/assets/a6a60784-08d3-498d-8e8a-a5a1e909aaaa.webp",
+      "thumbnailSrc": "/memory-gallery/assets/a6a60784-08d3-498d-8e8a-a5a1e909aaaa-thumb.webp",
+      "width": 1055,
+      "height": 1491,
+      "createdAt": "2026-10-22T02:00:34.160Z",
+      "updatedAt": "2026-10-22T02:19:48.364Z"
     }
   ]
 }
