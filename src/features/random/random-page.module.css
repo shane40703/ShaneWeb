@@ -1,5 +1,7 @@
 .randomPanel {
   width: min(100%, 1040px);
+  /* 側欄會吃掉部分視窗寬度，排版改依面板本身的寬度切換。 */
+  container-type: inline-size;
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 18px;
@@ -155,7 +157,7 @@
 }
 
 .categorySelect { max-width: 620px; margin-top: 10px; display: grid; gap: 7px; color: var(--muted); font-size: 11px; font-weight: 750; }
-.categorySelect select { min-height: 42px; padding: 0 13px; border: 1px solid var(--control-line); border-radius: 11px; background: var(--surface); color: var(--text); font: inherit; font-size: 13px; font-weight: 750; }
+.categorySelect select { width: 100%; min-width: 0; min-height: 42px; padding: 0 13px; border: 1px solid var(--control-line); border-radius: 11px; background: var(--surface); color: var(--text); font: inherit; font-size: 13px; font-weight: 750; }
 .categorySelect > small { color: var(--muted); font-size: 11px; font-weight: 500; }
 .categorySelect > small strong { color: var(--primary-strong); }
 
@@ -255,7 +257,8 @@
   cursor: not-allowed;
 }
 
-@media (max-width: 720px) {
+/* 兩欄時每欄要放得下五個題數按鈕（各約 76px），面板需約 1000px 以上。 */
+@container (max-width: 1020px) {
   .randomSteps {
     grid-template-columns: 1fr;
   }
@@ -263,10 +266,18 @@
   .randomSteps > section:nth-child(n + 2) {
     border-top: 1px solid var(--line);
   }
+}
+
+@container (max-width: 540px) {
   .countChoices {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+}
 
+@media (max-width: 720px) {
+  .countChoices {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 520px) {
