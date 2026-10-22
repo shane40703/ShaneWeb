@@ -970,11 +970,13 @@ test('mobile drawer links to separate paper and random quiz pages', async ({ pag
 
   await page.goto('/');
   await page.getByRole('button', { name: '開啟選單' }).click();
+  await page.getByRole('button', { name: '歷屆試題題練習', exact: true }).click();
   await expect(page.getByRole('link', { name: '隨機出題' })).toBeVisible();
   await page.getByRole('link', { name: '隨機出題' }).click();
   await expect(page).toHaveURL(/\/random$/);
   await expectCompactTopbarHeading(page, '隨機出題');
   await page.getByRole('button', { name: '開啟選單' }).click();
+  await page.getByRole('button', { name: '歷屆試題題練習', exact: true }).click();
   await page.getByRole('link', { name: '歷屆試題' }).click();
   await expect(page).toHaveURL(/\/papers$/);
   await expectCompactTopbarHeading(page, '歷屆試題');
@@ -983,10 +985,12 @@ test('mobile drawer links to separate paper and random quiz pages', async ({ pag
   ).toHaveCount(0);
   await page.getByRole('button', { name: '開啟選單' }).click();
   await page.getByRole('link', { name: '設定' }).click();
-  await expect(page).toHaveURL(/\/settings$/);
-  await expectCompactTopbarHeading(page, '設定');
-  await expect(page.getByText('閱讀設定', { exact: true })).toBeVisible();
-  await expect(page.getByText('介面配色設定', { exact: true })).toBeVisible();
+  await expect(page).toHaveURL(/\/papers$/);
+  const settingsDialog = page.getByRole('dialog', { name: '設定', exact: true });
+  await expect(settingsDialog).toBeVisible();
+  await expect(page.getByRole('dialog', { name: '主要功能', exact: true })).toHaveCount(0);
+  await expect(settingsDialog.locator('summary').filter({ hasText: '閱讀設定' })).toBeVisible();
+  await expect(settingsDialog.locator('summary').filter({ hasText: '介面配色設定' })).toBeVisible();
   const hasHorizontalOverflow = await page.evaluate(
     () => document.documentElement.scrollWidth > window.innerWidth,
   );

@@ -87,13 +87,20 @@
 }
 
 .navItem {
-  min-height: 32px;
+  width: 100%;
+  min-height: 40px;
   padding: 0 4px;
   display: flex;
   align-items: center;
   gap: 8px;
+  border: 0;
   border-radius: 6px;
   color: var(--sidebar-text);
+  background: transparent;
+  font-family: inherit;
+  line-height: 1.5;
+  text-align: left;
+  cursor: pointer;
   text-decoration: none;
   font-size: 15px;
   font-weight: 400;
@@ -110,7 +117,8 @@
   outline-offset: 1px;
 }
 
-.navItem[aria-current='page'] {
+.navItem[aria-current='page'],
+.navItem[data-active] {
   background: var(--sidebar-active);
   font-weight: 600;
 }
@@ -132,8 +140,21 @@
 
 .navLabel {
   overflow: hidden;
+  text-overflow: ellipsis;
   transition: opacity 150ms ease;
 }
+
+.navSectionTrigger { justify-content: flex-start; }
+.navSectionTrigger[data-popup-open] { background: var(--sidebar-hover); }
+.navChevron { margin-left: auto; flex: 0 0 auto; color: var(--sidebar-muted); transition: transform 120ms ease; }
+.navSectionTrigger[aria-expanded='true'] .navChevron { transform: rotate(90deg); }
+.navPositioner { z-index: 160; outline: none; }
+.navPopup { width: 260px; max-width: calc(100vw - 24px); max-height: min(450px, var(--available-height)); overflow-y: auto; padding: 8px; border: 1px solid var(--sidebar-line); border-radius: 12px; background: var(--sidebar-surface); color: var(--sidebar-text); box-shadow: var(--shadow-lg); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans TC', sans-serif; outline: none; }
+.navPopupHeading { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 5px; padding: 0 2px 6px 8px; border-bottom: 1px solid var(--sidebar-line); }
+.navPopupHeading strong { font-size: 12px; font-weight: 650; color: var(--sidebar-muted); }
+.navPopupClose { width: 32px; height: 32px; padding: 0; display: grid; place-items: center; border: 0; border-radius: 7px; background: transparent; color: var(--sidebar-muted); cursor: pointer; }
+.navPopupClose:hover { background: var(--sidebar-hover); color: var(--sidebar-text); }
+.navPopupClose:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
 
 .workspace {
   min-width: 0;
@@ -374,6 +395,9 @@
     min-height: 44px;
     padding: 0 8px;
   }
+
+  .navPopup { width: var(--anchor-width); min-width: 220px; }
+  .navPopupClose { width: 40px; height: 40px; }
 
   .settingsDialog {
     padding: 10px;
