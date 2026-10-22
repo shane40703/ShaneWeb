@@ -2,6 +2,7 @@ export const MEMORY_GALLERY_CATEGORIES = [
   { id: 'law', label: '法規' },
   { id: 'construction', label: '構造' },
   { id: 'env', label: '環控' },
+  { id: 'structure', label: '結構' },
 ] as const;
 export type MemoryGalleryCategory = typeof MEMORY_GALLERY_CATEGORIES[number]['id'];
 export const MEMORY_GALLERY_MAX_FILE_BYTES = 8 * 1024 * 1024;
@@ -36,12 +37,12 @@ export function readMemoryGalleryMetadata(value: unknown) {
   const description = typeof input.description === 'string' ? input.description.trim() : '';
   if (!title || title.length > 100) throw new Error('請填寫 1–100 字的圖片標題。');
   if (description.length > 1000) throw new Error('圖片說明最多 1,000 字。');
-  if (!isMemoryGalleryCategory(input.category)) throw new Error('請選擇法規、構造或環控。');
+  if (!isMemoryGalleryCategory(input.category)) throw new Error('請選擇法規、構造、環控或結構。');
   return { title, description, category: input.category };
 }
 
-export function filterMemoryGalleryImages(items: MemoryGalleryImage[], category: MemoryGalleryCategory | 'all', search: string) {
+export function filterMemoryGalleryImages(items: MemoryGalleryImage[], category: MemoryGalleryCategory, search: string) {
   const query = search.trim().toLocaleLowerCase('zh-TW');
-  return items.filter(item => !item.archivedAt && (category === 'all' || item.category === category) &&
+  return items.filter(item => !item.archivedAt && item.category === category &&
     (!query || `${item.title}\n${item.description}`.toLocaleLowerCase('zh-TW').includes(query)));
 }

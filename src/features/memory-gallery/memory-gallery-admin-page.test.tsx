@@ -34,10 +34,11 @@ describe('memory gallery author interface', () => {
     expect(screen.queryByRole('form', { name: '上傳速記圖片' })).not.toBeInTheDocument();
   });
   it('uploads with a server-verified key, category and file, and never saves the key locally', async () => {
-    fetchMock.mockResolvedValueOnce(result({ ok: true })).mockResolvedValueOnce(result({ item }));
+    fetchMock.mockResolvedValueOnce(result({ ok: true })).mockResolvedValueOnce(result({ item: { ...item, title: '分類整理', category: 'structure' } }));
     render(<MemoryGalleryAdminPage initialItems={[]} editingAvailable />);
     await unlock();
-    fireEvent.change(screen.getByLabelText('分類'), { target: { value: 'construction' } });
+    expect(screen.getByRole('option', { name: '結構' })).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText('分類'), { target: { value: 'structure' } });
     fireEvent.change(screen.getByLabelText(/整理圖片/), { target: { files: [new File(['pixels'], '分類整理.png', { type: 'image/png' })] } });
     expect(screen.getByRole('textbox', { name: '圖片標題' })).toHaveValue('分類整理');
     fireEvent.click(screen.getByRole('button', { name: '上傳並儲存圖片' }));
@@ -45,9 +46,9 @@ describe('memory gallery author interface', () => {
     const [url, init] = fetchMock.mock.calls[1];
     expect(url).toBe('/api/admin/memory-gallery');
     expect(init.headers['X-Author-Key']).toBe('test-key');
-    expect(JSON.parse(init.body)).toMatchObject({ title: '分類整理', category: 'construction', dataUrl: expect.stringContaining('data:image/png;base64,') });
+    expect(JSON.parse(init.body)).toMatchObject({ title: '分類整理', category: 'structure', dataUrl: expect.stringContaining('data:image/png;base64,') });
     expect(await screen.findByRole('status')).toHaveTextContent('commit／push');
-    expect(screen.getByRole('button', { name: '編輯 法規整理' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '編輯 分類整理' })).toBeInTheDocument();
     expect(JSON.stringify(window.localStorage)).not.toContain('test-key');
   });
   it('rejects unsupported files before any upload request', async () => {
@@ -59,16 +60,16 @@ describe('memory gallery author interface', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
   it('edits category and title without reuploading an image, and locking clears the key', async () => {
-    fetchMock.mockResolvedValueOnce(result({ ok: true })).mockResolvedValueOnce(result({ item: { ...item, title: '更新', category: 'env' } }));
+    fetchMock.mockResolvedValueOnce(result({ ok: true })).mockResolvedValueOnce(result({ item: { ...item, title: '更新', category: 'structure' } }));
     render(<MemoryGalleryAdminPage initialItems={[item]} editingAvailable />);
     await unlock();
     fireEvent.click(screen.getByRole('button', { name: '編輯 法規整理' }));
-    fireEvent.change(screen.getByLabelText('分類'), { target: { value: 'env' } });
+    fireEvent.change(screen.getByLabelText('分類'), { target: { value: 'structure' } });
     fireEvent.change(screen.getByLabelText('圖片標題'), { target: { value: '更新' } });
     fireEvent.click(screen.getByRole('button', { name: '儲存圖片資料' }));
     await screen.findByRole('status');
     expect(fetchMock.mock.calls[1][1].method).toBe('PATCH');
-    expect(JSON.parse(fetchMock.mock.calls[1][1].body)).toEqual({ id: item.id, title: '更新', description: '', category: 'env' });
+    expect(JSON.parse(fetchMock.mock.calls[1][1].body)).toEqual({ id: item.id, title: '更新', description: '', category: 'structure' });
     fireEvent.click(screen.getByRole('button', { name: '鎖定後台' }));
     expect(screen.getByLabelText('管理者金鑰（AUTHOR_EDIT_KEY）')).toHaveValue('');
   });

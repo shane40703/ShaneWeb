@@ -3,19 +3,21 @@ import { readFile } from 'node:fs/promises';
 import sharp from 'sharp';
 import type { MemoryGalleryImage } from '../src/lib/memory-gallery';
 
-const items: MemoryGalleryImage[] = ['law', 'construction', 'env'].map((category, index) => {
+const items: MemoryGalleryImage[] = ['law', 'construction', 'env', 'structure'].map((category, index) => {
   const id = `00000000-0000-4000-8000-${String(index + 1).padStart(12, '0')}`;
-  return { id, title: ['法規整理測試圖', '構造整理測試圖', '環控整理測試圖'][index], description: ['防火避難', '鋼筋接續', '空氣線圖'][index],
+  return { id, title: ['法規整理測試圖', '構造整理測試圖', '環控整理測試圖', '結構整理測試圖'][index], description: ['防火避難', '鋼筋接續', '空氣線圖', '梁柱受力'][index],
     category: category as MemoryGalleryImage['category'], src: `/memory-gallery/assets/${id}.webp`, thumbnailSrc: `/memory-gallery/assets/${id}-thumb.webp`,
-    width: 700, height: 900, createdAt: '2026-10-20T00:00:00Z', updatedAt: '2026-10-20T00:00:00Z' };
+    width: index === 3 ? 900 : 700, height: index === 3 ? 450 : 900, createdAt: '2026-10-20T00:00:00Z', updatedAt: '2026-10-20T00:00:00Z' };
 });
-async function fixtureImage() {
-  return sharp(Buffer.from('<svg width="700" height="900" xmlns="http://www.w3.org/2000/svg"><rect width="700" height="900" fill="#edf3ff"/><rect x="55" y="70" width="590" height="100" rx="12" fill="#b5cbf8"/><path d="M65 240H630M65 320H630M65 400H630M65 480H630M65 560H630" stroke="#879fc4" stroke-width="8"/></svg>')).png().toBuffer();
+async function fixtureImage(width = 700, height = 900) {
+  return sharp(Buffer.from(`<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg"><rect width="${width}" height="${height}" fill="#edf3ff"/><rect x="55" y="70" width="590" height="100" rx="12" fill="#b5cbf8"/><path d="M65 240H630M65 320H630M65 400H630M65 480H630M65 560H630" stroke="#879fc4" stroke-width="8"/></svg>`)).png().toBuffer();
 }
 async function routeImages(page: Page) {
   const image = await fixtureImage();
-  await page.route('**/memory-gallery/assets/**', route => route.fulfill({ contentType: 'image/png', body: image }));
-  await page.route('**/_next/image?*', route => route.fulfill({ contentType: 'image/png', body: image }));
+  const landscape = await fixtureImage(900, 450);
+  for (const pattern of ['**/memory-gallery/assets/**', '**/_next/image?*']) {
+    await page.route(pattern, route => route.fulfill({ contentType: 'image/png', body: route.request().url().includes(items[3].id) ? landscape : image }));
+  }
   return image;
 }
 async function enterGallery(page: Page) {
@@ -44,13 +46,20 @@ test('gallery is publicly accessible from navigation without exposing an upload 
 
 test('public gallery filters, searches and enlarges images on desktop and mobile', async ({ page }, testInfo) => {
   const gallery = await enterPopulatedGallery(page);
-  await expect(gallery.getByRole('article')).toHaveCount(3);
+  const categories = gallery.getByRole('group', { name: '圖片分類' });
+  await expect(categories.getByRole('button')).toHaveCount(4);
+  await expect(categories.getByRole('button', { name: /^全部/ })).toHaveCount(0);
+  await expect(categories.getByRole('button', { name: /^法規/ })).toHaveAttribute('aria-pressed', 'true');
+  await expect(gallery.getByRole('article')).toHaveCount(1);
   await page.screenshot({ path: testInfo.outputPath('gallery-populated.png'), fullPage: true });
   await gallery.getByRole('button', { name: /^構造/ }).click();
   await expect(gallery.getByRole('article')).toHaveCount(1);
   await expect(gallery.getByRole('heading', { name: '構造整理測試圖' })).toBeVisible();
-  await gallery.getByRole('button', { name: /^全部/ }).click();
+  await gallery.getByRole('button', { name: /^結構/ }).click();
+  await expect(gallery.getByRole('heading', { name: '結構整理測試圖' })).toBeVisible();
   await gallery.getByRole('searchbox').fill('空氣線圖');
+  await expect(gallery.getByRole('article')).toHaveCount(0);
+  await gallery.getByRole('button', { name: /^環控/ }).click();
   await expect(gallery.getByRole('article')).toHaveCount(1);
   await gallery.getByRole('button', { name: '放大圖片 環控整理測試圖' }).click();
   const dialog = page.getByRole('dialog', { name: '放大檢視 環控整理測試圖' });
@@ -58,6 +67,30 @@ test('public gallery filters, searches and enlarges images on desktop and mobile
   await page.keyboard.press('Escape');
   await expect(dialog).toHaveCount(0);
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(page.viewportSize()!.width);
+});
+
+test('portrait and landscape previews fill the card width without padding or cropping', async ({ page }, testInfo) => {
+  const gallery = await enterPopulatedGallery(page);
+  for (const item of [items[0], items[3]]) {
+    await gallery.getByRole('button', { name: item.category === 'law' ? /^法規/ : /^結構/ }).click();
+    const image = gallery.getByRole('img', { name: item.title, exact: true });
+    await expect(image).toHaveAttribute('src', item.src);
+    await expect.poll(() => image.evaluate(node => (node as HTMLImageElement).naturalWidth)).toBe(item.width);
+    const size = await image.evaluate(node => {
+      const rect = node.getBoundingClientRect();
+      const frame = node.parentElement!.getBoundingClientRect();
+      return { width: rect.width, height: rect.height, frameWidth: frame.width, frameHeight: frame.height };
+    });
+    expect(Math.abs(size.width - size.frameWidth)).toBeLessThan(1);
+    expect(Math.abs(size.height - size.frameHeight)).toBeLessThan(1);
+    expect(Math.abs(size.height - size.width * item.height / item.width)).toBeLessThan(1);
+    await page.screenshot({ path: testInfo.outputPath(`gallery-full-width-${item.category}.png`), fullPage: true });
+    await gallery.getByRole('button', { name: `放大圖片 ${item.title}`, exact: true }).click();
+    const dialog = page.getByRole('dialog', { name: `放大檢視 ${item.title}` });
+    await expect(dialog.getByRole('slider')).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(dialog).toHaveCount(0);
+  }
 });
 
 test('gallery zoom controls stay accessible and block ordinary image saving', async ({ page }, testInfo) => {
@@ -172,7 +205,10 @@ test('admin uploads, edits and unlists with a key and clear deployment instructi
   await page.route('**/api/admin/memory-gallery', async route => {
     expect(route.request().headers()['x-author-key']).toBe('gallery-e2e-key');
     const body = route.request().postDataJSON();
-    if (route.request().method() === 'POST') expect(body.dataUrl).toMatch(/^data:image\/png;base64,/);
+    if (route.request().method() === 'POST') {
+      expect(body.dataUrl).toMatch(/^data:image\/png;base64,/);
+      expect(body.category).toBe('structure');
+    }
     if (route.request().method() === 'DELETE') return route.fulfill({ json: { ok: true } });
     current = { ...current, title: body.title, description: body.description, category: body.category };
     return route.fulfill({ json: { item: current } });
@@ -181,7 +217,7 @@ test('admin uploads, edits and unlists with a key and clear deployment instructi
   await expect(page.getByRole('form', { name: '上傳速記圖片' })).toHaveCount(0);
   await page.getByLabel('管理者金鑰（AUTHOR_EDIT_KEY）').fill('gallery-e2e-key');
   await page.getByRole('button', { name: '進入圖庫管理' }).click();
-  await page.getByLabel('分類', { exact: true }).selectOption('construction');
+  await page.getByLabel('分類', { exact: true }).selectOption('structure');
   await page.getByLabel(/整理圖片/).setInputFiles({ name: '新上傳測試圖.png', mimeType: 'image/png', buffer: image });
   await page.getByRole('button', { name: '上傳並儲存圖片' }).click();
   await expect(page.getByRole('button', { name: '編輯 新上傳測試圖' })).toBeVisible();

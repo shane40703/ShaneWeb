@@ -40,14 +40,15 @@ describe('local memory gallery store', () => {
   });
   it('serializes simultaneous uploads and retains every category', async () => {
     const { store } = await setup();
-    await Promise.all(['law', 'construction', 'env'].map(async category => store.upload(await uploadData(category))));
-    expect((await store.list()).map(item => item.category).sort()).toEqual(['construction', 'env', 'law']);
+    await Promise.all(['law', 'construction', 'env', 'structure'].map(async category => store.upload(await uploadData(category))));
+    expect((await store.list()).map(item => item.category).sort()).toEqual(['construction', 'env', 'law', 'structure']);
   });
   it('updates metadata without changing assets, and unlists without deleting the original', async () => {
     const { root, store } = await setup();
     const item = await store.upload(await uploadData());
-    const updated = await store.update(item.id, { title: '改為構造', description: '', category: 'construction', src: '../../attack' });
-    expect(updated).toMatchObject({ title: '改為構造', category: 'construction', src: item.src, thumbnailSrc: item.thumbnailSrc, createdAt: item.createdAt });
+    const updated = await store.update(item.id, { title: '改為結構', description: '', category: 'structure', src: '../../attack' });
+    expect(updated).toMatchObject({ title: '改為結構', category: 'structure', src: item.src, thumbnailSrc: item.thumbnailSrc, createdAt: item.createdAt });
+    expect(await createMemoryGalleryStore(root).list()).toEqual([updated]);
     await store.archive(item.id);
     expect(await store.list()).toEqual([]);
     expect((await readFile(path.join(root, 'public', item.src))).length).toBeGreaterThan(0);

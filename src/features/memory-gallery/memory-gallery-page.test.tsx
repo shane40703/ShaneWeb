@@ -8,7 +8,8 @@ const base: MemoryGalleryImage = { id: '00000000-0000-4000-8000-000000000001', t
   src: '/memory-gallery/assets/00000000-0000-4000-8000-000000000001.webp', thumbnailSrc: '/memory-gallery/assets/00000000-0000-4000-8000-000000000001-thumb.webp',
   width: 600, height: 900, createdAt: '2026-10-20T00:00:00Z', updatedAt: '2026-10-20T00:00:00Z' };
 const items: MemoryGalleryImage[] = [base, { ...base, id: '2', title: '混凝土構造', category: 'construction', description: '鋼筋接續' },
-  { ...base, id: '3', title: '空調系統', category: 'env', description: '空氣線圖' }];
+  { ...base, id: '3', title: '空調系統', category: 'env', description: '空氣線圖' },
+  { ...base, id: '4', title: '結構力學', category: 'structure', description: '梁柱受力' }];
 beforeEach(() => {
   vi.stubGlobal('ResizeObserver', class { observe() {} unobserve() {} disconnect() {} });
   vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockReturnValue({ width: 800, height: 600, left: 0, top: 0, right: 800, bottom: 600, x: 0, y: 0, toJSON() {} });
@@ -16,20 +17,46 @@ beforeEach(() => {
 afterEach(() => { cleanup(); vi.restoreAllMocks(); vi.unstubAllGlobals(); });
 
 describe('memory gallery browsing', () => {
-  it('filters by all three categories and searches image titles/descriptions', () => {
+  it('defaults to law, offers exactly four subjects without all, and searches only the selected subject', () => {
     render(<MemoryGalleryPage items={items} />);
-    expect(screen.getAllByRole('article')).toHaveLength(3);
+    const categories = within(screen.getByRole('group', { name: '圖片分類' }));
+    expect(categories.getAllByRole('button')).toHaveLength(4);
+    expect(categories.queryByRole('button', { name: /^全部/ })).not.toBeInTheDocument();
+    expect(categories.getByRole('button', { name: /^法規/ })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getAllByRole('article')).toHaveLength(1);
+    expect(screen.getByRole('heading', { name: '防火避難整理' })).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: /^構造/ }));
     expect(screen.getAllByRole('article')).toHaveLength(1);
     expect(screen.getByRole('heading', { name: '混凝土構造' })).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: /^全部/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^結構/ }));
+    expect(screen.getAllByRole('article')).toHaveLength(1);
+    expect(screen.getByRole('heading', { name: '結構力學' })).toBeInTheDocument();
+    fireEvent.change(screen.getByRole('searchbox'), { target: { value: '空氣線圖' } });
+    expect(screen.queryByRole('article')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /^環控/ }));
     fireEvent.change(screen.getByRole('searchbox'), { target: { value: '空氣線圖' } });
     expect(screen.getByRole('heading', { name: '空調系統' })).toBeInTheDocument();
     expect(screen.getAllByRole('article')).toHaveLength(1);
     fireEvent.change(screen.getByRole('searchbox'), { target: { value: 'not-found' } });
     expect(screen.getByText('找不到符合條件的圖片')).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: '清除篩選' }));
-    expect(screen.getAllByRole('article')).toHaveLength(3);
+    fireEvent.click(screen.getByRole('button', { name: '清除搜尋' }));
+    expect(screen.getAllByRole('article')).toHaveLength(1);
+    expect(categories.getByRole('button', { name: /^環控/ })).toHaveAttribute('aria-pressed', 'true');
+  });
+  it('explains an empty subject without showing another subject or an all-category reset', () => {
+    render(<MemoryGalleryPage items={[base]} />);
+    fireEvent.click(screen.getByRole('button', { name: /^結構/ }));
+    expect(screen.getByText('結構圖片準備中')).toBeInTheDocument();
+    expect(screen.queryByRole('article')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '清除搜尋' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^結構/ })).toHaveAttribute('aria-pressed', 'true');
+  });
+  it('uses the full-resolution image and intrinsic dimensions for uncropped full-width previews', () => {
+    render(<MemoryGalleryPage items={[base]} />);
+    const image = screen.getByRole('img', { name: base.title });
+    expect(image).toHaveAttribute('src', base.src);
+    expect(image).toHaveAttribute('width', String(base.width));
+    expect(image).toHaveAttribute('height', String(base.height));
   });
   it('opens the image lightbox, restores trigger focus, and never links to raw images', async () => {
     const user = userEvent.setup();
@@ -108,9 +135,11 @@ describe('memory gallery browsing', () => {
     expect(screen.getByRole('link', { name: '管理者上傳' })).toHaveAttribute('href', '/admin/memory-gallery');
   });
   it('hides archived images even if accidentally supplied to the client', () => {
-    expect(filterMemoryGalleryImages([{ ...base, archivedAt: '2026-10-20T01:00:00Z' }], 'all', '')).toEqual([]);
+    expect(filterMemoryGalleryImages([{ ...base, archivedAt: '2026-10-20T01:00:00Z' }], 'law', '')).toEqual([]);
     expect(readMemoryGalleryMetadata({ title: '  標題  ', description: ' 摘要 ', category: 'env', key: 'must-not-save' }))
       .toEqual({ title: '標題', description: '摘要', category: 'env' });
+    expect(readMemoryGalleryMetadata({ title: '結構力學', category: 'structure' })).toEqual({ title: '結構力學', description: '', category: 'structure' });
+    expect(() => readMemoryGalleryMetadata({ title: 'x', category: 'all' })).toThrow('請選擇');
     expect(() => readMemoryGalleryMetadata({ title: 'x'.repeat(101), category: 'law' })).toThrow('標題');
     expect(() => readMemoryGalleryMetadata({ title: 'x', description: 'x'.repeat(1001), category: 'law' })).toThrow('說明');
   });
