@@ -196,7 +196,7 @@ export async function generateDailyPaperPdf(paper: DailyPaper, assets: DailyPape
   draw('每日練習試題　參考答案', MARGIN, y, 16); y -= 32;
   draw(`科　目：${paper.subjectName}`, MARGIN, y);
   draw(`日期：${paper.date}`, WIDTH - MARGIN - 140, y); y -= 25;
-  draw('依本次每日題號及選項順序對照，非原試卷題號或原選項順序。', MARGIN, y, 10); y -= 20;
+  draw(paper.answerKeyNote ?? '依本次每日題號及選項順序對照，非原試卷題號或原選項順序。', MARGIN, y, 10); y -= 20;
   const columnWidth = (WIDTH - 2 * MARGIN) / 10;
   const rowHeight = 27;
   for (let start = 0; start < paper.questions.length; start += 10) {

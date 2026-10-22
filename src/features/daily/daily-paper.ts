@@ -15,6 +15,8 @@ export interface DailyPaper {
   mode: 'normal' | 'adventure';
   questions: DailyPaperQuestion[];
   referenceAnswers: string[];
+  /** Replaces the answer page's order note; unset keeps the daily wording. */
+  answerKeyNote?: string;
 }
 
 export function createDailyPaper(session: DailyPracticeSession, questionById: ReadonlyMap<string, Question>): DailyPaper {

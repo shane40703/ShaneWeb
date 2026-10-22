@@ -12,10 +12,11 @@ async function openNavigation(page: Page) {
   return page.getByRole('navigation', { name: '主要功能', exact: true });
 }
 
-test('navigation starts with daily practice, keeps discussion independent, and returns home via the brand', async ({ page }, testInfo) => {
+test('navigation starts with the new daily practice, keeps discussion independent, and returns home via the brand', async ({ page }, testInfo) => {
   await page.goto('/');
   const nav = await openNavigation(page);
-  await expect(nav.locator(':scope > a').first()).toHaveText('每日練習');
+  await expect(nav.locator(':scope > a').first()).toHaveText('每日練習（新版）');
+  await expect(nav.locator(':scope > a').nth(1)).toHaveText('每日練習');
   await expect(nav.getByRole('link', { name: '首頁', exact: true })).toHaveCount(0);
   await expect(nav.getByRole('button')).toHaveCount(3);
   await expect(nav.getByRole('link', { name: '詳解與討論', exact: true })).toBeVisible();
