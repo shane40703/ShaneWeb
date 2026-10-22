@@ -53,6 +53,7 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: 8px;
+  container-type: inline-size;
 }
 
 .law {
@@ -139,6 +140,11 @@ a.law:focus-visible {
 
 @media (max-width: 560px) {
   .hero { padding: 20px; }
+}
+
+/* A three-column row needs about 620px, so narrower lists (phones, or tablets beside the
+   sidebar) put the ratio under the name instead of pushing the link icon off the row. */
+@container (max-width: 640px) {
   .law {
     grid-template-columns: minmax(0, 1fr) auto;
     gap: 10px 14px;

@@ -6,6 +6,7 @@ import {
   IconFileText, IconFlag, IconHistory, IconMessages, IconNotebook, IconPhoto,
   IconRepeat, IconScale, IconSettings, IconSparkles, IconTargetArrow, IconX,
 } from '@tabler/icons-react';
+import { resourcePages, resourcesHub } from '@/features/resources/resource-pages';
 import styles from './app-shell.module.css';
 
 interface NavigationLinkItem { href: string; label: string; icon: typeof IconFileText }
@@ -13,6 +14,7 @@ interface NavigationSectionItem { id: string; label: string; icon: typeof IconFi
 const primaryNavigation: readonly (NavigationLinkItem | NavigationSectionItem)[] = [
   { href: '/practice', label: '每日練習（新版）', icon: IconCalendarCheck },
   { href: '/exams', label: '歷屆試題（新版）', icon: IconBooks },
+  { href: resourcesHub.href, label: resourcesHub.label, icon: resourcesHub.icon },
   { href: '/daily', label: '每日練習', icon: IconTargetArrow },
   { id: 'practice', label: '歷屆試題題練習', icon: IconFileText, items: [
     { href: '/papers', label: '歷屆試題', icon: IconFileText },
@@ -37,6 +39,9 @@ const utilityNavigation: readonly NavigationLinkItem[] = [
   { href: '/report', label: '問題回報', icon: IconFlag },
 ];
 const navigationLinks = [...primaryNavigation.flatMap(item => 'items' in item ? item.items : [item]), ...utilityNavigation];
+// Resource pages open from their hub instead of the sidebar but still title the topbar;
+// listed first so they win over the hub's shorter /resources prefix.
+const titledPages = [...resourcePages, ...navigationLinks];
 
 function isActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
@@ -46,7 +51,7 @@ export function navigationPageTitle(pathname: string) {
   if (pathname === '/') return '首頁';
   if (pathname.startsWith('/questions/')) return '作答頁';
   const path = pathname === '/appearance' ? '/settings' : pathname;
-  return navigationLinks.find(item => isActive(path, item.href))?.label ?? '建築師考試';
+  return titledPages.find(item => isActive(path, item.href))?.label ?? '建築師考試';
 }
 
 interface NavigationProps {
@@ -54,6 +59,13 @@ interface NavigationProps {
   onNavigate?: () => void;
   onOpenSettings?: () => void;
   inDrawer?: boolean;
+}
+
+// Keeps a trailing note such as （新版） in one piece, so a label too long for the sidebar
+// wraps before the note instead of cutting it off.
+export function NavigationLabel({ label }: { label: string }) {
+  const note = /（[^（）]+）$/.exec(label)?.[0];
+  return note ? <>{label.slice(0, -note.length)}<span className={styles.navLabelNote}>{note}</span></> : <>{label}</>;
 }
 
 function NavigationLink({ item, pathname, onNavigate, onOpenSettings, linkRef }: NavigationProps & { item: NavigationLinkItem; linkRef?: Ref<HTMLAnchorElement> }) {
@@ -64,7 +76,7 @@ function NavigationLink({ item, pathname, onNavigate, onOpenSettings, linkRef }:
       onNavigate?.();
     }}>
     <span className={styles.navSymbol} aria-hidden="true"><item.icon size={20} stroke={1.9} /></span>
-    <span className={styles.navLabel}>{item.label}</span>
+    <span className={styles.navLabel}><NavigationLabel label={item.label} /></span>
   </Link>;
 }
 

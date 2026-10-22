@@ -1,0 +1,123 @@
+.header {
+  min-width: 0;
+  margin-bottom: 18px;
+  display: grid;
+  /* Keeps the switcher from widening the column past the content edge on narrow phones. */
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+}
+
+.bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.sectionNav {
+  min-width: 0;
+  max-width: 100%;
+  padding: 4px;
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  scrollbar-width: none;
+}
+
+.sectionNav a {
+  min-height: 38px;
+  padding: 0 14px;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border-radius: 8px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color 150ms ease, color 150ms ease;
+}
+
+.sectionNav a:hover {
+  color: var(--primary-strong);
+}
+
+.sectionNav a[aria-current='page'] {
+  background: var(--primary-solid);
+  color: var(--on-primary);
+}
+
+/* Inset so the scrollable switcher cannot clip the ring; the current link's solid fill
+   needs a light ring instead. */
+.sectionNav a:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: -2px;
+}
+
+.sectionNav a[aria-current='page']:focus-visible {
+  outline-color: var(--on-primary);
+  outline-offset: -4px;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* An action may render nothing (the upload link on the public site). */
+.actions:empty {
+  display: none;
+}
+
+/* Buttons rendered as links (e.g. 管理者上傳) should not pick up the link underline. */
+.actions a {
+  text-decoration: none;
+}
+
+.lead {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+.lead strong {
+  color: var(--text);
+  font-weight: 750;
+}
+
+@media (max-width: 560px) {
+  .sectionNav {
+    width: 100%;
+  }
+
+  .sectionNav a {
+    flex: 1 0 auto;
+    padding-inline: 9px;
+  }
+
+  .sectionNav svg {
+    display: none;
+  }
+}
+
+@media (max-width: 359.98px) {
+  .sectionNav a {
+    padding-inline: 7px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sectionNav a {
+    transition-duration: 0.01ms;
+  }
+}

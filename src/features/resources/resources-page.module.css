@@ -1,0 +1,485 @@
+.hub {
+  min-width: 0;
+  display: grid;
+  gap: 18px;
+  container-type: inline-size;
+}
+
+.intro {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 24px;
+}
+
+.intro p {
+  margin: 0;
+}
+
+.introText {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+.scope {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.scope span {
+  padding: 4px 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.scope strong {
+  color: var(--text);
+  font-weight: 850;
+}
+
+.cards {
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 18px;
+  list-style: none;
+}
+
+.cards > li {
+  min-width: 0;
+  display: flex;
+}
+
+.card {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  padding: 22px;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 18px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  border-color: color-mix(in srgb, var(--primary) 45%, var(--line));
+  box-shadow: var(--shadow-md);
+}
+
+.step {
+  position: absolute;
+  top: 20px;
+  right: 22px;
+  color: var(--line-strong);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.cardHeader {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 4px 14px;
+}
+
+.cardIcon {
+  width: 48px;
+  height: 48px;
+  grid-row: span 2;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+
+/* Only the title row meets the step number, so only it keeps clear of it; the summary
+   keeps the full width and the three cards' shortcuts stay level. */
+.cardHeader h2 {
+  margin: 0;
+  padding-right: 32px;
+  font-size: 19px;
+  line-height: 1.4;
+}
+
+.cardHeader p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.cardLink {
+  color: inherit;
+  text-decoration: none;
+  outline: none;
+}
+
+/* Stretched over the whole card; the quick links in the body sit above it. */
+.cardLink::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 20px;
+}
+
+.cardLink:focus-visible::after {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+
+.cardBody {
+  min-width: 0;
+  display: grid;
+  align-content: start;
+  gap: 10px;
+}
+
+/* Shortcuts, and the unlinked 準備中 items beside them, sit above the stretched card link,
+   so a click on an empty subject does not open another one. */
+.cardBody a,
+.pending,
+.categoryPending {
+  position: relative;
+  z-index: 1;
+}
+
+.pending,
+.categoryPending {
+  cursor: default;
+}
+
+.cardBody a:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.quickLabel {
+  margin: 0;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.quickEmpty {
+  margin: 0;
+  padding: 14px;
+  border: 1px dashed var(--line);
+  border-radius: 12px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.cardFooter {
+  padding-top: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.cardAction {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--primary-strong);
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.cardAction svg {
+  transition: transform 180ms ease;
+}
+
+.card:hover .cardAction svg {
+  transform: translateX(3px);
+}
+
+.subjectLinks {
+  display: grid;
+  gap: 6px;
+}
+
+.subjectLink {
+  min-width: 0;
+  min-height: 48px;
+  padding: 6px 10px 6px 7px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-2);
+  color: var(--text);
+  text-decoration: none;
+  transition: border-color 150ms ease, background-color 150ms ease;
+}
+
+a.subjectLink:hover {
+  border-color: color-mix(in srgb, var(--primary) 45%, var(--line));
+  background: var(--primary-soft);
+}
+
+.subjectLink strong {
+  overflow: hidden;
+  font-size: 14px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.subjectLink small {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.subjectLink svg {
+  color: var(--primary);
+}
+
+.pending {
+  border-style: dashed;
+  color: var(--disabled-text);
+}
+
+.thumbnails {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.thumbnail {
+  aspect-ratio: 3 / 4;
+  display: block;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--image-surface);
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.thumbnail img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  object-position: top;
+  pointer-events: none;
+  -webkit-user-drag: none;
+  transition: transform 220ms ease;
+}
+
+.thumbnail:hover img {
+  transform: scale(1.04);
+}
+
+.categoryLinks {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.categoryLink,
+.categoryPending {
+  min-width: 0;
+  min-height: 48px;
+  padding: 6px 4px;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 1px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  font-size: 12px;
+  line-height: 1.35;
+  text-align: center;
+}
+
+.categoryLink strong,
+.categoryPending strong {
+  font-weight: 800;
+}
+
+.categoryLink span,
+.categoryPending span {
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.categoryLink {
+  background: var(--surface-2);
+  color: var(--text);
+  text-decoration: none;
+  transition: border-color 150ms ease, background-color 150ms ease;
+}
+
+.categoryLink span {
+  color: var(--primary-strong);
+}
+
+.categoryLink:hover {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+}
+
+.categoryPending {
+  border-style: dashed;
+  color: var(--disabled-text);
+}
+
+.lawList {
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 2px;
+  list-style: none;
+}
+
+.lawList a {
+  min-height: 40px;
+  padding: 6px 8px;
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 10px;
+  border-radius: 10px;
+  color: var(--text);
+  text-decoration: none;
+  transition: background-color 150ms ease;
+}
+
+.lawList a:hover {
+  background: var(--primary-soft);
+}
+
+.lawRank {
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border-radius: 7px;
+  background: var(--surface-3);
+  color: var(--text-soft);
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.lawList li:first-child .lawRank {
+  background: var(--primary-solid);
+  color: var(--on-primary);
+}
+
+/* Long names (e.g. 建築物無障礙設施設計規範) wrap rather than lose their ending. */
+.lawName {
+  font-size: 13px;
+  font-weight: 750;
+  line-height: 1.45;
+}
+
+.lawCount {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.lawList svg {
+  color: var(--primary);
+}
+
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Wide panels: the three steps side by side. Below this the subject names no longer fit
+   a third of the panel, so medium panels switch to one card per row. */
+@container (min-width: 940px) {
+  .cards {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* Medium panels: one card per row, shortcuts beside the title instead of below it. */
+@container (min-width: 600px) and (max-width: 939.98px) {
+  .card {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+    grid-template-rows: auto 1fr;
+    grid-template-areas:
+      'header body'
+      'footer body';
+    column-gap: 28px;
+  }
+
+  .cardHeader {
+    grid-area: header;
+  }
+
+  .cardBody {
+    grid-area: body;
+  }
+
+  .cardFooter {
+    grid-area: footer;
+    align-self: end;
+  }
+}
+
+@container (max-width: 599.98px) {
+  .card {
+    padding: 18px;
+    gap: 16px;
+  }
+
+  .lawList li:nth-child(n + 4) {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .cardAction svg,
+  .subjectLink,
+  .thumbnail img,
+  .categoryLink,
+  .lawList a {
+    transition-duration: 0.01ms;
+  }
+
+  .card:hover {
+    transform: none;
+  }
+}

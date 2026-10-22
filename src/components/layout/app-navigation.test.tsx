@@ -15,15 +15,16 @@ const sections = [
 ];
 
 describe('grouped app navigation', () => {
-  it('starts with the new daily practice and past exams, keeps discussion separate, and uses only the brand as the home link', () => {
+  it('starts with the new daily practice, past exams and resources hub, keeps discussion separate, and uses only the brand as the home link', () => {
     render(<SidebarContent pathname="/" />);
     const nav = screen.getByRole('navigation', { name: '主要功能' });
     expect(nav.firstElementChild).toHaveTextContent('每日練習（新版）');
     expect(nav.children[1]).toHaveTextContent(/^歷屆試題（新版）$/);
-    expect(nav.children[2]).toHaveTextContent(/^每日練習$/);
+    expect(nav.children[2]).toHaveTextContent(/^統計分析（新版）$/);
+    expect(nav.children[3]).toHaveTextContent(/^每日練習$/);
     expect(screen.queryByRole('link', { name: '首頁' })).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: '建築師考試首頁' })).toHaveAttribute('href', '/');
-    expect(within(nav).getAllByRole('link').map(link => link.getAttribute('href'))).toEqual(['/practice', '/exams', '/daily', '/community', '/settings', '/report']);
+    expect(within(nav).getAllByRole('link').map(link => link.getAttribute('href'))).toEqual(['/practice', '/exams', '/resources', '/daily', '/community', '/settings', '/report']);
     expect(within(nav).getAllByRole('button')).toHaveLength(3);
   });
 
@@ -68,6 +69,15 @@ describe('grouped app navigation', () => {
     await waitFor(() => expect(screen.queryByRole('group')).not.toBeInTheDocument());
   });
 
+  it('keeps the resources hub current on its pages and wraps its （新版） note as one piece', () => {
+    render(<SidebarContent pathname="/resources/laws" />);
+    const hub = screen.getByRole('link', { name: '統計分析（新版）' });
+    expect(hub).toHaveAttribute('href', '/resources');
+    expect(hub).toHaveAttribute('aria-current', 'page');
+    expect(within(hub).getByText('（新版）').tagName).toBe('SPAN');
+    expect(screen.getByRole('button', { name: sections[1].label })).not.toHaveAttribute('data-active');
+  });
+
   it('supports keyboard opening and treats question pages as part of paper practice', async () => {
     const user = userEvent.setup();
     render(<SidebarContent pathname="/questions/[subject]/[year]/[number]" />);
@@ -96,6 +106,7 @@ describe('grouped app navigation', () => {
   it.each([
     ['/', '首頁'], ['/practice', '每日練習（新版）'], ['/exams', '歷屆試題（新版）'], ['/daily', '每日練習'], ['/papers', '歷屆試題'], ['/random', '隨機出題'], ['/law-cloze', '法規克漏字'],
     ['/analysis', '考題分析'], ['/memory-gallery', '速記圖庫'], ['/laws', '法規資料庫'], ['/community', '詳解與討論'],
+    ['/resources', '統計分析（新版）'], ['/resources/analysis', '考題分析'], ['/resources/memory-gallery', '速記圖庫'], ['/resources/memory-gallery/[[...category]]', '速記圖庫'], ['/resources/laws', '法規資料庫'],
     ['/notes', '使用者筆記'], ['/difficult', '難題標記'], ['/wrong', '常錯題目'], ['/history', '已作答紀錄'],
     ['/settings', '設定'], ['/appearance', '設定'], ['/report', '問題回報'], ['/questions/law/114/01', '作答頁'], ['/unknown', '建築師考試'],
   ])('preserves the topbar title for %s', (pathname, title) => {

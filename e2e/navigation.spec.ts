@@ -7,18 +7,24 @@ const sections = [
 ];
 
 async function openNavigation(page: Page) {
-  const drawer = page.getByRole('button', { name: '開啟選單' });
-  if (await drawer.isVisible()) await drawer.click();
-  return page.getByRole('navigation', { name: '主要功能', exact: true });
+  const nav = page.getByRole('navigation', { name: '主要功能', exact: true });
+  // The phone drawer button can render before hydration, so retry until it opens.
+  await expect(async () => {
+    if (!(await nav.isVisible())) await page.getByRole('button', { name: '開啟選單' }).click({ timeout: 1000 });
+    await expect(nav).toBeVisible({ timeout: 1000 });
+  }).toPass();
+  return nav;
 }
 
-test('navigation starts with the new daily practice and past exams, keeps discussion independent, and returns home via the brand', async ({ page }, testInfo) => {
+test('navigation starts with the new daily practice, past exams and resources hub, keeps discussion independent, and returns home via the brand', async ({ page }, testInfo) => {
   await page.goto('/');
   const nav = await openNavigation(page);
   await expect(nav.locator(':scope > a').first()).toHaveText('每日練習（新版）');
   await expect(nav.locator(':scope > a').nth(1)).toHaveText('歷屆試題（新版）');
   await expect(nav.locator(':scope > a').nth(1)).toHaveAttribute('href', '/exams');
-  await expect(nav.locator(':scope > a').nth(2)).toHaveText('每日練習');
+  await expect(nav.locator(':scope > a').nth(2)).toHaveText('統計分析（新版）');
+  await expect(nav.locator(':scope > a').nth(2)).toHaveAttribute('href', '/resources');
+  await expect(nav.locator(':scope > a').nth(3)).toHaveText('每日練習');
   await expect(nav.getByRole('link', { name: '首頁', exact: true })).toHaveCount(0);
   await expect(nav.getByRole('button')).toHaveCount(3);
   await expect(nav.getByRole('link', { name: '詳解與討論', exact: true })).toBeVisible();

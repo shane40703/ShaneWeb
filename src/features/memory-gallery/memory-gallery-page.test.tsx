@@ -1,7 +1,8 @@
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { filterMemoryGalleryImages, readMemoryGalleryMetadata, type MemoryGalleryImage } from '@/lib/memory-gallery';
+import { MEMORY_GALLERY_CATEGORIES, filterMemoryGalleryImages, readMemoryGalleryMetadata, type MemoryGalleryImage } from '@/lib/memory-gallery';
+import { subjects } from '@/question-bank/catalog';
 import { MemoryGalleryPage } from './memory-gallery-page';
 
 const base: MemoryGalleryImage = { id: '00000000-0000-4000-8000-000000000001', title: '防火避難整理', description: '步行距離速記', category: 'law',
@@ -14,7 +15,7 @@ beforeEach(() => {
   vi.stubGlobal('ResizeObserver', class { observe() {} unobserve() {} disconnect() {} });
   vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockReturnValue({ width: 800, height: 600, left: 0, top: 0, right: 800, bottom: 600, x: 0, y: 0, toJSON() {} });
 });
-afterEach(() => { cleanup(); vi.restoreAllMocks(); vi.unstubAllGlobals(); });
+afterEach(() => { cleanup(); vi.restoreAllMocks(); vi.unstubAllGlobals(); vi.unstubAllEnvs(); });
 
 describe('memory gallery browsing', () => {
   it('defaults to law, offers exactly four subjects without all, and searches only the selected subject', () => {
@@ -142,5 +143,43 @@ describe('memory gallery browsing', () => {
     expect(() => readMemoryGalleryMetadata({ title: 'x', category: 'all' })).toThrow('請選擇');
     expect(() => readMemoryGalleryMetadata({ title: 'x'.repeat(101), category: 'law' })).toThrow('標題');
     expect(() => readMemoryGalleryMetadata({ title: 'x', description: 'x'.repeat(1001), category: 'law' })).toThrow('說明');
+  });
+});
+
+describe('memory gallery on the resources hub (新版)', () => {
+  const href = (category: string) => `/resources/memory-gallery/${category}`;
+  it('turns subjects into links to their own pages and shows the subject its page is for', () => {
+    render(<MemoryGalleryPage items={items} category="construction" categoryHref={href} />);
+    const categories = within(screen.getByRole('group', { name: '圖片分類' }));
+    expect(categories.queryAllByRole('button')).toHaveLength(0);
+    expect(categories.getAllByRole('link').map(link => link.getAttribute('href'))).toEqual(['law', 'env', 'construction', 'structure'].map(href));
+    expect(categories.getByRole('link', { name: /^構造/ })).toHaveAttribute('aria-current', 'page');
+    expect(categories.getByRole('link', { name: /^法規/ })).not.toHaveAttribute('aria-current');
+    expect(screen.getByRole('article')).toHaveAttribute('id', 'memory-2');
+    expect(screen.getByRole('heading', { name: '混凝土構造' })).toBeInTheDocument();
+  });
+  it('can leave its heading to the hub without skipping a heading level', () => {
+    render(<MemoryGalleryPage items={items} showHeader={false} category="law" categoryHref={href} />);
+    expect(screen.getByRole('region', { name: '速記圖庫' })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: '速記圖庫' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: '管理者上傳' })).not.toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 2, name: '防火避難整理' })).toBeInTheDocument();
+  });
+  it('keeps image titles one level below its own heading', () => {
+    render(<MemoryGalleryPage items={items} />);
+    expect(screen.getByRole('heading', { level: 2, name: '速記圖庫' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 3, name: '防火避難整理' })).toBeInTheDocument();
+  });
+  it('lists subjects in the subject catalog order', () => {
+    expect(MEMORY_GALLERY_CATEGORIES.map(category => [category.id, category.label])).toEqual(subjects.map(subject => [subject.id, subject.shortName]));
+    render(<MemoryGalleryPage items={items} />);
+    expect(within(screen.getByRole('group', { name: '圖片分類' })).getAllByRole('button').map(button => button.textContent))
+      .toEqual(['法規1', '環控1', '構造1', '結構1']);
+  });
+  it('hides the upload link on the production site, where uploading cannot work', () => {
+    vi.stubEnv('NODE_ENV', 'production');
+    render(<MemoryGalleryPage items={items} />);
+    expect(screen.queryByRole('link', { name: '管理者上傳' })).not.toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 2, name: '速記圖庫' })).toBeInTheDocument();
   });
 });

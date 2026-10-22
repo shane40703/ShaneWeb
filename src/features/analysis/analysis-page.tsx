@@ -140,7 +140,7 @@ export function AnalysisPage({ questions }: { questions: QuestionSummary[] }) {
     const nextYear = next.year ?? year;
     void router.replace(
       {
-        pathname: '/analysis',
+        pathname: router.pathname,
         query: {
           subject: next.subject ?? subjectId,
           year: String(nextYear),

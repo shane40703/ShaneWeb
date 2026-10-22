@@ -5,6 +5,7 @@ import { buildForecastRanking } from '@/features/analysis/detailed-trend-analysi
 import type { QuestionSummary } from '@/lib/types';
 
 const router = vi.hoisted(() => ({
+  pathname: '/analysis',
   query: {} as Record<string, string>,
   replace: vi.fn(),
   push: vi.fn(),
@@ -228,5 +229,36 @@ describe('AnalysisPage category quiz', () => {
     expect(ranking.find((item) => item.category === '近期升溫')?.momentum).toBeGreaterThan(0);
     expect(ranking.find((item) => item.category === '近期降溫')?.signal).toBe('近期降溫');
     expect(ranking.every((item) => item.score >= 0 && item.score <= 100)).toBe(true);
+  });
+});
+
+describe('AnalysisPage routing', () => {
+  beforeEach(() => {
+    router.query = { subject: 'law', year: '114' };
+    router.replace.mockReset();
+  });
+
+  afterEach(() => {
+    router.pathname = '/analysis';
+  });
+
+  it('keeps subject changes on the route it was opened from, such as the resources hub', () => {
+    router.pathname = '/resources/analysis';
+    render(
+      <AnalysisPage
+        questions={[
+          question('law-114-01', 1),
+          { ...question('env-114-01', 1), subject: 'env' },
+        ]}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /建築環境控制/ }));
+
+    expect(router.replace).toHaveBeenCalledWith(
+      { pathname: '/resources/analysis', query: { subject: 'env', year: '114' } },
+      undefined,
+      { shallow: true, scroll: false },
+    );
   });
 });

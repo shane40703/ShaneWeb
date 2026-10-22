@@ -1,7 +1,8 @@
+// Same order as the subject catalog, so every subject list on the site reads alike.
 export const MEMORY_GALLERY_CATEGORIES = [
   { id: 'law', label: '法規' },
-  { id: 'construction', label: '構造' },
   { id: 'env', label: '環控' },
+  { id: 'construction', label: '構造' },
   { id: 'structure', label: '結構' },
 ] as const;
 export type MemoryGalleryCategory = typeof MEMORY_GALLERY_CATEGORIES[number]['id'];
@@ -26,6 +27,11 @@ export function isMemoryGalleryCategory(value: unknown): value is MemoryGalleryC
   return MEMORY_GALLERY_CATEGORIES.some(category => category.id === value);
 }
 
+/** Anchor of an image's card on the gallery page, so a link can land on that very image. */
+export function memoryGalleryCardId(id: string) {
+  return `memory-${id}`;
+}
+
 export function memoryGalleryCategoryLabel(category: MemoryGalleryCategory) {
   return MEMORY_GALLERY_CATEGORIES.find(item => item.id === category)!.label;
 }
@@ -37,7 +43,7 @@ export function readMemoryGalleryMetadata(value: unknown) {
   const description = typeof input.description === 'string' ? input.description.trim() : '';
   if (!title || title.length > 100) throw new Error('請填寫 1–100 字的圖片標題。');
   if (description.length > 1000) throw new Error('圖片說明最多 1,000 字。');
-  if (!isMemoryGalleryCategory(input.category)) throw new Error('請選擇法規、構造、環控或結構。');
+  if (!isMemoryGalleryCategory(input.category)) throw new Error('請選擇法規、環控、構造或結構。');
   return { title, description, category: input.category };
 }
 

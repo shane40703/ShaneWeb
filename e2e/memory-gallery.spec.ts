@@ -22,8 +22,12 @@ async function routeImages(page: Page) {
 }
 async function enterGallery(page: Page) {
   await page.goto('/');
-  const menu = page.getByRole('button', { name: '開啟選單' });
-  if (await menu.isVisible()) await menu.click();
+  const nav = page.getByRole('navigation', { name: '主要功能', exact: true });
+  // The phone drawer button can render before hydration, so retry until it opens.
+  await expect(async () => {
+    if (!(await nav.isVisible())) await page.getByRole('button', { name: '開啟選單' }).click({ timeout: 1000 });
+    await expect(nav).toBeVisible({ timeout: 1000 });
+  }).toPass();
   await page.getByRole('button', { name: '歷屆試題資料集成', exact: true }).click();
   await page.getByRole('link', { name: '速記圖庫', exact: true }).click();
   await expect(page.getByRole('dialog', { name: '主要功能', exact: true })).toHaveCount(0);

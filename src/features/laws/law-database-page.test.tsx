@@ -22,6 +22,19 @@ describe('LawDatabasePage', () => {
     expect(screen.getByText('100.0%')).toBeInTheDocument();
   });
 
+  it('can leave its hero to the resources hub while keeping the region name', () => {
+    render(
+      <LawDatabasePage
+        laws={[{ name: '建築法', questionCount: 12, linkable: true }]}
+        showHeader={false}
+      />,
+    );
+
+    expect(screen.getByRole('region', { name: '法規資料庫' })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: '法規資料庫' })).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /建築法/ })).toBeInTheDocument();
+  });
+
   it('does not link unknown or repealed classifications', () => {
     render(
       <LawDatabasePage
