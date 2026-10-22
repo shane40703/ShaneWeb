@@ -1,4 +1,5 @@
 import data from './bank.json';
+import type { ClozeRoundProgress } from './cloze-progress';
 
 export interface ClozeBlank {
   answer: string;
@@ -24,7 +25,7 @@ export interface ClozeQuestion {
   evidenceKind?: 'topic' | 'extension';
 }
 export const clozeBank: Omit<typeof data, 'questions'> & { questions: ClozeQuestion[] } = { ...data, questions: data.questions as ClozeQuestion[] };
-export const CLOZE_STORAGE_KEY = 'shaneweb:law-cloze';
+export { CLOZE_STORAGE_KEY } from './cloze-progress';
 export const CLOZE_COUNTS = [5, 10, 15, 20, 25, 30] as const;
 export function getClozeCategories(lawId = '全部') {
   return [...new Set(data.questions.filter((q) => lawId === '全部' || q.lawId === lawId).map((q) => q.category))];
@@ -154,6 +155,23 @@ export function revealClozeAnswer(session: ClozeSession): ClozeSession {
   if (session.submitted || session.revealed.includes(id)) return session;
   // Preserve drafts, but never fabricate correct answers or graded results.
   return { ...session, revealed: [...session.revealed, id] };
+}
+
+export function summarizeClozeRound(session: ClozeSession): ClozeRoundProgress {
+  const graded = Object.entries(session.results).map(([id, answers]) => gradeCloze(clozeBank.questions.find((q) => q.id === id)!, answers));
+  const resolved = session.submitted || session.revealed.includes(session.order[session.index]);
+  return {
+    total: session.order.length,
+    submitted: graded.length,
+    correct: graded.filter((result) => result.every(Boolean)).length,
+    revealed: session.revealed.length,
+    complete: session.index === session.order.length - 1 && resolved,
+  };
+}
+
+// Saved with the figures the practice hub shows, so the hub never loads this bank.
+export function serializeClozeSession(session: ClozeSession) {
+  return JSON.stringify({ ...session, progress: summarizeClozeRound(session) });
 }
 
 export function parseClozeSession(raw: string | null): ClozeSession | null {

@@ -1,6 +1,7 @@
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CLOZE_STORAGE_KEY, clozeBank, createClozeSession, parseClozeSession } from './cloze';
+import { parseClozeRoundProgress } from './cloze-progress';
 import { LawClozePage } from './law-cloze-page';
 
 vi.mock('@/state/app-state', () => ({ useAppState: () => ({ reportPersistence: vi.fn() }) }));
@@ -87,6 +88,25 @@ describe('LawClozePage', () => {
     fireEvent.click(screen.getByRole('button', { name: '下一題' }));
     expect(screen.getAllByRole('textbox').every((element) => !(element as HTMLInputElement).value)).toBe(true);
     expect(screen.queryByText('完整條文・第 41 條')).not.toBeInTheDocument();
+  });
+
+  it('saves the figures the practice hub shows with the round', async () => {
+    render(<LawClozePage />);
+    const inputs = await screen.findAllByRole('textbox');
+    ['1/5', '1/8', '75'].forEach((value, i) => fireEvent.change(inputs[i], { target: { value } }));
+    fireEvent.click(screen.getByRole('button', { name: '提交答案' }));
+    await waitFor(() => expect(parseClozeRoundProgress(window.localStorage.getItem(CLOZE_STORAGE_KEY))).toEqual({ total: 10, submitted: 1, correct: 1, revealed: 0, complete: false }));
+  });
+
+  it('opens related past questions where the host page links them', async () => {
+    const evidence = clozeBank.questions.find((q) => q.id === 'daylight')!.evidence[0];
+    const name = `${evidence.year} 年・第 ${evidence.number} 題`;
+    const view = render(<LawClozePage />);
+    fireEvent.click(await screen.findByRole('button', { name: '直接看答案' }));
+    expect(screen.getByRole('link', { name, hidden: true })).toHaveAttribute('href', `/questions/law/${evidence.year}/${String(evidence.number).padStart(2, '0')}`);
+    view.unmount();
+    render(<LawClozePage examQuestionHref={(item) => `/exams?question=${item.id}`} />);
+    expect(await screen.findByRole('link', { name, hidden: true })).toHaveAttribute('href', `/exams?question=${evidence.id}`);
   });
 
   it('applies settings only on start and completes a short pool with a summary', async () => {

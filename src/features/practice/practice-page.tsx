@@ -10,6 +10,7 @@ import {
 import { IconLoader2 } from '@tabler/icons-react';
 import { useSubjectQuestions } from '@/lib/question-bank-client';
 import { readStoredValue, writeStoredValue } from '@/lib/storage';
+import { isSubjectId } from '@/lib/study';
 import type { SubjectId } from '@/lib/types';
 import { useClientReady } from '@/lib/use-client-ready';
 import { useAppState } from '@/state/app-state';
@@ -40,6 +41,7 @@ import {
   type PracticeSettings,
 } from './practice-session';
 import { readEntryTag, readReloadedDepth, writeEntryTag } from './practice-history';
+import { keepPracticeResult, readKeptPracticeResult } from './practice-result-memory';
 import { PracticeSetup } from './practice-setup';
 import styles from './practice-page.module.css';
 
@@ -186,6 +188,8 @@ export function PracticePage() {
       if (stored) {
         commitSession(stored);
         setSubject(stored.subject);
+        // Back from the hub: the result submitted before leaving is still there.
+        setResult(readKeptPracticeResult(stored));
       }
       setRestored(true);
     });
@@ -193,6 +197,11 @@ export function PracticePage() {
       active = false;
     };
   }, [commitSession, ready, restored]);
+
+  // The result outlives this page until a reload, so the hub can lead back to it.
+  useEffect(() => {
+    if (restored) keepPracticeResult(result);
+  }, [restored, result]);
 
   // Writes only when the set itself changed: not on clock ticks, and never
   // echoing back a copy that was just adopted from another tab.
@@ -314,13 +323,18 @@ export function PracticePage() {
     // Our own route changes already match the state; routeTo tags them.
     if (ownNavigations.current > 0) return;
     const current = sessionRef.current;
-    const { q, view } = router.query;
+    const { q, view, subject: chosen } = router.query;
     if (!current) {
       // No set, nothing to rewind. Never count here: an own replace whose
       // promise settled before this effect ran also arrives untagged.
       depth.current = 0;
-      if (q !== undefined || view !== undefined) void routeTo('replace', undefined, 0);
-      else writeEntryTag(null);
+      // The hub's subject shortcuts open the setup with that subject chosen.
+      if (isSubjectId(chosen)) void Promise.resolve().then(() => setSubject(chosen));
+      if (q !== undefined || view !== undefined || chosen !== undefined) {
+        void routeTo('replace', undefined, 0);
+      } else {
+        writeEntryTag(null);
+      }
       return;
     }
     const tag = readEntryTag();

@@ -10,8 +10,9 @@ import {
 import type { Question, SubjectId } from '@/lib/types';
 import { getSubject, years } from '@/question-bank/catalog';
 import { analysisCategoryCatalog } from '@/question-bank/schema';
+import { practiceQuizPage } from './practice-pages';
 
-export const PRACTICE_PATH = '/practice';
+export const PRACTICE_PATH = practiceQuizPage.href;
 export const PRACTICE_SESSION_STORAGE_KEY = 'shaneweb:practice-session';
 export const PRACTICE_COUNT_OPTIONS = [5, 10, 15, 20, 30, 50] as const;
 const MAX_PRACTICE_COUNT = PRACTICE_COUNT_OPTIONS[PRACTICE_COUNT_OPTIONS.length - 1];

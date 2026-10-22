@@ -471,6 +471,7 @@ interface BankCache {
   entries: Promise<QuestionEntry[]>;
   summaries?: Promise<QuestionSummary[]>;
   paperSummaries?: Promise<QuestionSummary[]>;
+  multipleChoice?: Promise<Question[]>;
 }
 
 const watchesQuestionBank = process.env.NODE_ENV === 'development';
@@ -553,6 +554,15 @@ export async function getPaperQuestionSummaries(): Promise<QuestionSummary[]> {
   const cache = await getBankCache();
   cache.paperSummaries ??= cache.entries.then(discoverQuestionSummaries);
   return cache.paperSummaries;
+}
+
+/** Every multiple-choice question, loaded once per bank version like the summaries. */
+export async function getMultipleChoiceQuestions(): Promise<Question[]> {
+  const cache = await getBankCache();
+  cache.multipleChoice ??= cache.entries.then((entries) =>
+    loadQuestions(entries.filter((entry) => entry.format === 'multiple-choice')),
+  );
+  return cache.multipleChoice;
 }
 
 export async function getQuestionStaticPaths() {

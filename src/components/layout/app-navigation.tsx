@@ -2,17 +2,18 @@ import Link from 'next/link';
 import { useRef, useState, type Ref } from 'react';
 import { Popover } from '@base-ui/react/popover';
 import {
-  IconBooks, IconBuildingSkyscraper, IconBulb, IconCalendarCheck, IconChartPie, IconChevronRight, IconDatabase,
+  IconBooks, IconBuildingSkyscraper, IconBulb, IconChartPie, IconChevronRight, IconDatabase,
   IconFileText, IconFlag, IconHistory, IconMessages, IconNotebook, IconPhoto,
   IconRepeat, IconScale, IconSettings, IconSparkles, IconTargetArrow, IconX,
 } from '@tabler/icons-react';
+import { practiceHub, practicePages } from '@/features/practice/practice-pages';
 import { resourcePages, resourcesHub } from '@/features/resources/resource-pages';
 import styles from './app-shell.module.css';
 
 interface NavigationLinkItem { href: string; label: string; icon: typeof IconFileText }
 interface NavigationSectionItem { id: string; label: string; icon: typeof IconFileText; items: readonly NavigationLinkItem[] }
 const primaryNavigation: readonly (NavigationLinkItem | NavigationSectionItem)[] = [
-  { href: '/practice', label: '每日練習（新版）', icon: IconCalendarCheck },
+  { href: practiceHub.href, label: practiceHub.label, icon: practiceHub.icon },
   { href: '/exams', label: '歷屆試題（新版）', icon: IconBooks },
   { href: resourcesHub.href, label: resourcesHub.label, icon: resourcesHub.icon },
   { href: '/daily', label: '每日練習', icon: IconTargetArrow },
@@ -39,9 +40,9 @@ const utilityNavigation: readonly NavigationLinkItem[] = [
   { href: '/report', label: '問題回報', icon: IconFlag },
 ];
 const navigationLinks = [...primaryNavigation.flatMap(item => 'items' in item ? item.items : [item]), ...utilityNavigation];
-// Resource pages open from their hub instead of the sidebar but still title the topbar;
-// listed first so they win over the hub's shorter /resources prefix.
-const titledPages = [...resourcePages, ...navigationLinks];
+// Hub pages (statistics and practice) open from their hub instead of the sidebar but still
+// title the topbar; listed first so they win over their hub's shorter prefix.
+const titledPages = [...resourcePages, ...practicePages, ...navigationLinks];
 
 function isActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);

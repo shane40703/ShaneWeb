@@ -12,6 +12,7 @@ import { ToastProvider } from '@/components/ui/ui';
 import type { Question, SubjectId } from '@/lib/types';
 import { PRACTICE_SESSION_STORAGE_KEY, type PracticeSession } from './practice-session';
 import { PracticePage } from './practice-page';
+import { keepPracticeResult } from './practice-result-memory';
 
 type RouteInput = string | { pathname: string; query?: Record<string, string | number> };
 
@@ -32,7 +33,7 @@ const router = vi.hoisted(() => {
     return (window.history.state as { key?: string } | null)?.key;
   }
   const api = {
-    snapshot: { asPath: '/practice', query: {} as Record<string, string> },
+    snapshot: { asPath: '/practice/quiz', query: {} as Record<string, string> },
     /** Set when Back/Forward leaves the page, where the real page would unmount. */
     left: false,
     show(url: string) {
@@ -79,7 +80,7 @@ const router = vi.hoisted(() => {
     replace: vi.fn(),
   };
   window.addEventListener('popstate', (event) => {
-    if (window.location.pathname !== '/practice') {
+    if (window.location.pathname !== '/practice/quiz') {
       api.left = true;
       return;
     }
@@ -101,7 +102,7 @@ vi.mock('next/router', async () => {
       const snapshot = useSyncExternalStore(router.subscribe, () => router.snapshot);
       return {
         ...snapshot,
-        pathname: '/practice',
+        pathname: '/practice/quiz',
         isReady: true,
         push: router.push,
         replace: router.replace,
@@ -189,6 +190,7 @@ vi.mock('@/lib/question-bank-client', () => ({
 beforeEach(() => {
   window.localStorage.clear();
   window.sessionStorage.clear();
+  keepPracticeResult(null);
   // The page the user came from: Back past the set should land here.
   window.history.pushState({ outside: true }, '', '/elsewhere');
   router.left = false;
@@ -222,9 +224,15 @@ function renderPage() {
   );
 }
 
-function renderAt(url = '/practice') {
+function renderAt(url = '/practice/quiz') {
   router.visit(url);
   return renderPage();
+}
+
+/** A full reload: the same entry under a new key, and the app's memory starts empty. */
+function reload() {
+  keepPracticeResult(null);
+  router.reload();
 }
 
 /** Back (negative) or Forward, with jsdom delivering popstate inside act. */
@@ -321,7 +329,7 @@ function writeFromOtherTab(value: PracticeSession | null) {
 describe('PracticePage setup', () => {
   it('starts from the daily defaults and keeps everything but the subject in the advanced options', async () => {
     renderAt();
-    const setup = await screen.findByRole('region', { name: '每日練習（新版）設定' });
+    const setup = await screen.findByRole('region', { name: '選擇題練習設定' });
     expect(within(setup).queryByText(/闖關/)).not.toBeInTheDocument();
     expect(within(setup).getAllByRole('radio')).toHaveLength(4);
     expect(screen.getByRole('radio', { name: /建築法規與實務/ })).toBeChecked();
@@ -428,9 +436,48 @@ describe('PracticePage setup', () => {
     expect(stored()).toBeNull();
     expect(router.push).not.toHaveBeenCalled();
     expect(router.replace).not.toHaveBeenCalled();
-    expect(
-      screen.getByRole('region', { name: '每日練習（新版）設定' }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: '選擇題練習設定' })).toBeInTheDocument();
+  });
+});
+
+describe('PracticePage from the hub', () => {
+  it('opens the setup with the subject picked on the hub, and drops it from the URL', async () => {
+    renderAt('/practice/quiz?subject=env');
+    await waitFor(() =>
+      expect(screen.getByRole('radio', { name: /建築環境控制/ })).toBeChecked(),
+    );
+    await waitFor(() => expect(router.snapshot.asPath).toBe('/practice/quiz'));
+    expect(screen.getByRole('radio', { name: /建築法規與實務/ })).not.toBeChecked();
+  });
+
+  it('keeps the set in progress when a subject arrives in the URL', async () => {
+    seed({ currentIndex: 2 });
+    renderAt('/practice/quiz?subject=env');
+    await screen.findByLabelText('第 3 題，共 5 題');
+    await waitFor(() => expect(router.snapshot.query).toEqual({ q: '3' }));
+    expect(stored()!.subject).toBe('law');
+  });
+
+  it('keeps a submitted result for a trip to the hub, until the set is answered again', async () => {
+    seed({ answers: allCorrect, currentIndex: 4 });
+    const view = renderAt('/practice/quiz?q=5');
+    await screen.findByLabelText('第 5 題，共 5 題');
+    submitFromFooter();
+    await screen.findByText('100% 正確率');
+    view.unmount();
+
+    // The hub's 看結果 link.
+    const back = renderAt('/practice/quiz?view=result');
+    expect(await screen.findByText('100% 正確率')).toBeInTheDocument();
+    back.unmount();
+
+    const again = renderAt('/practice/quiz?q=1');
+    await screen.findByLabelText('第 1 題，共 5 題');
+    chooseOption('選項 B');
+    again.unmount();
+    renderAt('/practice/quiz?view=result');
+    await waitFor(() => expect(router.snapshot.query).toEqual({ q: '1' }));
+    expect(screen.queryByText('100% 正確率')).not.toBeInTheDocument();
   });
 });
 
@@ -441,7 +488,7 @@ describe('PracticePage answering', () => {
     fireEvent.click(await screen.findByRole('button', { name: '線上作答' }));
     await screen.findByRole('region', { name: '題目與選項' });
     expect(router.replace).toHaveBeenLastCalledWith(
-      { pathname: '/practice', query: { q: 1 } },
+      { pathname: '/practice/quiz', query: { q: 1 } },
       undefined,
       { shallow: true, scroll: false },
     );
@@ -461,7 +508,7 @@ describe('PracticePage answering', () => {
 
   it('shows the verdict right after confirming, locks it, and lets questions be skipped and revisited', async () => {
     seed({ optionOrders: { 'law-114-01': [3, 2, 1, 0] } });
-    renderAt('/practice?q=1');
+    renderAt('/practice/quiz?q=1');
     await screen.findByRole('region', { name: '題目與選項' });
     const confirm = screen.getByRole('button', { name: '確認答案' });
     expect(confirm).toBeDisabled();
@@ -487,7 +534,7 @@ describe('PracticePage answering', () => {
     fireEvent.click(screen.getByRole('button', { name: /下一題/ }));
     await screen.findByLabelText('第 2 題，共 5 題');
     expect(router.push).toHaveBeenLastCalledWith(
-      { pathname: '/practice', query: { q: 2 } },
+      { pathname: '/practice/quiz', query: { q: 2 } },
       undefined,
       { shallow: true, scroll: false },
     );
@@ -508,14 +555,14 @@ describe('PracticePage answering', () => {
     ).toBeInTheDocument();
     expect(screen.getByRole('link', { name: '前往第 2 題（答錯）' })).toHaveAttribute(
       'href',
-      '/practice?q=2',
+      '/practice/quiz?q=2',
     );
     expect(stored()!.answers['law-113-02']).toEqual({ selected: 1, correct: false });
   });
 
   it('ignores the second click of a double-click anywhere on the page', async () => {
     seed({ answers: { 'law-114-01': { selected: 0, correct: true } } });
-    renderAt('/practice?q=1');
+    renderAt('/practice/quiz?q=1');
     await screen.findByLabelText('第 1 題，共 5 題');
     fireEvent.click(screen.getByRole('button', { name: /下一題/ }), { detail: 2 });
     expect(router.push).not.toHaveBeenCalled();
@@ -533,7 +580,7 @@ describe('PracticePage answering', () => {
   it('keeps struck-out options and difficult marks, and never saves answers to the shared records', async () => {
     const confirm = vi.spyOn(window, 'confirm').mockReturnValue(true);
     seed({});
-    const view = renderAt('/practice?q=1');
+    const view = renderAt('/practice/quiz?q=1');
     await screen.findByRole('region', { name: '題目與選項' });
     fireEvent.click(screen.getByRole('button', { name: '刪去選項 C' }));
     fireEvent.click(screen.getByRole('button', { name: '標記為難題' }));
@@ -546,7 +593,7 @@ describe('PracticePage answering', () => {
     expect(stored()!.eliminated).toEqual({ 'law-114-01': [2] });
 
     view.unmount();
-    router.reload();
+    reload();
     renderPage();
     await screen.findByLabelText('第 1 題，共 5 題');
     expect(screen.getByRole('button', { name: '恢復選項 C' })).toHaveAttribute(
@@ -569,7 +616,7 @@ describe('PracticePage answering', () => {
     const view = renderAt();
     await waitFor(() =>
       expect(router.replace).toHaveBeenCalledWith(
-        { pathname: '/practice', query: { q: 3 } },
+        { pathname: '/practice/quiz', query: { q: 3 } },
         undefined,
         { shallow: true, scroll: false },
       ),
@@ -577,23 +624,23 @@ describe('PracticePage answering', () => {
     await screen.findByLabelText('第 3 題，共 5 題');
     expect(screen.getByText('00:01:15')).toBeInTheDocument();
 
-    act(() => router.link('/practice?q=1'));
+    act(() => router.link('/practice/quiz?q=1'));
     await screen.findByLabelText('第 1 題，共 5 題');
     expect(within(questionRegion()).getByText('答對了')).toBeInTheDocument();
     view.unmount();
 
-    router.reload();
+    reload();
     renderPage();
     await screen.findByLabelText('第 1 題，共 5 題');
     expect(stored()!.currentIndex).toBe(0);
-    act(() => router.link('/practice?q=99'));
+    act(() => router.link('/practice/quiz?q=99'));
     await waitFor(() => expect(router.snapshot.query).toEqual({ q: '1' }));
   });
 
   it('runs the clock only while the question is open, without saving the set every second', async () => {
     vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] });
     seed({});
-    renderAt('/practice?q=1');
+    renderAt('/practice/quiz?q=1');
     await screen.findByRole('region', { name: '題目與選項' });
     const writes = vi.spyOn(Storage.prototype, 'setItem');
     act(() => vi.advanceTimersByTime(3000));
@@ -609,7 +656,7 @@ describe('PracticePage answering', () => {
   it('saves the running clock when the page is hidden, and stops it until the page is back', async () => {
     vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] });
     seed({});
-    renderAt('/practice?q=1');
+    renderAt('/practice/quiz?q=1');
     await screen.findByRole('region', { name: '題目與選項' });
     act(() => vi.advanceTimersByTime(4000));
     expect(stored()!.elapsedSeconds).toEqual({});
@@ -631,7 +678,7 @@ describe('PracticePage answering', () => {
   it('asks before abandoning a set with progress, then clears it', async () => {
     const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
     seed({ drafts: { 'law-114-01': 2 } });
-    renderAt('/practice?q=1');
+    renderAt('/practice/quiz?q=1');
     await screen.findByRole('region', { name: '題目與選項' });
     fireEvent.click(screen.getByRole('button', { name: /重新選科／設定/ }));
     expect(confirm).toHaveBeenCalledWith(
@@ -640,9 +687,9 @@ describe('PracticePage answering', () => {
     expect(stored()).not.toBeNull();
     confirm.mockReturnValue(true);
     fireEvent.click(screen.getByRole('button', { name: /重新選科／設定/ }));
-    await screen.findByRole('region', { name: '每日練習（新版）設定' });
+    await screen.findByRole('region', { name: '選擇題練習設定' });
     expect(stored()).toBeNull();
-    await waitFor(() => expect(router.snapshot.asPath).toBe('/practice'));
+    await waitFor(() => expect(router.snapshot.asPath).toBe('/practice/quiz'));
   });
 });
 
@@ -682,7 +729,7 @@ describe('PracticePage history', () => {
     await skipTo(3);
     await skipTo(4);
     fireEvent.click(screen.getByRole('button', { name: /重新選科／設定/ }));
-    await screen.findByRole('region', { name: '每日練習（新版）設定' });
+    await screen.findByRole('region', { name: '選擇題練習設定' });
     await settleHistory();
     expect(window.location.search).toBe('');
 
@@ -699,7 +746,7 @@ describe('PracticePage history', () => {
     submitFromSidebar();
     await screen.findByText('這次沒有作答任何題目');
     fireEvent.click(screen.getByRole('button', { name: /重新選科／抽題/ }));
-    await screen.findByRole('region', { name: '每日練習（新版）設定' });
+    await screen.findByRole('region', { name: '選擇題練習設定' });
     await settleHistory();
     await traverse(-1);
     expect(window.location.pathname).toBe('/elsewhere');
@@ -711,11 +758,11 @@ describe('PracticePage history', () => {
     await skipTo(2);
     await skipTo(3);
     cleanup();
-    router.reload();
+    reload();
     renderPage();
     await screen.findByLabelText('第 3 題，共 5 題');
     fireEvent.click(screen.getByRole('button', { name: /重新選科／設定/ }));
-    await screen.findByRole('region', { name: '每日練習（新版）設定' });
+    await screen.findByRole('region', { name: '選擇題練習設定' });
     await settleHistory();
     await traverse(-1);
     expect(window.location.pathname).toBe('/elsewhere');
@@ -764,7 +811,7 @@ describe('PracticePage history across tabs', () => {
     });
     await settleHistory();
     await screen.findByLabelText('第 1 題，共 4 題');
-    expect(window.location.pathname).toBe('/practice');
+    expect(window.location.pathname).toBe('/practice/quiz');
     expect(router.snapshot.query).toEqual({ q: '1' });
     await traverse(-1);
     expect(window.location.pathname).toBe('/elsewhere');
@@ -781,14 +828,14 @@ describe('PracticePage history across tabs', () => {
     }
     writeFromOtherTab(null);
     await settleHistory();
-    await screen.findByRole('region', { name: '每日練習（新版）設定' });
+    await screen.findByRole('region', { name: '選擇題練習設定' });
     writeFromOtherTab({
       ...makeSession({ id: 'next-set', subject: 'env', currentIndex: 0 }),
       questionIds: envQuestions.slice(0, 4).map((question) => question.id),
     });
     await settleHistory();
     await screen.findByLabelText('第 1 題，共 4 題');
-    expect(window.location.pathname).toBe('/practice');
+    expect(window.location.pathname).toBe('/practice/quiz');
     expect(router.left).toBe(false);
     await traverse(-1);
     expect(window.location.pathname).toBe('/elsewhere');
@@ -798,7 +845,7 @@ describe('PracticePage history across tabs', () => {
 describe('PracticePage with another tab', () => {
   it("takes another tab's answers for the same set but keeps its own question", async () => {
     const session = seed({});
-    renderAt('/practice?q=2');
+    renderAt('/practice/quiz?q=2');
     await screen.findByLabelText('第 2 題，共 5 題');
     const writes = vi.spyOn(Storage.prototype, 'setItem');
     writeFromOtherTab({
@@ -823,7 +870,7 @@ describe('PracticePage with another tab', () => {
   it('counts the time on a question once when two windows show it', async () => {
     vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] });
     const session = seed({});
-    renderAt('/practice?q=1');
+    renderAt('/practice/quiz?q=1');
     await screen.findByLabelText('第 1 題，共 5 題');
     act(() => vi.advanceTimersByTime(4000));
     // The other window, open alongside, saved 3 of those seconds itself.
@@ -836,7 +883,7 @@ describe('PracticePage with another tab', () => {
 
   it('drops a kept result once another tab answers the set again', async () => {
     const session = seed({ answers: allCorrect, currentIndex: 4 });
-    renderAt('/practice?q=5');
+    renderAt('/practice/quiz?q=5');
     await screen.findByLabelText('第 5 題，共 5 題');
     submitFromFooter();
     await screen.findByText('100% 正確率');
@@ -857,7 +904,7 @@ describe('PracticePage with another tab', () => {
 
   it("switches to another tab's new set and its subject, and to the setup when that tab clears it", async () => {
     seed({});
-    renderAt('/practice?q=3');
+    renderAt('/practice/quiz?q=3');
     await screen.findByLabelText('第 3 題，共 5 題');
     writeFromOtherTab(
       makeSession({
@@ -871,9 +918,9 @@ describe('PracticePage with another tab', () => {
     await waitFor(() => expect(router.snapshot.query).toEqual({ q: '2' }));
 
     writeFromOtherTab(null);
-    await screen.findByRole('region', { name: '每日練習（新版）設定' });
+    await screen.findByRole('region', { name: '選擇題練習設定' });
     expect(screen.getByRole('radio', { name: /建築環境控制/ })).toBeChecked();
-    await waitFor(() => expect(router.snapshot.asPath).toBe('/practice'));
+    await waitFor(() => expect(router.snapshot.asPath).toBe('/practice/quiz'));
   });
 });
 
@@ -889,7 +936,7 @@ describe('PracticePage result', () => {
       elapsedSeconds: { 'law-114-01': 20, 'law-113-02': 40 },
       currentIndex: 3,
     });
-    const view = renderAt('/practice?q=4');
+    const view = renderAt('/practice/quiz?q=4');
     await screen.findByLabelText('第 4 題，共 5 題');
     submitFromSidebar();
     expect(confirm).toHaveBeenCalledWith(
@@ -923,7 +970,7 @@ describe('PracticePage result', () => {
     ).toHaveLength(5);
 
     view.unmount();
-    router.reload();
+    reload();
     renderPage();
     await screen.findByLabelText('第 1 題，共 5 題');
     expect(router.snapshot.query).toEqual({ q: '1' });
@@ -933,7 +980,7 @@ describe('PracticePage result', () => {
 
   it('keeps the result through Back and Forward until the set is answered again', async () => {
     seed({ answers: allCorrect, currentIndex: 4 });
-    renderAt('/practice?q=5');
+    renderAt('/practice/quiz?q=5');
     await screen.findByLabelText('第 5 題，共 5 題');
     submitFromFooter();
     await screen.findByText('100% 正確率');
@@ -954,7 +1001,7 @@ describe('PracticePage result', () => {
   it('submits without asking once every question is answered, and can redo the same set', async () => {
     const confirm = vi.spyOn(window, 'confirm');
     seed({ answers: allCorrect, currentIndex: 4 });
-    renderAt('/practice?q=5');
+    renderAt('/practice/quiz?q=5');
     await screen.findByLabelText('第 5 題，共 5 題');
     submitFromFooter();
     expect(confirm).not.toHaveBeenCalled();
@@ -966,7 +1013,7 @@ describe('PracticePage result', () => {
     fireEvent.click(screen.getByRole('button', { name: /重做這組題目/ }));
     await screen.findByLabelText('第 1 題，共 5 題');
     expect(router.replace).toHaveBeenLastCalledWith(
-      { pathname: '/practice', query: { q: 1 } },
+      { pathname: '/practice/quiz', query: { q: 1 } },
       undefined,
       { shallow: true, scroll: false },
     );
@@ -976,19 +1023,19 @@ describe('PracticePage result', () => {
     );
     expect(screen.getByRole('button', { name: '確認答案' })).toBeDisabled();
 
-    act(() => router.link('/practice?view=result'));
+    act(() => router.link('/practice/quiz?view=result'));
     await waitFor(() => expect(router.snapshot.query).toEqual({ q: '1' }));
   });
 
   it('reloads a result URL into the blank set from its first question', async () => {
     seed({ answers: allCorrect, currentIndex: 4 });
-    const view = renderAt('/practice?q=5');
+    const view = renderAt('/practice/quiz?q=5');
     await screen.findByLabelText('第 5 題，共 5 題');
     submitFromFooter();
     await screen.findByText('100% 正確率');
     view.unmount();
 
-    router.reload();
+    reload();
     renderPage();
     await screen.findByLabelText('第 1 題，共 5 題');
     expect(router.snapshot.query).toEqual({ q: '1' });
@@ -996,7 +1043,7 @@ describe('PracticePage result', () => {
 
   it('shows the result at once, before the router has delivered its URL', async () => {
     seed({ answers: allCorrect, currentIndex: 4 });
-    renderAt('/practice?q=5');
+    renderAt('/practice/quiz?q=5');
     await screen.findByLabelText('第 5 題，共 5 題');
     // Next resolves a shallow push later; here the URL never changes at all.
     router.push.mockImplementation(async () => true);
@@ -1006,7 +1053,7 @@ describe('PracticePage result', () => {
       await Promise.resolve();
     });
     expect(screen.getByText('100% 正確率')).toBeInTheDocument();
-    act(() => router.link('/practice?view=result'));
+    act(() => router.link('/practice/quiz?view=result'));
     expect(await screen.findByText('100% 正確率')).toBeInTheDocument();
   });
 });

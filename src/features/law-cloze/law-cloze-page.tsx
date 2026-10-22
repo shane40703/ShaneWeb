@@ -6,10 +6,14 @@ import { Button } from '@/components/ui/ui';
 import { useAppState } from '@/state/app-state';
 import { readStoredValue, writeStoredValue } from '@/lib/storage';
 import { useClientReady } from '@/lib/use-client-ready';
-import { CLOZE_COUNTS, CLOZE_STORAGE_KEY, clozeBank, getClozeCategories, getClozePool, getFullArticleParts, createClozeSession, gradeCloze, parseClozeSession, revealClozeAnswer, type ClozeOptions, type ClozeSession } from './cloze';
+import { CLOZE_COUNTS, CLOZE_STORAGE_KEY, clozeBank, getClozeCategories, getClozePool, getFullArticleParts, createClozeSession, gradeCloze, parseClozeSession, revealClozeAnswer, serializeClozeSession, type ClozeOptions, type ClozeQuestion, type ClozeSession } from './cloze';
 import styles from './law-cloze-page.module.css';
 
-export function LawClozePage() {
+type ClozeEvidence = ClozeQuestion['evidence'][number];
+const questionPageHref = (item: ClozeEvidence) => `/questions/law/${item.year}/${String(item.number).padStart(2, '0')}`;
+
+/** `examQuestionHref` decides where the related past questions open; their own pages by default. */
+export function LawClozePage({ examQuestionHref = questionPageHref }: { examQuestionHref?: (item: ClozeEvidence) => string } = {}) {
   const ready = useClientReady();
   const { reportPersistence } = useAppState();
   const [session, setSession] = useState<ClozeSession | null>(null);
@@ -26,7 +30,7 @@ export function LawClozePage() {
     return () => { active = false; };
   }, [ready]);
   useEffect(() => {
-    if (session) reportPersistence('law-cloze', writeStoredValue(CLOZE_STORAGE_KEY, JSON.stringify(session)));
+    if (session) reportPersistence('law-cloze', writeStoredValue(CLOZE_STORAGE_KEY, serializeClozeSession(session)));
   }, [session, reportPersistence]);
 
   if (!session) return <p role='status'>正在準備法規克漏字…</p>;
@@ -152,7 +156,7 @@ export function LawClozePage() {
         <details className={styles.evidence}>
           <summary>題型相關考古題：{question.evidence.length} 題（100～114 年）</summary>
           <p>依人工考點及題幹／選項關鍵字比對，表示相關題型線索，不代表每題直接考同一條；本次填空以現行條文製作。</p>
-          <div>{question.evidence.map((item) => <Link href={`/questions/law/${item.year}/${String(item.number).padStart(2, '0')}`} key={item.id}>{item.year} 年・第 {item.number} 題</Link>)}</div>
+          <div>{question.evidence.map((item) => <Link href={examQuestionHref(item)} key={item.id}>{item.year} 年・第 {item.number} 題</Link>)}</div>
         </details>
       </section> : null}
       <p className={styles.storageNote}>本輪抽題順序、設定、草稿與成績保存在目前瀏覽器，不同步雲端；開始新測驗或再練一輪會重新抽題。</p>

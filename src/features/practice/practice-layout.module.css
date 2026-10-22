@@ -1,0 +1,46 @@
+.frame {
+  min-width: 0;
+}
+
+/* The law cloze page centers itself at 1100px; the way back sits on its left edge. */
+.narrow {
+  max-width: 1100px;
+  margin-inline: auto;
+}
+
+.back {
+  width: fit-content;
+  min-height: 38px;
+  margin-bottom: 18px;
+  padding: 0 14px 0 11px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: none;
+  transition:
+    border-color 150ms ease,
+    color 150ms ease;
+}
+
+.back:hover {
+  border-color: color-mix(in srgb, var(--primary) 45%, var(--line));
+  color: var(--primary-strong);
+}
+
+.back:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .back {
+    transition-duration: 0.01ms;
+  }
+}
