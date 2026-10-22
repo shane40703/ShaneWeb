@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { useRef, useState, type Ref } from 'react';
 import { Popover } from '@base-ui/react/popover';
 import {
-  IconBuildingSkyscraper, IconBulb, IconCalendarCheck, IconChartPie, IconChevronRight, IconDatabase,
+  IconBooks, IconBuildingSkyscraper, IconBulb, IconCalendarCheck, IconChartPie, IconChevronRight, IconDatabase,
   IconFileText, IconFlag, IconHistory, IconMessages, IconNotebook, IconPhoto,
   IconRepeat, IconScale, IconSettings, IconSparkles, IconTargetArrow, IconX,
 } from '@tabler/icons-react';
@@ -12,6 +12,7 @@ interface NavigationLinkItem { href: string; label: string; icon: typeof IconFil
 interface NavigationSectionItem { id: string; label: string; icon: typeof IconFileText; items: readonly NavigationLinkItem[] }
 const primaryNavigation: readonly (NavigationLinkItem | NavigationSectionItem)[] = [
   { href: '/practice', label: '每日練習（新版）', icon: IconCalendarCheck },
+  { href: '/exams', label: '歷屆試題（新版）', icon: IconBooks },
   { href: '/daily', label: '每日練習', icon: IconTargetArrow },
   { id: 'practice', label: '歷屆試題題練習', icon: IconFileText, items: [
     { href: '/papers', label: '歷屆試題', icon: IconFileText },

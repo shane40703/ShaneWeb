@@ -977,7 +977,7 @@ test('mobile drawer links to separate paper and random quiz pages', async ({ pag
   await expectCompactTopbarHeading(page, '隨機出題');
   await page.getByRole('button', { name: '開啟選單' }).click();
   await page.getByRole('button', { name: '歷屆試題題練習', exact: true }).click();
-  await page.getByRole('link', { name: '歷屆試題' }).click();
+  await page.getByRole('link', { name: '歷屆試題', exact: true }).click();
   await expect(page).toHaveURL(/\/papers$/);
   await expectCompactTopbarHeading(page, '歷屆試題');
   await expect(

@@ -15,14 +15,15 @@ const sections = [
 ];
 
 describe('grouped app navigation', () => {
-  it('starts with the new daily practice, keeps discussion separate, and uses only the brand as the home link', () => {
+  it('starts with the new daily practice and past exams, keeps discussion separate, and uses only the brand as the home link', () => {
     render(<SidebarContent pathname="/" />);
     const nav = screen.getByRole('navigation', { name: '主要功能' });
     expect(nav.firstElementChild).toHaveTextContent('每日練習（新版）');
-    expect(nav.children[1]).toHaveTextContent(/^每日練習$/);
+    expect(nav.children[1]).toHaveTextContent(/^歷屆試題（新版）$/);
+    expect(nav.children[2]).toHaveTextContent(/^每日練習$/);
     expect(screen.queryByRole('link', { name: '首頁' })).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: '建築師考試首頁' })).toHaveAttribute('href', '/');
-    expect(within(nav).getAllByRole('link').map(link => link.getAttribute('href'))).toEqual(['/practice', '/daily', '/community', '/settings', '/report']);
+    expect(within(nav).getAllByRole('link').map(link => link.getAttribute('href'))).toEqual(['/practice', '/exams', '/daily', '/community', '/settings', '/report']);
     expect(within(nav).getAllByRole('button')).toHaveLength(3);
   });
 
@@ -93,7 +94,7 @@ describe('grouped app navigation', () => {
   });
 
   it.each([
-    ['/', '首頁'], ['/practice', '每日練習（新版）'], ['/daily', '每日練習'], ['/papers', '歷屆試題'], ['/random', '隨機出題'], ['/law-cloze', '法規克漏字'],
+    ['/', '首頁'], ['/practice', '每日練習（新版）'], ['/exams', '歷屆試題（新版）'], ['/daily', '每日練習'], ['/papers', '歷屆試題'], ['/random', '隨機出題'], ['/law-cloze', '法規克漏字'],
     ['/analysis', '考題分析'], ['/memory-gallery', '速記圖庫'], ['/laws', '法規資料庫'], ['/community', '詳解與討論'],
     ['/notes', '使用者筆記'], ['/difficult', '難題標記'], ['/wrong', '常錯題目'], ['/history', '已作答紀錄'],
     ['/settings', '設定'], ['/appearance', '設定'], ['/report', '問題回報'], ['/questions/law/114/01', '作答頁'], ['/unknown', '建築師考試'],
