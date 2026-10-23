@@ -108,7 +108,7 @@
 }
 
 /* Only the title row meets the step number, so only it keeps clear of it; the summary
-   keeps the full width and the three cards' shortcuts stay level. */
+   keeps the full width and the three cards' contents stay level. */
 .cardHeader h2 {
   margin: 0;
   padding-right: 32px;
@@ -129,7 +129,7 @@
   outline: none;
 }
 
-/* Stretched over the whole card; the quick links in the body sit above it. */
+/* Stretched over the whole card, previews included: none of them is a link of its own. */
 .cardLink::after {
   content: '';
   position: absolute;
@@ -149,31 +149,19 @@
   gap: 10px;
 }
 
-/* Shortcuts, and the unlinked 準備中 items beside them, sit above the stretched card link,
-   so a click on an empty subject does not open another one. */
-.cardBody a,
-.pending,
-.categoryPending {
-  position: relative;
-  z-index: 1;
-}
-
-.pending,
-.categoryPending {
-  cursor: default;
-}
-
-.cardBody a:focus-visible {
-  outline: 3px solid var(--focus);
-  outline-offset: 2px;
-}
-
 .quickLabel {
   margin: 0;
   color: var(--muted);
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.04em;
+}
+
+.quickText {
+  margin: 0;
+  color: var(--text-soft);
+  font-size: 13px;
+  line-height: 1.7;
 }
 
 .quickEmpty {
@@ -216,55 +204,6 @@
   transform: translateX(3px);
 }
 
-.subjectLinks {
-  display: grid;
-  gap: 6px;
-}
-
-.subjectLink {
-  min-width: 0;
-  min-height: 48px;
-  padding: 6px 10px 6px 7px;
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto auto;
-  align-items: center;
-  gap: 10px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: var(--surface-2);
-  color: var(--text);
-  text-decoration: none;
-  transition: border-color 150ms ease, background-color 150ms ease;
-}
-
-a.subjectLink:hover {
-  border-color: color-mix(in srgb, var(--primary) 45%, var(--line));
-  background: var(--primary-soft);
-}
-
-.subjectLink strong {
-  overflow: hidden;
-  font-size: 14px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.subjectLink small {
-  color: var(--muted);
-  font-size: 12px;
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-.subjectLink svg {
-  color: var(--primary);
-}
-
-.pending {
-  border-style: dashed;
-  color: var(--disabled-text);
-}
-
 .thumbnails {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -291,66 +230,6 @@ a.subjectLink:hover {
   object-position: top;
   pointer-events: none;
   -webkit-user-drag: none;
-  transition: transform 220ms ease;
-}
-
-.thumbnail:hover img {
-  transform: scale(1.04);
-}
-
-.categoryLinks {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 6px;
-}
-
-.categoryLink,
-.categoryPending {
-  min-width: 0;
-  min-height: 48px;
-  padding: 6px 4px;
-  display: grid;
-  place-content: center;
-  justify-items: center;
-  gap: 1px;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  font-size: 12px;
-  line-height: 1.35;
-  text-align: center;
-}
-
-.categoryLink strong,
-.categoryPending strong {
-  font-weight: 800;
-}
-
-.categoryLink span,
-.categoryPending span {
-  font-size: 11px;
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-.categoryLink {
-  background: var(--surface-2);
-  color: var(--text);
-  text-decoration: none;
-  transition: border-color 150ms ease, background-color 150ms ease;
-}
-
-.categoryLink span {
-  color: var(--primary-strong);
-}
-
-.categoryLink:hover {
-  border-color: var(--primary);
-  background: var(--primary-soft);
-}
-
-.categoryPending {
-  border-style: dashed;
-  color: var(--disabled-text);
 }
 
 .lawList {
@@ -361,21 +240,14 @@ a.subjectLink:hover {
   list-style: none;
 }
 
-.lawList a {
+.lawList li {
   min-height: 40px;
   padding: 6px 8px;
   display: grid;
-  grid-template-columns: 22px minmax(0, 1fr) auto auto;
+  grid-template-columns: 22px minmax(0, 1fr) auto;
   align-items: center;
   gap: 10px;
-  border-radius: 10px;
   color: var(--text);
-  text-decoration: none;
-  transition: background-color 150ms ease;
-}
-
-.lawList a:hover {
-  background: var(--primary-soft);
 }
 
 .lawRank {
@@ -409,31 +281,15 @@ a.subjectLink:hover {
   white-space: nowrap;
 }
 
-.lawList svg {
-  color: var(--primary);
-}
-
-.visuallyHidden {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-}
-
-/* Wide panels: the three steps side by side. Below this the subject names no longer fit
-   a third of the panel, so medium panels switch to one card per row. */
+/* Wide panels: the three steps side by side. Below this the previews no longer fit a
+   third of the panel, so medium panels switch to one card per row. */
 @container (min-width: 940px) {
   .cards {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
-/* Medium panels: one card per row, shortcuts beside the title instead of below it. */
+/* Medium panels: one card per row, previews beside the title instead of below it. */
 @container (min-width: 600px) and (max-width: 939.98px) {
   .card {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
@@ -471,11 +327,7 @@ a.subjectLink:hover {
 
 @media (prefers-reduced-motion: reduce) {
   .card,
-  .cardAction svg,
-  .subjectLink,
-  .thumbnail img,
-  .categoryLink,
-  .lawList a {
+  .cardAction svg {
     transition-duration: 0.01ms;
   }
 

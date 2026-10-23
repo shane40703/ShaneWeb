@@ -1,13 +1,9 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useId, type ReactNode, type SyntheticEvent } from 'react';
-import { IconArrowRight, IconChevronRight, IconExternalLink } from '@tabler/icons-react';
-import { SubjectIconBadge } from '@/components/subject-icon';
-import { lawSearchUrl } from '@/features/laws/law-database';
-import { memoryGalleryCardId, memoryGalleryCategoryLabel } from '@/lib/memory-gallery';
-import { getSubject } from '@/question-bank/catalog';
+import { IconArrowRight } from '@tabler/icons-react';
 import { ResourceLayout } from './resource-layout';
-import { resourceGalleryHref, resourcePages, type ResourcePage } from './resource-pages';
+import { resourcePages, type ResourcePage } from './resource-pages';
 import type { ResourcesOverview } from './resources-overview';
 import styles from './resources-page.module.css';
 
@@ -60,7 +56,7 @@ function ResourceCard({
 }
 
 export function ResourcesPage({ overview }: { overview: ResourcesOverview }) {
-  const { questions, latestYears, gallery, laws } = overview;
+  const { questions, gallery, laws } = overview;
   const yearRange =
     questions.firstYear === questions.lastYear
       ? `${questions.firstYear}`
@@ -99,38 +95,7 @@ export function ResourcesPage({ overview }: { overview: ResourcesOverview }) {
                   : '題庫準備中'
               }
             >
-              <p className={styles.quickLabel}>直接看各科最新年度</p>
-              <div className={styles.subjectLinks}>
-                {latestYears.map(({ subject, year }) => {
-                  const content = (
-                    <>
-                      <SubjectIconBadge subject={subject} />
-                      <strong>{getSubject(subject)?.name}</strong>{' '}
-                      <small>{year ? `${year} 年` : '準備中'}</small>
-                    </>
-                  );
-                  return year ? (
-                    // Each subject's link is a separate copy of the whole bank's page data,
-                    // so it is fetched on hover or touch rather than whenever it scrolls in.
-                    <Link
-                      key={subject}
-                      href={{ pathname: analysisPage.href, query: { subject, year } }}
-                      prefetch={false}
-                      className={styles.subjectLink}
-                    >
-                      {content} <span className={styles.visuallyHidden}>考題分析</span>
-                      <IconChevronRight size={16} stroke={2} aria-hidden="true" />
-                    </Link>
-                  ) : (
-                    <span
-                      key={subject}
-                      className={`${styles.subjectLink} ${styles.pending}`}
-                    >
-                      {content}
-                    </span>
-                  );
-                })}
-              </div>
+              <p className={styles.quickText}>{analysisPage.detail}</p>
             </ResourceCard>
           </li>
 
@@ -145,11 +110,9 @@ export function ResourcesPage({ overview }: { overview: ResourcesOverview }) {
                   <p className={styles.quickLabel}>最新上架</p>
                   <div className={styles.thumbnails}>
                     {gallery.latest.map((item) => (
-                      <Link
+                      <span
                         key={item.id}
-                        href={`${resourceGalleryHref(item.category)}#${memoryGalleryCardId(item.id)}`}
                         className={styles.thumbnail}
-                        title={item.title}
                         onContextMenu={preventImageSaving}
                         onDragStart={preventImageSaving}
                       >
@@ -161,7 +124,7 @@ export function ResourcesPage({ overview }: { overview: ResourcesOverview }) {
                           unoptimized
                           draggable={false}
                         />
-                      </Link>
+                      </span>
                     ))}
                   </div>
                 </>
@@ -170,25 +133,6 @@ export function ResourcesPage({ overview }: { overview: ResourcesOverview }) {
                   管理者上傳整理圖後，最新的圖片會顯示在這裡。
                 </p>
               )}
-              <div className={styles.categoryLinks}>
-                {gallery.categories.map(({ id, count }) =>
-                  count ? (
-                    <Link
-                      key={id}
-                      href={resourceGalleryHref(id)}
-                      className={styles.categoryLink}
-                    >
-                      <strong>{memoryGalleryCategoryLabel(id)}</strong>{' '}
-                      <span>{count} 張</span>
-                    </Link>
-                  ) : (
-                    <span key={id} className={styles.categoryPending}>
-                      <strong>{memoryGalleryCategoryLabel(id)}</strong>{' '}
-                      <span>準備中</span>
-                    </span>
-                  ),
-                )}
-              </div>
             </ResourceCard>
           </li>
 
@@ -204,22 +148,11 @@ export function ResourcesPage({ overview }: { overview: ResourcesOverview }) {
                   <ol className={styles.lawList}>
                     {laws.top.map((law, index) => (
                       <li key={law.name}>
-                        <a
-                          href={lawSearchUrl(law.name)}
-                          target="_blank"
-                          rel="noreferrer"
-                          title={law.name}
-                        >
-                          <span className={styles.lawRank} aria-hidden="true">
-                            {index + 1}
-                          </span>
-                          <span className={styles.lawName}>{law.name}</span>{' '}
-                          <span className={styles.lawCount}>{law.questionCount} 題</span>
-                          <IconExternalLink size={15} stroke={2} aria-hidden="true" />
-                          <span className={styles.visuallyHidden}>
-                            （在新分頁開啟全國法規資料庫）
-                          </span>
-                        </a>
+                        <span className={styles.lawRank} aria-hidden="true">
+                          {index + 1}
+                        </span>
+                        <span className={styles.lawName}>{law.name}</span>{' '}
+                        <span className={styles.lawCount}>{law.questionCount} 題</span>
                       </li>
                     ))}
                   </ol>

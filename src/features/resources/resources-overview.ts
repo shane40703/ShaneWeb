@@ -1,18 +1,13 @@
 import { buildLawDatabaseEntries } from '@/features/laws/law-database';
-import {
-  MEMORY_GALLERY_CATEGORIES,
-  type MemoryGalleryCategory,
-  type MemoryGalleryImage,
-} from '@/lib/memory-gallery';
-import type { QuestionSummary, SubjectId } from '@/lib/types';
-import { subjects } from '@/question-bank/catalog';
+import type { MemoryGalleryImage } from '@/lib/memory-gallery';
+import type { QuestionSummary } from '@/lib/types';
 
 const GALLERY_PREVIEW_COUNT = 3;
 const TOP_LAW_COUNT = 5;
 
 export type MemoryGalleryPreview = Pick<
   MemoryGalleryImage,
-  'id' | 'title' | 'category' | 'thumbnailSrc' | 'width' | 'height'
+  'id' | 'title' | 'thumbnailSrc' | 'width' | 'height'
 >;
 
 /** Build-time figures for the resources hub, small enough that the hub never ships the bank. */
@@ -23,11 +18,8 @@ export interface ResourcesOverview {
     firstYear: number | null;
     lastYear: number | null;
   };
-  /** Newest year with questions for each subject, in catalog order; null when none yet. */
-  latestYears: { subject: SubjectId; year: number | null }[];
   gallery: {
     total: number;
-    categories: { id: MemoryGalleryCategory; count: number }[];
     latest: MemoryGalleryPreview[];
   };
   laws: {
@@ -56,27 +48,13 @@ export function buildResourcesOverview(
       firstYear: years.length ? Math.min(...years) : null,
       lastYear: years.length ? Math.max(...years) : null,
     },
-    latestYears: subjects.map((subject) => {
-      const subjectYears = questions
-        .filter((question) => question.subject === subject.id)
-        .map((question) => question.year);
-      return {
-        subject: subject.id,
-        year: subjectYears.length ? Math.max(...subjectYears) : null,
-      };
-    }),
     gallery: {
       total: published.length,
-      categories: MEMORY_GALLERY_CATEGORIES.map((category) => ({
-        id: category.id,
-        count: published.filter((item) => item.category === category.id).length,
-      })),
       latest: published
         .slice(0, GALLERY_PREVIEW_COUNT)
-        .map(({ id, title, category, thumbnailSrc, width, height }) => ({
+        .map(({ id, title, thumbnailSrc, width, height }) => ({
           id,
           title,
-          category,
           thumbnailSrc,
           width,
           height,

@@ -51,7 +51,7 @@ describe('buildResourcesOverview', () => {
     question('construction-110', 'construction', 110),
   ];
 
-  it('summarises the question bank and the newest year of each subject in catalog order', () => {
+  it('summarises the question bank', () => {
     const overview = buildResourcesOverview(questions, []);
 
     expect(overview.questions).toEqual({
@@ -60,15 +60,9 @@ describe('buildResourcesOverview', () => {
       firstYear: 110,
       lastYear: 114,
     });
-    expect(overview.latestYears).toEqual([
-      { subject: 'law', year: 114 },
-      { subject: 'env', year: 113 },
-      { subject: 'construction', year: 110 },
-      { subject: 'structure', year: null },
-    ]);
   });
 
-  it('keeps only published gallery images, newest first, with per-subject counts', () => {
+  it('keeps only published gallery images, newest first', () => {
     const overview = buildResourcesOverview(questions, [
       image('old-law', 'law', '2026-10-01T00:00:00Z'),
       image('new-construction', 'construction', '2026-10-22T00:00:00Z'),
@@ -78,12 +72,6 @@ describe('buildResourcesOverview', () => {
     ]);
 
     expect(overview.gallery.total).toBe(4);
-    expect(overview.gallery.categories).toEqual([
-      { id: 'law', count: 3 },
-      { id: 'env', count: 0 },
-      { id: 'construction', count: 1 },
-      { id: 'structure', count: 0 },
-    ]);
     expect(overview.gallery.latest.map((item) => item.id)).toEqual([
       'newest-law',
       'new-construction',
@@ -92,7 +80,6 @@ describe('buildResourcesOverview', () => {
     expect(overview.gallery.latest[0]).toEqual({
       id: 'newest-law',
       title: '圖 newest-law',
-      category: 'law',
       thumbnailSrc: '/memory-gallery/assets/newest-law-thumb.webp',
       width: 1055,
       height: 1491,
@@ -114,22 +101,7 @@ describe('buildResourcesOverview', () => {
   it('stays well-formed for an empty bank and gallery', () => {
     expect(buildResourcesOverview([], [])).toEqual({
       questions: { total: 0, subjectCount: 0, firstYear: null, lastYear: null },
-      latestYears: [
-        { subject: 'law', year: null },
-        { subject: 'env', year: null },
-        { subject: 'construction', year: null },
-        { subject: 'structure', year: null },
-      ],
-      gallery: {
-        total: 0,
-        categories: [
-          { id: 'law', count: 0 },
-          { id: 'env', count: 0 },
-          { id: 'construction', count: 0 },
-          { id: 'structure', count: 0 },
-        ],
-        latest: [],
-      },
+      gallery: { total: 0, latest: [] },
       laws: { total: 0, top: [] },
     });
   });

@@ -30,26 +30,13 @@ async function expectNoHorizontalScroll(page: Page) {
 
 const overview = {
   questions: { total: 120, subjectCount: 3, firstYear: 110, lastYear: 114 },
-  latestYears: [
-    { subject: 'law', year: 114 },
-    { subject: 'env', year: 113 },
-    { subject: 'construction', year: 114 },
-    { subject: 'structure', year: null },
-  ],
   gallery: {
     total: 3,
-    categories: [
-      { id: 'law', count: 1 },
-      { id: 'env', count: 0 },
-      { id: 'construction', count: 2 },
-      { id: 'structure', count: 0 },
-    ],
     latest: ['構造測試圖一', '法規測試圖', '構造測試圖二'].map((title, index) => {
       const id = `00000000-0000-4000-8000-${String(index + 1).padStart(12, '0')}`;
       return {
         id,
         title,
-        category: index === 1 ? 'law' : 'construction',
         thumbnailSrc: `/memory-gallery/assets/${id}-thumb.webp`,
         width: 700,
         height: 900,
@@ -122,15 +109,9 @@ test('the resources hub opens from the sidebar and reaches every resource page',
     fullPage: true,
   });
 
-  // A subject shortcut lands on that subject's newest year in one step.
-  await page.getByRole('link', { name: /^建築環境控制 \d+ 年 考題分析$/ }).click();
-  await expect(page).toHaveURL(/\/resources\/analysis\?subject=env&year=\d+$/);
+  await page.getByRole('article', { name: '考題分析' }).getByRole('link').click();
+  await expect(page).toHaveURL(/\/resources\/analysis(\?.*)?$/);
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('考題分析');
-  await expect(
-    page
-      .getByRole('group', { name: '科目' })
-      .getByRole('button', { name: /建築環境控制/ }),
-  ).toHaveAttribute('aria-pressed', 'true');
   await expect(sections.getByRole('link', { name: '考題分析' })).toHaveAttribute(
     'aria-current',
     'page',
@@ -170,7 +151,7 @@ test('the resources hub opens from the sidebar and reaches every resource page',
   await expect(page.getByRole('article')).toHaveCount(3);
 });
 
-test('hub shortcuts open the exact subject or category and skip empty ones', async ({
+test('hub cards describe and preview each resource, with no links of their own', async ({
   page,
   isMobile,
 }) => {
@@ -179,14 +160,19 @@ test('hub shortcuts open the exact subject or category and skip empty ones', asy
   const analysis = page.getByRole('article', { name: '考題分析' });
   await expect(analysis.getByText('3 科・110–114 年')).toBeVisible();
   await expect(
-    analysis.getByRole('link', { name: '建築環境控制 113 年 考題分析' }),
-  ).toHaveAttribute('href', '/resources/analysis?subject=env&year=113');
-  await expect(analysis.getByRole('link', { name: /建築結構/ })).toHaveCount(0);
-
+    analysis.getByText('選科目與年度，查看命題分布、歷年趨勢與對應考古題。'),
+  ).toBeVisible();
   const gallery = page.getByRole('article', { name: '速記圖庫' });
   await expect(gallery.getByRole('img')).toHaveCount(3);
-  await expect(gallery.getByRole('link', { name: /環控|結構/ })).toHaveCount(0);
-  await expect(gallery.getByText('準備中')).toHaveCount(2);
+  const laws = page.getByRole('article', { name: '法規資料庫' });
+  await expect(laws.getByRole('listitem')).toHaveCount(2);
+  await expect(laws.getByRole('listitem').first()).toContainText('建築法 12 題');
+
+  // Each card's title is its only link, and nothing leads off the site.
+  for (const card of [analysis, gallery, laws]) {
+    await expect(card.getByRole('link')).toHaveCount(1);
+  }
+  await expect(page.locator('a[href*="law.moj.gov.tw"]')).toHaveCount(0);
   expect(
     await gallery
       .getByRole('img')
@@ -199,49 +185,12 @@ test('hub shortcuts open the exact subject or category and skip empty ones', asy
       ),
   ).toBe(true);
 
-  const law = page.getByRole('article', { name: '法規資料庫' }).getByRole('link', {
-    name: /^建築法 12 題/,
-  });
-  await expect(law).toHaveAttribute('target', '_blank');
-  await expect(law).toHaveAttribute(
-    'href',
-    /law\.moj\.gov\.tw.*kw=%E5%BB%BA%E7%AF%89%E6%B3%95$/,
-  );
-
-  // An empty subject is not a link, and a click on it must not fall through to the card.
-  const pending = gallery.getByText('環控', { exact: true });
-  await pending.scrollIntoViewIfNeeded();
-  expect(
-    await pending.evaluate((node) => {
-      const box = node.getBoundingClientRect();
-      const hit = document.elementFromPoint(
-        box.x + box.width / 2,
-        box.y + box.height / 2,
-      );
-      return hit?.closest('a') ?? null;
-    }),
-  ).toBeNull();
-
-  await gallery.getByRole('link', { name: '構造 2 張' }).click();
-  await expect(page).toHaveURL(/\/resources\/memory-gallery\/construction$/);
-  const categories = page.getByRole('group', { name: '圖片分類' });
-  await expect(categories.getByRole('link', { name: /^構造/ })).toHaveAttribute(
-    'aria-current',
-    'page',
-  );
-
-  // Each subject is a page of its own, so a reload stays on it.
-  await page.reload();
-  await expect(categories.getByRole('link', { name: /^構造/ })).toHaveAttribute(
-    'aria-current',
-    'page',
-  );
-  await categories.getByRole('link', { name: /^法規/ }).click();
+  // A click on a preview belongs to its card: it opens the gallery, not that one image.
+  const preview = gallery.getByRole('img').nth(1);
+  await preview.scrollIntoViewIfNeeded();
+  const box = (await preview.boundingBox())!;
+  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
   await expect(page).toHaveURL(/\/resources\/memory-gallery$/);
-  await expect(categories.getByRole('link', { name: /^法規/ })).toHaveAttribute(
-    'aria-current',
-    'page',
-  );
 });
 
 test('a gallery subject page is prerendered with only its own images', async ({
@@ -269,26 +218,6 @@ test('a gallery subject page is prerendered with only its own images', async ({
   } finally {
     await context.close();
   }
-});
-
-test('a hub thumbnail lands on that very image', async ({ page }) => {
-  // Decide from the data, not the page: a hub that fails to show its previews must fail here.
-  const { items } = JSON.parse(await readFile('data/memory-gallery.json', 'utf8')) as {
-    items: MemoryGalleryImage[];
-  };
-  const published = items.filter((item) => !item.archivedAt);
-  test.skip(published.length === 0, 'No gallery image is published yet.');
-  await page.goto('/resources');
-  const previews = page
-    .getByRole('article', { name: '速記圖庫' })
-    .getByRole('link')
-    .filter({ has: page.getByRole('img') });
-  await expect(previews).toHaveCount(Math.min(3, published.length));
-  const preview = previews.last();
-  const id = (await preview.getAttribute('href'))!.split('#')[1];
-  await preview.click();
-  await expect(page).toHaveURL(new RegExp(`/resources/memory-gallery(/[a-z]+)?#${id}$`));
-  await expect(page.locator(`#${id}`)).toBeInViewport();
 });
 
 test('the whole card opens its resource page and its title shows a focus ring', async ({
