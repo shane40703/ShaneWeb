@@ -1,0 +1,3172 @@
+[
+  {
+    "id": "construction-113-01",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 1,
+    "topic": "金屬材料",
+    "primaryCategory": "材料",
+    "tags": [
+      "金屬材料"
+    ],
+    "text": "下列有關鋼材一般力學性能特性之描述何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "下列有關鋼材一般力學性能特性之描述何者錯誤？"
+      }
+    ],
+    "options": [
+      "鋼材降伏強度愈高，伸長率趨於愈低",
+      "鋼材降伏強度愈高，降伏比趨於愈高",
+      "鋼材降伏強度愈低，鋼板厚度方向斷面縮率趨於愈高",
+      "鋼材降伏強度愈低，應變硬化趨於愈顯著"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        2
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 1,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-02",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 2,
+    "topic": "低碳與綠建築",
+    "primaryCategory": "永續建築",
+    "tags": [
+      "低碳與綠建築"
+    ],
+    "text": "關於建築物減排實現方式來說，下列敘述何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "關於建築物減排實現方式來說，下列敘述何者錯誤？"
+      }
+    ],
+    "options": [
+      "蘊含能源（Embodied energy）可以透過優化建築結構來減少材料使用或通過智能規範和選擇具有較低蘊含碳和能源強度的材料來減少蘊含能源和蘊含碳",
+      "幾乎所有蘊含碳排放（Embodied emission）在建築物的初始建造階段（其餘時間在維護和翻新期間）發生一次。然運營排放會隨著時間的推移而累積，且受建築物整個有效壽命期間的影響",
+      "運營能源（Operational energy）的節約則在建築使用過程經由節能電器、可再生能源技術和先進的絕緣材料的優化來實現",
+      "運營能源（Operational energy）的節約除了在建築使用過程經由節能電器、可再生能源技術和先進的絕緣材料的優化來實現；也可以透過減少材料使用來減低運營能源和運營碳"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        3
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 1,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-03",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 3,
+    "topic": "材料",
+    "primaryCategory": "材料",
+    "tags": [
+      "材料"
+    ],
+    "text": "以玻璃做為開窗材料時，如開窗尺寸相同，且不用考慮方位、地點等情況下，下列敘述何者正確？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "以玻璃做為開窗材料時，如開窗尺寸相同，且不用考慮方位、地點等情況下，下列敘述何者正確？"
+      }
+    ],
+    "options": [
+      "同樣材料情況下，天窗的採光效果與外牆開窗的採光效果相同",
+      "加入微量鐵元素的玻璃可增加強度，達到類似強化玻璃的安全效果",
+      "反射玻璃的可見光穿透率優於一般透明玻璃",
+      "可見光反射率越高時，造成環境光害之程度愈大"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        3
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 1,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-04",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 4,
+    "topic": "材料",
+    "primaryCategory": "材料",
+    "tags": [
+      "材料"
+    ],
+    "text": "關於玻璃工程，下列敘述何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "關於玻璃工程，下列敘述何者錯誤？"
+      }
+    ],
+    "options": [
+      "色板玻璃係指於玻璃原料中添加著色劑而製成之玻璃，又可作為吸熱玻璃",
+      "用浮式法製成的鋼絲網玻璃，火災時可以防止玻璃爆裂，又稱防火玻璃",
+      "強化玻璃是將平板玻璃加熱後再急速冷卻製成，耐衝擊強度可達普通玻璃3〜4 倍",
+      "膠合玻璃也可以作為安全玻璃來使用"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        1
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 1,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-05",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 5,
+    "topic": "材料",
+    "primaryCategory": "材料",
+    "tags": [
+      "材料"
+    ],
+    "text": "以物理處理法強化而成的安全玻璃，受外力而破裂時，顆粒形成鈍角，比較不傷害人體。此種處理法乃是玻璃板加熱軟化後由表面快速冷卻固化，但內部仍處於柔軟熔融狀態而慢慢冷卻固化之內部收縮力而使表面產生壓應力，以增加其強度。上述物理處理法是於那一玻璃製程中進行？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "以物理處理法強化而成的安全玻璃，受外力而破裂時，顆粒形成鈍角，比較不傷害人體。此種處理法乃是玻璃板加熱軟化後由表面快速冷卻固化，但內部仍處於柔軟熔融狀態而慢慢冷卻固化之內部收縮力而使表面產生壓應力，以增加其強度。上述物理處理法是於那一玻璃製程中進行？"
+      }
+    ],
+    "options": [
+      "配料",
+      "熔融",
+      "成型",
+      "退火研磨及熱處理"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        3
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 1,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-06",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 6,
+    "topic": "木構造",
+    "primaryCategory": "構法",
+    "tags": [
+      "木構造"
+    ],
+    "relatedLaws": [
+      "木構造"
+    ],
+    "text": "有一棟三層樓木造建築物欲以防火構造物進行設計，已知建築師預定選用歐洲赤松集成材進行木構造樑柱結構的防火設計，並參考我國木構造建築物設計及施工技術規範第九章之炭化層深度建議，則樑柱結構所需要的燃燒炭化深度為何？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "有一棟三層樓木造建築物欲以防火構造物進行設計，已知建築師預定選用歐洲赤松集成材進行木構造樑柱結構的防火設計，並參考我國木構造建築物設計及施工技術規範第九章之炭化層深度建議，則樑柱結構所需要的燃燒炭化深度為何？"
+      },
+      {
+        "kind": "image",
+        "src": "/question-bank/構造/113/06/question-02.png",
+        "alt": "第 6 題題幹引用表格附圖",
+        "width": 1175,
+        "height": 750
+      }
+    ],
+    "options": [
+      "46 mm",
+      "49 mm",
+      "50 mm",
+      "60 mm"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        2
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 2,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-07",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 7,
+    "topic": "防火與隔音",
+    "primaryCategory": "構法",
+    "tags": [
+      "防火與隔音"
+    ],
+    "text": "下列何種防火阻絕材料不適用於建築物樓地板間之間隙？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "下列何種防火阻絕材料不適用於建築物樓地板間之間隙？"
+      }
+    ],
+    "options": [
+      "防火泥",
+      "矽質阻火發泡材",
+      "膨脹防火紮帶",
+      "膨脹型阻火發泡劑"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        2
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 2,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-08",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 8,
+    "topic": "混凝土材料",
+    "primaryCategory": "材料",
+    "tags": [
+      "混凝土材料"
+    ],
+    "text": "下列何者不是高性能混凝土之特性？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "下列何者不是高性能混凝土之特性？"
+      }
+    ],
+    "options": [
+      "高強度",
+      "高流動性",
+      "自充填效能",
+      "水密性低"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        3
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 2,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-09",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 9,
+    "topic": "材料",
+    "primaryCategory": "材料",
+    "tags": [
+      "材料"
+    ],
+    "text": "下列四種外殼構造設計時常用建材：普通混凝土、紅磚、泡沫混凝土（ALC）、發泡聚苯乙烯（高密度保利龍，PS 板），就相同厚度建材之隔熱性能的優劣來說，下列敘述何者正確？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "下列四種外殼構造設計時常用建材：普通混凝土、紅磚、泡沫混凝土（ALC）、發泡聚苯乙烯（高密度保利龍，PS 板），就相同厚度建材之隔熱性能的優劣來說，下列敘述何者正確？"
+      }
+    ],
+    "options": [
+      "普通混凝土隔熱性能的效果最差",
+      "普通混凝土隔熱性能效果優於紅磚",
+      "紅磚隔熱性能效果優於泡沫混凝土（ALC）",
+      "泡沫混凝土（ALC）隔熱性能效果優於發泡聚苯乙烯（高密度保利龍，PS 板）"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        0
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 2,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-10",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 10,
+    "topic": "材料",
+    "primaryCategory": "材料",
+    "tags": [
+      "材料"
+    ],
+    "text": "有關石材之種類、特徵與用途，何項敘述錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "有關石材之種類、特徵與用途，何項敘述錯誤？"
+      }
+    ],
+    "options": [
+      "花崗石之石質堅硬，使用於地板、牆面之內外裝修材",
+      "大理石的耐酸性佳，使用於牆面之外裝修材",
+      "安山岩具有耐久性與耐火性，加工性良好",
+      "黏板岩吸水性低，使用於屋頂的鋪設材"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        1
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 2,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-11",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 11,
+    "topic": "砌體與隔間",
+    "primaryCategory": "構法",
+    "tags": [
+      "砌體與隔間"
+    ],
+    "text": "下列有關紅磚之敘述何項正確？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "下列有關紅磚之敘述何項正確？"
+      }
+    ],
+    "options": [
+      "隔熱性與耐火性低",
+      "使用於結構牆體時，牆壁變厚而開口部的位置與大小自由不受限",
+      "原料為黏土，以練土機拌合，使用成形機壓製成型，乾燥後燒製成產品",
+      "空心紅磚將磚的內部設計為中空，強度高且重量輕"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        2
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 2,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-12",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 12,
+    "topic": "混凝土材料",
+    "primaryCategory": "材料",
+    "tags": [
+      "混凝土材料"
+    ],
+    "text": "下列鋼筋混凝土構造之混凝土材料性質，何者正確？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "下列鋼筋混凝土構造之混凝土材料性質，何者正確？"
+      }
+    ],
+    "options": [
+      "水分乾燥後開始收縮之乾縮現象，只會在澆置後養護階段發生",
+      "抗壓強度高，不具備流動性、無法塑造自由形體",
+      "抗拉強度高，比重為2.3 g/cm3",
+      "可以保護耐火性差的鋼筋"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        3
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 2,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-13",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 13,
+    "topic": "鋼構施工",
+    "primaryCategory": "施工程序",
+    "tags": [
+      "鋼構施工"
+    ],
+    "relatedLaws": [
+      "鋼構造"
+    ],
+    "text": "一般於建築施工詳圖中，金屬材料如標示6063-T5 通常是指下列何種材料？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "一般於建築施工詳圖中，金屬材料如標示6063-T5 通常是指下列何種材料？"
+      }
+    ],
+    "options": [
+      "角鋼",
+      "輕鋼構",
+      "鋁擠型",
+      "鍍鋅鋼"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        2
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 2,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-14",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 14,
+    "topic": "帷幕牆與外牆",
+    "primaryCategory": "構法",
+    "tags": [
+      "帷幕牆與外牆"
+    ],
+    "text": "外牆常以二丁掛磁磚進行立面設計，下列何者為其尺寸？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "外牆常以二丁掛磁磚進行立面設計，下列何者為其尺寸？"
+      }
+    ],
+    "options": [
+      "45×95 mm",
+      "60×108 mm",
+      "60×227 mm",
+      "100×100 mm"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        2
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 3,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-15",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 15,
+    "topic": "鋼構施工",
+    "primaryCategory": "施工程序",
+    "tags": [
+      "鋼構施工"
+    ],
+    "relatedLaws": [
+      "鋼構造"
+    ],
+    "text": "有關鋼結構之製作、安裝與品管，下列敘述何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "有關鋼結構之製作、安裝與品管，下列敘述何者錯誤？"
+      }
+    ],
+    "options": [
+      "鋼結構之製作、安裝及品管應依據鋼結構相關規範之規定辦理",
+      "鋼構件應在工廠加工製作再運送至工地安裝，若須在工地加工製作則可省略審查認可",
+      "鋼結構製作前應依據設計圖說事先繪製施工詳圖",
+      "施工詳圖內容應至少包含製造圖及安裝圖"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        1
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 3,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-16",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 16,
+    "topic": "綠建材",
+    "primaryCategory": "材料",
+    "tags": [
+      "綠建材"
+    ],
+    "text": "下列何者不屬於我國「高性能防音綠建材」標章的吸音建材範疇？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "下列何者不屬於我國「高性能防音綠建材」標章的吸音建材範疇？"
+      }
+    ],
+    "options": [
+      "玻璃棉",
+      "橡膠緩衝材",
+      "穿孔鋁板",
+      "礦纖板"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        1
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 3,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-17",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 17,
+    "topic": "屋頂防水",
+    "primaryCategory": "防水工程",
+    "tags": [
+      "屋頂防水"
+    ],
+    "text": "高性能綠建材中，「屋頂系統或構造」項目的評定基準熱傳透率U 值應為多少？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "高性能綠建材中，「屋頂系統或構造」項目的評定基準熱傳透率U 值應為多少？"
+      }
+    ],
+    "options": [
+      "＜0.72 W/m2・K",
+      "＜0.77 W/m2・K",
+      "＜0.8 W/m2・K",
+      "＜1.8 W/m2・K"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        0
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 3,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-18",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 18,
+    "topic": "基礎工程",
+    "primaryCategory": "構法",
+    "tags": [
+      "基礎工程"
+    ],
+    "text": "有關建築物基礎設計，下列敘述何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "有關建築物基礎設計，下列敘述何者錯誤？"
+      }
+    ],
+    "options": [
+      "應考慮靜載重、活載重",
+      "應考慮上浮力、風力",
+      "應考慮地震力、振動載重",
+      "無需考慮施工期間之各種臨時性載重"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        3
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 3,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-19",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 19,
+    "topic": "基礎工程",
+    "primaryCategory": "構法",
+    "tags": [
+      "基礎工程"
+    ],
+    "text": "關於基礎開挖時之敘述，下列何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "關於基礎開挖時之敘述，下列何者錯誤？"
+      }
+    ],
+    "options": [
+      "順打工法為基礎開挖最常用之工法",
+      "採用斜坡式開挖時應檢討底面土壤發生隆起、砂湧之可能性",
+      "基礎開挖深度在地下水位以下時，需檢討地下水位控制方法",
+      "基礎開挖得視需要利用適當之監測系統，量測開挖前後擋土設施、支撐設施、地層及鄰近構造物"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        1
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 3,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-20",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 20,
+    "topic": "基礎工程",
+    "primaryCategory": "構法",
+    "tags": [
+      "基礎工程"
+    ],
+    "text": "樁基礎中，預鑄樁、PC 樁常用的植入工法，不包括下列何者？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "樁基礎中，預鑄樁、PC 樁常用的植入工法，不包括下列何者？"
+      }
+    ],
+    "options": [
+      "敲擊打入",
+      "反循環樁",
+      "預鑽埋入",
+      "壓入工法"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        1
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 3,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-21",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 21,
+    "topic": "鋼構與複合構造",
+    "primaryCategory": "構法",
+    "tags": [
+      "鋼構與複合構造"
+    ],
+    "relatedLaws": [
+      "鋼筋混凝土鋼骨構造"
+    ],
+    "text": "有關鋼骨鋼筋混凝土構造（SRC 造），下列敘述何者最不恰當？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "有關鋼骨鋼筋混凝土構造（SRC 造），下列敘述何者最不恰當？"
+      }
+    ],
+    "options": [
+      "一般而言，SRC 構材的勁度比S 造之構材為大，有助於降低構材的變形量與減少建築物整體的側向位移",
+      "因為其鋼骨受到鋼筋混凝土的包覆，SRC 構材的鋼骨抵抗局部挫屈的能力優於S 造，但是如果鋼筋施工不良就會大打折扣",
+      "SRC 造是將鋼骨與鋼筋結合為一體的複合構造，其主筋與鋼骨以緊貼配置為原則，以有效傳遞鋼骨與鋼筋間的應力",
+      "因為其剪力大多已由鋼骨所承擔，SRC 樑的箍筋數量通常比RC 樑來得少"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        2
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 3,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-22",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 22,
+    "topic": "鋼構與複合構造",
+    "primaryCategory": "構法",
+    "tags": [
+      "鋼構與複合構造"
+    ],
+    "relatedLaws": [
+      "鋼筋混凝土鋼骨構造"
+    ],
+    "text": "鋼骨鋼筋混凝土（SRC）構造中的柱與樑會使用箍筋，關於箍筋與繫筋的主要作用，不包括下列何者？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "鋼骨鋼筋混凝土（SRC）構造中的柱與樑會使用箍筋，關於箍筋與繫筋的主要作用，不包括下列何者？"
+      }
+    ],
+    "options": [
+      "提供部分剪力強度",
+      "圍束混凝土",
+      "提高抗彎強度",
+      "柱中的繫筋有助於固定主筋"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        2
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 3,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-23",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 23,
+    "topic": "鋼構與複合構造",
+    "primaryCategory": "構法",
+    "tags": [
+      "鋼構與複合構造"
+    ],
+    "text": "關於鋼構造的防火工法，通常不包含下列何者？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "關於鋼構造的防火工法，通常不包含下列何者？"
+      }
+    ],
+    "options": [
+      "耐火磚",
+      "防火毯",
+      "厚度達8 公分以上的水泥沙漿",
+      "防火板"
+    ],
+    "answerKey": {
+      "kind": "all-credit"
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 3,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-24",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 24,
+    "topic": "木構造",
+    "primaryCategory": "構法",
+    "tags": [
+      "木構造"
+    ],
+    "relatedLaws": [
+      "木構造"
+    ],
+    "text": "設計木結構時，下列圖例之接合節點在結構分析上屬於何種接合？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "設計木結構時，下列圖例之接合節點在結構分析上屬於何種接合？"
+      },
+      {
+        "kind": "image",
+        "src": "/question-bank/構造/113/24/question-02.png",
+        "alt": "第 24 題題幹引用圖示、PDF 題目區含嵌入圖片附圖",
+        "width": 399,
+        "height": 420
+      }
+    ],
+    "options": [
+      "鉸接合",
+      "半剛性接合",
+      "剛性接合",
+      "釘接合"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        0
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 3,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-25",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 25,
+    "topic": "木構造",
+    "primaryCategory": "構法",
+    "tags": [
+      "木構造"
+    ],
+    "text": "下列何者為臺灣常見之日式木造建築所使用之木構造結構系統？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "下列何者為臺灣常見之日式木造建築所使用之木構造結構系統？"
+      }
+    ],
+    "options": [
+      "框組壁式工法",
+      "板片構造工法",
+      "原木層疊工法",
+      "軸組造工法"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        3
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 3,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-26",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 26,
+    "topic": "木構造",
+    "primaryCategory": "構法",
+    "tags": [
+      "木構造"
+    ],
+    "text": "木構造建築中，關於柱樑系統（或樑柱構架、軸組式）的房屋，下列敘述何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "木構造建築中，關於柱樑系統（或樑柱構架、軸組式）的房屋，下列敘述何者錯誤？"
+      }
+    ],
+    "options": [
+      "與承重牆系統相較，柱樑系統設計自由度與改修的彈性較高",
+      "柱樑接點可採用鋼板、摩擦型螺栓零組件等固接",
+      "可以使用斜撐或填充牆以提升抵抗水平力的強度或剛度",
+      "木柱底部應避免使用金屬件接合，增加拉拔變形的彈性"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        3
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 4,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-27",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 27,
+    "topic": "木構造",
+    "primaryCategory": "構法",
+    "tags": [
+      "木構造"
+    ],
+    "text": "下列工法為臺灣常見的木構造工法，對於此工法的敘述何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "下列工法為臺灣常見的木構造工法，對於此工法的敘述何者錯誤？"
+      },
+      {
+        "kind": "image",
+        "src": "/question-bank/構造/113/27/question-02.png",
+        "alt": "第 27 題PDF 題目區含嵌入圖片附圖",
+        "width": 631,
+        "height": 479
+      }
+    ],
+    "options": [
+      "此工法稱為框組式構造，又稱為2×4 工法",
+      "此工法可分為氣球框架構法及平台構法",
+      "此工法主要的構件單元之斷面尺寸為3.8 cm×8.9 cm",
+      "此工法主要發展於日本"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        3
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 4,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-28",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 28,
+    "topic": "鋼構與複合構造",
+    "primaryCategory": "構法",
+    "tags": [
+      "鋼構與複合構造"
+    ],
+    "text": "鋼構造採用填角銲進行搭接時，若較薄之板厚度為d（d＞6 mm），則搭接接頭之最小搭接長度至少須大於下列何者？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "鋼構造採用填角銲進行搭接時，若較薄之板厚度為d（d＞6 mm），則搭接接頭之最小搭接長度至少須大於下列何者？"
+      }
+    ],
+    "options": [
+      "3 d",
+      "5 d",
+      "8 d",
+      "10 d"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        1
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 4,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-29",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 29,
+    "topic": "鋼構施工",
+    "primaryCategory": "施工程序",
+    "tags": [
+      "鋼構施工"
+    ],
+    "relatedLaws": [
+      "鋼構造"
+    ],
+    "text": "下列鋼結構體工法之描述何項錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "下列鋼結構體工法之描述何項錯誤？"
+      }
+    ],
+    "options": [
+      "鋼構造採用純框架柱樑構造，柱子使用方形鋼管或圓形鋼管等",
+      "以H 型鋼作為柱子使用，一般將強軸方向設為框架柱樑構造，弱軸方向設為鉸接、斜撐構造",
+      "以鋼管構成主要結構體時，斷面單純且適用於曲線等自由形狀，接頭多使用焊接",
+      "鋼構造結構體須為防火構造時，一般在砂漿中摻入石綿，再噴覆於柱樑形成防火披覆"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        1,
+        3
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 4,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-30",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 30,
+    "topic": "屋頂防水",
+    "primaryCategory": "防水工程",
+    "tags": [
+      "屋頂防水"
+    ],
+    "text": "有關屋頂合成輕質混凝土板隔熱材之施工方式，下列敘述何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "有關屋頂合成輕質混凝土板隔熱材之施工方式，下列敘述何者錯誤？"
+      }
+    ],
+    "options": [
+      "合成輕質混凝土板材料之組合，外側面層板材應為重型木絲水泥板，中間層為輕質發泡水泥混合PS發泡粒蛭石、飛灰、黏土保麗龍發泡粒等及內襯0.8 mm 厚不銹鋼擴張金屬網片或沖孔鋼片及∮=8 mm，[25 cm×30 cm]之點銲鋼絲網及化學劑合成",
+      "將合成輕質混凝土板邊緣平行放置於隔熱板表面或底面，相鄰層與層的接縫必須相接，縫必須平整，材料斷面需互相對齊",
+      "屋頂與垂直面相接處的絕緣材料或合成輕質混凝土板須依實際情況做適度的切割，並依照原製造廠建議所列的條件及配合使用廠商推薦的黏著劑將絕緣材料黏附在樓地板上並在屋頂的周圍用不銹鋼將其固定",
+      "放置合成輕質混凝土板應檢查是否平整、齊一、緊密，並依契約設計圖說預留縫寬，以灌注填縫劑"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        1
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 4,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-31",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 31,
+    "topic": "鋼構施工",
+    "primaryCategory": "施工程序",
+    "tags": [
+      "鋼構施工"
+    ],
+    "relatedLaws": [
+      "鋼構造"
+    ],
+    "text": "有關鋼板的屋頂構造，何項敘述錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "有關鋼板的屋頂構造，何項敘述錯誤？"
+      }
+    ],
+    "options": [
+      "鋼構建築的樓層數和跨度較大時，風壓隨之變大，需注意屋頂材料之脫落",
+      "成型鋼板具備輕量之優點，但無法直接在鋼骨桁條上鋪設",
+      "成型鋼板可以適用於大跨度建築，亦可以應用於曲面屋頂",
+      "浪板的剛性不高，所以不適用在大跨度建築屋頂"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        1,
+        3
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 4,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-32",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 32,
+    "topic": "裝修施工",
+    "primaryCategory": "施工程序",
+    "tags": [
+      "裝修施工"
+    ],
+    "text": "有關辦公室室內裝修的敘述，下列何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "有關辦公室室內裝修的敘述，下列何者錯誤？"
+      }
+    ],
+    "options": [
+      "因應設備配線採用活動高架地板，又稱OA 地板",
+      "地板式送風空調系統利用活動地板的下方空間設置空調管道，將空調由地板下往上吹出，不適用於辦公室空調系統",
+      "系統天花由天花板底架、裝修面材、機器設備等組成一個系統",
+      "寬敞之辦公室系統天花，大地震時容易損害，需考量耐震對策"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        1
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 4,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-33",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 33,
+    "topic": "裝修施工",
+    "primaryCategory": "施工程序",
+    "tags": [
+      "裝修施工"
+    ],
+    "text": "有關室內牆體水泥砂漿粉刷施工的敘述，下列何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "有關室內牆體水泥砂漿粉刷施工的敘述，下列何者錯誤？"
+      }
+    ],
+    "options": [
+      "20 m2 以上大面積施工時一律使用機器拌和粉刷材料",
+      "粉刷工程進行前，粉刷之表面黏有泥土、殘餘合板等，先以鐵錘或鋼絲刷除乾淨，並以水清洗",
+      "於混凝土、水泥空心磚或紅磚等圬工面上粉刷底層時，水泥砂漿拌和體積比為1 份水泥、3 份砂",
+      "室內粉刷工作進行時及完成後均應保持對流通風維持濕度，以利養護"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        0
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 5,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-34",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 34,
+    "topic": "品質與安全",
+    "primaryCategory": "工程管理",
+    "tags": [
+      "品質與安全"
+    ],
+    "text": "依營造安全衛生設施標準，任何型式之護欄，其杆柱及任何杆件之強度及錨錠，應使整個護欄具有抵抗於上欄杆之任何一點，於任何方向所加荷重，而無顯著變形之最低要求強度為？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "依營造安全衛生設施標準，任何型式之護欄，其杆柱及任何杆件之強度及錨錠，應使整個護欄具有抵抗於上欄杆之任何一點，於任何方向所加荷重，而無顯著變形之最低要求強度為？"
+      }
+    ],
+    "options": [
+      "65 公斤",
+      "70 公斤",
+      "75 公斤",
+      "80 公斤"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        2
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 5,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-35",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 35,
+    "topic": "工地施工",
+    "primaryCategory": "施工程序",
+    "tags": [
+      "工地施工"
+    ],
+    "text": "施工時對於拆除構造物時，下列規定何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "施工時對於拆除構造物時，下列規定何者錯誤？"
+      }
+    ],
+    "options": [
+      "使用動力系鏟斗機、推土機等拆除機具時，應配合構造物之結構、空間大小等特性妥慎選用機具",
+      "使用重力錘時，應以撞擊點為中心，構造物高度1.5 倍以上之距離為半徑設置作業區，除操作人員外，禁止無關人員進入",
+      "使用夾斗或具曲臂之機具時，應設置作業區，其周圍應大於夾斗或曲臂之運行線8 公尺以上，作業區內除操作人員外，禁止無關人員進入",
+      "使用施工架時，應注意其穩定並緊靠被拆除之構造物"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        3
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 5,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-36",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 36,
+    "topic": "混凝土施工",
+    "primaryCategory": "施工程序",
+    "tags": [
+      "混凝土施工"
+    ],
+    "text": "在鋼筋混凝土構造的場鑄工法中，「鋁合金模板」在近年有逐漸普及的趨勢。相較於傳統模板材料而言，下列何種情況通常最不利於採用鋁合金模板？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "在鋼筋混凝土構造的場鑄工法中，「鋁合金模板」在近年有逐漸普及的趨勢。相較於傳統模板材料而言，下列何種情況通常最不利於採用鋁合金模板？"
+      }
+    ],
+    "options": [
+      "高層建築物",
+      "目標工期較短",
+      "模板技術工短缺",
+      "各樓層之間的設計富有變化"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        3
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 5,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-37",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 37,
+    "topic": "鋼構與複合構造",
+    "primaryCategory": "構法",
+    "tags": [
+      "鋼構與複合構造"
+    ],
+    "relatedLaws": [
+      "鋼筋混凝土鋼骨構造"
+    ],
+    "text": "鋼骨鋼筋混凝土（SRC）構造樑柱接頭處的接合方式有「現場銲接之接合」還有「托樑螺栓之接合」兩種。關於兩種工法優缺點的比較，下列敘述何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "鋼骨鋼筋混凝土（SRC）構造樑柱接頭處的接合方式有「現場銲接之接合」還有「托樑螺栓之接合」兩種。關於兩種工法優缺點的比較，下列敘述何者錯誤？"
+      }
+    ],
+    "options": [
+      "現場銲接易受天候影響，因此工期較易受影響",
+      "現場銲接的接合方式較為經濟，構件運送也便利而成本較低",
+      "樑與柱在鋼構廠內銲接，品質易控制",
+      "托樑式考量到樑的彎矩圖，因此耐震性能較佳"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        3
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 5,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-38",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 38,
+    "topic": "鋼構與複合構造",
+    "primaryCategory": "構法",
+    "tags": [
+      "鋼構與複合構造"
+    ],
+    "relatedLaws": [
+      "鋼筋混凝土鋼骨構造"
+    ],
+    "text": "關於鋼骨鋼筋混凝土（SRC）的柱、樑構件及其主筋，下列敘述何者正確？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "關於鋼骨鋼筋混凝土（SRC）的柱、樑構件及其主筋，下列敘述何者正確？"
+      }
+    ],
+    "options": [
+      "主筋的中心距係依鋼筋直徑的倍數和粗粒料粒徑等檢討",
+      "柱、樑的主筋若未連續通過樑柱接頭或未依規定適當錨定，應視其為構材的補強筋且不計其對構材強度的貢獻",
+      "柱應於斷面的四個角落配置主筋，樑則是上下緣各一支主筋",
+      "為求在樑柱接頭處主筋得以連續，可於腹板或翼板設置貫穿孔"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        1
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 5,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-39",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 39,
+    "topic": "混凝土施工",
+    "primaryCategory": "施工程序",
+    "tags": [
+      "混凝土施工"
+    ],
+    "text": "混凝土坍度過低不適於澆置時，下列何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "混凝土坍度過低不適於澆置時，下列何者錯誤？"
+      }
+    ],
+    "options": [
+      "在維持原配比設計之水灰比原則下，加適量清水以調整坍度",
+      "現場加適量塑化劑後再加水以調整坍度",
+      "再拌和時其攪拌桶應至少再轉30 轉以上，至混凝土均勻",
+      "再拌和之混凝土，均需增加額外抗壓試驗，其抽樣以每1 預拌車一組為原則"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        1
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 5,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-40",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 40,
+    "topic": "混凝土材料",
+    "primaryCategory": "材料",
+    "tags": [
+      "混凝土材料"
+    ],
+    "text": "發生於2024 年4 月3 號的地震，震後可見不少鋼筋混凝土（RC）柱屈曲破壞。下列何種策略是提升RC 柱屈曲強度的有效作法？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "發生於2024 年4 月3 號的地震，震後可見不少鋼筋混凝土（RC）柱屈曲破壞。下列何種策略是提升RC 柱屈曲強度的有效作法？"
+      }
+    ],
+    "options": [
+      "用較小號數的鋼筋作主筋，進而增加主筋的數量",
+      "柱身貼附磁磚，以補強柱斷面的強度與剛度",
+      "增加柱的細長比",
+      "減少箍筋的間距"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        3
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 5,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-41",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 41,
+    "topic": "鋼構施工",
+    "primaryCategory": "施工程序",
+    "tags": [
+      "鋼構施工"
+    ],
+    "text": "一般鋼構造房屋工地現場的施工順序，何者正確？①樑構件吊裝 ②銲接鎖固 ③基礎螺栓埋設④柱構件吊裝 ⑤高拉力螺栓鎖固",
+    "content": [
+      {
+        "kind": "text",
+        "text": "一般鋼構造房屋工地現場的施工順序，何者正確？①樑構件吊裝 ②銲接鎖固 ③基礎螺栓埋設④柱構件吊裝 ⑤高拉力螺栓鎖固"
+      }
+    ],
+    "options": [
+      "④①②⑤③",
+      "③④①⑤②",
+      "③⑤④①②",
+      "④①③⑤②"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        1
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 5,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-42",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 42,
+    "topic": "帷幕牆與外牆",
+    "primaryCategory": "構法",
+    "tags": [
+      "帷幕牆與外牆"
+    ],
+    "text": "建築物外牆貼磁磚，如果只使用黏著劑，經過20 年後經常掉落，下列那一項方法最不適合防止磁磚掉落？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "建築物外牆貼磁磚，如果只使用黏著劑，經過20 年後經常掉落，下列那一項方法最不適合防止磁磚掉落？"
+      }
+    ],
+    "options": [
+      "選擇較大片的磁磚",
+      "選擇勾縫的施工法",
+      "選擇有背勾的磁磚",
+      "施工時，仔細敲擊固定每片磁磚"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        0
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 6,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-43",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 43,
+    "topic": "防水工程",
+    "primaryCategory": "防水工程",
+    "tags": [
+      "防水工程"
+    ],
+    "text": "發現直立之女兒牆體有斜紋龜裂滲水，此一場地條件最不適宜選用下列防水材料作處理？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "發現直立之女兒牆體有斜紋龜裂滲水，此一場地條件最不適宜選用下列防水材料作處理？"
+      }
+    ],
+    "options": [
+      "水性樹脂砂漿",
+      "壓克力樹脂防水膠",
+      "瀝青（或柏油）併油毛氈",
+      "矽利康填縫防水"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        2
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 6,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-44",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 44,
+    "topic": "工地施工",
+    "primaryCategory": "施工程序",
+    "tags": [
+      "工地施工"
+    ],
+    "text": "張貼石材若以水泥砂漿為黏著材料，日後經雨水浸淋易產生游離石灰水滲出施工勾縫，乾燥後形成白色碳酸鈣污斑之吐白現象。關於防止吐白現象的方法，下列施工方式何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "張貼石材若以水泥砂漿為黏著材料，日後經雨水浸淋易產生游離石灰水滲出施工勾縫，乾燥後形成白色碳酸鈣污斑之吐白現象。關於防止吐白現象的方法，下列施工方式何者錯誤？"
+      }
+    ],
+    "options": [
+      "勾縫以矽酯膠填縫，以防滲水入侵",
+      "採用防水水泥砂漿敷設底層",
+      "洞石類石材施工前須保持孔隙開放通風，讓水分可以排出避免淤積",
+      "避免採用乾拌水泥砂澆水打底之工法，避免水泥砂漿未能充分拌合，導致日後較易吸水產生水化吐白"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        2
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 6,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-45",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 45,
+    "topic": "裝修施工",
+    "primaryCategory": "施工程序",
+    "tags": [
+      "裝修施工"
+    ],
+    "text": "有關室內花崗石舖面地磚施工的敘述，何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "有關室內花崗石舖面地磚施工的敘述，何者錯誤？"
+      }
+    ],
+    "options": [
+      "施工圖上應標明切割及舖設尺度大小、規格、斷面及表面修飾，接縫、錨件、扣件、支撐等之配置",
+      "石材儲放於枕木或托板上，並以無沾污性之防水布覆蓋",
+      "安裝前，將地板底面清除乾淨，移除泥土、塵土、雜物及鬆脫物",
+      "裝卸石材時應避免碰碎、斷裂、沾污及其他損害。石材邊緣無木料或其他硬質物體保護時，得使用爪桿或撬桿"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        3
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 6,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-46",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 46,
+    "topic": "鋼構施工",
+    "primaryCategory": "施工程序",
+    "tags": [
+      "鋼構施工"
+    ],
+    "text": "鋼構造之高強度螺栓施工安裝，下列何項描述錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "鋼構造之高強度螺栓施工安裝，下列何項描述錯誤？"
+      }
+    ],
+    "options": [
+      "高強度螺栓之螺牙不得有損傷，已使用過之螺栓不得再使用",
+      "高強度螺栓之安裝，不得鎚擊入孔",
+      "高強度螺栓需使用動力鎖緊器鎖緊",
+      "螺栓群之鎖緊工作，應由兩側向中間，依上下、左右交叉之方式進行"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        3
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 6,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-47",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 47,
+    "topic": "混凝土施工",
+    "primaryCategory": "施工程序",
+    "tags": [
+      "混凝土施工"
+    ],
+    "text": "關於混凝土的拌和、輸送、澆置和相關品管等，下列何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "關於混凝土的拌和、輸送、澆置和相關品管等，下列何者錯誤？"
+      }
+    ],
+    "options": [
+      "混凝土應連續澆置，不可間隔太久，若有必要分層、分段、分區澆置，應詳列於澆置計畫中",
+      "混凝土輸送時應保持品質均勻，在輸送途中保持攪動的話，一般來說從拌和至工地卸料應該在90分鐘內完成",
+      "若澆置面為斜面時，應該由上而下澆置，並控制混凝土的坍度使其均勻流布",
+      "高強度混凝土（6,000 psi 以上）的產製，承包商須擬訂品質保證計畫，提出並經核可後執行，以確保施工品質"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        2
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 6,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-48",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 48,
+    "topic": "裝修施工",
+    "primaryCategory": "施工程序",
+    "tags": [
+      "裝修施工"
+    ],
+    "text": "就室內裝修工程之乾式骨架面板牆（俗稱輕隔間牆）組立，排程最適宜的施工序列：",
+    "content": [
+      {
+        "kind": "text",
+        "text": "就室內裝修工程之乾式骨架面板牆（俗稱輕隔間牆）組立，排程最適宜的施工序列："
+      }
+    ],
+    "options": [
+      "封外面板，機電預留管→上下U 槽，放樣定位→立牆骨架，開口部→填綿，封內面板→填縫批土，油漆",
+      "放樣定位→立牆骨架→上下U 槽→封外面板，開口部，機電預留管→填綿→封內面板→填縫批土，油漆",
+      "立牆骨架，開口部→放樣定位，上下U 槽封邊→封外面板，填縫批土，油漆→機電預留管，填綿→封內面板，填縫批土，油漆",
+      "放樣定位，上下U 槽→立牆骨架，開口部，機電預留管→封外面板→填綿，封內面板→填縫批土，油漆"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        3
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 6,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-49",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 49,
+    "topic": "鋼構與複合構造",
+    "primaryCategory": "構法",
+    "tags": [
+      "鋼構與複合構造"
+    ],
+    "text": "下列何項對於鋼構造接合設計之描述正確？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "下列何項對於鋼構造接合設計之描述正確？"
+      }
+    ],
+    "options": [
+      "鉚釘接合之使用歷史甚久，是目前常見之接合設計",
+      "接合之受力模式宜簡單明確，並且使應力集中",
+      "接合部包含接合構件，如加勁板、連接板、角鋼、托座等",
+      "接合部之設計強度不需要依照組合載重設計"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        2
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 6,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-50",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 50,
+    "topic": "裝修施工",
+    "primaryCategory": "施工程序",
+    "tags": [
+      "裝修施工"
+    ],
+    "text": "下圖為一種浴廁「同層排水（Same Floor Draining System）」作法的縱剖面詳圖，下列敘述何者正確？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "下圖為一種浴廁「同層排水（Same Floor Draining System）」作法的縱剖面詳圖，下列敘述何者正確？"
+      },
+      {
+        "kind": "image",
+        "src": "/question-bank/構造/113/50/question-02.png",
+        "alt": "第 50 題題幹引用圖示、PDF 題目區含嵌入圖片附圖",
+        "width": 1072,
+        "height": 553
+      }
+    ],
+    "options": [
+      "部位①浴廁降板區與垂直管道間之間最好能以結構撐牆或結構樑分隔，以利於支撐上層板，防止地板沉陷開裂",
+      "部位②是二次施作的上層板，防水層應施作於上層板，而非下層板",
+      "部位③下層板的降板高度視排水坡度及上層板構造的厚度而定，通常需要30～60 cm",
+      "部位④降板區內的管路萬一需要維修或更換，不需破壞上層板和裝修、防水，因此維修費用通常比傳統隔層排水來得低"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        2
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 7,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-51",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 51,
+    "topic": "屋頂防水",
+    "primaryCategory": "防水工程",
+    "tags": [
+      "屋頂防水"
+    ],
+    "text": "下圖為屋頂防水工法的收頭方式之一，下列敘述何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "下圖為屋頂防水工法的收頭方式之一，下列敘述何者錯誤？"
+      },
+      {
+        "kind": "image",
+        "src": "/question-bank/構造/113/51/question-02.png",
+        "alt": "第 51 題題幹引用圖示、PDF 題目區含嵌入圖片附圖",
+        "width": 724,
+        "height": 773
+      }
+    ],
+    "options": [
+      "部位①是為了防止水由防水層的末端進入，但混凝土施工很容易有裂縫而失敗，所以女兒牆面最好也加塗防水層",
+      "部位②可以防止直立面的防水層剝離或受到破壞，也可以改用金屬壓條配合其他保護材",
+      "此工法不只適用於瀝青油毛氈，也適用於所有的防水材料",
+      "部位③是為了防止保護層因熱脹冷縮推擠女兒牆，使防水層受到拉扯"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        2
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 7,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-52",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 52,
+    "topic": "裝修施工",
+    "primaryCategory": "施工程序",
+    "tags": [
+      "裝修施工"
+    ],
+    "text": "下列有關輕隔間詳圖之敘述，何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "下列有關輕隔間詳圖之敘述，何者錯誤？"
+      },
+      {
+        "kind": "image",
+        "src": "/question-bank/構造/113/52/question-02.png",
+        "alt": "第 52 題題幹引用圖示、PDF 題目區含嵌入圖片附圖",
+        "width": 977,
+        "height": 770
+      }
+    ],
+    "options": [
+      "圖A：為輕隔間穿樑剖面之作法",
+      "圖B：為輕隔間與鋼承板接合之作法",
+      "圖C：為輕隔間與潮溼空間交接之作法",
+      "圖D：輕隔間牆之總厚度，不論樓高為何，牆厚度一律均為15 公分"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        3
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 8,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-53",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 53,
+    "topic": "屋頂防水",
+    "primaryCategory": "防水工程",
+    "tags": [
+      "屋頂防水"
+    ],
+    "text": "下圖為某案場屋頂平台地坪詳圖，下列敘述何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "下圖為某案場屋頂平台地坪詳圖，下列敘述何者錯誤？"
+      },
+      {
+        "kind": "image",
+        "src": "/question-bank/構造/113/53/question-02.png",
+        "alt": "第 53 題題幹引用圖示、PDF 題目區含嵌入圖片附圖",
+        "width": 486,
+        "height": 461
+      }
+    ],
+    "options": [
+      "①如為防水層時可採用快速硬化PU",
+      "②如為隔熱材料時可採用PS 板",
+      "③如為防止壓層龜裂時可採用點焊鋼絲網",
+      "④如為防止熱脹冷縮作用時可採用無收縮水泥砂漿"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        3
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 8,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-54",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 54,
+    "topic": "帷幕牆與外牆",
+    "primaryCategory": "構法",
+    "tags": [
+      "帷幕牆與外牆"
+    ],
+    "text": "下圖為常見之外牆石材空縫設計平剖詳圖，下列敘述何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "下圖為常見之外牆石材空縫設計平剖詳圖，下列敘述何者錯誤？"
+      },
+      {
+        "kind": "image",
+        "src": "/question-bank/構造/113/54/question-02.png",
+        "alt": "第 54 題題幹引用圖示、PDF 題目區含嵌入圖片附圖",
+        "width": 594,
+        "height": 479
+      }
+    ],
+    "options": [
+      "①為金屬支架，需固定於結構體",
+      "②為吊掛件，採用防鏽材質為佳",
+      "③為插梢，用以連結吊掛外牆石材",
+      "④為防水材，用以防止由空縫進入的水氣"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        2
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 9,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-55",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 55,
+    "topic": "鋼構與複合構造",
+    "primaryCategory": "構法",
+    "tags": [
+      "鋼構與複合構造"
+    ],
+    "relatedLaws": [
+      "鋼筋混凝土鋼骨構造"
+    ],
+    "text": "鋼骨鋼筋混凝土（SRC）構造的樑有很多種作法，然而有些不宜使用在樑柱構架。下列何種為可使用的斷面？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "鋼骨鋼筋混凝土（SRC）構造的樑有很多種作法，然而有些不宜使用在樑柱構架。下列何種為可使用的斷面？"
+      },
+      {
+        "kind": "image",
+        "src": "/question-bank/構造/113/55/question-02.png",
+        "alt": "第 55 題選項疑似為圖片、PDF 題目區含嵌入圖片附圖",
+        "width": 1015,
+        "height": 227
+      }
+    ],
+    "options": [
+      "附圖選項（A）",
+      "附圖選項（B）",
+      "附圖選項（C）",
+      "附圖選項（D）"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        0
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 9,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-56",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 56,
+    "topic": "裝修施工",
+    "primaryCategory": "施工程序",
+    "tags": [
+      "裝修施工"
+    ],
+    "text": "下圖為常見的鋁窗（推開窗）安裝及收頭作法的縱剖面圖，下列敘述何者正確？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "下圖為常見的鋁窗（推開窗）安裝及收頭作法的縱剖面圖，下列敘述何者正確？"
+      },
+      {
+        "kind": "image",
+        "src": "/question-bank/構造/113/56/question-02.png",
+        "alt": "第 56 題題幹引用圖示、PDF 題目區含嵌入圖片附圖",
+        "width": 556,
+        "height": 530
+      }
+    ],
+    "options": [
+      "一般在建照圖說及建築發包圖的門窗圖上的標稱尺寸指的是尺寸(3)，也就是鋁窗的製造尺寸",
+      "尺寸(1)是裝修完成面尺寸，通常會小於尺寸(3)",
+      "尺寸(4)是牆體開口尺寸，窗框採焊接固定時，尺寸(4)通常會比尺寸(3)大5 cm 以上",
+      "在計算排煙窗面積時應以扣除邊框的尺寸(2)為準"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        2
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 9,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-57",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 57,
+    "topic": "屋頂防水",
+    "primaryCategory": "防水工程",
+    "tags": [
+      "屋頂防水"
+    ],
+    "text": "下圖為薄層綠化屋頂女兒牆收邊、排水天溝及防水施工詳圖，試問圖中下列那一部分的做法錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "下圖為薄層綠化屋頂女兒牆收邊、排水天溝及防水施工詳圖，試問圖中下列那一部分的做法錯誤？"
+      },
+      {
+        "kind": "image",
+        "src": "/question-bank/構造/113/57/question-02.png",
+        "alt": "第 57 題題幹引用圖示、PDF 題目區含嵌入圖片附圖",
+        "width": 654,
+        "height": 490
+      }
+    ],
+    "options": [
+      "防水層施作至牆上20 cm",
+      "設置沖孔鋁板",
+      "防水毯搭接至頂端",
+      "設置多孔性燒結陶粒"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        2
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 10,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-58",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 58,
+    "topic": "砌體與隔間",
+    "primaryCategory": "構法",
+    "tags": [
+      "砌體與隔間"
+    ],
+    "text": "加強磚牆之門窗與開口的總長度，依規定不得大於牆身長度的：",
+    "content": [
+      {
+        "kind": "text",
+        "text": "加強磚牆之門窗與開口的總長度，依規定不得大於牆身長度的："
+      }
+    ],
+    "options": [
+      "1/2",
+      "2/3",
+      "1/4",
+      "2/5"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        0
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 10,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-59",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 59,
+    "topic": "材料",
+    "primaryCategory": "材料",
+    "tags": [
+      "材料"
+    ],
+    "text": "有關地基調查計畫，下列敘述何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "有關地基調查計畫，下列敘述何者錯誤？"
+      }
+    ],
+    "options": [
+      "基地面積每600 平方公尺，應設一調查點",
+      "建築物基礎所涵蓋面積每300 平方公尺者，應設一調查點",
+      "基地面積超過6,000 平方公尺及建築物基礎所涵蓋面積超過3,000 平方公尺之部分，得視基地之地形、地層複雜性及建築物結構設計之需求，決定其調查點數",
+      "同一基地之調查點數不得少於三點"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        3
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 10,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-60",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 60,
+    "topic": "防火與隔音",
+    "primaryCategory": "構法",
+    "tags": [
+      "防火與隔音"
+    ],
+    "text": "依建築技術規則之規定，防火門窗周邊多少範圍內之牆壁應以不燃材料建造？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "依建築技術規則之規定，防火門窗周邊多少範圍內之牆壁應以不燃材料建造？"
+      }
+    ],
+    "options": [
+      "10 公分",
+      "15 公分",
+      "20 公分",
+      "25 公分"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        1
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 10,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-61",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 61,
+    "topic": "材料",
+    "primaryCategory": "材料",
+    "tags": [
+      "材料"
+    ],
+    "text": "某建築師依據公寓大廈防墜設施設置原則，針對既有集合住宅某住戶之居室的水平式推拉窗戶，進行防墜圍籬的規劃，下列檢討內容何者合乎前述設置原則之規定？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "某建築師依據公寓大廈防墜設施設置原則，針對既有集合住宅某住戶之居室的水平式推拉窗戶，進行防墜圍籬的規劃，下列檢討內容何者合乎前述設置原則之規定？"
+      }
+    ],
+    "options": [
+      "防墜圍籬材料採用鋼索時，其間距的最大拉寬不得大於10 公分",
+      "防墜圍籬材料選用鋼索時，以直向排列，並視開口面積大小可加設水平式橫條以增加安全性",
+      "以鋼索作為防墜圍籬的場合，其抗拉強度依CNS2111「金屬材料拉伸試驗法」的規定，應大於100公斤（kgf）",
+      "為維持建築物整體整齊外觀，防墜圍籬僅可設置在窗內側，不得設置於窗外側"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        0
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 10,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-62",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 62,
+    "topic": "鋼構施工",
+    "primaryCategory": "施工程序",
+    "tags": [
+      "鋼構施工"
+    ],
+    "relatedLaws": [
+      "鋼構造"
+    ],
+    "text": "有關鋼結構之表面處理與塗裝的描述，下列何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "有關鋼結構之表面處理與塗裝的描述，下列何者錯誤？"
+      }
+    ],
+    "options": [
+      "塗料應存放於低於40℃之陰涼處",
+      "可採動力工具除鏽",
+      "噴砂後工作環境之相對濕度宜在85%以下",
+      "噴砂後表面粗糙度平均值一般應在25 μm 以下"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        3
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 10,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-63",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 63,
+    "topic": "混凝土施工",
+    "primaryCategory": "施工程序",
+    "tags": [
+      "混凝土施工"
+    ],
+    "relatedLaws": [
+      "混凝土構造"
+    ],
+    "text": "混凝土輸送時應保持品質均勻，避免不當之材料析離或坍度損失，下列何項敘述錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "混凝土輸送時應保持品質均勻，避免不當之材料析離或坍度損失，下列何項敘述錯誤？"
+      }
+    ],
+    "options": [
+      "混凝土自拌和開始後至工地完成卸料之時間宜於90 分鐘內完成。運抵工地之等待時間不需計入運送時間",
+      "混凝土之輸送應與現場澆置作業配合，適當控制其速率",
+      "混凝土輸送途中應對日照、雨淋等作適當保護措施",
+      "由於交通狀況難於時限內運至現場或澆置完成時，經監造者同意在不損及混凝土品質下，依指定方式摻用緩凝劑以延長有效時限"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        0
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 10,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-64",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 64,
+    "topic": "材料",
+    "primaryCategory": "材料",
+    "tags": [
+      "材料"
+    ],
+    "relatedLaws": [
+      "無障礙"
+    ],
+    "text": "依據建築物無障礙設施設計規範，輪椅使用者正向接近時，雙手可及之最高高度應為多少公分？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "依據建築物無障礙設施設計規範，輪椅使用者正向接近時，雙手可及之最高高度應為多少公分？"
+      }
+    ],
+    "options": [
+      "100",
+      "110",
+      "120",
+      "130"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        2
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 11,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-65",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 65,
+    "topic": "鋼構與複合構造",
+    "primaryCategory": "構法",
+    "tags": [
+      "鋼構與複合構造"
+    ],
+    "text": "鋼構造接合工法中，關於高拉力螺栓的敘述何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "鋼構造接合工法中，關於高拉力螺栓的敘述何者錯誤？"
+      }
+    ],
+    "options": [
+      "可以減少螺栓的使用數量",
+      "可減少螺栓受往復載重後鬆脫的風險",
+      "除強度外，可提高接合的可靠度",
+      "可藉由扭力控制接合的品質"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        0
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 11,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-66",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 66,
+    "topic": "裝修施工",
+    "primaryCategory": "施工程序",
+    "tags": [
+      "裝修施工"
+    ],
+    "text": "採用4 mm 厚度以下薄石材版片作為室內裝修透光牆版面吊掛施作，那項前置作業錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "採用4 mm 厚度以下薄石材版片作為室內裝修透光牆版面吊掛施作，那項前置作業錯誤？"
+      }
+    ],
+    "options": [
+      "背透照明採光設計施工",
+      "背板採蜂巢版或膠合玻璃張貼",
+      "背板採圬工性質之面接合張貼",
+      "一二次接合金屬件"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        2
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 11,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-67",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 67,
+    "topic": "木構造",
+    "primaryCategory": "構法",
+    "tags": [
+      "木構造"
+    ],
+    "relatedLaws": [
+      "木構造"
+    ],
+    "text": "木構造建築之防蟻工法依白蟻種類、鄰接建築物蝕害程度、周圍環境及建地條件上有所不同，下列施工方式何者無法有效防治白蟻？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "木構造建築之防蟻工法依白蟻種類、鄰接建築物蝕害程度、周圍環境及建地條件上有所不同，下列施工方式何者無法有效防治白蟻？"
+      }
+    ],
+    "options": [
+      "廚房、浴室及洗臉台等之排水周圍部分，盡可能集中，使其構材成為不會濕潤之構造",
+      "將基礎設計成階梯狀，使木地檻與基礎之接觸減少",
+      "地板下面地盤鋪設植被，吸引白蟻滯留",
+      "地板下方、牆壁內部、屋架組內以換氣孔進行換氣"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        2
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 11,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-68",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 68,
+    "topic": "材料",
+    "primaryCategory": "材料",
+    "tags": [
+      "材料"
+    ],
+    "text": "在「不會對環境及人體健康造成負擔」的考量下，選擇室內裝修材料所需考量的事項，下列何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "在「不會對環境及人體健康造成負擔」的考量下，選擇室內裝修材料所需考量的事項，下列何者錯誤？"
+      }
+    ],
+    "options": [
+      "製造時耗費較少的能源",
+      "材料的使用與生長取得平衡",
+      "多用進口的自然材料",
+      "可回收再利用"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        2
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 11,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-69",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 69,
+    "topic": "基地與景觀",
+    "primaryCategory": "永續建築",
+    "tags": [
+      "基地與景觀"
+    ],
+    "text": "有關景觀工程中之透水鋪面的描述，下列何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "有關景觀工程中之透水鋪面的描述，下列何者錯誤？"
+      }
+    ],
+    "options": [
+      "透水鋪面之基底層應以混凝土打底以增加其承載力",
+      "傳統型透水鋪面其透水性主要由表面材的乾砌間隙來達成",
+      "表層下的基層應由透水性良好的砂石級配構成",
+      "整體型透水鋪面為整體成形之透水面狀材料所構成，如透水性混凝土等"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        0
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 11,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-70",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 70,
+    "topic": "帷幕牆與外牆",
+    "primaryCategory": "構法",
+    "tags": [
+      "帷幕牆與外牆"
+    ],
+    "text": "關於鋪貼牆面壁磚的敘述，下列何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "關於鋪貼牆面壁磚的敘述，下列何者錯誤？"
+      }
+    ],
+    "options": [
+      "為確保其黏著效果，黏著後之面磚通常會於黏貼兩週後進行拉拔試驗",
+      "施作打底之水泥砂漿粉刷前，應使牆面充分保持乾燥",
+      "鋪貼完成之表面，於任意之3 m 範圍內之許可差不得大於±3 mm",
+      "面磚鋪貼宜自中間基準線向左右兩邊鋪貼"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        1
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 11,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-71",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 71,
+    "topic": "工地施工",
+    "primaryCategory": "施工程序",
+    "tags": [
+      "工地施工"
+    ],
+    "text": "依據我國建築技術規則建築設計施工編有關防火門構造之規定，下列敘述何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "依據我國建築技術規則建築設計施工編有關防火門構造之規定，下列敘述何者錯誤？"
+      }
+    ],
+    "options": [
+      "常時關閉式之防火門的單一門扇面積不得超過3 m2，且不得裝設門止",
+      "當RC 造之旅館客房連接走廊時，防火門可不朝避難方向開啟",
+      "防火門周邊15 cm 範圍內的牆壁，應以不燃材料建造",
+      "常開式防火門採用防火捲門者，應附設門扇寬度在70 cm 以上，高度150 cm 以上之防火門"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        3
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 11,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-72",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 72,
+    "topic": "材料",
+    "primaryCategory": "材料",
+    "tags": [
+      "材料"
+    ],
+    "text": "防焰物品的目的在於防止微小火源的擴大，使燃燒初期的火勢受到抑制，而不會繼續擴大蔓延燃燒，或是使火勢受到阻礙，延緩火勢蔓延的速度。下列何者場所應使用防焰物品？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "防焰物品的目的在於防止微小火源的擴大，使燃燒初期的火勢受到抑制，而不會繼續擴大蔓延燃燒，或是使火勢受到阻礙，延緩火勢蔓延的速度。下列何者場所應使用防焰物品？"
+      }
+    ],
+    "options": [
+      "專用樓地板面積合計三百平方公尺之美術館",
+      "專用樓地板面積合計二百平方公尺之咖啡廳",
+      "專用樓地板面積合計一百五十平方公尺之補習班",
+      "專用樓地板面積合計一百平方公尺之幼兒園"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        3
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 11,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-73",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 73,
+    "topic": "混凝土施工",
+    "primaryCategory": "施工程序",
+    "tags": [
+      "混凝土施工"
+    ],
+    "text": "關於水中混凝土使用特密管澆置，下列何者為錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "關於水中混凝土使用特密管澆置，下列何者為錯誤？"
+      }
+    ],
+    "options": [
+      "特密管下流出之混凝土，若在水中橫向流動距離太長，會導致品質下降，因此一般每支特密管澆置面積以30 m2 為上限",
+      "若使混凝土在水中自由落下，會引起嚴重材料分離，混凝土澆置開始前，應於特密管之底端裝設底蓋或裝套管塞，以防混凝土與水直接接觸",
+      "澆置混凝土時特密管施予上下輕微移動，以促混凝土滑順流下，達良好的澆置效果",
+      "混凝土澆置中，任何情況均應使特密管底端保持埋入於已澆置混凝土頂面下200 cm 以上之深度，使特密管下半段保持充滿混凝土，以防水入侵管內"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        3
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 12,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-74",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 74,
+    "topic": "工地施工",
+    "primaryCategory": "施工程序",
+    "tags": [
+      "工地施工"
+    ],
+    "relatedLaws": [
+      "工程管理"
+    ],
+    "text": "在公共工程經費估算中，關於造成工程經費估算偏差的原因，下列何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "在公共工程經費估算中，關於造成工程經費估算偏差的原因，下列何者錯誤？"
+      }
+    ],
+    "options": [
+      "地形圖比例的選擇會影響工程數量估算的精確度",
+      "工程預定進度的變動可能導致與時程相關的成本變動",
+      "特殊設計未考量國內廠商的技術能力可能導致無法在預算內完成計畫",
+      "人力資源對工程經費不會有影響"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        3
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 12,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-75",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 75,
+    "topic": "進度與成本",
+    "primaryCategory": "工程管理",
+    "tags": [
+      "進度與成本"
+    ],
+    "text": "下列那一種圖可將工程細分至易於掌握與管理，以作為進度安排、成本會計管理？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "下列那一種圖可將工程細分至易於掌握與管理，以作為進度安排、成本會計管理？"
+      }
+    ],
+    "options": [
+      "分工結構圖",
+      "柏拉圖",
+      "特性要因圖",
+      "散佈圖"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        0
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 12,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-76",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 76,
+    "topic": "材料",
+    "primaryCategory": "材料",
+    "tags": [
+      "材料"
+    ],
+    "text": "若有一棟位於海邊（高鹽害環境、高度日曬）的私人豪宅別墅，其外牆及屋頂指定採用金屬板材料，下列何種金屬材料最符合需求？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "若有一棟位於海邊（高鹽害環境、高度日曬）的私人豪宅別墅，其外牆及屋頂指定採用金屬板材料，下列何種金屬材料最符合需求？"
+      }
+    ],
+    "options": [
+      "鐵",
+      "鋅",
+      "鈦",
+      "銅"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        2
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 12,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-77",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 77,
+    "topic": "進度與成本",
+    "primaryCategory": "工程管理",
+    "tags": [
+      "進度與成本"
+    ],
+    "text": "關於要徑法（Critical Path Method, CPM）在工程進度排程中的應用，下列敘述何者正確？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "關於要徑法（Critical Path Method, CPM）在工程進度排程中的應用，下列敘述何者正確？"
+      }
+    ],
+    "options": [
+      "要徑法無法明確顯示工程各作業之間的相互關係",
+      "使用要徑法時，無法對整個工期進行有效的時間調整與策劃",
+      "要徑法有助於發現工程控制圖中的瓶頸項目，並明確指出要徑所在",
+      "要徑法產出的成本和時間估算總是比實際情況要高，因此不適合用於精確估價"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        2
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 12,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-78",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 78,
+    "topic": "工地施工",
+    "primaryCategory": "施工程序",
+    "tags": [
+      "工地施工"
+    ],
+    "relatedLaws": [
+      "工程管理"
+    ],
+    "text": "下列關於工程專案各階段工程經費估算主要用途之敘述，那一項錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "下列關於工程專案各階段工程經費估算主要用途之敘述，那一項錯誤？"
+      }
+    ],
+    "options": [
+      "可行性評估階段之工程經費概估，其主要用途係作為比較、評估各方案之開發效益，以供作興建與否的決策依據",
+      "綜合規劃階段之工程經費概算，將作為日後建設經費編列與執行之依據",
+      "基本設計階段之工程經費估算，不需要參考綜合規劃階段之工程經費概算結果",
+      "細部設計階段所估算之工程經費，將據以編制工程預算書"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        2
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 12,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-79",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 79,
+    "topic": "工地施工",
+    "primaryCategory": "施工程序",
+    "tags": [
+      "工地施工"
+    ],
+    "relatedLaws": [
+      "工程管理"
+    ],
+    "text": "下列何者屬於公共工程工程管理費之範疇？①建築證照費 ②公共藝術執行費用 ③仲裁費用④評選作業費 ⑤設計監造費",
+    "content": [
+      {
+        "kind": "text",
+        "text": "下列何者屬於公共工程工程管理費之範疇？①建築證照費 ②公共藝術執行費用 ③仲裁費用④評選作業費 ⑤設計監造費"
+      }
+    ],
+    "options": [
+      "①②③",
+      "②③④",
+      "③④⑤",
+      "①③④"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        3
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 12,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  },
+  {
+    "id": "construction-113-80",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "construction",
+    "questionNumber": 80,
+    "topic": "裝修施工",
+    "primaryCategory": "施工程序",
+    "tags": [
+      "裝修施工"
+    ],
+    "text": "目前在普遍缺工情形之下，整體衛浴系統逐漸受到市場關注，下列有關整體衛浴的敘述，何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "目前在普遍缺工情形之下，整體衛浴系統逐漸受到市場關注，下列有關整體衛浴的敘述，何者錯誤？"
+      }
+    ],
+    "options": [
+      "整體衛浴框體與建築結構體之間採分離施作，並未一體化",
+      "採用整體衛浴可以提高施工效率並大幅降低漏水問題",
+      "同規模大小之整體衛浴單價較傳統衛浴低廉",
+      "整體衛浴可適用於同層排水之新修法方向"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        2
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "3801",
+      "page": 12,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0103&t=S"
+    }
+  }
+]

@@ -1,0 +1,1668 @@
+[
+  {
+    "id": "structure-113-01",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "structure",
+    "questionNumber": 1,
+    "topic": "結構力學",
+    "primaryCategory": "力學",
+    "tags": [
+      "結構力學"
+    ],
+    "text": "下圖（左）為一簡支梁在均布荷載q(x)作用下之示意圖，圖（右）則為該梁於x 處截取一小段梁dx 之自由體圖。圖中M 代表彎矩、dM 代表彎矩增量、V 代表剪力、dV 代表剪力增量。下列關係式中，何者正確？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "下圖（左）為一簡支梁在均布荷載q(x)作用下之示意圖，圖（右）則為該梁於x 處截取一小段梁dx 之自由體圖。圖中M 代表彎矩、dM 代表彎矩增量、V 代表剪力、dV 代表剪力增量。下列關係式中，何者正確？"
+      },
+      {
+        "kind": "image",
+        "src": "/question-bank/結構/113/01/question-02.png",
+        "alt": "第 1 題題幹引用圖示、PDF 題目區含嵌入圖片附圖",
+        "width": 1017,
+        "height": 411
+      }
+    ],
+    "options": [
+      "dM/dV = dx",
+      "dM/dx = q(x)",
+      "dM/dx = V(x)",
+      "dV/dx = M(x)"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        2
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "2801",
+      "page": 2,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=S"
+    }
+  },
+  {
+    "id": "structure-113-02",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "structure",
+    "questionNumber": 2,
+    "topic": "結構力學",
+    "primaryCategory": "力學",
+    "tags": [
+      "結構力學"
+    ],
+    "text": "一簡支梁斷面寬100 mm，深度150 mm，所在某一位置斷面的彎矩100 kN-m，關於此斷面的敘述，下列何者正確？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "一簡支梁斷面寬100 mm，深度150 mm，所在某一位置斷面的彎矩100 kN-m，關於此斷面的敘述，下列何者正確？"
+      }
+    ],
+    "options": [
+      "斷面模數S = 325 cm3",
+      "斷面慣性矩I = 2100 cm4",
+      "斷面最大應力為266.7 MPa",
+      "斷面最小應力為-310.5 MPa"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        2
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "2801",
+      "page": 2,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=S"
+    }
+  },
+  {
+    "id": "structure-113-03",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "structure",
+    "questionNumber": 3,
+    "topic": "結構系統",
+    "primaryCategory": "結構系統",
+    "tags": [
+      "結構系統"
+    ],
+    "text": "關於薄殼結構，下列敘述何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "關於薄殼結構，下列敘述何者錯誤？"
+      }
+    ],
+    "options": [
+      "可分為可展開與不可展開薄殼",
+      "無法以直線模板釘作薄殼",
+      "切面曲率可為零",
+      "雙曲拋物面薄殼又可稱為HP 薄殼"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        1
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "2801",
+      "page": 2,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=S"
+    }
+  },
+  {
+    "id": "structure-113-04",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "structure",
+    "questionNumber": 4,
+    "topic": "材料力學",
+    "primaryCategory": "力學",
+    "tags": [
+      "材料力學"
+    ],
+    "text": "下列材料性質之敘述何者正確？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "下列材料性質之敘述何者正確？"
+      }
+    ],
+    "options": [
+      "材料楊氏係數（Young’s modulus）為材料應力－應變曲線圖中座標原點至極限點（Ultimate point）之斜率",
+      "韌性材料（Ductile material）破壞時會吸收較多能量",
+      "鋼材料頸縮（Necking）現象通常是發生在最大強度點之前",
+      "極限點（Ultimate point）越接近降伏點（Yield point）之材料，破壞時能吸收較多能量"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        1
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "2801",
+      "page": 2,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=S"
+    }
+  },
+  {
+    "id": "structure-113-05",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "structure",
+    "questionNumber": 5,
+    "topic": "結構力學",
+    "primaryCategory": "力學",
+    "tags": [
+      "結構力學"
+    ],
+    "text": "關於纜索結構（cable structures）的敘述，下列何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "關於纜索結構（cable structures）的敘述，下列何者錯誤？"
+      }
+    ],
+    "options": [
+      "單曲率（single-curvature）結構的穩定性會優於雙曲率（double-curvature）結構",
+      "雙索（double-cable）結構的穩定性會優於單索（single-cable）結構",
+      "雙索結構中，曲率凹向上的纜索為主索，負責承擔大部分的荷載",
+      "纜索內應施加預張力"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        0
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "2801",
+      "page": 2,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=S"
+    }
+  },
+  {
+    "id": "structure-113-06",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "structure",
+    "questionNumber": 6,
+    "topic": "結構力學",
+    "primaryCategory": "力學",
+    "tags": [
+      "結構力學"
+    ],
+    "text": "下列關於提高纜索結構（cable structures）穩定性的策略，何者無效？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "下列關於提高纜索結構（cable structures）穩定性的策略，何者無效？"
+      }
+    ],
+    "options": [
+      "在與主索同一垂直平面內，增設一條曲率與主索相反的副索，且將主索與副索以拉力構件或壓力構件相連接",
+      "在曲率為凹向上的纜索下方增設錨定至地面的拉纜",
+      "在纜索內施加較高的預張力",
+      "降低纜索承擔的重力荷載"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        3
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "2801",
+      "page": 2,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=S"
+    }
+  },
+  {
+    "id": "structure-113-07",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "structure",
+    "questionNumber": 7,
+    "topic": "結構力學",
+    "primaryCategory": "力學",
+    "tags": [
+      "結構力學"
+    ],
+    "text": "在進行高層建築物結構設計時，下列敘述何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "在進行高層建築物結構設計時，下列敘述何者錯誤？"
+      }
+    ],
+    "options": [
+      "於兩道連通到底的RC 剪力牆間逐層設置水平短梁將兩道牆相連時，短梁稱為剪力連桿（shear-link），在地震時會優先受損，具有消能作用",
+      "使用對稱型的平面配置可降低扭轉變形，並避免應力集中",
+      "於部分框架中各層增設斜撐有利於提高建築物抗震能力",
+      "大量增設厚實結構牆可提高自振週期，有助於減低地震力"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        3
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "2801",
+      "page": 3,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=S"
+    }
+  },
+  {
+    "id": "structure-113-08",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "structure",
+    "questionNumber": 8,
+    "topic": "載重",
+    "primaryCategory": "力學",
+    "tags": [
+      "載重"
+    ],
+    "text": "關於設計載重組合，下列敘述何者正確？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "關於設計載重組合，下列敘述何者正確？"
+      }
+    ],
+    "options": [
+      "載重係數均大於或等於1",
+      "在同一個載重組合中，需同時考慮風力與地震力",
+      "在靜載重DL+活載重LL 的組合中，靜載重的載重係數大於活載重",
+      "載重組合中，載重係數可以為負值"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        3
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "2801",
+      "page": 3,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=S"
+    }
+  },
+  {
+    "id": "structure-113-09",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "structure",
+    "questionNumber": 9,
+    "topic": "耐震設計",
+    "primaryCategory": "耐震",
+    "tags": [
+      "耐震設計"
+    ],
+    "text": "依「建築物耐震設計規範」，下列有關地震加速度反應譜之敘述何者正確？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "依「建築物耐震設計規範」，下列有關地震加速度反應譜之敘述何者正確？"
+      }
+    ],
+    "options": [
+      "耐震設計規範中的加速度反應譜目的是用來規範建築物的形狀",
+      "設計加速度反應譜對應至475 年回歸期之地震",
+      "目前加速度反應譜中，工址分成強、中、弱三個分區",
+      "針對加速度反應譜「建築技術規則構造篇」亦有詳細規定"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        1
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "2801",
+      "page": 3,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=S"
+    }
+  },
+  {
+    "id": "structure-113-10",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "structure",
+    "questionNumber": 10,
+    "topic": "耐震設計",
+    "primaryCategory": "耐震",
+    "tags": [
+      "耐震設計"
+    ],
+    "text": "結構系統中，柱應以直通至基礎為原則，若因配置困難而無法直通，造成梁上柱之問題時，此類地震力傳遞路徑不連續處的梁構材，依據「建築物耐震設計規範」的精神，下列敘述何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "結構系統中，柱應以直通至基礎為原則，若因配置困難而無法直通，造成梁上柱之問題時，此類地震力傳遞路徑不連續處的梁構材，依據「建築物耐震設計規範」的精神，下列敘述何者錯誤？"
+      }
+    ],
+    "options": [
+      "梁上柱之接合構件彎矩強度應以強梁弱柱的原則設計",
+      "支撐不連續構架之支撐構材，為避免先在此處產生塑鉸或破壞，地震力引致之內力應提高1.4 αy 倍設計",
+      "梁之彎矩設計應將梁上柱底彎矩強度一併納入分析",
+      "支承梁之設計剪力強度應小於彎矩強度計得之剪力"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        3
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "2801",
+      "page": 3,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=S"
+    }
+  },
+  {
+    "id": "structure-113-11",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "structure",
+    "questionNumber": 11,
+    "topic": "結構力學",
+    "primaryCategory": "力學",
+    "tags": [
+      "結構力學"
+    ],
+    "text": "關於建築結構行為之敘述，下列何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "關於建築結構行為之敘述，下列何者錯誤？"
+      }
+    ],
+    "options": [
+      "活載重與靜載重僅作用於垂直方向，地震力與風力僅作用於水平方向",
+      "鋼筋混凝土結構受水平地震力作用時，柱的撓曲裂縫通常位於柱頭與柱腳處",
+      "建築物各層樓板通常可假設為剛性樓板，但樓板較細長時，則應視為非剛性樓板",
+      "計算鋼骨鋼筋混凝土結構之構材強度時，通常不考慮鋼骨的局部挫屈"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        0
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "2801",
+      "page": 3,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=S"
+    }
+  },
+  {
+    "id": "structure-113-12",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "structure",
+    "questionNumber": 12,
+    "topic": "耐震設計",
+    "primaryCategory": "耐震",
+    "tags": [
+      "耐震設計"
+    ],
+    "text": "非結構物耐震考量，下列敘述何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "非結構物耐震考量，下列敘述何者錯誤？"
+      }
+    ],
+    "options": [
+      "圖書館書架若無抗震措施，極易於強震中受損",
+      "懸吊天花板因重量輕，不須考量耐震",
+      "配電盤、水塔等均屬非結構物",
+      "非結構物的震損會影響建築物使用機能"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        1
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "2801",
+      "page": 3,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=S"
+    }
+  },
+  {
+    "id": "structure-113-13",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "structure",
+    "questionNumber": 13,
+    "topic": "結構力學",
+    "primaryCategory": "力學",
+    "tags": [
+      "結構力學"
+    ],
+    "text": "下列關於建築物所使用被動消能元件之敘述，何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "下列關於建築物所使用被動消能元件之敘述，何者錯誤？"
+      }
+    ],
+    "options": [
+      "消能元件概分為位移型、速度型與其它型式",
+      "加裝消能元件之建築物，可放寬本身結構系統之限制高度",
+      "消能建築設計基本原則之一為：對所有消能建築，要求在中小度地震下須完全保持彈性，且非結構元件無明顯損壞",
+      "位移型消能元件的受力與位移關係，主要為該元件兩端點相對位移的函數"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        1
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "2801",
+      "page": 3,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=S"
+    }
+  },
+  {
+    "id": "structure-113-14",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "structure",
+    "questionNumber": 14,
+    "topic": "耐震設計",
+    "primaryCategory": "耐震",
+    "tags": [
+      "耐震設計"
+    ],
+    "text": "一般建築結構耐震設計時，下列敘述何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "一般建築結構耐震設計時，下列敘述何者錯誤？"
+      }
+    ],
+    "options": [
+      "結構物之耐震設計通常應兼顧強度及韌性",
+      "若將結構物設計成大地震時仍保持彈性，殊不經濟",
+      "地震設計橫力是將大地震引致的彈性地震力加以折減而得",
+      "為使結構物具有韌性，提高結構材料強度是最好的作法"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        3
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "2801",
+      "page": 4,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=S"
+    }
+  },
+  {
+    "id": "structure-113-15",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "structure",
+    "questionNumber": 15,
+    "topic": "耐震設計",
+    "primaryCategory": "耐震",
+    "tags": [
+      "耐震設計"
+    ],
+    "text": "有關建築結構耐震性質的敘述，下列何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "有關建築結構耐震性質的敘述，下列何者錯誤？"
+      }
+    ],
+    "options": [
+      "建築物的耐震性可根據強度和韌性來評價，韌性低的建築物必須將強度提高",
+      "結構體的強度、韌性相同時，一般而言，將建築物整體加重可提升其耐震性",
+      "高層建築為了應付長週期地震，可導入消能元件",
+      "低矮鋼筋混凝土校舍，採用翼牆補強，一般而言可提高其強度"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        1
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "2801",
+      "page": 4,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=S"
+    }
+  },
+  {
+    "id": "structure-113-16",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "structure",
+    "questionNumber": 16,
+    "topic": "結構力學",
+    "primaryCategory": "力學",
+    "tags": [
+      "結構力學"
+    ],
+    "text": "一剛架結構受外力作用如圖所示，下列何種梁上塑性鉸產生時，不會形成不穩定結構？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "一剛架結構受外力作用如圖所示，下列何種梁上塑性鉸產生時，不會形成不穩定結構？"
+      },
+      {
+        "kind": "image",
+        "src": "/question-bank/結構/113/16/question-02.png",
+        "alt": "第 16 題題幹引用圖示、PDF 題目區含嵌入圖片附圖",
+        "width": 747,
+        "height": 378
+      }
+    ],
+    "options": [
+      "cf 兩點產生塑鉸",
+      "cef 三點產生塑鉸",
+      "cdf 三點產生塑鉸",
+      "ijk 三點產生塑鉸"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        0
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "2801",
+      "page": 4,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=S"
+    }
+  },
+  {
+    "id": "structure-113-17",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "structure",
+    "questionNumber": 17,
+    "topic": "結構力學",
+    "primaryCategory": "力學",
+    "tags": [
+      "結構力學"
+    ],
+    "text": "圖示之二懸臂梁，短梁與長梁於a 點之垂直變位量分別為Δ1 與Δ2，兩者關係可表示為Δ1 = βΔ2，則β 為何？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "圖示之二懸臂梁，短梁與長梁於a 點之垂直變位量分別為Δ1 與Δ2，兩者關係可表示為Δ1 = βΔ2，則β 為何？"
+      },
+      {
+        "kind": "image",
+        "src": "/question-bank/結構/113/17/question-02.png",
+        "alt": "第 17 題題幹引用圖示、PDF 題目區含嵌入圖片附圖",
+        "width": 555,
+        "height": 407
+      }
+    ],
+    "options": [
+      "1/2",
+      "1/4",
+      "1/6",
+      "1/8"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        1
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "2801",
+      "page": 4,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=S"
+    }
+  },
+  {
+    "id": "structure-113-18",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "structure",
+    "questionNumber": 18,
+    "topic": "結構力學",
+    "primaryCategory": "力學",
+    "tags": [
+      "結構力學"
+    ],
+    "text": "格子梁系統中，兩直交梁的斷面相同且端點支承亦相同。若直向與橫向的跨距比為1：2，則直向梁與橫向梁的勁度比為何？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "格子梁系統中，兩直交梁的斷面相同且端點支承亦相同。若直向與橫向的跨距比為1：2，則直向梁與橫向梁的勁度比為何？"
+      }
+    ],
+    "options": [
+      "1：2",
+      "2：1",
+      "1：8",
+      "8：1"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        1,
+        3
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "2801",
+      "page": 4,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=S"
+    }
+  },
+  {
+    "id": "structure-113-19",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "structure",
+    "questionNumber": 19,
+    "topic": "載重",
+    "primaryCategory": "力學",
+    "tags": [
+      "載重"
+    ],
+    "text": "某懸臂梁長3 m，承受均布載重w。今將長度改為6 m，仍承受均布載重w，其他條件不變，則此梁之自由端變位為原來梁之幾倍？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "某懸臂梁長3 m，承受均布載重w。今將長度改為6 m，仍承受均布載重w，其他條件不變，則此梁之自由端變位為原來梁之幾倍？"
+      }
+    ],
+    "options": [
+      "4",
+      "8",
+      "16",
+      "32"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        2
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "2801",
+      "page": 4,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=S"
+    }
+  },
+  {
+    "id": "structure-113-20",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "structure",
+    "questionNumber": 20,
+    "topic": "載重",
+    "primaryCategory": "力學",
+    "tags": [
+      "載重"
+    ],
+    "text": "根據尤拉挫屈公式（Euler equation），下列何種作法可降低柱子的有效長度，以提高柱子的挫屈載重？①桿件中間增加側向支撐 ②增加柱端點束制 ③增加柱斷面 ④增加材料彈性係數",
+    "content": [
+      {
+        "kind": "text",
+        "text": "根據尤拉挫屈公式（Euler equation），下列何種作法可降低柱子的有效長度，以提高柱子的挫屈載重？①桿件中間增加側向支撐 ②增加柱端點束制 ③增加柱斷面 ④增加材料彈性係數"
+      }
+    ],
+    "options": [
+      "僅①②",
+      "僅①③",
+      "僅①②③",
+      "①②③④"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        0
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "2801",
+      "page": 4,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=S"
+    }
+  },
+  {
+    "id": "structure-113-21",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "structure",
+    "questionNumber": 21,
+    "topic": "材料力學",
+    "primaryCategory": "力學",
+    "tags": [
+      "材料力學"
+    ],
+    "text": "下列四種開口牆，其材料、外周尺寸、開口面積均相同，但開口位置或方式不同，何者抗震強度最佳？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "下列四種開口牆，其材料、外周尺寸、開口面積均相同，但開口位置或方式不同，何者抗震強度最佳？"
+      },
+      {
+        "kind": "image",
+        "src": "/question-bank/結構/113/21/question-02.png",
+        "alt": "第 21 題選項疑似為圖片、PDF 題目區含嵌入圖片附圖",
+        "width": 1006,
+        "height": 408
+      }
+    ],
+    "options": [
+      "附圖選項（A）",
+      "附圖選項（B）",
+      "附圖選項（C）",
+      "附圖選項（D）"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        0,
+        1
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "2801",
+      "page": 5,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=S"
+    }
+  },
+  {
+    "id": "structure-113-22",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "structure",
+    "questionNumber": 22,
+    "topic": "耐震設計",
+    "primaryCategory": "耐震",
+    "tags": [
+      "耐震設計"
+    ],
+    "text": "下列那種牆設計對於建築物耐震時水平強度的提升效果最好？圖中以網點圖樣填滿的部分為牆體的範圍，白色部分則為開口（門或窗）",
+    "content": [
+      {
+        "kind": "text",
+        "text": "下列那種牆設計對於建築物耐震時水平強度的提升效果最好？圖中以網點圖樣填滿的部分為牆體的範圍，白色部分則為開口（門或窗）"
+      },
+      {
+        "kind": "image",
+        "src": "/question-bank/結構/113/22/question-02.png",
+        "alt": "第 22 題題幹引用圖示、PDF 題目區含嵌入圖片附圖",
+        "width": 1173,
+        "height": 188
+      }
+    ],
+    "options": [
+      "結構牆(i)",
+      "結構牆(ii)",
+      "結構牆(iii)",
+      "結構牆(iv)"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        3
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "2801",
+      "page": 5,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=S"
+    }
+  },
+  {
+    "id": "structure-113-23",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "structure",
+    "questionNumber": 23,
+    "topic": "結構力學",
+    "primaryCategory": "力學",
+    "tags": [
+      "結構力學"
+    ],
+    "text": "土壤液化會造成完工後的建築物下陷或傾斜，下列針對土壤液化現象的敘述，何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "土壤液化會造成完工後的建築物下陷或傾斜，下列針對土壤液化現象的敘述，何者錯誤？"
+      }
+    ],
+    "options": [
+      "觸發土壤液化的條件之一是建築物基礎底面的土壤承載力低，因此黏性土壤多的地層即屬於土壤液化高風險區",
+      "觸發土壤液化的條件之一是該地土質為疏鬆的砂質土壤。在此類土層上興建建築物前，若以重物重複錘擊地面夯實土壤，即可降低日後發生土壤液化的機會",
+      "觸發土壤液化的條件之一是土壤含水量達飽和狀態，因此在連日大雨過後，發生土壤液化的機率會上升",
+      "觸發土壤液化的條件之一是土壤受到擾動，因此土壤液化時常發生在強震過後"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        0
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "2801",
+      "page": 5,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=S"
+    }
+  },
+  {
+    "id": "structure-113-24",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "structure",
+    "questionNumber": 24,
+    "topic": "結構力學",
+    "primaryCategory": "力學",
+    "tags": [
+      "結構力學"
+    ],
+    "text": "在靜態條件下，擋土牆可能之破壞型式不包括下列何者？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "在靜態條件下，擋土牆可能之破壞型式不包括下列何者？"
+      }
+    ],
+    "options": [
+      "牆背或牆基礎下土壤液化導致破壞",
+      "滑動破壞",
+      "傾覆（前傾或後傾）破壞",
+      "基礎承載破壞"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        0
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "2801",
+      "page": 5,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=S"
+    }
+  },
+  {
+    "id": "structure-113-25",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "structure",
+    "questionNumber": 25,
+    "topic": "耐震設計",
+    "primaryCategory": "耐震",
+    "tags": [
+      "耐震設計"
+    ],
+    "text": "下圖剛架受地震力，最少出現幾個塑鉸時會發生崩塌？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "下圖剛架受地震力，最少出現幾個塑鉸時會發生崩塌？"
+      },
+      {
+        "kind": "image",
+        "src": "/question-bank/結構/113/25/question-02.png",
+        "alt": "第 25 題題幹引用圖示、PDF 題目區含嵌入圖片附圖",
+        "width": 264,
+        "height": 309
+      }
+    ],
+    "options": [
+      "3 個",
+      "4 個",
+      "6 個",
+      "7 個"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        1
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "2801",
+      "page": 5,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=S"
+    }
+  },
+  {
+    "id": "structure-113-26",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "structure",
+    "questionNumber": 26,
+    "topic": "結構力學",
+    "primaryCategory": "力學",
+    "tags": [
+      "結構力學"
+    ],
+    "text": "如圖所示之構架承受側力P，兩柱分別高L 及2 L，柱頂皆為鉸接（pin），兩柱EI 值相同，而梁為剛體。若假設柱水平變形主要為撓曲造成，剪力變形極小，則兩柱所分配水平剪力較大者約為較小者之幾倍？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "如圖所示之構架承受側力P，兩柱分別高L 及2 L，柱頂皆為鉸接（pin），兩柱EI 值相同，而梁為剛體。若假設柱水平變形主要為撓曲造成，剪力變形極小，則兩柱所分配水平剪力較大者約為較小者之幾倍？"
+      },
+      {
+        "kind": "image",
+        "src": "/question-bank/結構/113/26/question-02.png",
+        "alt": "第 26 題題幹引用圖示、PDF 題目區含嵌入圖片附圖",
+        "width": 454,
+        "height": 258
+      }
+    ],
+    "options": [
+      "1",
+      "2",
+      "4",
+      "8"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        3
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "2801",
+      "page": 6,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=S"
+    }
+  },
+  {
+    "id": "structure-113-27",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "structure",
+    "questionNumber": 27,
+    "topic": "結構系統",
+    "primaryCategory": "結構系統",
+    "tags": [
+      "結構系統"
+    ],
+    "text": "下圖所示桁架中，a、c 兩桿互相垂直，在圖示水平力P 作用下，那些桿件可能因受壓而產生挫屈？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "下圖所示桁架中，a、c 兩桿互相垂直，在圖示水平力P 作用下，那些桿件可能因受壓而產生挫屈？"
+      },
+      {
+        "kind": "image",
+        "src": "/question-bank/結構/113/27/question-02.png",
+        "alt": "第 27 題題幹引用圖示、PDF 題目區含嵌入圖片附圖",
+        "width": 429,
+        "height": 389
+      }
+    ],
+    "options": [
+      "僅c",
+      "ac",
+      "acd",
+      "abcd"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        0
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "2801",
+      "page": 6,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=S"
+    }
+  },
+  {
+    "id": "structure-113-28",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "structure",
+    "questionNumber": 28,
+    "topic": "結構力學",
+    "primaryCategory": "力學",
+    "tags": [
+      "結構力學"
+    ],
+    "text": "於「建築物混凝土結構設計規範」中，有關純混凝土之規定，下列敘述何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "於「建築物混凝土結構設計規範」中，有關純混凝土之規定，下列敘述何者錯誤？"
+      }
+    ],
+    "options": [
+      "於純混凝土結構構材的設計中，可使用混凝土的抗拉強度",
+      "韌性並非純混凝土結構設計之基本需求",
+      "純混凝土不可用於柱或樁帽",
+      "純混凝土的抗剪強度通常與抗壓強度成正比"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        3
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "2801",
+      "page": 6,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=S"
+    }
+  },
+  {
+    "id": "structure-113-29",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "structure",
+    "questionNumber": 29,
+    "topic": "鋼筋混凝土",
+    "primaryCategory": "鋼筋混凝土",
+    "tags": [
+      "鋼筋混凝土"
+    ],
+    "text": "關於預力混凝土梁之敘述，下列何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "關於預力混凝土梁之敘述，下列何者錯誤？"
+      }
+    ],
+    "options": [
+      "預力混凝土梁使用預力鋼鍵，於構材受設計載重作用前先使混凝土處於受壓狀態，受設計載重後通常不使混凝土發生拉應力",
+      "預力混凝土梁承受過大載重而產生細微裂縫，當載重除去後裂縫將會閉合",
+      "建築設計可採用預力混凝土梁取得較大之柱跨距",
+      "依施工順序可分為先拉預力法及後拉預力法，兩者皆必須使用端錨來保持預力鋼鍵的錨定力"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        3
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "2801",
+      "page": 6,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=S"
+    }
+  },
+  {
+    "id": "structure-113-30",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "structure",
+    "questionNumber": 30,
+    "topic": "鋼筋混凝土",
+    "primaryCategory": "鋼筋混凝土",
+    "tags": [
+      "鋼筋混凝土"
+    ],
+    "text": "關於鋼筋混凝土梁桿件之「平衡鋼筋比」，下列敘述何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "關於鋼筋混凝土梁桿件之「平衡鋼筋比」，下列敘述何者錯誤？"
+      }
+    ],
+    "options": [
+      "「平衡鋼筋比」係將平衡應變狀態之鋼筋量除以全斷面積",
+      "梁桿件因斷面彎矩造成受壓處最外緣混凝土壓碎時（ε = 0.003），受拉側最外緣鋼筋剛好降伏",
+      "韌性設計最大鋼筋比ρmax 會小於平衡鋼筋比ρb",
+      "平衡鋼筋比ρb 為一無因次單位"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        0
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "2801",
+      "page": 6,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=S"
+    }
+  },
+  {
+    "id": "structure-113-31",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "structure",
+    "questionNumber": 31,
+    "topic": "鋼筋混凝土",
+    "primaryCategory": "鋼筋混凝土",
+    "tags": [
+      "鋼筋混凝土"
+    ],
+    "text": "關於鋼筋混凝土結構之敘述，下列何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "關於鋼筋混凝土結構之敘述，下列何者錯誤？"
+      }
+    ],
+    "options": [
+      "混凝土抗壓強度高、抗拉強度低，因此承受軸壓力愈大之柱，其韌性愈高",
+      "地震時梁構材的兩端應力較大，梁上的管路貫穿孔通常設置於跨度中央，以避免降低梁的耐震韌性",
+      "一般而言，將與柱連接之梁寬加大，可使梁柱接頭區之剪力強度變大",
+      "於耐震設計時，應使構材在剪力破壞前先產生彎曲降伏，以確保柱及梁之韌性"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        0
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "2801",
+      "page": 7,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=S"
+    }
+  },
+  {
+    "id": "structure-113-32",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "structure",
+    "questionNumber": 32,
+    "topic": "鋼筋混凝土",
+    "primaryCategory": "鋼筋混凝土",
+    "tags": [
+      "鋼筋混凝土"
+    ],
+    "text": "下列何者有助於提升鋼筋混凝土結構韌性？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "下列何者有助於提升鋼筋混凝土結構韌性？"
+      }
+    ],
+    "options": [
+      "設置剪力鋼筋可抑制梁端斜拉開裂之發展，並提供破壞之預警",
+      "鋼筋實測降伏強度可遠高於標稱降伏強度，以確保彎矩破壞在剪力破壞後發生",
+      "相較於閉合箍筋，開放式箍筋配置較能提升構材韌性",
+      "箍筋應優先密集配置於撓曲構材之受彎反曲點處，確保結構變形韌性"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        0
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "2801",
+      "page": 7,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=S"
+    }
+  },
+  {
+    "id": "structure-113-33",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "structure",
+    "questionNumber": 33,
+    "topic": "鋼結構",
+    "primaryCategory": "鋼結構",
+    "tags": [
+      "鋼結構"
+    ],
+    "text": "下列鋼結構斜撐構架中，地震時何種耐震性能最差？圖(a)圖(b)圖(c)圖(d)",
+    "content": [
+      {
+        "kind": "text",
+        "text": "下列鋼結構斜撐構架中，地震時何種耐震性能最差？圖(a)圖(b)圖(c)圖(d)"
+      },
+      {
+        "kind": "image",
+        "src": "/question-bank/結構/113/33/question-02.png",
+        "alt": "第 33 題PDF 題目區含嵌入圖片附圖",
+        "width": 1104,
+        "height": 483
+      }
+    ],
+    "options": [
+      "圖(a)",
+      "圖(b)",
+      "圖(c)",
+      "圖(d)"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        3
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "2801",
+      "page": 7,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=S"
+    }
+  },
+  {
+    "id": "structure-113-34",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "structure",
+    "questionNumber": 34,
+    "topic": "鋼結構",
+    "primaryCategory": "鋼結構",
+    "tags": [
+      "鋼結構"
+    ],
+    "text": "下圖之四條趨勢線中，何者符合薄板（thin-plate）鋼結構構件在受壓力作用下的Nult/Ny 對L/r之關係？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "下圖之四條趨勢線中，何者符合薄板（thin-plate）鋼結構構件在受壓力作用下的Nult/Ny 對L/r之關係？"
+      },
+      {
+        "kind": "image",
+        "src": "/question-bank/結構/113/34/question-02.png",
+        "alt": "第 34 題題幹引用圖示、PDF 題目區含嵌入圖片附圖",
+        "width": 1154,
+        "height": 393
+      }
+    ],
+    "options": [
+      "水平線(A)",
+      "曲線(B)",
+      "曲線(C)",
+      "曲線(D)"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        3
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "2801",
+      "page": 7,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=S"
+    }
+  },
+  {
+    "id": "structure-113-35",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "structure",
+    "questionNumber": 35,
+    "topic": "結構系統",
+    "primaryCategory": "結構系統",
+    "tags": [
+      "結構系統"
+    ],
+    "text": "某鋼造構架內有二力桿斜撐，於震後挫屈變形如圖所示，試問其原設計屬何種結構系統？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "某鋼造構架內有二力桿斜撐，於震後挫屈變形如圖所示，試問其原設計屬何種結構系統？"
+      },
+      {
+        "kind": "image",
+        "src": "/question-bank/結構/113/35/question-02.png",
+        "alt": "第 35 題題幹引用圖示、PDF 題目區含嵌入圖片附圖",
+        "width": 873,
+        "height": 262
+      }
+    ],
+    "options": [
+      "抗彎矩構架（MRF）",
+      "挫屈束制斜撐構架（BRBF）",
+      "同心斜撐構架（CBF）",
+      "偏心斜撐構架（EBF）"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        2
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "2801",
+      "page": 8,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=S"
+    }
+  },
+  {
+    "id": "structure-113-36",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "structure",
+    "questionNumber": 36,
+    "topic": "結構系統",
+    "primaryCategory": "結構系統",
+    "tags": [
+      "結構系統"
+    ],
+    "text": "下列關於結構系統與構件行為之敘述，何者正確？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "下列關於結構系統與構件行為之敘述，何者正確？"
+      }
+    ],
+    "options": [
+      "以隔震或消能系統用在建築結構體上，主因是一般的結構系統不耐震",
+      "簡支梁受均布垂直載重與變位的關係中，在載重與斷面形狀不變情況下，梁中點垂直變位約與跨度的四次方成正比",
+      "H 型鋼梁主要以腹板抵抗彎矩，翼板抵抗剪力",
+      "臺北101 大樓的頂部巨型圓球作為質量阻尼器，主要目的僅是為了結構耐震"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        1
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "2801",
+      "page": 8,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=S"
+    }
+  },
+  {
+    "id": "structure-113-37",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "structure",
+    "questionNumber": 37,
+    "topic": "結構系統",
+    "primaryCategory": "結構系統",
+    "tags": [
+      "結構系統"
+    ],
+    "text": "於體育館大跨度空間的結構設計中，下列何種結構系統最不符合結構效益？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "於體育館大跨度空間的結構設計中，下列何種結構系統最不符合結構效益？"
+      }
+    ],
+    "options": [
+      "桁架結構系統",
+      "薄殼結構系統",
+      "纜索結構系統",
+      "梁柱結構系統"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        3
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "2801",
+      "page": 8,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=S"
+    }
+  },
+  {
+    "id": "structure-113-38",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "structure",
+    "questionNumber": 38,
+    "topic": "結構力學",
+    "primaryCategory": "力學",
+    "tags": [
+      "結構力學"
+    ],
+    "text": "下列關於木材性質之敘述何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "下列關於木材性質之敘述何者錯誤？"
+      }
+    ],
+    "options": [
+      "木材強度性質與纖維方向關係密切",
+      "木材乾燥過程中多少會發生體積變化甚至有乾裂現象",
+      "節、纖維傾斜與起翹變形等都是木材缺點，影響強度",
+      "木材纖維方向受拉強度高且具有韌性"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        3
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "2801",
+      "page": 8,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=S"
+    }
+  },
+  {
+    "id": "structure-113-39",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "structure",
+    "questionNumber": 39,
+    "topic": "木結構",
+    "primaryCategory": "木結構",
+    "tags": [
+      "木結構"
+    ],
+    "text": "木結構作為綠色建築，下列關於其材料性質之敘述何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "木結構作為綠色建築，下列關於其材料性質之敘述何者錯誤？"
+      }
+    ],
+    "options": [
+      "木材有收縮與膨脹現象，主要與含水率有關",
+      "結構用木材可先行鑽孔或加工至預定斷面尺寸後再行乾燥",
+      "強度隨含水率變化",
+      "強度與比重有接近正比的關係"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        1
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "2801",
+      "page": 8,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=S"
+    }
+  },
+  {
+    "id": "structure-113-40",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "structure",
+    "questionNumber": 40,
+    "topic": "結構力學",
+    "primaryCategory": "力學",
+    "tags": [
+      "結構力學"
+    ],
+    "text": "臺灣於2025 年正式開始透過對企業徵收碳費來抑制碳排放量，以符合節能減碳的世界趨勢。下列那個回收營建廢棄物再利用而製成的建材，不符合「再生綠建材」標準？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "臺灣於2025 年正式開始透過對企業徵收碳費來抑制碳排放量，以符合節能減碳的世界趨勢。下列那個回收營建廢棄物再利用而製成的建材，不符合「再生綠建材」標準？"
+      }
+    ],
+    "options": [
+      "回收廢棄鋼筋來製作再生鋼材",
+      "回收廢塑膠及廢棄木質傢俱等來製作木塑複合材",
+      "回收營建剩餘土石方製作水硬性混合水泥",
+      "回收廢塑膠、廢玻璃、摻配木質、石質等其他廢棄物，製成再生地磚"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        2
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "2801",
+      "page": 8,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=S"
+    }
+  },
+  {
+    "id": "structure-113-written-01",
+    "format": "written",
+    "year": 113,
+    "subject": "structure",
+    "questionNumber": 1,
+    "topic": "結構系統",
+    "primaryCategory": "結構系統",
+    "tags": [
+      "結構系統"
+    ],
+    "text": "如圖所示為一左右完全對稱之桁架,B 點承受36 KN 之集中載重,各桿件的AE 值均相同,試回答下列問題:\n(1)該桁架的穩定性及靜定性為何?(5 分)\n(2)該桁架有那些桿件為零桿件?(5 分)\n(3)BD 及BE 桿件的內力?(10 分)",
+    "content": [
+      {
+        "kind": "text",
+        "text": "如圖所示為一左右完全對稱之桁架,B 點承受36 KN 之集中載重,各桿件的AE 值均相同,試回答下列問題:\n(1)該桁架的穩定性及靜定性為何?(5 分)\n(2)該桁架有那些桿件為零桿件?(5 分)\n(3)BD 及BE 桿件的內力?(10 分)"
+      },
+      {
+        "kind": "image",
+        "src": "/question-bank/結構/113/written-01/question-02.png",
+        "alt": "113 年建築結構申論第 1 題附圖",
+        "width": 751,
+        "height": 412
+      }
+    ],
+    "options": [],
+    "answerKey": {
+      "kind": "written"
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "2801",
+      "page": 1,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=S"
+    }
+  },
+  {
+    "id": "structure-113-written-02",
+    "format": "written",
+    "year": 113,
+    "subject": "structure",
+    "questionNumber": 2,
+    "topic": "耐震設計",
+    "primaryCategory": "耐震",
+    "tags": [
+      "耐震設計"
+    ],
+    "text": "有一長200 公尺、寬60 公尺之臨時性一層樓建物,在使用輕質可回收材料前提下,設計一以拱結構或纜索結構為主結構系統之大跨徑建物屋頂(高度不限),並繪圖說明其抵抗不同載重(自重、風力及地震力)之機制。(20 分)",
+    "content": [
+      {
+        "kind": "text",
+        "text": "有一長200 公尺、寬60 公尺之臨時性一層樓建物,在使用輕質可回收材料前提下,設計一以拱結構或纜索結構為主結構系統之大跨徑建物屋頂(高度不限),並繪圖說明其抵抗不同載重(自重、風力及地震力)之機制。(20 分)"
+      }
+    ],
+    "options": [],
+    "answerKey": {
+      "kind": "written"
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "2801",
+      "page": 1,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0102&t=S"
+    }
+  }
+]

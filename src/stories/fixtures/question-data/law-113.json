@@ -1,0 +1,3364 @@
+[
+  {
+    "id": "law-113-01",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 1,
+    "topic": "建築管理法規",
+    "primaryCategory": "建築法",
+    "tags": [
+      "建築管理法規"
+    ],
+    "relatedLaws": [
+      "建築法"
+    ],
+    "fineTopic": "比例尺",
+    "text": "依建築法規定，申請建造執照之建築物平面、立面、剖面圖，其比例尺最小不得小於多少？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "依建築法規定，申請建造執照之建築物平面、立面、剖面圖，其比例尺最小不得小於多少？"
+      }
+    ],
+    "options": [
+      "1/30",
+      "1/50",
+      "1/100",
+      "1/200"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        3
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 1,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-02",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 2,
+    "topic": "建築管理法規",
+    "primaryCategory": "建築法",
+    "tags": [
+      "建築管理法規"
+    ],
+    "relatedLaws": [
+      "建築法"
+    ],
+    "fineTopic": "執照申請",
+    "text": "依建築法規定，直轄市、縣（市）（局）主管建築機關收到起造人申請建造執照書件之日起，至多應於幾日內審查完竣，合格者即發給執照？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "依建築法規定，直轄市、縣（市）（局）主管建築機關收到起造人申請建造執照書件之日起，至多應於幾日內審查完竣，合格者即發給執照？"
+      }
+    ],
+    "options": [
+      "5",
+      "10",
+      "15",
+      "30"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        3
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 1,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-03",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 3,
+    "topic": "建築管理法規",
+    "primaryCategory": "建築法",
+    "tags": [
+      "建築管理法規"
+    ],
+    "relatedLaws": [
+      "建築法"
+    ],
+    "fineTopic": "建築基地及法定空地",
+    "text": "依建築法規定，下列敘述何者正確？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "依建築法規定，下列敘述何者正確？"
+      }
+    ],
+    "options": [
+      "建築基地與建築線應相連接，其接連部分之最小寬度，由中央主管建築機關統一規定",
+      "建築物基地地面，不得高出所臨接道路邊界處之路面",
+      "建築基地最小面積之寬度及深度，由中央主管建築機關統一規定",
+      "建築基地面積畸零狹小不合規定者，非與鄰接土地協議調整地形或合併使用，達到規定最小面積之寬度及深度，不得建築"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        3
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 1,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-04",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 4,
+    "topic": "建築管理法規",
+    "primaryCategory": "建築法",
+    "tags": [
+      "建築管理法規"
+    ],
+    "relatedLaws": [
+      "建築法"
+    ],
+    "fineTopic": "執照備案",
+    "text": "依建築法規定，起造人領得建造執照後，應即申報該管主管建築機關備案之情事，不包含下列何者？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "依建築法規定，起造人領得建造執照後，應即申報該管主管建築機關備案之情事，不包含下列何者？"
+      }
+    ],
+    "options": [
+      "變更起造人",
+      "變更承造人",
+      "變更設計人",
+      "變更監造人"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        2
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 1,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-05",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 5,
+    "topic": "建築管理法規",
+    "primaryCategory": "建築法",
+    "tags": [
+      "建築管理法規"
+    ],
+    "relatedLaws": [
+      "建築法"
+    ],
+    "fineTopic": "勘驗",
+    "text": "依建築法規定，建築工程中必須勘驗部分，應由直轄市、縣（市）主管建築機關於核定建築計畫時，指定由承造人會同下列何者按時申報後，方得繼續施工？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "依建築法規定，建築工程中必須勘驗部分，應由直轄市、縣（市）主管建築機關於核定建築計畫時，指定由承造人會同下列何者按時申報後，方得繼續施工？"
+      }
+    ],
+    "options": [
+      "設計人",
+      "監造人",
+      "起造人",
+      "工地主任"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        1
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 1,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-06",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 6,
+    "topic": "建築管理法規",
+    "primaryCategory": "建築法",
+    "tags": [
+      "建築管理法規"
+    ],
+    "relatedLaws": [
+      "建築法"
+    ],
+    "fineTopic": "部分完竣",
+    "text": "依建築法規定，建築工程部分完竣後可供獨立使用者，得核發下列何種執照？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "依建築法規定，建築工程部分完竣後可供獨立使用者，得核發下列何種執照？"
+      }
+    ],
+    "options": [
+      "臨時使用執照",
+      "部分使用執照",
+      "雜項使用執照",
+      "特種使用執照"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        1
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 1,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-07",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 7,
+    "topic": "建築管理法規",
+    "primaryCategory": "建築法",
+    "tags": [
+      "建築管理法規"
+    ],
+    "relatedLaws": [
+      "建築法"
+    ],
+    "fineTopic": "室內裝修相關",
+    "text": "依建築法規定，建築物室內裝修應遵守之規定，不包含下列何者？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "依建築法規定，建築物室內裝修應遵守之規定，不包含下列何者？"
+      }
+    ],
+    "options": [
+      "供公眾使用建築物之室內裝修應申請審查許可",
+      "不得妨害或破壞防火避難設施、消防設備、防火區劃及主要構造",
+      "不得妨害或破壞保護民眾隱私權設施",
+      "應由依法登記開業之建築師負責施工"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        3
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 1,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-08",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 8,
+    "topic": "建築管理法規",
+    "primaryCategory": "建築法",
+    "tags": [
+      "建築管理法規"
+    ],
+    "relatedLaws": [
+      "建築法"
+    ],
+    "fineTopic": "拆除",
+    "text": "依建築法規定，主管建築機關對傾頹或朽壞有危害公共安全之建築物，除應通知所有權人或占有人停止使用外，並限期命下列何者拆除？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "依建築法規定，主管建築機關對傾頹或朽壞有危害公共安全之建築物，除應通知所有權人或占有人停止使用外，並限期命下列何者拆除？"
+      }
+    ],
+    "options": [
+      "使用人",
+      "占有人",
+      "所有人",
+      "承租人"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        2
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 1,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-09",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 9,
+    "topic": "法規位階",
+    "primaryCategory": "其他營建法規",
+    "tags": [
+      "法規位階"
+    ],
+    "relatedLaws": [
+      "違章建築處理辦法"
+    ],
+    "fineTopic": "違章建築",
+    "text": "依違章建築處理辦法規定，舊違章建築在未依規定拆除或整理前，下列敘述何者正確？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "依違章建築處理辦法規定，舊違章建築在未依規定拆除或整理前，下列敘述何者正確？"
+      }
+    ],
+    "options": [
+      "得准予修繕，但不得新建、增建、改建、修建",
+      "得准予修繕或修建，但不得新建、增建、改建",
+      "得准予修繕、修建或改建，但不得新建、增建",
+      "不得修繕、新建、增建、改建、修建"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        0
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 1,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-10",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 10,
+    "topic": "建築管理法規",
+    "primaryCategory": "建築法",
+    "tags": [
+      "建築管理法規"
+    ],
+    "relatedLaws": [
+      "建築物室內裝修管理辦法"
+    ],
+    "fineTopic": "室內裝修業者",
+    "text": "有關「室內裝修業」之管理規定，下列敘述何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "有關「室內裝修業」之管理規定，下列敘述何者錯誤？"
+      }
+    ],
+    "options": [
+      "室內裝修業從事室內裝修設計業務者，應置有專業設計技術人員1 人以上",
+      "室內裝修業應先辦理公司或商業登記後，再向內政部申請室內裝修業登記許可並領得登記證。未領得登記證者，不得執行室內裝修業務",
+      "室內裝修業登記證有效期限為4 年，逾期未換發登記證者，不得執行室內裝修業務",
+      "室內裝修業受停業處分累計滿3 年者，經當地主管建築機關查明屬實後，報請內政部廢止室內裝修業登記許可並註銷登記證"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        2
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 1,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-11",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 11,
+    "topic": "建築師法",
+    "primaryCategory": "建築法",
+    "tags": [
+      "建築師法"
+    ],
+    "relatedLaws": [
+      "建築師法"
+    ],
+    "fineTopic": "建築師撤銷或廢止",
+    "text": "依建築師法規定，已充任建築師，得由中央主管機關撤銷或廢止其建築師證書之情形，不包含下列何者？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "依建築師法規定，已充任建築師，得由中央主管機關撤銷或廢止其建築師證書之情形，不包含下列何者？"
+      }
+    ],
+    "options": [
+      "受監護或輔助宣告，尚未撤銷",
+      "罹患精神疾病或身心狀況違常，經中央主管機關委請2 位以上相關專科醫師諮詢，並經中央主管機關認定不能執行業務",
+      "受破產宣告，尚未復權",
+      "已喪失中華民國國籍"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        3
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 2,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-12",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 12,
+    "topic": "非都市土地",
+    "primaryCategory": "都市計畫法",
+    "tags": [
+      "非都市土地"
+    ],
+    "relatedLaws": [
+      "實施區域計畫地區建築管理辦法"
+    ],
+    "fineTopic": "農舍",
+    "text": "依實施區域計畫地區建築管理辦法，於各種用地內申請建造自用農舍者，下列敘述何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "依實施區域計畫地區建築管理辦法，於各種用地內申請建造自用農舍者，下列敘述何者錯誤？"
+      }
+    ],
+    "options": [
+      "其總樓地板面積不得超過495 平方公尺",
+      "建築面積不得超過其耕地面積10%",
+      "建築物高度不得超過3 層樓並不得超過12 公尺",
+      "最大基層建築面積不得超過330 平方公尺"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        2
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 2,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-13",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 13,
+    "topic": "非都市土地",
+    "primaryCategory": "都市計畫法",
+    "tags": [
+      "非都市土地"
+    ],
+    "relatedLaws": [
+      "實施區域計畫地區建築管理辦法"
+    ],
+    "fineTopic": "農舍",
+    "text": "依實施區域計畫地區建築管理辦法規定，申請建造農舍時，應填具申請書，並檢附下列書圖文件向當地主管建築機關申請辦理，下列敘述何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "依實施區域計畫地區建築管理辦法規定，申請建造農舍時，應填具申請書，並檢附下列書圖文件向當地主管建築機關申請辦理，下列敘述何者錯誤？"
+      }
+    ],
+    "options": [
+      "現耕農身分證明",
+      "土地權利證明文件",
+      "基地位置圖",
+      "農舍配置圖，其比例尺不得小於1/1500"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        3
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 2,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-14",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 14,
+    "topic": "非都市土地",
+    "primaryCategory": "都市計畫法",
+    "tags": [
+      "非都市土地"
+    ],
+    "relatedLaws": [
+      "實施區域計畫地區建築管理辦法"
+    ],
+    "fineTopic": "農舍",
+    "text": "依實施區域計畫地區建築管理辦法規定，原有農舍之修建，改建或增建面積最多在多少平方公尺以下之平房得免申請建築執照，但其建蔽率及總樓地板面積不得超過本辦法之有關規定？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "依實施區域計畫地區建築管理辦法規定，原有農舍之修建，改建或增建面積最多在多少平方公尺以下之平房得免申請建築執照，但其建蔽率及總樓地板面積不得超過本辦法之有關規定？"
+      }
+    ],
+    "options": [
+      "30",
+      "45",
+      "60",
+      "90"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        1
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 2,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-15",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 15,
+    "topic": "建築管理法規",
+    "primaryCategory": "建築法",
+    "tags": [
+      "建築管理法規"
+    ],
+    "relatedLaws": [
+      "建築物部分使用執照核發辦法"
+    ],
+    "fineTopic": "執照申請",
+    "text": "依建築物部分使用執照核發辦法，所稱建築工程部分完竣，下列敘述何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "依建築物部分使用執照核發辦法，所稱建築工程部分完竣，下列敘述何者錯誤？"
+      }
+    ],
+    "options": [
+      "二幢以上建築物，其中任一幢業經全部施工完竣",
+      "連棟式建築物，其中任一棟業經施工完竣",
+      "高度超過36 公尺或12 層樓以上，其中任一樓層至基地地面間各層業經施工完竣",
+      "建築面積超過6000 平方公尺以上之建築物，其中任一樓層至基地地面間各層業經施工完竣"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        3
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 2,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-16",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 16,
+    "topic": "建築管理法規",
+    "primaryCategory": "建築法",
+    "tags": [
+      "建築管理法規"
+    ],
+    "relatedLaws": [
+      "原有合法建築物公共安全改善辦法"
+    ],
+    "fineTopic": "步行距離",
+    "text": "依原有合法建築物公共安全改善辦法規定，直通樓梯之設置及步行距離，增設之直通樓梯，下列敘述何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "依原有合法建築物公共安全改善辦法規定，直通樓梯之設置及步行距離，增設之直通樓梯，下列敘述何者錯誤？"
+      }
+    ],
+    "options": [
+      "應為安全梯，且寬度應為90 公分以上",
+      "不計入建築面積及各層樓地板面積。但增加之面積不得大於原有建築面積1/5 或100 平方公尺",
+      "不受鄰棟間隔、前院、後院及開口距離有關規定之限制",
+      "高度不得超過原有建築物高度加3 公尺，亦不受容積率之限制"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        1
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 2,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-17",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 17,
+    "topic": "法規位階",
+    "primaryCategory": "其他營建法規",
+    "tags": [
+      "法規位階"
+    ],
+    "relatedLaws": [
+      "建築物公共安全檢查簽證及申報辦法"
+    ],
+    "fineTopic": "耐震評估",
+    "text": "有關建築物辦理耐震能力評估檢查之規定，下列敘述何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "有關建築物辦理耐震能力評估檢查之規定，下列敘述何者錯誤？"
+      }
+    ],
+    "options": [
+      "中華民國88 年以前領得使用執照之建築物，免辦理耐震能力評估檢查",
+      "供建築物使用類組G-1、G-2 組使用之樓地板面積累計達1000 平方公尺以上之建築物，得免辦理耐震能力評估檢查",
+      "供建築物使用類組B-4 組使用之樓地板面積累計未達1000 平方公尺以上之建築物，得免辦理耐震能力評估檢查",
+      "供建築物使用類組A-1 組使用之樓地板面積累計達1000 平方公尺以上之建築物，且該建築物同屬一所有權人或使用人，應辦理耐震能力評估檢查"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        0
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 2,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-18",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 18,
+    "topic": "無障礙設計",
+    "primaryCategory": "建築物無障礙設施設計規範",
+    "tags": [
+      "無障礙設計"
+    ],
+    "relatedLaws": [
+      "建築物無障礙設施設計規範"
+    ],
+    "fineTopic": "無障礙樓梯",
+    "text": "有關建築物無障礙設施設計規範之無障礙樓梯級高（R）及級深（T），下列何者符合規定？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "有關建築物無障礙設施設計規範之無障礙樓梯級高（R）及級深（T），下列何者符合規定？"
+      }
+    ],
+    "options": [
+      "級高（R）18 公分，級深（T）26 公分",
+      "級高（R）16 公分，級深（T）26 公分",
+      "級高（R）18 公分，級深（T）24 公分",
+      "級高（R）16 公分，級深（T）24 公分"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        1
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 2,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-19",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 19,
+    "topic": "建築師法",
+    "primaryCategory": "建築法",
+    "tags": [
+      "建築師法"
+    ],
+    "relatedLaws": [
+      "建築師法"
+    ],
+    "fineTopic": "建築師",
+    "text": "有關開業建築師設立事務所執行業務，其開業登記方式及執行業務之區域規定，下列敘述何者正確？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "有關開業建築師設立事務所執行業務，其開業登記方式及執行業務之區域規定，下列敘述何者正確？"
+      }
+    ],
+    "options": [
+      "向內政部國土管理署辦理登記開業，且以全國為其執行業務之區域",
+      "向內政部指定之直轄市、縣（市）辦理登記開業，且以登記之直轄市、縣（市）為其執行業務之區域",
+      "逕向事務所所在地直轄市、縣（市）辦理登記開業，且以全國為其執行業務之區域",
+      "逕向事務所所在地直轄市、縣（市）辦理登記開業，且以登記之直轄市、縣（市）為其執行業務之區域"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        2
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 2,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-20",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 20,
+    "topic": "建築師法",
+    "primaryCategory": "建築法",
+    "tags": [
+      "建築師法"
+    ],
+    "relatedLaws": [
+      "建築師法"
+    ],
+    "fineTopic": "建築師業務",
+    "text": "依建築師法規定，建築師得受委託人委託辦理之業務，下列敘述何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "依建築師法規定，建築師得受委託人委託辦理之業務，下列敘述何者錯誤？"
+      }
+    ],
+    "options": [
+      "辦理建築物及其實質環境之調查、測量、鑽探、設計、監造",
+      "辦理建築物及其實質環境之估價、檢查、鑑定業務",
+      "得代委託人辦理申請建築許可、招商投標",
+      "得代委託人辦理擬定施工契約及其他工程上之接洽事項"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        0
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 3,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-21",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 21,
+    "topic": "建築師法",
+    "primaryCategory": "建築法",
+    "tags": [
+      "建築師法"
+    ],
+    "relatedLaws": [
+      "建築師法"
+    ],
+    "fineTopic": "建築師獎勵",
+    "text": "依建築師法規定，直轄市、縣（市）主管機關對於建築師得予獎勵之事項，不包含下列何者？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "依建築師法規定，直轄市、縣（市）主管機關對於建築師得予獎勵之事項，不包含下列何者？"
+      }
+    ],
+    "options": [
+      "對建築法規、區域計畫或都市計畫襄助研究及建議，有重大貢獻者",
+      "對公共安全、社會福利或預防災害等有關建築事項襄助辦理，成績卓著者",
+      "對公共交通研究有卓越表現者",
+      "對協助推行建築實務著有成績者"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        2
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 3,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-22",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 22,
+    "topic": "建築師法",
+    "primaryCategory": "建築法",
+    "tags": [
+      "建築師法"
+    ],
+    "relatedLaws": [
+      "建築師法"
+    ],
+    "fineTopic": "建築師懲戒",
+    "text": "依建築師法規定，建築師之懲戒處分，不包含下列何者？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "依建築師法規定，建築師之懲戒處分，不包含下列何者？"
+      }
+    ],
+    "options": [
+      "警告",
+      "申誡",
+      "停止執行業務3 年以上",
+      "撤銷開業證書"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        2
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 3,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-23",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 23,
+    "topic": "住宅法",
+    "primaryCategory": "其他營建法規",
+    "tags": [
+      "住宅法"
+    ],
+    "relatedLaws": [
+      "住宅法"
+    ],
+    "fineTopic": "住宅相關",
+    "text": "下列何者非屬住宅法所規定主管機關應定期蒐集、分析及公布之住宅資訊？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "下列何者非屬住宅法所規定主管機關應定期蒐集、分析及公布之住宅資訊？"
+      }
+    ],
+    "options": [
+      "租賃與買賣住宅市場之供給、需求",
+      "違章建築分布之範圍",
+      "經濟或社會弱勢者之住宅補貼政策成效",
+      "居住品質狀況"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        1
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 3,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-24",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 24,
+    "topic": "建築技術規則",
+    "primaryCategory": "建築技術規則",
+    "tags": [
+      "建築技術規則"
+    ],
+    "relatedLaws": [
+      "建築技術規則"
+    ],
+    "fineTopic": "地方機關核准相關",
+    "text": "依據建築技術規則總則編規定，直轄市、縣（市）主管建築機關因應地方特殊需求，得另訂設計、施工、構造及設備規定並報經中央主管建築機關核定後實施之事項，不包括下列那一項？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "依據建築技術規則總則編規定，直轄市、縣（市）主管建築機關因應地方特殊需求，得另訂設計、施工、構造及設備規定並報經中央主管建築機關核定後實施之事項，不包括下列那一項？"
+      }
+    ],
+    "options": [
+      "新建建築物有效日照之檢討方式",
+      "震災毀損建築物拆除重建之設計規定",
+      "建築物變更用途之檢討項目及標準",
+      "新建建築物節約能源之檢討方式"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        2
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 3,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-25",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 25,
+    "topic": "建築技術規則",
+    "primaryCategory": "建築技術規則",
+    "tags": [
+      "建築技術規則"
+    ],
+    "relatedLaws": [
+      "建築技術規則"
+    ],
+    "fineTopic": "中央指定之專業機構完成評定並向中央主管建築機關申請認可",
+    "text": "依建築技術規則規定，下列何者可以透過中央指定之專業機構完成評定並向中央主管建築機關申請認可，得不適用本規則一部或全部之規定？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "依建築技術規則規定，下列何者可以透過中央指定之專業機構完成評定並向中央主管建築機關申請認可，得不適用本規則一部或全部之規定？"
+      }
+    ],
+    "options": [
+      "無障礙設施設計",
+      "有效日照設計",
+      "防火避難設施設計",
+      "安全維護設計"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        2
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 3,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-26",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 26,
+    "topic": "建築技術規則",
+    "primaryCategory": "建築技術規則",
+    "tags": [
+      "建築技術規則"
+    ],
+    "relatedLaws": [
+      "建築技術規則"
+    ],
+    "fineTopic": "建築物高度",
+    "text": "依建築技術規則建築設計施工編用語定義之規定，有關於建築物屋面上設置附屬建築物及雜項工作物與該建築物高度計算之關係，下列敘述何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "依建築技術規則建築設計施工編用語定義之規定，有關於建築物屋面上設置附屬建築物及雜項工作物與該建築物高度計算之關係，下列敘述何者錯誤？"
+      }
+    ],
+    "options": [
+      "於屋面上設置樓電梯間，其設計之高度及面積，與該建築物之高度計算有關",
+      "於屋面上設置管道間，其設計之高度及面積，與該建築物之高度計算有關",
+      "於屋面上設置雨水貯留利用設備，其設計之高度及面積，均與建築物之高度計算無關",
+      "於屋面上設置再生能源節能設施，其設計之高度及面積，均與建築物之高度計算無關"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        1
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 3,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-27",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 27,
+    "topic": "建築技術規則",
+    "primaryCategory": "建築技術規則",
+    "tags": [
+      "建築技術規則"
+    ],
+    "relatedLaws": [
+      "建築技術規則"
+    ],
+    "fineTopic": "防火區劃及設備",
+    "text": "依建築技術規則規定，防火構造建築物無法區劃分隔部分，以具1 小時防火時效之牆壁、防火門窗等防火設備與該處防火構造之樓板自成1 個區劃者，不受樓地板面積每1500 平方公尺作一區劃之限制，不包括下列何種用途建築物？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "依建築技術規則規定，防火構造建築物無法區劃分隔部分，以具1 小時防火時效之牆壁、防火門窗等防火設備與該處防火構造之樓板自成1 個區劃者，不受樓地板面積每1500 平方公尺作一區劃之限制，不包括下列何種用途建築物？"
+      }
+    ],
+    "options": [
+      "工廠類生產線部分",
+      "體育館",
+      "電影院的美食街",
+      "零售市場"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        2
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 3,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-28",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 28,
+    "topic": "建築技術規則",
+    "primaryCategory": "建築技術規則",
+    "tags": [
+      "建築技術規則"
+    ],
+    "relatedLaws": [
+      "建築技術規則"
+    ],
+    "fineTopic": "防火區劃及設備",
+    "text": "某建築物屬H-1 組之產後護理機構，除避難層外各樓層應以具1 小時以上防火時效之牆壁及防火設備分隔為2 個以上之區劃，前述區劃之樓地板面積至少不得小於同樓層另一區劃之樓地板面積比例為多少？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "某建築物屬H-1 組之產後護理機構，除避難層外各樓層應以具1 小時以上防火時效之牆壁及防火設備分隔為2 個以上之區劃，前述區劃之樓地板面積至少不得小於同樓層另一區劃之樓地板面積比例為多少？"
+      }
+    ],
+    "options": [
+      "1/2",
+      "1/3",
+      "1/4",
+      "1/5"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        1
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 3,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-29",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 29,
+    "topic": "建築技術規則",
+    "primaryCategory": "建築技術規則",
+    "tags": [
+      "建築技術規則"
+    ],
+    "relatedLaws": [
+      "建築技術規則"
+    ],
+    "fineTopic": "安全梯及特別安全梯",
+    "text": "依建築技術規則規定，有關特別安全梯之構造，下列敘述何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "依建築技術規則規定，有關特別安全梯之構造，下列敘述何者錯誤？"
+      }
+    ],
+    "options": [
+      "樓梯間及排煙室之四周牆壁應具有1 小時以上防火時效",
+      "天花板及牆面之裝修應為耐燃3 級以上之材料",
+      "管道間之維修孔不得開向樓梯間",
+      "樓梯間與排煙室之間所開設之窗戶應為固定窗"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        1
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 3,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-30",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 30,
+    "topic": "建築技術規則",
+    "primaryCategory": "建築技術規則",
+    "tags": [
+      "建築技術規則"
+    ],
+    "relatedLaws": [
+      "建築技術規則"
+    ],
+    "fineTopic": "建築物安全維護裝置",
+    "text": "依建築技術規則規定，下列何種空間無設置建築物安全維護裝置之規定？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "依建築技術規則規定，下列何種空間無設置建築物安全維護裝置之規定？"
+      }
+    ],
+    "options": [
+      "停車空間",
+      "安全梯間",
+      "避難層出入口",
+      "昇降機間"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        3
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 3,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-31",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 31,
+    "topic": "建築技術規則",
+    "primaryCategory": "建築技術規則",
+    "tags": [
+      "建築技術規則"
+    ],
+    "relatedLaws": [
+      "建築技術規則"
+    ],
+    "fineTopic": "安全梯及特別安全梯",
+    "text": "依建築技術規則規定，有關安全梯構造之敘述，下列何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "依建築技術規則規定，有關安全梯構造之敘述，下列何者錯誤？"
+      }
+    ],
+    "options": [
+      "特別安全梯自陽臺進入樓梯間之出入口之防火門應具半小時以上防火時效",
+      "戶外安全梯出入口防火門應具半小時以上防火時效及半小時以上阻熱性",
+      "進入室內安全梯之出入口，應裝設具1 小時以上防火時效及半小時以上阻熱性且具遮煙性能之防火門",
+      "戶外安全梯以室外走廊連接安全梯者其出入口免裝設防火門"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        1
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 4,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-32",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 32,
+    "topic": "建築技術規則",
+    "primaryCategory": "建築技術規則",
+    "tags": [
+      "建築技術規則"
+    ],
+    "relatedLaws": [
+      "建築技術規則"
+    ],
+    "fineTopic": "特定建築物",
+    "text": "依建築技術規則規定，政府機關及公私團體辦公廳，總樓地板面積至少超過多少平方公尺屬特定建築物？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "依建築技術規則規定，政府機關及公私團體辦公廳，總樓地板面積至少超過多少平方公尺屬特定建築物？"
+      }
+    ],
+    "options": [
+      "300",
+      "500",
+      "1000",
+      "3000"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        2
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 4,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-33",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 33,
+    "topic": "建築技術規則",
+    "primaryCategory": "建築技術規則",
+    "tags": [
+      "建築技術規則"
+    ],
+    "relatedLaws": [
+      "建築技術規則"
+    ],
+    "fineTopic": "日照",
+    "text": "依建築技術規則建築設計施工編規定，新建或增建建築物高度超過21 公尺部分，在冬至日所造成之日照陰影，應使鄰近之住宅區或商業區基地有1 小時以上之有效日照。下列敘述何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "依建築技術規則建築設計施工編規定，新建或增建建築物高度超過21 公尺部分，在冬至日所造成之日照陰影，應使鄰近之住宅區或商業區基地有1 小時以上之有效日照。下列敘述何者錯誤？"
+      }
+    ],
+    "options": [
+      "新建基地內僅配置單幢建築物，且其投影於北向面寬不超過10 公尺者，得免檢討有效日照",
+      "新建基地內配置兩幢建築物，投影於北向最大面寬合計超過20 公尺，如均已自基地北向境界線退縮6 公尺，檢討有效日照時，兩幢得個別檢討",
+      "新建基地內配置兩幢建築物，投影於北向最大面寬合計超過20 公尺，相鄰間最外緣部位連線角度未達12.5 度，檢討有效日照時，兩幢應合併檢討",
+      "檢討有效日照時，得不包括未計入建築面積之部分"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        1,
+        3
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 4,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-34",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 34,
+    "topic": "無障礙設計",
+    "primaryCategory": "建築物無障礙設施設計規範",
+    "tags": [
+      "無障礙設計"
+    ],
+    "relatedLaws": [
+      "建築技術規則"
+    ],
+    "fineTopic": "無障礙通則",
+    "text": "建築技術規則有關無障礙建築物之規定，下列敘述何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "建築技術規則有關無障礙建築物之規定，下列敘述何者錯誤？"
+      }
+    ],
+    "options": [
+      "新建或增建建築物，應依規定設置無障礙設施，但供住宅使用之公寓大廈專有及約定專用部分者，不在此限",
+      "新建或增建建築物，應依規定設置無障礙設施，但建築基地面積未達200 平方公尺者，或每棟每層樓地板面積均未達100 平方公尺，不在此限",
+      "新建或增建建築物，應依規定設置無障礙設施時，建築物設置之直通樓梯，至少應有1 座為無障礙樓梯",
+      "新建或增建建築物，應依規定設置無障礙設施時，建築物設有共用浴室者，每幢建築物至少應設置一處無障礙浴室"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        1
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 4,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-35",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 35,
+    "topic": "建築技術規則",
+    "primaryCategory": "建築技術規則",
+    "tags": [
+      "建築技術規則"
+    ],
+    "relatedLaws": [
+      "建築技術規則"
+    ],
+    "fineTopic": "節約能源",
+    "text": "依建築技術規則規定，下列何種建築物在新建時，不需要檢討建築物節約能源項目？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "依建築技術規則規定，下列何種建築物在新建時，不需要檢討建築物節約能源項目？"
+      }
+    ],
+    "options": [
+      "學校類",
+      "大型空間類",
+      "住宿類",
+      "作業廠房"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        3
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 4,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-36",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 36,
+    "topic": "建築技術規則",
+    "primaryCategory": "建築技術規則",
+    "tags": [
+      "建築技術規則"
+    ],
+    "relatedLaws": [
+      "建築技術規則"
+    ],
+    "fineTopic": "雨水或生活雜排水回收再利用",
+    "text": "依建築技術規則規定，除衛生醫療類（F-1 組）或經中央主管建築機關認可之建築物外，其總樓地板面積最少達多少平方公尺以上之新建建築物，應適用建築物雨水或生活雜排水回收再利用項目之檢討？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "依建築技術規則規定，除衛生醫療類（F-1 組）或經中央主管建築機關認可之建築物外，其總樓地板面積最少達多少平方公尺以上之新建建築物，應適用建築物雨水或生活雜排水回收再利用項目之檢討？"
+      }
+    ],
+    "options": [
+      "4000",
+      "6000",
+      "10000",
+      "12000"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        2
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 4,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-37",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 37,
+    "topic": "建築技術規則",
+    "primaryCategory": "建築技術規則",
+    "tags": [
+      "建築技術規則"
+    ],
+    "relatedLaws": [
+      "建築技術規則"
+    ],
+    "fineTopic": "基地保水指標",
+    "text": "依建築技術規則規定，建築基地保水指標至少應大於下列那一係數與基地內應保留法定空地比率之乘積？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "依建築技術規則規定，建築基地保水指標至少應大於下列那一係數與基地內應保留法定空地比率之乘積？"
+      }
+    ],
+    "options": [
+      "0.4",
+      "0.5",
+      "0.8",
+      "1.0"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        1
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 4,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-38",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 38,
+    "topic": "建築技術規則",
+    "primaryCategory": "建築技術規則",
+    "tags": [
+      "建築技術規則"
+    ],
+    "relatedLaws": [
+      "建築技術規則"
+    ],
+    "fineTopic": "鋼骨鋼筋混凝土構造",
+    "text": "依建築技術規則建築構造編，有關鋼骨鋼筋混凝土構造施工之規定，下列敘述何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "依建築技術規則建築構造編，有關鋼骨鋼筋混凝土構造施工之規定，下列敘述何者錯誤？"
+      }
+    ],
+    "options": [
+      "鋼骨鋼筋混凝土構造之施工，應依施工規範規定",
+      "鋼骨鋼筋混凝土工程之混凝土澆置，應注意其填充性，並應避免混凝土骨材析離",
+      "鋼骨鋼筋混凝土構造之施工過程中任何階段之結構強度及穩定性，應於施工前審慎評估，以確保施工過程中安全無慮",
+      "鋼骨鋼筋混凝土構造之施工，需在鋼骨斷面上穿孔時，其穿孔及補強，應在施工現場內施作完成"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        3
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 4,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-39",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 39,
+    "topic": "非都市土地",
+    "primaryCategory": "都市計畫法",
+    "tags": [
+      "非都市土地"
+    ],
+    "relatedLaws": [
+      "農業用地興建農舍辦法"
+    ],
+    "fineTopic": "農舍",
+    "text": "下列何者非屬農業用地興建農舍辦法規定申請興建農舍之條件？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "下列何者非屬農業用地興建農舍辦法規定申請興建農舍之條件？"
+      }
+    ],
+    "options": [
+      "申請人應為農民，已成年者",
+      "申請興建農舍之該筆農業用地面積不得小於0.25 公頃。但參加興建集村農舍及於離島地區興建農舍者，不在此限",
+      "申請人為該農業用地之所有權人，且該農業用地應確供農業使用及屬未經申請興建農舍者；該農舍之興建並不得影響農業生產環境及農村發展",
+      "申請人參加興建集村農舍建築物坐落之農業用地，其土地取得及戶籍登記均應滿2 年"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        3
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 4,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-40",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 40,
+    "topic": "國土與區域計畫",
+    "primaryCategory": "都市計畫法",
+    "tags": [
+      "國土與區域計畫"
+    ],
+    "relatedLaws": [
+      "都市計畫法"
+    ],
+    "fineTopic": "都市計畫",
+    "text": "市鎮計畫應先擬定主要計畫書。有關都市計畫法規定主要計畫書應載明之事項，下列何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "市鎮計畫應先擬定主要計畫書。有關都市計畫法規定主要計畫書應載明之事項，下列何者錯誤？"
+      }
+    ],
+    "options": [
+      "主要計畫書其實施進度以3 年為一期，最長不得超過30 年",
+      "名勝、古蹟及具有紀念性或藝術價值應予保存之建築",
+      "人口之成長、分布、組成、計畫年期內人口與經濟發展之推計",
+      "實施進度及經費"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        0
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 5,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-41",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 41,
+    "topic": "國土與區域計畫",
+    "primaryCategory": "都市計畫法",
+    "tags": [
+      "國土與區域計畫"
+    ],
+    "relatedLaws": [
+      "都市計畫法"
+    ],
+    "fineTopic": "都市計畫",
+    "text": "依都市計畫法規定，下列何者非更新計畫應表明之事項？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "依都市計畫法規定，下列何者非更新計畫應表明之事項？"
+      }
+    ],
+    "options": [
+      "人口之成長、分布、組成、計畫年期內人口與經濟發展之推計",
+      "土地使用計畫",
+      "劃定地區內重建、整建及維護地段之詳細設計圖說",
+      "區內公共設施興修或改善之設計圖說"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        0
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 5,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-42",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 42,
+    "topic": "國土與區域計畫",
+    "primaryCategory": "都市計畫法",
+    "tags": [
+      "國土與區域計畫"
+    ],
+    "relatedLaws": [
+      "都市計畫法"
+    ],
+    "fineTopic": "都市計畫組織",
+    "text": "有關都市計畫法規定之組織與經費，下列敘述何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "有關都市計畫法規定之組織與經費，下列敘述何者錯誤？"
+      }
+    ],
+    "options": [
+      "中央、直轄市或縣（市）政府為實施都市計畫或土地徵收，得發行公債",
+      "內政部、各級地方政府及鄉、鎮、縣轄市公所為審議及研究都市計畫，應分別設置都市計畫委員會辦理之",
+      "都市計畫委員會之組織，由直轄市或縣（市）政府定之",
+      "內政部、各級地方政府及鄉、鎮、縣轄市公所應設置經辦都市計畫之專業人員"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        2
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 5,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-43",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 43,
+    "topic": "都市更新法規",
+    "primaryCategory": "都市計畫法",
+    "tags": [
+      "都市更新法規"
+    ],
+    "relatedLaws": [
+      "都市更新條例"
+    ],
+    "fineTopic": "用語",
+    "text": "有關都市更新條例用語之敘述，下列何者正確？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "有關都市更新條例用語之敘述，下列何者正確？"
+      }
+    ],
+    "options": [
+      "都市更新：在都市計畫範圍或非都市土地，實施重建、整建或維護措施",
+      "實施者：實施都市更新事業之機關、機構、團體或自然人",
+      "重建：拆除更新單元內原有建築物，重新建築，並不得變更其土地使用性質或使用密度",
+      "整建：改建、修建更新單元內建築物或充實其設備，並改進區內公共設施"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        3
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 5,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-44",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 44,
+    "topic": "都市更新法規",
+    "primaryCategory": "都市計畫法",
+    "tags": [
+      "都市更新法規"
+    ],
+    "relatedLaws": [
+      "都市更新條例"
+    ],
+    "fineTopic": "都市更新",
+    "text": "依都市更新條例規定，下列敘述何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "依都市更新條例規定，下列敘述何者錯誤？"
+      }
+    ],
+    "options": [
+      "都市更新計畫係指依都市更新條例規定程序，載明更新地區應遵循事項，作為擬訂都市更新事業計畫之指導",
+      "都市更新事業僅得以重建、整建或維護其中一種處理方式為之",
+      "更新單元係指可單獨實施都市更新事業之範圍",
+      "直轄市、縣（市）主管機關得優先將建築物未符合都市應有機能之地區劃定為更新地區"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        1
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 5,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-45",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 45,
+    "topic": "都市更新法規",
+    "primaryCategory": "都市計畫法",
+    "tags": [
+      "都市更新法規"
+    ],
+    "relatedLaws": [
+      "都市更新條例"
+    ],
+    "fineTopic": "都更申訴",
+    "text": "依都市更新條例規定，對於都市更新公開評選申請及審核程序之爭議申訴，下列何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "依都市更新條例規定，對於都市更新公開評選申請及審核程序之爭議申訴，下列何者錯誤？"
+      }
+    ],
+    "options": [
+      "依主辦機關屬中央或地方機關（構），分別由中央或直轄市、縣（市）主管機關設都市更新公開評選申訴審議會處理",
+      "申訴人誤向該管都更評選申訴會以外之機關申訴者，以該機關收受日，視為提起申訴之日",
+      "申訴逾法定期間或不合法定程序者，不予受理。但其情形得予補正者，應定期間命其補正；屆期不補正者，不予受理",
+      "申訴提出後，申請人得於審議判斷送達前撤回之。申訴經撤回後，僅得再提出同一申訴一次"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        3
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 5,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-46",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 46,
+    "topic": "都市更新法規",
+    "primaryCategory": "都市計畫法",
+    "tags": [
+      "都市更新法規"
+    ],
+    "relatedLaws": [
+      "都市計畫容積移轉實施辦法"
+    ],
+    "fineTopic": "容積移轉",
+    "text": "依都市計畫容積移轉實施辦法規定，非屬位於整體開發地區、實施都市更新地區、面臨永久性空地或其他都市計畫指定地區範圍內接受基地之可移入容積，以不超過該接受基地基準容積百分之多少為原則？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "依都市計畫容積移轉實施辦法規定，非屬位於整體開發地區、實施都市更新地區、面臨永久性空地或其他都市計畫指定地區範圍內接受基地之可移入容積，以不超過該接受基地基準容積百分之多少為原則？"
+      }
+    ],
+    "options": [
+      "20",
+      "30",
+      "40",
+      "50"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        1
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 5,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-47",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 47,
+    "topic": "都市更新法規",
+    "primaryCategory": "都市計畫法",
+    "tags": [
+      "都市更新法規"
+    ],
+    "relatedLaws": [
+      "都市更新條例"
+    ],
+    "fineTopic": "權利變換",
+    "text": "依都市更新條例規定，有關權利變換之敘述，何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "依都市更新條例規定，有關權利變換之敘述，何者錯誤？"
+      }
+    ],
+    "options": [
+      "權利變換計畫書核定發布實施後2 個月內，土地所有權人對其權利價值有異議時，應以書面敘明理由，向各級主管機關提出",
+      "異議處理或行政救濟期間，應停止都市更新事業之進行",
+      "異議處理或行政救濟結果與原評定價值有差額部分，由當事人以現金相互找補",
+      "審議核復期限，應扣除各級主管機關委託專業團體或機構協助作技術性諮商及實施者委託專業團體或機構重新查估權利價值之時間"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        1
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 5,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-48",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 48,
+    "topic": "國土與區域計畫",
+    "primaryCategory": "都市計畫法",
+    "tags": [
+      "國土與區域計畫"
+    ],
+    "relatedLaws": [
+      "國土計畫法"
+    ],
+    "fineTopic": "國土永續發展基金",
+    "text": "依國土計畫法規定，國土計畫中央主管機關應設置國土永續發展基金，下列何者屬基金來源之一？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "依國土計畫法規定，國土計畫中央主管機關應設置國土永續發展基金，下列何者屬基金來源之一？"
+      }
+    ],
+    "options": [
+      "使用許可案件所收取之國土影響費",
+      "工程受益費",
+      "本基金孳息收入",
+      "土地增值稅之提撥"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        2
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 6,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-49",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 49,
+    "topic": "國土與區域計畫",
+    "primaryCategory": "都市計畫法",
+    "tags": [
+      "國土與區域計畫"
+    ],
+    "relatedLaws": [
+      "國土計畫法"
+    ],
+    "fineTopic": "國土永續發展基金",
+    "text": "依國土計畫法規定，國土永續發展基金來源，有關政府之撥款方式，下列何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "依國土計畫法規定，國土永續發展基金來源，有關政府之撥款方式，下列何者錯誤？"
+      }
+    ],
+    "options": [
+      "直轄市、縣（市）主管機關應視檢討變更情形逐年編列預算移撥",
+      "國土計畫施行後10 年，移撥總額不得低於新臺幣500 億元",
+      "基金來源有關自來水、電力事業機構附徵之一定比率費用來源，自國土計畫法施行後第11 年起適用",
+      "上述自來水、電力事業機構附徵費用，其附徵項目、一定比率之計算等相關事項之辦法，由中央主管機關定之"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        0
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 6,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-50",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 50,
+    "topic": "國土與區域計畫",
+    "primaryCategory": "都市計畫法",
+    "tags": [
+      "國土與區域計畫"
+    ],
+    "relatedLaws": [
+      "國土計畫法"
+    ],
+    "fineTopic": "國土復育計畫",
+    "text": "依國土計畫法規定，國土復育計畫之擬定及定期檢討，下列何者正確？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "依國土計畫法規定，國土復育計畫之擬定及定期檢討，下列何者正確？"
+      }
+    ],
+    "options": [
+      "國土復育促進地區經劃定者應以保育和適度開發行為及設施之設置兩者併行為原則",
+      "由劃定機關擬定復育計畫報請中央主管機關核定後實施",
+      "復育計畫每5 年應通盤檢討一次",
+      "復育計畫核定實施後如有變更需要，得隨時報請原核定之中央主管機關核准變更"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        2
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 6,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-51",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 51,
+    "topic": "國土與區域計畫",
+    "primaryCategory": "都市計畫法",
+    "tags": [
+      "國土與區域計畫"
+    ],
+    "relatedLaws": [
+      "國土計畫法"
+    ],
+    "fineTopic": "國土計畫規劃",
+    "text": "依國土計畫法規定，下列何者不是都會區域規劃基本原則？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "依國土計畫法規定，下列何者不是都會區域規劃基本原則？"
+      }
+    ],
+    "options": [
+      "應配合區域特色與整體發展需要",
+      "加強跨域整合，達成資源互補",
+      "尊重及保存原住民族傳統文化",
+      "強化區域機能提升競爭力"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        2
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 6,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-52",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 52,
+    "topic": "國土與區域計畫",
+    "primaryCategory": "都市計畫法",
+    "tags": [
+      "國土與區域計畫"
+    ],
+    "relatedLaws": [
+      "國土計畫法"
+    ],
+    "fineTopic": "國土計畫中央地方管轄",
+    "text": "依國土計畫法規定，土地於符合國土功能分區使用及其分類之使用原則下，得申請使用許可。其程序下列何者正確？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "依國土計畫法規定，土地於符合國土功能分區使用及其分類之使用原則下，得申請使用許可。其程序下列何者正確？"
+      }
+    ],
+    "options": [
+      "使用許可之申請由中央主管機關受理",
+      "申請許可範圍屬國土保育地區或海洋資源地區者，由直轄市、縣（市）主管機關審議",
+      "申請許可範圍跨二個直轄市、縣（市）行政區以上者，由中央主管機關審議",
+      "填海造陸案件者由直轄市、縣（市）主管機關審議"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        2
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 6,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-53",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 53,
+    "topic": "國土與區域計畫",
+    "primaryCategory": "都市計畫法",
+    "tags": [
+      "國土與區域計畫"
+    ],
+    "relatedLaws": [
+      "國土計畫法"
+    ],
+    "fineTopic": "國土計畫中央地方管轄",
+    "text": "下列何者是直轄市、縣（市）國土計畫審議會應辦理事項？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "下列何者是直轄市、縣（市）國土計畫審議會應辦理事項？"
+      }
+    ],
+    "options": [
+      "國土復育促進地區之劃定及擬訂復育計畫之審議",
+      "國土保育地區之使用許可、許可變更及廢止之審議",
+      "海洋資源地區之使用許可、許可變更及廢止之審議",
+      "農業發展地區之使用許可、許可變更及廢止之審議"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        3
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 6,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-54",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 54,
+    "topic": "公寓大廈管理",
+    "primaryCategory": "公寓大廈管理條例",
+    "tags": [
+      "公寓大廈管理"
+    ],
+    "relatedLaws": [
+      "公寓大廈管理條例"
+    ],
+    "fineTopic": "公寓大廈",
+    "text": "下列何者非屬公寓大廈管理條例所稱之「住戶」？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "下列何者非屬公寓大廈管理條例所稱之「住戶」？"
+      }
+    ],
+    "options": [
+      "承租人",
+      "未經區分所有權人同意而為專有部分之使用者",
+      "區分所有權人",
+      "業經取得停車空間建築物所有權者"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        1
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 6,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-55",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 55,
+    "topic": "國土與區域計畫",
+    "primaryCategory": "都市計畫法",
+    "tags": [
+      "國土與區域計畫"
+    ],
+    "relatedLaws": [
+      "區域計畫法"
+    ],
+    "fineTopic": "區域建設推行委員會",
+    "text": "依區域計畫法規定，中央、直轄市、縣（市）主管機關為推動區域計畫之實施及區域公共設施之興修，得組成區域建設推行委員會。其任務包含下列何者？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "依區域計畫法規定，中央、直轄市、縣（市）主管機關為推動區域計畫之實施及區域公共設施之興修，得組成區域建設推行委員會。其任務包含下列何者？"
+      }
+    ],
+    "options": [
+      "有關區域計畫之審查事項",
+      "有關區域開發建設事業計畫之審查事項",
+      "有關個別開發建設事業之協調事項",
+      "有關籌措區域公共設施建設經費之審查事項"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        2
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 6,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-56",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 56,
+    "topic": "國家公園法",
+    "primaryCategory": "其他營建法規",
+    "tags": [
+      "國家公園法"
+    ],
+    "relatedLaws": [
+      "國家公園法"
+    ],
+    "fineTopic": "國家公園",
+    "text": "依國家公園法規定，一般管制區或遊憩區內，經國家公園管理處之許可，得為下列何種行為？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "依國家公園法規定，一般管制區或遊憩區內，經國家公園管理處之許可，得為下列何種行為？"
+      }
+    ],
+    "options": [
+      "焚燬草木或引火整地",
+      "狩獵動物或捕捉魚類",
+      "採折花木",
+      "礦物或土石之勘採"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        3
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 6,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-57",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 57,
+    "topic": "國土與區域計畫",
+    "primaryCategory": "都市計畫法",
+    "tags": [
+      "國土與區域計畫"
+    ],
+    "relatedLaws": [
+      "國土計畫法"
+    ],
+    "fineTopic": "國土功能分區",
+    "text": "依國土計畫法規定，填海造地案件限於何種國土功能分區始得申請？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "依國土計畫法規定，填海造地案件限於何種國土功能分區始得申請？"
+      }
+    ],
+    "options": [
+      "國土保育地區",
+      "海洋資源地區",
+      "農業發展地區",
+      "城鄉發展地區"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        3
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 6,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-58",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 58,
+    "topic": "公寓大廈管理",
+    "primaryCategory": "公寓大廈管理條例",
+    "tags": [
+      "公寓大廈管理"
+    ],
+    "relatedLaws": [
+      "公寓大廈管理條例"
+    ],
+    "fineTopic": "公寓大廈爭議",
+    "text": "直轄市、縣（市）政府得組設公寓大廈爭議事件調處委員會，下列何者非屬應不予受理調處事項？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "直轄市、縣（市）政府得組設公寓大廈爭議事件調處委員會，下列何者非屬應不予受理調處事項？"
+      }
+    ],
+    "options": [
+      "當事人無從通知者",
+      "調處事件不屬受理機關管轄者",
+      "管理委員會未執行區分所有權人會議決議事項",
+      "已訴請法院審理中或經法院和解、調解或判決確定者"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        2
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 6,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-59",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 59,
+    "topic": "營造業法",
+    "primaryCategory": "營造業法",
+    "tags": [
+      "營造業法"
+    ],
+    "relatedLaws": [
+      "營造業法"
+    ],
+    "fineTopic": "營造業",
+    "text": "營造業法所稱營造業，不包括下列何者？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "營造業法所稱營造業，不包括下列何者？"
+      }
+    ],
+    "options": [
+      "綜合營造業",
+      "專業營造業",
+      "電氣水管業",
+      "土木包工業"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        2
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 7,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-60",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 60,
+    "topic": "營造業法",
+    "primaryCategory": "營造業法",
+    "tags": [
+      "營造業法"
+    ],
+    "relatedLaws": [
+      "營造業法"
+    ],
+    "fineTopic": "營造業",
+    "text": "營造業法所稱資本額，於營造業以股份有限公司設立者，係指下列何者？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "營造業法所稱資本額，於營造業以股份有限公司設立者，係指下列何者？"
+      }
+    ],
+    "options": [
+      "實收資本額",
+      "應收資本額",
+      "登記資本額",
+      "交易資本額"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        0
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 7,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-61",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 61,
+    "topic": "文化資產保存法",
+    "primaryCategory": "其他營建法規",
+    "tags": [
+      "文化資產保存法"
+    ],
+    "relatedLaws": [
+      "文化資產保存法"
+    ],
+    "fineTopic": "古蹟",
+    "text": "依文化資產保存法規定，下列何者非屬古蹟之管理維護事項？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "依文化資產保存法規定，下列何者非屬古蹟之管理維護事項？"
+      }
+    ],
+    "options": [
+      "日常保養及定期維修",
+      "使用或再利用經營管理",
+      "緊急應變計畫之擬定",
+      "建築物拆除應注意事項"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        3
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 7,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-62",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 62,
+    "topic": "營造業法",
+    "primaryCategory": "營造業法",
+    "tags": [
+      "營造業法"
+    ],
+    "relatedLaws": [
+      "營造業法"
+    ],
+    "fineTopic": "營造業責任",
+    "text": "依營造業法規定，下列敘述何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "依營造業法規定，下列敘述何者錯誤？"
+      }
+    ],
+    "options": [
+      "營造業負責人不得為其他營造業之負責人、專任工程人員或工地主任",
+      "技術士應於工地現場依其專長技能及作業規範進行施工操作或品質控管",
+      "營造業之工地主任應負責辦理工作包括依施工計畫書執行按圖施工",
+      "營造業之專任工程人員應負責辦理工作包括按日填報施工日誌"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        3
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 7,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-63",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 63,
+    "topic": "政府採購法",
+    "primaryCategory": "政府採購法",
+    "tags": [
+      "政府採購法"
+    ],
+    "relatedLaws": [
+      "政府採購法"
+    ],
+    "fineTopic": "開標及決標",
+    "text": "依政府採購法規定，投標廠商有下列何種情形，機關應不予開標或不予決標？①借用或冒用他人名義或證件投標 ②不同投標廠商間之投標文件內容有重大異常關聯 ③服務建議書頁數太少 ④以不實文件投標",
+    "content": [
+      {
+        "kind": "text",
+        "text": "依政府採購法規定，投標廠商有下列何種情形，機關應不予開標或不予決標？①借用或冒用他人名義或證件投標 ②不同投標廠商間之投標文件內容有重大異常關聯 ③服務建議書頁數太少 ④以不實文件投標"
+      }
+    ],
+    "options": [
+      "僅①②③",
+      "僅②③④",
+      "僅①②④",
+      "①②③④"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        2
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 7,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-64",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 64,
+    "topic": "政府採購法",
+    "primaryCategory": "政府採購法",
+    "tags": [
+      "政府採購法"
+    ],
+    "relatedLaws": [
+      "政府採購法"
+    ],
+    "fineTopic": "查核",
+    "text": "依政府採購法相關規定，查核小組查核結果，有下列何種情況之一者，應列為丙等？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "依政府採購法相關規定，查核小組查核結果，有下列何種情況之一者，應列為丙等？"
+      }
+    ],
+    "options": [
+      "混凝土結構物鑽心試體試驗結果不合格",
+      "人行道工程破損",
+      "室內輕隔間框架間距不足",
+      "粉刷不平整"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        0
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 7,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-65",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 65,
+    "topic": "政府採購法",
+    "primaryCategory": "政府採購法",
+    "tags": [
+      "政府採購法"
+    ],
+    "relatedLaws": [
+      "採購評選委員會組織準則"
+    ],
+    "fineTopic": "評選委員會",
+    "text": "依採購評選委員會組織準則規定，評選委員會召集人由誰擔任？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "依採購評選委員會組織準則規定，評選委員會召集人由誰擔任？"
+      }
+    ],
+    "options": [
+      "委員互推一人擔任",
+      "專家學者委員互推一人擔任",
+      "機關首長擔任，或由機關首長或其授權人員指定一級主管以上人員擔任",
+      "工作小組組長擔任"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        2
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 7,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-66",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 66,
+    "topic": "政府採購法",
+    "primaryCategory": "政府採購法",
+    "tags": [
+      "政府採購法"
+    ],
+    "relatedLaws": [
+      "政府採購法"
+    ],
+    "fineTopic": "招標方式",
+    "text": "依政府採購法規定，有關機關辦理採購之招標方式，下列敘述何者正確？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "依政府採購法規定，有關機關辦理採購之招標方式，下列敘述何者正確？"
+      }
+    ],
+    "options": [
+      "皆應經過公告方式，以確保公平公開之原則",
+      "皆應秘密為之，以利採購程序順利",
+      "可不經公告方式預先依一定資格條件辦理廠商資格審查後，依選擇性招標辦理，以簡化程序",
+      "限制性招標係指不經公告程序，邀請二家廠商以上比價或僅邀請一家廠商議價"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        3
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 7,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-67",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 67,
+    "topic": "無障礙設計",
+    "primaryCategory": "建築物無障礙設施設計規範",
+    "tags": [
+      "無障礙設計"
+    ],
+    "relatedLaws": [
+      "建築物無障礙設施設計規範"
+    ],
+    "fineTopic": "無障礙坡道",
+    "text": "依建築物無障礙設施設計規範規定，無障礙坡道至少每高差多少公分，應設置150 公分以上且坡度不得大於1/50 之平台？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "依建築物無障礙設施設計規範規定，無障礙坡道至少每高差多少公分，應設置150 公分以上且坡度不得大於1/50 之平台？"
+      }
+    ],
+    "options": [
+      "60",
+      "75",
+      "90",
+      "100"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        1
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 7,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-68",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 68,
+    "topic": "無障礙設計",
+    "primaryCategory": "建築物無障礙設施設計規範",
+    "tags": [
+      "無障礙設計"
+    ],
+    "relatedLaws": [
+      "建築物無障礙設施設計規範"
+    ],
+    "fineTopic": "無障礙昇降設備",
+    "text": "有關無障礙昇降機機門設有可自動停止並重新開啟的裝置，下列敘述何者正確？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "有關無障礙昇降機機門設有可自動停止並重新開啟的裝置，下列敘述何者正確？"
+      }
+    ],
+    "options": [
+      "該裝置是讓門遇到物體或人阻礙時的安全設計",
+      "該裝置主要是方便搬運大型物件的安全設計",
+      "昇降機開門時，昇降機門應維持完全開啟狀態至少3 秒鐘",
+      "昇降機出入口處之地板面，應與靜止時之機廂地板面保持不得大於5 公分之高低差"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        0
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 7,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-69",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 69,
+    "topic": "無障礙設計",
+    "primaryCategory": "建築物無障礙設施設計規範",
+    "tags": [
+      "無障礙設計"
+    ],
+    "relatedLaws": [
+      "建築物無障礙設施設計規範"
+    ],
+    "fineTopic": "輪椅觀眾席位",
+    "text": "有關無障礙設施「輪椅觀眾席位」之規定，下列何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "有關無障礙設施「輪椅觀眾席位」之規定，下列何者錯誤？"
+      }
+    ],
+    "options": [
+      "由前方進入之輪椅觀眾席位，深度應為120 公分以上",
+      "由後方進入之輪椅觀眾席位，深度應為100 公分以上",
+      "僅可由右側面進入者，深度應為150 公分以上",
+      "僅可由左側面進入者，深度應為150 公分以上"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        1
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 7,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-70",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 70,
+    "topic": "無障礙設計",
+    "primaryCategory": "建築物無障礙設施設計規範",
+    "tags": [
+      "無障礙設計"
+    ],
+    "relatedLaws": [
+      "建築物無障礙設施設計規範"
+    ],
+    "fineTopic": "輪椅觀眾席位",
+    "text": "依建築物無障礙設施設計規範規定，輪椅觀眾席之地面應平整、防滑、易於通行，且坡度至多不得大於多少？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "依建築物無障礙設施設計規範規定，輪椅觀眾席之地面應平整、防滑、易於通行，且坡度至多不得大於多少？"
+      }
+    ],
+    "options": [
+      "1/30",
+      "1/40",
+      "1/50",
+      "1/60"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        2
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 7,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-71",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 71,
+    "topic": "無障礙設計",
+    "primaryCategory": "建築物無障礙設施設計規範",
+    "tags": [
+      "無障礙設計"
+    ],
+    "relatedLaws": [
+      "建築物無障礙設施設計規範"
+    ],
+    "fineTopic": "輪椅觀眾席位",
+    "text": "依建築物無障礙設施設計規範之輪椅觀眾席位規定，下列敘述何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "依建築物無障礙設施設計規範之輪椅觀眾席位規定，下列敘述何者錯誤？"
+      }
+    ],
+    "options": [
+      "輪椅觀眾席位得設於觀眾席不同位置、區域及樓層",
+      "中間區塊之席位與銀幕兩側之夾角沒有角度限制",
+      "兩側區塊之席位與銀幕兩側之夾角不得大於60°",
+      "席位之水平視線與觀看銀幕中心視線之夾角不得大於30°"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        1
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 8,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-72",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 72,
+    "topic": "無障礙設計",
+    "primaryCategory": "建築物無障礙設施設計規範",
+    "tags": [
+      "無障礙設計"
+    ],
+    "relatedLaws": [
+      "建築物無障礙設施設計規範"
+    ],
+    "fineTopic": "無障礙客房",
+    "text": "依建築物無障礙設施設計規範之無障礙客房規定，下列敘述何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "依建築物無障礙設施設計規範之無障礙客房規定，下列敘述何者錯誤？"
+      }
+    ],
+    "options": [
+      "無障礙客房內應設置衛浴設備，衛浴設備至少應包括馬桶、洗面盆及浴缸或淋浴間等",
+      "衛浴設備空間應設置直徑135 公分以上之迴轉空間",
+      "衛浴設備之迴轉空間邊緣30 公分範圍內如符合膝蓋淨容納空間規定者，得納入迴轉空間計算",
+      "求助鈴應連接至服務台或類似空間，若無服務台，應連接至該客房外部之警示燈或聲響"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        2
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 8,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-73",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 73,
+    "topic": "法規位階",
+    "primaryCategory": "其他營建法規",
+    "tags": [
+      "法規位階"
+    ],
+    "relatedLaws": [
+      "法律常識"
+    ],
+    "fineTopic": "法律常識",
+    "text": "縣市政府受理人民聲請許可案件適用法規時，下列何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "縣市政府受理人民聲請許可案件適用法規時，下列何者錯誤？"
+      }
+    ],
+    "options": [
+      "依其性質應適用行為時之法規",
+      "在處理程序終結前，據以准許之法規有變更者，適用新法規",
+      "舊法規有利於當事人而新法規未廢除或禁止所聲請之事項者，適用舊法規",
+      "新舊法規之適用由主管機關決定"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        3
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 8,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-74",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 74,
+    "topic": "無障礙設計",
+    "primaryCategory": "建築物無障礙設施設計規範",
+    "tags": [
+      "無障礙設計"
+    ],
+    "relatedLaws": [
+      "建築物無障礙設施設計規範"
+    ],
+    "fineTopic": "無障礙客房",
+    "text": "依建築物無障礙設施設計規範之無障礙客房規定，下列敘述何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "依建築物無障礙設施設計規範之無障礙客房規定，下列敘述何者錯誤？"
+      }
+    ],
+    "options": [
+      "無障礙客房內通路寬度不得小於120 公分",
+      "無障礙客房內床間淨寬度不得小於90 公分",
+      "供房客使用之電器插座及開關：應設置於自地板面起算至150 公分範圍內",
+      "無障礙客房內求助鈴應至少設置2 處"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        2
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 8,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-75",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 75,
+    "topic": "法規位階",
+    "primaryCategory": "其他營建法規",
+    "tags": [
+      "法規位階"
+    ],
+    "relatedLaws": [
+      "中央法規標準法"
+    ],
+    "fineTopic": "法律常識",
+    "text": "依中央法規標準法規定，下列敘述何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "依中央法規標準法規定，下列敘述何者錯誤？"
+      }
+    ],
+    "options": [
+      "法規應規定施行日期，或授權以命令規定施行日期",
+      "法規明定自公布或發布日施行者，自公布或發布之日起算至次日起發生效力",
+      "法規特定有施行日期，或以命令特定施行日期者，自該特定日起發生效力",
+      "法規定有施行區域或授權以命令規定施行區域者，於該特定區域內發生效力"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        1
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 8,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-76",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 76,
+    "topic": "住宅法",
+    "primaryCategory": "其他營建法規",
+    "tags": [
+      "住宅法"
+    ],
+    "relatedLaws": [
+      "住宅法"
+    ],
+    "fineTopic": "住宅相關",
+    "text": "依住宅法規定之經濟或社會弱勢者身分，係指家庭總收入平均分配全家人口之金額及家庭財產，未超過主管機關公告之一定標準，且應符合特定身分規定者，所稱特定身分不包含下列何者？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "依住宅法規定之經濟或社會弱勢者身分，係指家庭總收入平均分配全家人口之金額及家庭財產，未超過主管機關公告之一定標準，且應符合特定身分規定者，所稱特定身分不包含下列何者？"
+      }
+    ],
+    "options": [
+      "65 歲以上之老人",
+      "低收入戶",
+      "災民",
+      "育有未成年子女1 人以上"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        3
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 8,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-77",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 77,
+    "topic": "住宅法",
+    "primaryCategory": "其他營建法規",
+    "tags": [
+      "住宅法"
+    ],
+    "relatedLaws": [
+      "住宅法施行細則",
+      "住宅法"
+    ],
+    "fineTopic": "住宅相關",
+    "text": "依住宅法施行細則規定，直轄市、縣（市）主管機關，應定期查核接受自建、自購、修繕住宅貸款利息補貼或承租住宅租金補貼者家庭成員擁有住宅狀況，其定期查核之頻率，下列何者正確？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "依住宅法施行細則規定，直轄市、縣（市）主管機關，應定期查核接受自建、自購、修繕住宅貸款利息補貼或承租住宅租金補貼者家庭成員擁有住宅狀況，其定期查核之頻率，下列何者正確？"
+      }
+    ],
+    "options": [
+      "應每半年查核1 次，並得視需要隨時辦理",
+      "應每1 年查核1 次，並得視需要隨時辦理",
+      "應每2 年查核1 次，並得視需要隨時辦理",
+      "應每3 年查核1 次，並得視需要隨時辦理"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        1
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 8,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-78",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 78,
+    "topic": "法規位階",
+    "primaryCategory": "其他營建法規",
+    "tags": [
+      "法規位階"
+    ],
+    "relatedLaws": [
+      "都市危險及老舊建築物建築容積獎勵辦法"
+    ],
+    "fineTopic": "容積獎勵%",
+    "text": "依都市危險及老舊建築物建築容積獎勵辦法規定，建築物取得耐震設計標章，其容積獎勵額度為基準容積百分之多少？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "依都市危險及老舊建築物建築容積獎勵辦法規定，建築物取得耐震設計標章，其容積獎勵額度為基準容積百分之多少？"
+      }
+    ],
+    "options": [
+      "5",
+      "10",
+      "15",
+      "20"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        1
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 8,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-79",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 79,
+    "topic": "法規位階",
+    "primaryCategory": "其他營建法規",
+    "tags": [
+      "法規位階"
+    ],
+    "relatedLaws": [
+      "都市危險及老舊建築物加速重建條例施行細則"
+    ],
+    "fineTopic": "重建計畫",
+    "text": "依都市危險及老舊建築物加速重建條例施行細則規定，下列何者非屬重建計畫應載明事項？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "依都市危險及老舊建築物加速重建條例施行細則規定，下列何者非屬重建計畫應載明事項？"
+      }
+    ],
+    "options": [
+      "土地使用分區",
+      "經依法登記開業建築師簽證之建築物配置及設計圖說",
+      "公共設施改善計畫構想",
+      "申請容積獎勵項目及額度"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        2
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 8,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  },
+  {
+    "id": "law-113-80",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "law",
+    "questionNumber": 80,
+    "topic": "非都市土地",
+    "primaryCategory": "都市計畫法",
+    "tags": [
+      "非都市土地"
+    ],
+    "relatedLaws": [
+      "農業用地興建農舍辦法"
+    ],
+    "fineTopic": "農舍",
+    "text": "依農業用地興建農舍辦法規定，直轄市主管機關為辦理申請興建農舍之核定作業，得由農業單位邀集各單位組成審查小組，下列那個單位非在邀請範圍？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "依農業用地興建農舍辦法規定，直轄市主管機關為辦理申請興建農舍之核定作業，得由農業單位邀集各單位組成審查小組，下列那個單位非在邀請範圍？"
+      }
+    ],
+    "options": [
+      "環境保護",
+      "財政",
+      "地政",
+      "都市計畫"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        1
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "1801",
+      "page": 8,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0101&t=S"
+    }
+  }
+]

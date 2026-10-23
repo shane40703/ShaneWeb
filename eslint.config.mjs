@@ -10,6 +10,7 @@ export default defineConfig([
     'coverage/**',
     'playwright-report/**',
     'test-results/**',
+    'storybook-static/**',
     'todo/new_ui/**',
   ]),
 ]);

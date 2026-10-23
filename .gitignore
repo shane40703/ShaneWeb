@@ -10,3 +10,6 @@ test-results/
 .env*
 !.env.example
 public/question-data/
+
+# Storybook
+storybook-static/

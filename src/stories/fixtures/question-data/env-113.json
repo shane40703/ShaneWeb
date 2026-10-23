@@ -1,0 +1,1621 @@
+[
+  {
+    "id": "env-113-01",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "env",
+    "questionNumber": 1,
+    "topic": "垂直運輸",
+    "primaryCategory": "設備",
+    "tags": [
+      "垂直運輸"
+    ],
+    "text": "依據建築物無障礙設施設計規範第四章昇降設備之規定，昇降機出入口處之樓地板面，應與機廂地板面保持平整，其與機廂地板面之水平間隙最小不得大於多少公分？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "依據建築物無障礙設施設計規範第四章昇降設備之規定，昇降機出入口處之樓地板面，應與機廂地板面保持平整，其與機廂地板面之水平間隙最小不得大於多少公分？"
+      }
+    ],
+    "options": [
+      "3.2",
+      "4.2",
+      "4.7",
+      "5.2"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        0
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "4801",
+      "page": 1,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=S"
+    }
+  },
+  {
+    "id": "env-113-02",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "env",
+    "questionNumber": 2,
+    "topic": "給排水",
+    "primaryCategory": "設備",
+    "tags": [
+      "給排水"
+    ],
+    "text": "依據建築物無障礙設施設計規範，有關無障礙廁所盥洗室之馬桶與扶手，下列敘述何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "依據建築物無障礙設施設計規範，有關無障礙廁所盥洗室之馬桶與扶手，下列敘述何者錯誤？"
+      }
+    ],
+    "options": [
+      "馬桶至少有一側邊之淨空間不得小於70 公分",
+      "扶手如設於側牆時，馬桶中心線距側牆之距離不得大於60 公分",
+      "馬桶不可有蓋，且應設置靠背",
+      "馬桶側面牆壁裝置扶手時，應設置I 型扶手"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        3
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "4801",
+      "page": 1,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=S"
+    }
+  },
+  {
+    "id": "env-113-03",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "env",
+    "questionNumber": 3,
+    "topic": "通風",
+    "primaryCategory": "空氣",
+    "tags": [
+      "通風"
+    ],
+    "text": "在無建築設備的條件下，下列那些設計策略適合應用於臺灣平地氣候的建築物？①氣密性較高 ②遮陽較深 ③通風性較佳 ④隔熱性較佳",
+    "content": [
+      {
+        "kind": "text",
+        "text": "在無建築設備的條件下，下列那些設計策略適合應用於臺灣平地氣候的建築物？①氣密性較高 ②遮陽較深 ③通風性較佳 ④隔熱性較佳"
+      }
+    ],
+    "options": [
+      "僅①②③",
+      "僅①③④",
+      "僅②③④",
+      "①②③④"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        2
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "4801",
+      "page": 1,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=S"
+    }
+  },
+  {
+    "id": "env-113-04",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "env",
+    "questionNumber": 4,
+    "topic": "熱環境",
+    "primaryCategory": "熱",
+    "tags": [
+      "熱環境"
+    ],
+    "text": "都市中基地在相同法定空地條件下，採用何種設計手法產生之熱島效應相對最為嚴重？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "都市中基地在相同法定空地條件下，採用何種設計手法產生之熱島效應相對最為嚴重？"
+      }
+    ],
+    "options": [
+      "大量草溝",
+      "大量水池",
+      "大量綠化",
+      "大量硬質鋪面"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        3
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "4801",
+      "page": 2,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=S"
+    }
+  },
+  {
+    "id": "env-113-05",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "env",
+    "questionNumber": 5,
+    "topic": "給排水",
+    "primaryCategory": "設備",
+    "tags": [
+      "給排水"
+    ],
+    "text": "下列何者是高層建築物設置中間水槽或減壓閥的給水壓力（kg/cm2）臨界標準？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "下列何者是高層建築物設置中間水槽或減壓閥的給水壓力（kg/cm2）臨界標準？"
+      }
+    ],
+    "options": [
+      "1.5",
+      "3.5",
+      "7",
+      "15"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        1
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "4801",
+      "page": 2,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=S"
+    }
+  },
+  {
+    "id": "env-113-06",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "env",
+    "questionNumber": 6,
+    "topic": "通風",
+    "primaryCategory": "空氣",
+    "tags": [
+      "通風"
+    ],
+    "text": "某空間室內高度2.5 m、面積200 m2，為了達到良好的室內空氣品質，提出每小時需達換氣次數3 次的要求，需裝設下列那一種規格的排風扇最接近需求？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "某空間室內高度2.5 m、面積200 m2，為了達到良好的室內空氣品質，提出每小時需達換氣次數3 次的要求，需裝設下列那一種規格的排風扇最接近需求？"
+      }
+    ],
+    "options": [
+      "25 [CMS]",
+      "25 [L/min]",
+      "25 [CMM]",
+      "25 [L/s]"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        2
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "4801",
+      "page": 2,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=S"
+    }
+  },
+  {
+    "id": "env-113-07",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "env",
+    "questionNumber": 7,
+    "topic": "通風",
+    "primaryCategory": "空氣",
+    "tags": [
+      "通風"
+    ],
+    "text": "某舞蹈教室每小時單位面積所需換氣量為15 m3，當室內高度2.5 m、面積60 m2，若在可對流開窗通風情況下，有效開口面積為2 m2 時，則環境的風速應當至少為多少m/s？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "某舞蹈教室每小時單位面積所需換氣量為15 m3，當室內高度2.5 m、面積60 m2，若在可對流開窗通風情況下，有效開口面積為2 m2 時，則環境的風速應當至少為多少m/s？"
+      }
+    ],
+    "options": [
+      "0.063",
+      "0.125",
+      "0.150",
+      "0.250"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        1
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "4801",
+      "page": 2,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=S"
+    }
+  },
+  {
+    "id": "env-113-08",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "env",
+    "questionNumber": 8,
+    "topic": "照明",
+    "primaryCategory": "光",
+    "tags": [
+      "照明"
+    ],
+    "text": "色溫及照度的搭配可呈現不同的空間氣氛，下列那種照明組合的效果敘述最不適當？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "色溫及照度的搭配可呈現不同的空間氣氛，下列那種照明組合的效果敘述最不適當？"
+      }
+    ],
+    "options": [
+      "高照度高色溫：明亮清爽",
+      "低照度低色溫：放鬆舒適",
+      "高照度低色溫：清新涼爽",
+      "低照度高色溫：寂靜冷清"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        2
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "4801",
+      "page": 2,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=S"
+    }
+  },
+  {
+    "id": "env-113-09",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "env",
+    "questionNumber": 9,
+    "topic": "照明",
+    "primaryCategory": "光",
+    "tags": [
+      "照明"
+    ],
+    "text": "某空間原本使用20 W、2000 lm 的A 燈具，更新後採用18 W、2500 lm 的B 燈具，在其他照明條件不變的情況下，下列敘述何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "某空間原本使用20 W、2000 lm 的A 燈具，更新後採用18 W、2500 lm 的B 燈具，在其他照明條件不變的情況下，下列敘述何者錯誤？"
+      }
+    ],
+    "options": [
+      "若燈具數量維持不變，更新後照度會提升為1.25 倍",
+      "若燈具數量維持不變，更新後照明功率密度會下降為0.9 倍",
+      "若照度維持不變，A 燈具數量為B 燈具之1.25 倍",
+      "若照度維持不變，更新後整體照明耗能為更新前的0.8 倍"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        3
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "4801",
+      "page": 2,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=S"
+    }
+  },
+  {
+    "id": "env-113-10",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "env",
+    "questionNumber": 10,
+    "topic": "音環境",
+    "primaryCategory": "聲",
+    "tags": [
+      "音環境"
+    ],
+    "text": "有關聲學的計量方式「響度」（loudness）之相關敘述，下列何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "有關聲學的計量方式「響度」（loudness）之相關敘述，下列何者錯誤？"
+      }
+    ],
+    "options": [
+      "響度的單位有phon 與sone 兩種",
+      "響度大小是依據人對聲音的各種音頻高低具有不同感度所定義",
+      "A 加權聲壓級dB(A)是根據等響曲線中40 phon 的曲線感度制定",
+      "測量得相等之卡車引擎與飛機引擎的聲壓級時，兩者的響度大小也相等"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        3
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "4801",
+      "page": 2,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=S"
+    }
+  },
+  {
+    "id": "env-113-11",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "env",
+    "questionNumber": 11,
+    "topic": "音環境",
+    "primaryCategory": "聲",
+    "tags": [
+      "音環境"
+    ],
+    "text": "有關1/1 八度音頻（octave band）之敘述，下列何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "有關1/1 八度音頻（octave band）之敘述，下列何者錯誤？"
+      }
+    ],
+    "options": [
+      "八度音頻之中心頻率約等於上下遮斷頻率（cut-off frequency）之乘積的方根",
+      "八度音頻之上遮斷頻率約等於下遮斷頻率（cut-off frequency）的兩倍",
+      "依據1/1 八度音頻之頻率的切割方式，各個頻段的頻寬約為其中心頻率之0.5 倍",
+      "依據1/1 八度音頻之頻率的切割方式，從125 Hz 至4000 Hz 可以有5 個不同頻寬"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        2
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "4801",
+      "page": 2,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=S"
+    }
+  },
+  {
+    "id": "env-113-12",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "env",
+    "questionNumber": 12,
+    "topic": "音環境",
+    "primaryCategory": "聲",
+    "tags": [
+      "音環境"
+    ],
+    "text": "有關音量的計量方式「分貝」大小及計算，下列敘述何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "有關音量的計量方式「分貝」大小及計算，下列敘述何者錯誤？"
+      }
+    ],
+    "options": [
+      "分貝是由聲音能量與基礎聲音能量（最小可聽值）的比率值取對數得到的",
+      "點音源聲能在自由聲場中增加1 倍，聲功率位準（音強級）增加6 分貝",
+      "兩噪音源頻譜相同，兩者聲壓位準（音壓級）差異在10 分貝以上，則聲壓小者幾乎可以忽略",
+      "聲音傳播以空氣為主的方式中，聲壓位準（音壓級）大小與空氣溫度及密度有關"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        1
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "4801",
+      "page": 2,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=S"
+    }
+  },
+  {
+    "id": "env-113-13",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "env",
+    "questionNumber": 13,
+    "topic": "音環境",
+    "primaryCategory": "聲",
+    "tags": [
+      "音環境"
+    ],
+    "text": "有關沙賓（Sabine）與依林（Erying）的餘響預測式的敘述，下列何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "有關沙賓（Sabine）與依林（Erying）的餘響預測式的敘述，下列何者錯誤？"
+      }
+    ],
+    "options": [
+      "沙賓的餘響式發表目的，著重於吸音材的配置與空間量大小",
+      "沙賓的餘響式可用於空間環繞音效的設計",
+      "依林的餘響式與沙賓的餘響式推導觀念大不相同，是採用音樂廳內聲能衰減公式理論得到的",
+      "依林的餘響式增加了考量聲能在空氣吸收的情形"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        1
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "4801",
+      "page": 3,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=S"
+    }
+  },
+  {
+    "id": "env-113-14",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "env",
+    "questionNumber": 14,
+    "topic": "音環境",
+    "primaryCategory": "聲",
+    "tags": [
+      "音環境"
+    ],
+    "text": "有關1/1 八度音（1/1 Octave）中心頻率，介於125 與8000 Hz 間，尚有5 個頻率，下列何者不是其中之一頻率（Hz）？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "有關1/1 八度音（1/1 Octave）中心頻率，介於125 與8000 Hz 間，尚有5 個頻率，下列何者不是其中之一頻率（Hz）？"
+      }
+    ],
+    "options": [
+      "500",
+      "750",
+      "1000",
+      "4000"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        1
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "4801",
+      "page": 3,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=S"
+    }
+  },
+  {
+    "id": "env-113-15",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "env",
+    "questionNumber": 15,
+    "topic": "音環境",
+    "primaryCategory": "聲",
+    "tags": [
+      "音環境"
+    ],
+    "text": "某牆壁面積為15 m2，其中包含一樘玻璃窗，面積2.4 m2，500 Hz 吸音率為0.1，其餘牆壁吸音率為0.2，計算此牆壁之平均吸音率約為多少？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "某牆壁面積為15 m2，其中包含一樘玻璃窗，面積2.4 m2，500 Hz 吸音率為0.1，其餘牆壁吸音率為0.2，計算此牆壁之平均吸音率約為多少？"
+      }
+    ],
+    "options": [
+      "0.12",
+      "0.15",
+      "0.18",
+      "0.20"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        2
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "4801",
+      "page": 3,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=S"
+    }
+  },
+  {
+    "id": "env-113-16",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "env",
+    "questionNumber": 16,
+    "topic": "照明",
+    "primaryCategory": "光",
+    "tags": [
+      "照明"
+    ],
+    "text": "甲乙兩張完全相同的白色辦公桌，在照明與環境條件完全相同的情況下，若將甲辦公桌的桌面色彩改為黑色，下列敘述何者正確？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "甲乙兩張完全相同的白色辦公桌，在照明與環境條件完全相同的情況下，若將甲辦公桌的桌面色彩改為黑色，下列敘述何者正確？"
+      }
+    ],
+    "options": [
+      "改成黑色之後的甲辦公桌的水平桌面照度會比乙辦公桌低",
+      "改成黑色之後的甲辦公桌的輝度與照度均和乙辦公桌相同",
+      "改成黑色之後的甲辦公桌的水平桌面照度會比乙辦公桌高",
+      "改成黑色之後的甲辦公桌的輝度會比乙辦公桌低"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        3
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "4801",
+      "page": 3,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=S"
+    }
+  },
+  {
+    "id": "env-113-17",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "env",
+    "questionNumber": 17,
+    "topic": "照明",
+    "primaryCategory": "光",
+    "tags": [
+      "照明"
+    ],
+    "text": "影響自然採光的因素，下列敘述何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "影響自然採光的因素，下列敘述何者錯誤？"
+      }
+    ],
+    "options": [
+      "窗面選擇高反射玻璃不利於室內空間的自然採光",
+      "深度過深的遮陽板不利於室內空間的自然採光",
+      "室內空間各部位的色彩不影響自然採光的效果",
+      "導光板（Light shelf）除了遮陽效果之外還具有增進自然採光的效果"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        2
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "4801",
+      "page": 3,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=S"
+    }
+  },
+  {
+    "id": "env-113-18",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "env",
+    "questionNumber": 18,
+    "topic": "照明",
+    "primaryCategory": "光",
+    "tags": [
+      "照明"
+    ],
+    "text": "關於開窗形式對自然採光的影響，下列敘述何者正確？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "關於開窗形式對自然採光的影響，下列敘述何者正確？"
+      }
+    ],
+    "options": [
+      "水平百葉較垂直百葉更能提升自然採光的均齊度",
+      "相同開窗面積時，開窗高度越低越能增加自然採光的均齊度",
+      "單面採光比雙面採光更能使室內照度分布均勻",
+      "相同開窗面積時，分散配置於數處較集中於一處時的均齊度差"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        0
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "4801",
+      "page": 3,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=S"
+    }
+  },
+  {
+    "id": "env-113-19",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "env",
+    "questionNumber": 19,
+    "topic": "熱環境",
+    "primaryCategory": "熱",
+    "tags": [
+      "熱環境"
+    ],
+    "text": "下列那個措施可以減少冬季室內壁體產生結露的風險？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "下列那個措施可以減少冬季室內壁體產生結露的風險？"
+      }
+    ],
+    "options": [
+      "增加壁體內的熱橋",
+      "直接加熱壁體表面",
+      "減少壁體的熱阻",
+      "於壁體內設置透濕層"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        1
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "4801",
+      "page": 3,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=S"
+    }
+  },
+  {
+    "id": "env-113-20",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "env",
+    "questionNumber": 20,
+    "topic": "通風",
+    "primaryCategory": "空氣",
+    "tags": [
+      "通風"
+    ],
+    "text": "關於懸浮微粒（PM10）與細懸浮微粒（PM2.5）的敘述，下列何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "關於懸浮微粒（PM10）與細懸浮微粒（PM2.5）的敘述，下列何者錯誤？"
+      }
+    ],
+    "options": [
+      "環保署空氣品質指標AQI 的項目中包含PM2.5",
+      "我國室內空氣品質標準中，PM10 的濃度較PM2.5 來得低",
+      "PM10 指的是粒徑小於10 μg 的懸浮微粒",
+      "PM2.5 的來源可能為交通污染、營建施工、露天燃燒等"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        1,
+        2
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "4801",
+      "page": 3,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=S"
+    }
+  },
+  {
+    "id": "env-113-21",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "env",
+    "questionNumber": 21,
+    "topic": "熱環境",
+    "primaryCategory": "熱",
+    "tags": [
+      "熱環境"
+    ],
+    "text": "室溫26℃無風房間內，有數塊相同尺寸（30 cm 長×30 cm 高×5 cm 厚）但不同材質的板材，板材表面溫度均為26℃，以手掌碰觸其表面，下列敘述何者正確？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "室溫26℃無風房間內，有數塊相同尺寸（30 cm 長×30 cm 高×5 cm 厚）但不同材質的板材，板材表面溫度均為26℃，以手掌碰觸其表面，下列敘述何者正確？"
+      }
+    ],
+    "options": [
+      "材質比重越高，其表面的手感越熱",
+      "材質比熱越高，其表面的手感越冷",
+      "材質熱輻射係數越高，其表面的手感越熱",
+      "材質熱傳導係數越高，其表面溫度的手感越冷"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        3
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "4801",
+      "page": 4,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=S"
+    }
+  },
+  {
+    "id": "env-113-22",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "env",
+    "questionNumber": 22,
+    "topic": "熱環境",
+    "primaryCategory": "熱",
+    "tags": [
+      "熱環境"
+    ],
+    "text": "各國的民居建築，在天花板與屋頂之間常有閣樓空間的存在，就適應風土的建築熱環境策略而言，下列敘述何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "各國的民居建築，在天花板與屋頂之間常有閣樓空間的存在，就適應風土的建築熱環境策略而言，下列敘述何者錯誤？"
+      }
+    ],
+    "options": [
+      "晝熱夜寒的乾燥氣候區，閣樓空間盡量不通風",
+      "晝熱夜寒的乾燥氣候區，屋頂採用深色石板",
+      "熱帶的濕熱氣候區，閣樓空間盡量不通風",
+      "熱帶的濕熱氣候區，屋頂採用厚草料"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        2
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "4801",
+      "page": 4,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=S"
+    }
+  },
+  {
+    "id": "env-113-23",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "env",
+    "questionNumber": 23,
+    "topic": "熱環境",
+    "primaryCategory": "熱",
+    "tags": [
+      "熱環境"
+    ],
+    "text": "位於嘉南平原空曠處獨棟住宅面南房間，有一面總面積15 m2 之半磚外牆（U = 3 [W/(m2・K)]，預計開一8 mm 厚玻璃窗及一塑鋼門，窗戶面積（含5 cm 寬塑鋼窗框）1 m2，門的面積（含5 cm 寬塑鋼門框）2.5 m2，假設門窗框為同一材質，且門窗安裝後，達到完全氣密。在夏季連續晴天、夜間外氣溫低於室溫的狀況下，下列何者正確？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "位於嘉南平原空曠處獨棟住宅面南房間，有一面總面積15 m2 之半磚外牆（U = 3 [W/(m2・K)]，預計開一8 mm 厚玻璃窗及一塑鋼門，窗戶面積（含5 cm 寬塑鋼窗框）1 m2，門的面積（含5 cm 寬塑鋼門框）2.5 m2，假設門窗框為同一材質，且門窗安裝後，達到完全氣密。在夏季連續晴天、夜間外氣溫低於室溫的狀況下，下列何者正確？"
+      },
+      {
+        "kind": "image",
+        "src": "/question-bank/環控/113/23/question-02.png",
+        "alt": "第 23 題題目附圖",
+        "width": 1044,
+        "height": 272
+      }
+    ],
+    "options": [
+      "改裝後，有空調狀態下，日間空調耗能比改裝前低",
+      "改裝後，無空調狀態下，白天達到穩態時，比改裝前的室內溫度高",
+      "改裝後，無空調狀態下，夜間室內溫度降低較慢",
+      "改裝後，有空調狀態下，夜間空調耗能比改裝前高"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        1
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "4801",
+      "page": 4,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=S"
+    }
+  },
+  {
+    "id": "env-113-24",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "env",
+    "questionNumber": 24,
+    "topic": "給排水",
+    "primaryCategory": "設備",
+    "tags": [
+      "給排水"
+    ],
+    "text": "有關給水水壓，下列敘述何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "有關給水水壓，下列敘述何者錯誤？"
+      }
+    ],
+    "options": [
+      "給水器具適用水壓為1.0～3.0 kg/cm2",
+      "沖刷式大便器所需最低壓力為1.0 kg/cm2",
+      "蓮蓬頭所需最高壓力為0.7 kg/cm2",
+      "住宅最高水壓為3.0～4.0 kg/cm2"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        2
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "4801",
+      "page": 4,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=S"
+    }
+  },
+  {
+    "id": "env-113-25",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "env",
+    "questionNumber": 25,
+    "topic": "綠建築與能源",
+    "primaryCategory": "永續",
+    "tags": [
+      "綠建築與能源"
+    ],
+    "text": "根據省水標章管理辦法，下列敘述何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "根據省水標章管理辦法，下列敘述何者錯誤？"
+      }
+    ],
+    "options": [
+      "省水標章圖樣，普級採藍色標準色，金級採金色標準色",
+      "兩段式省水馬桶，普級大號須在4.8 公升以下，小號須在3.0 公升以下",
+      "感應式水龍頭，每分鐘流量最大不得超過9.0 公升，亦不得小於0.5 公升",
+      "沖水小便器，金級每次沖水量須在1.5 公升以下，普級須在3.0 公升以下"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        1
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "4801",
+      "page": 4,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=S"
+    }
+  },
+  {
+    "id": "env-113-26",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "env",
+    "questionNumber": 26,
+    "topic": "給排水",
+    "primaryCategory": "設備",
+    "tags": [
+      "給排水"
+    ],
+    "text": "建築物衛生設備器具採用沖水閥之便器時，應於管線上裝設下列何者裝置避免污水逆流發生？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "建築物衛生設備器具採用沖水閥之便器時，應於管線上裝設下列何者裝置避免污水逆流發生？"
+      }
+    ],
+    "options": [
+      "真空破除器",
+      "吸氣閥裝置",
+      "逆流防止器",
+      "水錘吸收器"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        0
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "4801",
+      "page": 5,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=S"
+    }
+  },
+  {
+    "id": "env-113-27",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "env",
+    "questionNumber": 27,
+    "topic": "電氣設備",
+    "primaryCategory": "設備",
+    "tags": [
+      "電氣設備"
+    ],
+    "text": "有關資訊系統配線方式，下列何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "有關資訊系統配線方式，下列何者錯誤？"
+      }
+    ],
+    "options": [
+      "樓板線槽係指於樓板內埋設電纜配管，並在一定間隔設出線口，主要於電力、電話及通訊的配線",
+      "架高地板及簡易架高地板的配線較具擴充的彈性",
+      "細胞式線槽適用於採鋼匣式樓板的建築，配線方式較複雜困難、成本較高",
+      "電線管須於配線處預先埋設電線管於樓板內，配線容量受到限制，且移設及增加均不容易"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        2
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "4801",
+      "page": 5,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=S"
+    }
+  },
+  {
+    "id": "env-113-28",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "env",
+    "questionNumber": 28,
+    "topic": "垂直運輸",
+    "primaryCategory": "設備",
+    "tags": [
+      "垂直運輸"
+    ],
+    "text": "有關新建建築物的電梯機廂無障礙設計，下列敘述何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "有關新建建築物的電梯機廂無障礙設計，下列敘述何者錯誤？"
+      }
+    ],
+    "options": [
+      "電梯門出入口應無高差，電梯間應留設1.2 m 以上之輪椅迴旋空間",
+      "門開啟應延長時間，便於身障者出入，不應少於10 秒鐘",
+      "機廂門的淨寬度不得小於90 cm，機廂之深度不得小於135 cm",
+      "機廂內應設置語音系統以播報樓層數、行進方向及開關情形"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        0
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "4801",
+      "page": 5,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=S"
+    }
+  },
+  {
+    "id": "env-113-29",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "env",
+    "questionNumber": 29,
+    "topic": "綠建築與能源",
+    "primaryCategory": "永續",
+    "tags": [
+      "綠建築與能源"
+    ],
+    "text": "某棟3 層樓透天住宅規劃熱水設備時，基於節能減碳下列那一項不是優先考量的重點？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "某棟3 層樓透天住宅規劃熱水設備時，基於節能減碳下列那一項不是優先考量的重點？"
+      }
+    ],
+    "options": [
+      "採用瓦斯即熱式熱水器，可產出較多的熱值以縮短加熱時間",
+      "採用儲備型電熱水器，可減少熱水再加熱時間隨時供應熱水",
+      "儘量縮短熱水器與蓮蓬頭距離，以減少管路輸送的損耗",
+      "安裝輸送水管的保溫材，可減少管路熱能的流失"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        1
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "4801",
+      "page": 5,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=S"
+    }
+  },
+  {
+    "id": "env-113-30",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "env",
+    "questionNumber": 30,
+    "topic": "空調",
+    "primaryCategory": "設備",
+    "tags": [
+      "空調"
+    ],
+    "text": "氣冷式箱型空調機通常做為於中型空間的空調機，這類箱型空調機不包括下列那一項裝置？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "氣冷式箱型空調機通常做為於中型空間的空調機，這類箱型空調機不包括下列那一項裝置？"
+      }
+    ],
+    "options": [
+      "散熱水塔",
+      "送風機",
+      "冷卻盤管",
+      "冷凍機"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        0
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "4801",
+      "page": 5,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=S"
+    }
+  },
+  {
+    "id": "env-113-31",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "env",
+    "questionNumber": 31,
+    "topic": "綠建築與能源",
+    "primaryCategory": "永續",
+    "tags": [
+      "綠建築與能源"
+    ],
+    "text": "下列各類建築的空調系統設計，那一種節能敘述錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "下列各類建築的空調系統設計，那一種節能敘述錯誤？"
+      }
+    ],
+    "options": [
+      "大型博物館建築搭配儲冰系統，主要可利用夜間離峰電價，達到大幅降低耗能之目的",
+      "大學學生宿舍的空調系統設計，應優先採用分離式空調系統，以達獨立操作管控之目的",
+      "上下班一致且滿載使用的辦公建築，應優先採用中央空調系統，可達節約能源之目的",
+      "住宅空調系統應優先採用CSPF 高的變頻空調系統，以達節約能源之目的"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        0
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "4801",
+      "page": 5,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=S"
+    }
+  },
+  {
+    "id": "env-113-32",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "env",
+    "questionNumber": 32,
+    "topic": "綠建築與能源",
+    "primaryCategory": "永續",
+    "tags": [
+      "綠建築與能源"
+    ],
+    "text": "為達到空調節約能源與室內舒適度，下列那一種節能手法錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "為達到空調節約能源與室內舒適度，下列那一種節能手法錯誤？"
+      }
+    ],
+    "options": [
+      "裝設二氧化碳濃度偵測器的目的，在掌握室內空氣品質，以便適時引入新鮮外氣",
+      "工廠類建築的溫控感應器應裝在廠房上空高處，以偵測上升的熱空氣溫度，便於調整空調出風溫度",
+      "根據綠建築的空調節能評估，在百貨商場人潮多的建築其空調主機效率基準HSCc 應以低於1.5 倍進行規劃設計",
+      "全熱交換器可以進行室內回風之熱回收，減少換氣過程中熱能的浪費"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        1,
+        2
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "4801",
+      "page": 5,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=S"
+    }
+  },
+  {
+    "id": "env-113-33",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "env",
+    "questionNumber": 33,
+    "topic": "空調",
+    "primaryCategory": "設備",
+    "tags": [
+      "空調"
+    ],
+    "text": "選擇分離式冷氣機時，下列注意事項何者正確？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "選擇分離式冷氣機時，下列注意事項何者正確？"
+      }
+    ],
+    "options": [
+      "選用冷氣季節性能因數CSPF 高的設備，耗電量會較高",
+      "一般而言CSPF 值每提高1.0，就可節約2～3%冷氣機用電",
+      "選用二級能效的分離式冷氣機，較一級能效的分離式冷氣機節能",
+      "若只有在夏季非常炎熱時才開啟，也處於滿載狀態下使用，不一定需要選購變頻式冷氣機"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        3
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "4801",
+      "page": 6,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=S"
+    }
+  },
+  {
+    "id": "env-113-34",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "env",
+    "questionNumber": 34,
+    "topic": "綠建築與能源",
+    "primaryCategory": "永續",
+    "tags": [
+      "綠建築與能源"
+    ],
+    "text": "建築師進行太陽光電設備建置工程時應注意的項目，下列敘述何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "建築師進行太陽光電設備建置工程時應注意的項目，下列敘述何者錯誤？"
+      }
+    ],
+    "options": [
+      "太陽能光電發電設備，設置高度超過3 m 時，需附結構計算說明書",
+      "太陽能光電設備設置支撐架結合新設頂蓋時，不需附結構計算說明書",
+      "太陽能光電板設置樣式為仰角非固定時，需附結構計算說明書",
+      "太陽光電發電設備應於竣工後，檢附依法登記開業或執業之建築師出具之「太陽光電發電設備工程完竣證明書」，報請所在地主管建築機關備查"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        1
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "4801",
+      "page": 6,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=S"
+    }
+  },
+  {
+    "id": "env-113-35",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "env",
+    "questionNumber": 35,
+    "topic": "消防設備",
+    "primaryCategory": "設備",
+    "tags": [
+      "消防設備"
+    ],
+    "text": "依據「各類場所消防安全設備設置標準」，當總樓地板面積未滿150 m2 時，下列何者應設置滅火器？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "依據「各類場所消防安全設備設置標準」，當總樓地板面積未滿150 m2 時，下列何者應設置滅火器？"
+      }
+    ],
+    "options": [
+      "地下建築物",
+      "補習班",
+      "診所",
+      "史蹟資料館"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        0
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "4801",
+      "page": 6,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=S"
+    }
+  },
+  {
+    "id": "env-113-36",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "env",
+    "questionNumber": 36,
+    "topic": "消防設備",
+    "primaryCategory": "設備",
+    "tags": [
+      "消防設備"
+    ],
+    "text": "建築物每層樓地板面積每500 m2 內且其天花板及室內牆面以耐燃一級材料裝修者得免設置防煙壁，下列何類場所仍需設置防煙壁區劃？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "建築物每層樓地板面積每500 m2 內且其天花板及室內牆面以耐燃一級材料裝修者得免設置防煙壁，下列何類場所仍需設置防煙壁區劃？"
+      }
+    ],
+    "options": [
+      "天花板高度6 m 的電影院觀眾席",
+      "天花板高度7 m 的工廠",
+      "天花板高度10 m 的集會堂觀眾席",
+      "天花板高度4 m 的咖啡廳"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        3
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "4801",
+      "page": 6,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=S"
+    }
+  },
+  {
+    "id": "env-113-37",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "env",
+    "questionNumber": 37,
+    "topic": "熱環境",
+    "primaryCategory": "熱",
+    "tags": [
+      "熱環境"
+    ],
+    "text": "進行建築空調負荷計算時，下列何者不屬於傳透熱負荷（transmission heat load）？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "進行建築空調負荷計算時，下列何者不屬於傳透熱負荷（transmission heat load）？"
+      }
+    ],
+    "options": [
+      "因室內外氣溫差異，透過玻璃窗傳入室內的熱量",
+      "因室內外氣溫差異，透過屋頂隔熱磚傳入室內的熱量",
+      "太陽直射光透過玻璃窗傳入室內的輻射熱",
+      "因室內外氣溫差異，透過外牆實體部傳入室內的熱量"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        2
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "4801",
+      "page": 6,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=S"
+    }
+  },
+  {
+    "id": "env-113-38",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "env",
+    "questionNumber": 38,
+    "topic": "通風",
+    "primaryCategory": "空氣",
+    "tags": [
+      "通風"
+    ],
+    "text": "關於各種空間因防疫需求採用機械通風系統時，下列何者錯誤？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "關於各種空間因防疫需求採用機械通風系統時，下列何者錯誤？"
+      }
+    ],
+    "options": [
+      "新冠肺炎的社區採檢站內部應採用正壓",
+      "新冠肺炎病患的隔離病房應採用負壓",
+      "新冠肺炎病患隔離病房的前室應採用正壓",
+      "新冠肺炎病患隔離病房內的衛浴空間應採用負壓"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        2
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "4801",
+      "page": 6,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=S"
+    }
+  },
+  {
+    "id": "env-113-39",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "env",
+    "questionNumber": 39,
+    "topic": "空調",
+    "primaryCategory": "設備",
+    "tags": [
+      "空調"
+    ],
+    "text": "下列敘述何者不屬於通用設計（universal design）原則之設計？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "下列敘述何者不屬於通用設計（universal design）原則之設計？"
+      }
+    ],
+    "options": [
+      "室內外空間確保充足照明",
+      "所有通道及走道均採防滑材質",
+      "電源插座開關有適當的高度",
+      "全面使用節水型衛生器具"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        3
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "4801",
+      "page": 6,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=S"
+    }
+  },
+  {
+    "id": "env-113-40",
+    "format": "multiple-choice",
+    "year": 113,
+    "subject": "env",
+    "questionNumber": 40,
+    "topic": "消防設備",
+    "primaryCategory": "設備",
+    "tags": [
+      "消防設備"
+    ],
+    "text": "有關智慧建築安全防災指標中，防災中心內應設置系統中不包括那一項？",
+    "content": [
+      {
+        "kind": "text",
+        "text": "有關智慧建築安全防災指標中，防災中心內應設置系統中不包括那一項？"
+      }
+    ],
+    "options": [
+      "室內空氣品質監控系統",
+      "監控主機",
+      "火警廣播設備控制裝置",
+      "消防專用通信設備"
+    ],
+    "answerKey": {
+      "kind": "accepted",
+      "options": [
+        0
+      ]
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "4801",
+      "page": 6,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=S"
+    }
+  },
+  {
+    "id": "env-113-written-01",
+    "format": "written",
+    "year": 113,
+    "subject": "env",
+    "questionNumber": 1,
+    "topic": "綠建築與能源",
+    "primaryCategory": "永續",
+    "tags": [
+      "綠建築與能源"
+    ],
+    "text": "有關綠建築評估之基地保水指標,請問:\n(1)何謂景觀貯留滲透水池?並請繪圖說明。(10 分)\n(2)導入基地保水設計時應注意那些重點?(10 分)",
+    "content": [
+      {
+        "kind": "text",
+        "text": "有關綠建築評估之基地保水指標,請問:\n(1)何謂景觀貯留滲透水池?並請繪圖說明。(10 分)\n(2)導入基地保水設計時應注意那些重點?(10 分)"
+      }
+    ],
+    "options": [],
+    "answerKey": {
+      "kind": "written"
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "4801",
+      "page": 1,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=S"
+    }
+  },
+  {
+    "id": "env-113-written-02",
+    "format": "written",
+    "year": 113,
+    "subject": "env",
+    "questionNumber": 2,
+    "topic": "空調",
+    "primaryCategory": "設備",
+    "tags": [
+      "空調"
+    ],
+    "text": "關於中央空調系統冰水主機之機械室配置位置,試比較設置於地下室、最上層或中間層之優缺點。(10 分)",
+    "content": [
+      {
+        "kind": "text",
+        "text": "關於中央空調系統冰水主機之機械室配置位置,試比較設置於地下室、最上層或中間層之優缺點。(10 分)"
+      }
+    ],
+    "options": [],
+    "answerKey": {
+      "kind": "written"
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "4801",
+      "page": 1,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=S"
+    }
+  },
+  {
+    "id": "env-113-written-03",
+    "format": "written",
+    "year": 113,
+    "subject": "env",
+    "questionNumber": 3,
+    "topic": "空調",
+    "primaryCategory": "設備",
+    "tags": [
+      "空調"
+    ],
+    "text": "試問建築環境中固體傳音的主要來源為何?在設計上的改善對策為何?(10 分)",
+    "content": [
+      {
+        "kind": "text",
+        "text": "試問建築環境中固體傳音的主要來源為何?在設計上的改善對策為何?(10 分)"
+      }
+    ],
+    "options": [],
+    "answerKey": {
+      "kind": "written"
+    },
+    "source": {
+      "kind": "official",
+      "paperCode": "4801",
+      "page": 1,
+      "questionUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=Q",
+      "answerUrl": "https://wwwq.moex.gov.tw/exam/wHandExamQandA_File.ashx?c=801&code=113180&q=1&s=0104&t=S"
+    }
+  }
+]

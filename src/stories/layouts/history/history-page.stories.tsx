@@ -1,0 +1,120 @@
+import type { Meta, StoryObj } from '@storybook/nextjs-vite';
+import { fn } from 'storybook/test';
+import { HistoryPage } from '@/features/history/history-page';
+import type { SubjectId } from '@/lib/types';
+import HistoryRoute from '@/pages/history';
+import {
+  allLawYearAttempts,
+  attemptsAppState,
+  legacyMixedAttempt,
+  loadedPapersOf,
+  perfectAttempts,
+  personalAttempts,
+  personalDifficultIds,
+  personalNoteImages,
+  personalNotes,
+  questionBankStatusesWith,
+} from '../../fixtures/personal';
+import { pageParameters, withPageFrame } from '../../support/story-environment';
+
+/**
+ * 已作答紀錄（/history）：網站的頁面元件，只載入作答紀錄用到的科目與年度。
+ *
+ * 畫面上可以操作看到：
+ * - 上方切換科目；「每次作答紀錄」與「跨年度錯題分析」兩個分頁。
+ * - 每個年度（選擇題練習另成一組）預設收合，點開看每次的分數與作答時間。
+ * - 「查看完整作答紀錄」看逐題的對錯與答錯次數（選擇題練習多一行選項順序的說明），
+ *   每題的「顯示詳解與討論」打開投稿區；「錯題統計結果」看這次答錯的分類。
+ * - 「清除第 N 次紀錄」跳出確認視窗。
+ * - 工具列「雲端同步」切到雲端狀態時，詳解與討論改從雲端讀取，會一直停在載入中
+ *   （Storybook 不會連到 Firebase）。
+ */
+const meta = {
+  title: 'Layouts/已作答紀錄/作答紀錄清單',
+  component: HistoryRoute,
+  decorators: [withPageFrame],
+  parameters: { ...pageParameters('/history') },
+} satisfies Meta<typeof HistoryRoute>;
+
+export default meta;
+type Story = StoryObj<typeof meta>;
+
+/**
+ * 四科都有的作答紀錄：法規 113 年模擬考做了兩次、101 年一次、選擇題練習一次，其他科各一次；
+ * 下方是「繼續作答」下一個還沒做的年度。
+ */
+export const 作答紀錄: Story = {
+  parameters: {
+    appState: {
+      ...attemptsAppState(personalAttempts),
+      difficultQuestionIds: personalDifficultIds,
+      notes: personalNotes,
+      noteImages: personalNoteImages,
+    },
+  },
+};
+
+export const 還沒有作答紀錄: Story = {};
+
+/**
+ * 每次都全部答對：沒有「錯題統計結果」，完整作答紀錄沒有分頁切換，
+ * 跨年度錯題分析顯示沒有錯題。
+ */
+export const 全部答對: Story = {
+  parameters: { appState: attemptsAppState(perfectAttempts) },
+};
+
+/**
+ * 長期使用的紀錄：法規每個收錄年度（100–114 年）都做過，下方改成「已完成所有年度」。
+ * 範例題庫只有 101、113、114 年，其他年度就像題目已從題庫移除：展開 112 年看只剩分數的
+ * 紀錄，跨年度錯題分析下方說明有幾次答錯無法還原。另有一筆舊版留下的跨科目紀錄：
+ * 點「跨科目」，紀錄歸在「選擇題練習」，分數顯示「無法計算分數」。
+ */
+export const 已完成所有年度: Story = {
+  parameters: {
+    appState: attemptsAppState([...allLawYearAttempts, legacyMixedAttempt]),
+  },
+};
+
+/** 四科的作答紀錄再加上一筆舊版留下的跨科目紀錄（科目 mixed）。 */
+const mixedAttempts = [...personalAttempts, legacyMixedAttempt];
+const mixedQuestionIds = mixedAttempts.flatMap((attempt) => attempt.questionIds);
+
+/** 用頁面的 props 固定題庫狀態：環控與構造的題目已載入，法規與結構的還在下載或下載失敗。 */
+function HistoryBankStates({
+  bank,
+  onRetryQuestionBank,
+}: {
+  bank: 'loading' | 'error';
+  onRetryQuestionBank: (subjectId: SubjectId) => void;
+}) {
+  const statuses = questionBankStatusesWith({ law: bank, structure: bank });
+  return (
+    <HistoryPage
+      questions={loadedPapersOf(mixedQuestionIds, statuses)}
+      questionBankStatuses={statuses}
+      onRetryQuestionBank={onRetryQuestionBank}
+    />
+  );
+}
+
+/**
+ * 法規與結構的題目還沒下載好（用頁面的 props 固定狀態），Controls 的 bank 切換載入中或
+ * 載入失敗。展開年度看每次紀錄的「內容載入中」或「重新載入題目」，載入中時選擇題練習的
+ * 「再做一次」要等載入完成；跨年度錯題分析顯示載入中或無法顯示。點「跨科目」再切到
+ * 跨年度錯題分析，看已載入一部分時的「尚有 N 次答錯內容載入中／暫時無法顯示」。
+ */
+export const 題庫載入中或失敗: StoryObj<typeof HistoryBankStates> = {
+  parameters: { appState: attemptsAppState(mixedAttempts) },
+  render: (args) => <HistoryBankStates {...args} />,
+  args: { bank: 'loading', onRetryQuestionBank: fn() },
+  argTypes: {
+    bank: {
+      options: ['loading', 'error'],
+      control: {
+        type: 'select',
+        labels: { loading: '載入中', error: '載入失敗' },
+      },
+    },
+  },
+};
