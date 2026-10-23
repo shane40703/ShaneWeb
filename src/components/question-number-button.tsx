@@ -15,7 +15,9 @@ export function QuestionNumberButton({
   wrong = false,
   noted = false,
   hasContent = false,
+  stateLabel,
   href,
+  replace = false,
   onClick,
 }: {
   children: ReactNode;
@@ -26,10 +28,15 @@ export function QuestionNumberButton({
   wrong?: boolean;
   noted?: boolean;
   hasContent?: boolean;
+  /** Said first among the statuses, e.g. 已作答 or 未作答, which colour alone shows otherwise. */
+  stateLabel?: string;
   href?: string;
+  /** Moves within the page without adding a history entry. */
+  replace?: boolean;
   onClick?: () => void;
 }) {
   const statusText = [
+    stateLabel ?? null,
     wrong ? '答錯' : null,
     difficult ? '已標記難題' : null,
     noted ? '有筆記' : null,
@@ -52,6 +59,7 @@ export function QuestionNumberButton({
       <Link
         {...commonProps}
         href={href}
+        replace={replace}
         aria-current={active ? 'step' : undefined}
       >
         {children}

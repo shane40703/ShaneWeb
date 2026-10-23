@@ -9,6 +9,8 @@ export interface QuizQuestionProgress {
   eliminatedOptions?: number[];
   elapsedSeconds: number;
   startedAt: string;
+  /** Last change made by the 歷屆試題模擬考 page, which lists recent papers first. */
+  updatedAt?: string;
 }
 
 export type QuizProgressByQuestion = Partial<Record<QuestionId, QuizQuestionProgress>>;
@@ -286,20 +288,27 @@ export function getPaperResumeQuestionId(
   );
 }
 
-export function writeQuizProgress(scope: string, progress: QuizProgressByQuestion) {
-  const progressByScope = parseStoredQuizProgress(
-    readStoredValue(QUIZ_PROGRESS_STORAGE_KEY),
-  );
+/** The stored value with one scope replaced, or removed when it has no progress left. */
+export function composeQuizProgress(
+  raw: string | null,
+  scope: string,
+  progress: QuizProgressByQuestion,
+) {
+  const progressByScope = parseStoredQuizProgress(raw);
   if (Object.keys(progress).length) {
     progressByScope[scope] = progress;
   } else {
     delete progressByScope[scope];
   }
+  return JSON.stringify({
+    version: QUIZ_PROGRESS_STORAGE_VERSION,
+    scopes: progressByScope,
+  });
+}
+
+export function writeQuizProgress(scope: string, progress: QuizProgressByQuestion) {
   return writeStoredValue(
     QUIZ_PROGRESS_STORAGE_KEY,
-    JSON.stringify({
-      version: QUIZ_PROGRESS_STORAGE_VERSION,
-      scopes: progressByScope,
-    }),
+    composeQuizProgress(readStoredValue(QUIZ_PROGRESS_STORAGE_KEY), scope, progress),
   );
 }

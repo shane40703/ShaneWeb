@@ -103,14 +103,14 @@ describe('grouped app navigation', () => {
     expect(onNavigate).toHaveBeenCalledTimes(2);
   });
 
-  it.each(['/practice', '/practice/quiz', '/practice/law-cloze'])('keeps 每日練習（新版） current on %s', pathname => {
+  it.each(['/practice', '/practice/quiz', '/practice/law-cloze', '/practice/mock-exam'])('keeps 每日練習（新版） current on %s', pathname => {
     render(<SidebarContent pathname={pathname} />);
     expect(screen.getByRole('link', { name: '每日練習（新版）' })).toHaveAttribute('aria-current', 'page');
     expect(screen.getByRole('link', { name: '每日練習' })).not.toHaveAttribute('aria-current');
   });
 
   it.each([
-    ['/', '首頁'], ['/practice', '每日練習（新版）'], ['/practice/quiz', '選擇題練習'], ['/practice/law-cloze', '法規克漏字'], ['/exams', '歷屆試題（新版）'], ['/daily', '每日練習'], ['/papers', '歷屆試題'], ['/random', '隨機出題'], ['/law-cloze', '法規克漏字'],
+    ['/', '首頁'], ['/practice', '每日練習（新版）'], ['/practice/quiz', '選擇題練習'], ['/practice/law-cloze', '法規克漏字'], ['/practice/mock-exam', '歷屆試題模擬考'], ['/exams', '歷屆試題（新版）'], ['/daily', '每日練習'], ['/papers', '歷屆試題'], ['/random', '隨機出題'], ['/law-cloze', '法規克漏字'],
     ['/analysis', '考題分析'], ['/memory-gallery', '速記圖庫'], ['/laws', '法規資料庫'], ['/community', '詳解與討論'],
     ['/resources', '統計分析（新版）'], ['/resources/analysis', '考題分析'], ['/resources/memory-gallery', '速記圖庫'], ['/resources/memory-gallery/[[...category]]', '速記圖庫'], ['/resources/laws', '法規資料庫'],
     ['/notes', '使用者筆記'], ['/difficult', '難題標記'], ['/wrong', '常錯題目'], ['/history', '已作答紀錄'],

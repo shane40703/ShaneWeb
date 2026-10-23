@@ -35,7 +35,7 @@ import styles from './practice-page.module.css';
 export type PracticeQuestionStatus = 'ready' | 'loading' | 'error' | 'missing';
 
 /** Re-renders alone every second, instead of the whole question page. */
-function ElapsedClock({
+export function ElapsedClock({
   timer,
   savedSeconds,
 }: {

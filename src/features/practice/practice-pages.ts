@@ -1,7 +1,12 @@
-import { IconCalendarCheck, IconForms, IconListCheck } from '@tabler/icons-react';
+import {
+  IconCalendarCheck,
+  IconClipboardText,
+  IconForms,
+  IconListCheck,
+} from '@tabler/icons-react';
 
 /**
- * Single source for the new daily practice hub and its two pages, shared by the sidebar,
+ * Single source for the new daily practice hub and its pages, shared by the sidebar,
  * hub cards, practice URLs and topbar titles so their wording never drifts.
  */
 export const practiceHub = {
@@ -26,6 +31,18 @@ export const practiceClozePage = {
   summary: '背熟法規裡的期限、罰鍰與尺寸',
 } as const;
 
-export const practicePages = [practiceQuizPage, practiceClozePage] as const;
+export const practiceMockExamPage = {
+  id: 'mock-exam',
+  href: '/practice/mock-exam',
+  label: '歷屆試題模擬考',
+  icon: IconClipboardText,
+  summary: '選一份歷屆試卷，照原題號作答，交卷後按配分算分',
+} as const;
+
+export const practicePages = [
+  practiceQuizPage,
+  practiceClozePage,
+  practiceMockExamPage,
+] as const;
 
 export type PracticeHubPageLink = (typeof practicePages)[number];

@@ -1,0 +1,190 @@
+/* The mock exam reuses the multiple-choice practice layout (practice-page.module.css);
+   these rules cover only what a whole paper adds: the year choice and the result map. */
+
+/* Focus and scrolling keep the year choices clear of the sticky topbar. */
+:global(html):has(.years) {
+  scroll-padding-top: 88px;
+}
+
+.years {
+  min-width: 0;
+  margin: 0;
+  padding: 4px 28px 16px;
+  display: grid;
+  gap: 12px;
+  border: 0;
+}
+
+.years legend {
+  float: left;
+  width: 100%;
+  padding: 0;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 850;
+}
+
+.yearGrid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.yearGrid label {
+  position: relative;
+  min-width: 0;
+  min-height: 58px;
+  padding: 9px 10px;
+  display: grid;
+  align-content: center;
+  gap: 3px;
+  border: 1px solid var(--control-line);
+  border-radius: 12px;
+  background: var(--surface);
+  cursor: pointer;
+}
+
+.yearGrid label:hover {
+  border-color: var(--line-strong);
+}
+
+.yearGrid label[data-checked] {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+  box-shadow: inset 0 0 0 1px var(--primary);
+}
+
+.yearGrid label:has(input:focus-visible) {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* The whole tile is the radio; the input stays in the accessibility tree. */
+.yearGrid input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.yearGrid strong {
+  color: var(--text);
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.yearGrid small {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.yearGrid label[data-draft] small {
+  color: var(--primary-strong);
+  font-weight: 800;
+}
+
+.paperSummary {
+  margin: 0 28px 18px;
+  padding: 14px 16px;
+  display: grid;
+  gap: 6px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface-2);
+}
+
+.paperSummary h2 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.paperSummary p {
+  margin: 0;
+  color: var(--text-soft);
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.paperSummary a {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: var(--primary-strong);
+  font-weight: 800;
+}
+
+.latest {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+}
+
+.review {
+  min-width: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.reviewLayout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 264px;
+  align-items: start;
+  gap: 16px;
+}
+
+.reviewLayout > section {
+  margin-top: 0;
+}
+
+.resultNavigator {
+  position: sticky;
+  top: 88px;
+  max-height: calc(100dvh - 120px);
+}
+
+.resultTitle {
+  margin: 0;
+  color: var(--text);
+  font-size: 28px;
+}
+
+@media (forced-colors: active) {
+  .yearGrid label[data-checked] {
+    outline: 2px solid SelectedItem;
+    outline-offset: -2px;
+  }
+}
+
+@container (max-width: 900px) {
+  .reviewLayout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* Above the list on narrow screens, where a sticky map would cover the questions. */
+  .resultNavigator {
+    position: static;
+    grid-row: 1;
+    max-height: none;
+  }
+}
+
+@container (max-width: 640px) {
+  .years {
+    padding: 4px 16px 14px;
+  }
+
+  .yearGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .paperSummary {
+    margin: 0 16px 16px;
+  }
+
+  .resultTitle {
+    font-size: 24px;
+  }
+}

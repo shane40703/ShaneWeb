@@ -272,3 +272,103 @@ test('law cloze opens from the hub, shares its round with the old page, and star
   await expect(page.getByText(/^1 \/ 5$/)).toBeVisible();
   await expect(page.getByRole('heading', { name: '本輪測驗完成' })).toHaveCount(0);
 });
+
+test('the mock exam answers a whole paper, keeps it when leaving, and scores it on submission', async ({
+  page,
+}, testInfo) => {
+  await page.goto('/practice');
+  const exam = page.getByRole('article', { name: '歷屆試題模擬考' });
+  await expect(exam.getByText('選科目開始')).toBeVisible();
+  await exam.getByRole('link', { name: /建築環境控制/ }).click();
+  await expect(page).toHaveURL(/\/practice\/mock-exam\?subject=env$/);
+  await expect(page).toHaveTitle('歷屆試題模擬考｜建築師考試');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('歷屆試題模擬考');
+
+  const setup = page.getByRole('region', { name: '歷屆試題模擬考設定' });
+  await expect(setup.getByRole('radio', { name: /建築環境控制/ })).toBeChecked();
+  await expect(setup.getByRole('radio', { name: /114 年/ })).toBeChecked();
+  // The whole year tile is its radio.
+  await setup.getByRole('radio', { name: /113 年/ }).click();
+  await expect(page).toHaveURL(/\?subject=env&year=113$/);
+  await expect(setup).toContainText('選擇題 40 題，每題 1.5 分，滿分 60 分');
+  await expect(
+    setup.getByRole('link', { name: /到歷屆試題（新版）閱讀/ }),
+  ).toHaveAttribute('href', '/exams?question=env-113-written-01');
+  await expectNoHorizontalOverflow(page);
+  await page.screenshot({ path: testInfo.outputPath('mock-setup.png'), fullPage: true });
+
+  await setup.getByRole('button', { name: '開始作答' }).click();
+  await expect(page).toHaveURL(/\?subject=env&year=113&q=1$/);
+  const question = page.getByRole('region', { name: '題目與選項' });
+  await question.getByRole('radio').nth(1).click();
+  await expect(page.getByText(/答對了|答錯了/)).toHaveCount(0);
+  await page.getByRole('button', { name: /下一題/ }).click();
+  await expect(page).toHaveURL(/q=2$/);
+  await question.getByRole('radio').first().click();
+  await page.reload();
+  await expect(
+    page.getByRole('region', { name: '題目與選項' }).getByRole('radio').first(),
+  ).toHaveAttribute('aria-checked', 'true');
+  await expectNoHorizontalOverflow(page);
+  await page.screenshot({ path: testInfo.outputPath('mock-question.png') });
+
+  // Moving around the paper adds no history: Back leaves it for the setup it came from.
+  const map = page.getByRole('region', { name: '題號導覽' });
+  await map.getByRole('link', { name: /^前往第 5 題/ }).click();
+  await expect(page).toHaveURL(/q=5$/);
+  await map.getByRole('link', { name: /^前往第 2 題/ }).click();
+  await expect(page).toHaveURL(/q=2$/);
+  await page.goBack();
+  await expect(page).toHaveURL(/\?subject=env&year=113$/);
+  await page.goForward();
+  await expect(page).toHaveURL(/q=2$/);
+  await expect(page.getByRole('region', { name: '題目與選項' })).toBeVisible();
+
+  await page.getByRole('button', { name: /先離開，保留進度/ }).click();
+  await expect(page).toHaveURL(/\?subject=env&year=113$/);
+  await expect(setup.getByRole('button', { name: '繼續作答（第 3 題）' })).toBeVisible();
+  await page.getByRole('link', { name: '返回每日練習' }).click();
+  await expect(exam.getByText('作答中的試卷')).toBeVisible();
+  const draft = exam.getByRole('link', { name: /^環控 113 年/ });
+  await expect(draft).toContainText('環控 113 年 已作答 2／40 題');
+  await draft.click();
+  await expect(page).toHaveURL(/\?subject=env&year=113&q=3$/);
+
+  page.once('dialog', (dialog) => {
+    expect(dialog.message()).toMatch(/^還有 38 題未作答/);
+    void dialog.accept();
+  });
+  await page
+    .getByRole('complementary', { name: '試卷資訊' })
+    .getByRole('button', { name: /交卷/ })
+    .click();
+  await expect(page).toHaveURL(/\?subject=env&year=113&result=attempt-/);
+  const result = page.getByRole('region', { name: /環控 113 年模擬考結果/ });
+  await expect(result).toContainText(/\d+\.\d{2} 分／滿分 60 分/);
+  await expect(result).toContainText('共 40 題，作答 2 題');
+  await expect(page.getByRole('heading', { name: '逐題作答結果' })).toBeVisible();
+  await expectNoHorizontalOverflow(page);
+  await page.screenshot({ path: testInfo.outputPath('mock-result.png'), fullPage: true });
+
+  // The result survives a reload and took the exam's place in history: Back returns
+  // to the hub the paper was resumed from.
+  await page.reload();
+  await expect(result).toContainText(/分／滿分 60 分/);
+  await page.goBack();
+  await expect(page).toHaveURL(/\/practice$/);
+  await expect(exam.getByText('最近交卷')).toBeVisible();
+  await expect(exam.getByText(/^環控 113 年・\d+\.\d{2} 分$/)).toBeVisible();
+  await page.goForward();
+  await expect(result).toContainText(/分／滿分 60 分/);
+
+  await page.goto('/practice/mock-exam?subject=env&year=113');
+  await expect(setup.getByRole('button', { name: '開始作答' })).toBeVisible();
+  await setup.getByRole('link', { name: /查看結果/ }).click();
+  await expect(result).toContainText(/分／滿分 60 分/);
+  await page.goto('/history');
+  // Saved to 已作答紀錄 like the original 歷屆試題.
+  const year = page.getByRole('group', { name: '113 年作答紀錄' });
+  await expect(year.locator('summary')).toContainText('共作答 1 次');
+  await year.locator('summary').click();
+  await expect(year.getByRole('heading', { name: '建築環境控制・113 年' })).toBeVisible();
+});

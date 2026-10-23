@@ -300,6 +300,21 @@ a.subjectLink:hover {
   white-space: nowrap;
 }
 
+/* The name over its progress or score: neither is cut short on a narrow card. */
+.twoLineLink {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+}
+
+.twoLineLink > span {
+  min-width: 0;
+  display: grid;
+  gap: 1px;
+}
+
+.twoLineLink small {
+  white-space: normal;
+}
+
 .subjectLink svg {
   color: var(--primary);
 }
@@ -310,10 +325,25 @@ a.subjectLink:hover {
   cursor: default;
 }
 
-/* Side by side once each card keeps room for a subject name and its count. */
+/* Side by side once each card keeps room for a subject name and its count; an odd
+   last card spans the row until all three fit in one. */
 @container (min-width: 640px) {
   .cards {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .cards > li:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+}
+
+@container (min-width: 960px) {
+  .cards {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .cards > li:last-child:nth-child(odd) {
+    grid-column: auto;
   }
 }
 

@@ -8,11 +8,22 @@ import {
   parseClozeRoundProgress,
 } from '@/features/law-cloze/cloze-progress';
 import { readStoredValue, writeStoredValue } from '@/lib/storage';
+import { formatDateTime } from '@/lib/study';
+import type { QuizAttempt } from '@/lib/types';
 import { useClientReady } from '@/lib/use-client-ready';
-import { getSubject } from '@/question-bank/catalog';
+import { getSubject, subjects } from '@/question-bank/catalog';
+import { useAppState } from '@/state/app-state';
+import {
+  formatMockExamScore,
+  getMockExamScore,
+  listMockExamDrafts,
+  mockExamHref,
+} from './mock-exam';
+import { readMockExamDrafts, subscribeToMockExamDrafts } from './mock-exam-store';
 import type { PracticeOverview } from './practice-overview';
 import {
   practiceClozePage,
+  practiceMockExamPage,
   practiceQuizPage,
   type PracticeHubPageLink,
 } from './practice-pages';
@@ -29,6 +40,7 @@ import {
 import styles from './practice-hub-page.module.css';
 
 const numberFormat = new Intl.NumberFormat('zh-TW');
+const MAX_LISTED_DRAFTS = 3;
 
 function subscribeToStorage(onChange: () => void) {
   window.addEventListener('storage', onChange);
@@ -285,6 +297,128 @@ function ClozeShortcut() {
   );
 }
 
+const noDrafts = () => null;
+
+function latestPaperAttempt(attempts: readonly QuizAttempt[]) {
+  return attempts
+    .filter((attempt) => attempt.mode === 'paper')
+    .reduce<QuizAttempt | null>(
+      (latest, attempt) =>
+        !latest || attempt.submittedAt > latest.submittedAt ? attempt : latest,
+      null,
+    );
+}
+
+function MockExamShortcut({ papers }: { papers: PracticeOverview['papers'] }) {
+  const { state, hydrated } = useAppState();
+  const raw = useSyncExternalStore(
+    subscribeToMockExamDrafts,
+    readMockExamDrafts,
+    noDrafts,
+  );
+  const drafts = listMockExamDrafts(raw, papers);
+
+  if (drafts.length) {
+    const hidden = drafts.length - MAX_LISTED_DRAFTS;
+    return (
+      <>
+        <p className={styles.quickLabel}>作答中的試卷</p>
+        <div className={styles.subjectLinks}>
+          {drafts
+            .slice(0, MAX_LISTED_DRAFTS)
+            .map(({ paper, answered, total, resumeIndex }) => (
+              <Link
+                key={`${paper.subject}-${paper.year}`}
+                href={mockExamHref({
+                  subject: paper.subject,
+                  year: paper.year,
+                  q: resumeIndex + 1,
+                })}
+                className={`${styles.subjectLink} ${styles.twoLineLink}`}
+              >
+                <SubjectIconBadge subject={paper.subject} />
+                <span>
+                  <strong>
+                    {getSubject(paper.subject)?.shortName} {paper.year} 年
+                  </strong>{' '}
+                  <small>
+                    已作答 {answered}／{total} 題
+                  </small>
+                </span>
+                <IconChevronRight size={16} stroke={2} aria-hidden="true" />
+              </Link>
+            ))}
+        </div>
+        {hidden > 0 ? (
+          <p className={styles.quickText}>
+            另有 {hidden} 份作答中的試卷，可以在模擬考頁選擇。
+          </p>
+        ) : null}
+      </>
+    );
+  }
+
+  const latest = hydrated ? latestPaperAttempt(state.attempts) : null;
+  const latestSubject = latest && latest.subject !== 'mixed' ? latest.subject : null;
+  return (
+    <>
+      {latest && latestSubject && latest.year !== null ? (
+        <>
+          <p className={styles.quickLabel}>最近交卷</p>
+          <Link
+            href={mockExamHref({
+              subject: latestSubject,
+              year: latest.year,
+              result: latest.id,
+            })}
+            className={`${styles.subjectLink} ${styles.twoLineLink}`}
+          >
+            <SubjectIconBadge subject={latestSubject} />
+            <span>
+              <strong>
+                {getSubject(latestSubject)?.shortName} {latest.year} 年・
+                {formatMockExamScore(getMockExamScore(latest, latestSubject).score)} 分
+              </strong>{' '}
+              <small>
+                答對 {latest.correctCount}／{latest.questionIds.length} 題・
+                {formatDateTime(latest.submittedAt)}・看結果
+              </small>
+            </span>
+            <IconChevronRight size={16} stroke={2} aria-hidden="true" />
+          </Link>
+        </>
+      ) : null}
+      <p className={styles.quickLabel}>選科目開始</p>
+      <div className={styles.subjectLinks}>
+        {subjects.map(({ id }) => {
+          const count = papers.filter((paper) => paper.subject === id).length;
+          const content = (
+            <>
+              <SubjectIconBadge subject={id} />
+              <strong>{getSubject(id)?.name}</strong>{' '}
+              <small>{count ? `${count} 份試卷` : '準備中'}</small>
+            </>
+          );
+          return count ? (
+            <Link
+              key={id}
+              href={mockExamHref({ subject: id })}
+              className={styles.subjectLink}
+            >
+              {content}
+              <IconChevronRight size={16} stroke={2} aria-hidden="true" />
+            </Link>
+          ) : (
+            <span key={id} className={`${styles.subjectLink} ${styles.unavailable}`}>
+              {content}
+            </span>
+          );
+        })}
+      </div>
+    </>
+  );
+}
+
 export function PracticeHubPage({ overview }: { overview: PracticeOverview }) {
   const ready = useClientReady();
   const questionTotal = overview.subjects.reduce((total, item) => total + item.count, 0);
@@ -293,7 +427,9 @@ export function PracticeHubPage({ overview }: { overview: PracticeOverview }) {
 
   return (
     <div className={styles.hub}>
-      <p className={styles.intro}>每天練一點：選擇題熟悉考法，克漏字背熟法規數字。</p>
+      <p className={styles.intro}>
+        每天練一點：選擇題熟悉考法，克漏字背熟法規數字，模擬考整份試卷驗收實力。
+      </p>
       <ul className={styles.cards}>
         <li>
           <PracticeCard
@@ -311,6 +447,14 @@ export function PracticeHubPage({ overview }: { overview: PracticeOverview }) {
             stat={`${overview.cloze.laws} 部法規・${numberFormat.format(overview.cloze.questions)} 題`}
           >
             {ready ? <ClozeShortcut /> : pending}
+          </PracticeCard>
+        </li>
+        <li>
+          <PracticeCard
+            page={practiceMockExamPage}
+            stat={`${new Set(overview.papers.map((paper) => paper.subject)).size} 科・${overview.papers.length} 份試卷`}
+          >
+            {ready ? <MockExamShortcut papers={overview.papers} /> : pending}
           </PracticeCard>
         </li>
       </ul>

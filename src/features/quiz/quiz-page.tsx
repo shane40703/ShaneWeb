@@ -54,6 +54,7 @@ import {
   createQuizQuestionSearch,
   createShuffledOptionOrder,
   getQuizElapsedSeconds,
+  QUIZ_PROGRESS_STORAGE_KEY,
   readQuizProgress,
   scopedQuizProgressReducer,
   writeQuizProgress,
@@ -330,6 +331,19 @@ function MultipleChoiceQuizPage({ question, paper }: StaticQuestionPageProps) {
       scope: quizProgressScope,
       progress: readQuizProgress(quizProgressScope),
     });
+  }, [quizProgressScope]);
+
+  // 歷屆試題模擬考 keeps the same paper draft: take its changes from other tabs
+  // instead of overwriting them with this tab's copy on the next tick.
+  useEffect(() => {
+    if (!quizProgressScope) return;
+    const scope = quizProgressScope;
+    function adopt(event: StorageEvent) {
+      if (event.key !== null && event.key !== QUIZ_PROGRESS_STORAGE_KEY) return;
+      progressDispatch({ type: 'restore-scope', scope, progress: readQuizProgress(scope) });
+    }
+    window.addEventListener('storage', adopt);
+    return () => window.removeEventListener('storage', adopt);
   }, [quizProgressScope]);
 
   // The result view normally lives in component state. Keeping its attempt id
