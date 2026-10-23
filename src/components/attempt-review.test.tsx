@@ -132,7 +132,7 @@ describe('AttemptReview', () => {
     fireEvent.change(screen.getByLabelText('第 1 題筆記內容'), {
       target: { value: '從對答案分享的詳解' },
     });
-    fireEvent.click(screen.getByRole('button', { name: /分享到歷屆試題（新版）/ }));
+    fireEvent.click(screen.getByRole('button', { name: /分享到歷屆試題/ }));
 
     expect(await screen.findByLabelText('共享詳解狀態')).toHaveTextContent(
       '從對答案分享的詳解',
@@ -141,7 +141,7 @@ describe('AttemptReview', () => {
     fireEvent.change(screen.getByLabelText('第 1 題筆記內容'), {
       target: { value: '修正後的詳解' },
     });
-    fireEvent.click(screen.getByRole('button', { name: /分享到歷屆試題（新版）/ }));
+    fireEvent.click(screen.getByRole('button', { name: /分享到歷屆試題/ }));
 
     const result = await screen.findByLabelText('共享詳解狀態');
     expect(result).toHaveTextContent('修正後的詳解');

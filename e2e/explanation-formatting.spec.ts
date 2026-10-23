@@ -19,8 +19,8 @@ test('notes, shared explanations and replies retain whitespace and safe text for
   await expect(noteText).toHaveCSS('white-space', 'pre-wrap');
   expect(await noteText.textContent()).toBe(content.replace('**排版測試重點**', '排版測試重點').replace('!!紅字!!', '紅字'));
   const displayedNote = await noteText.textContent();
-  await page.getByRole('button', { name: '分享到歷屆試題（新版）', exact: true }).click();
-  await expect(page.getByText('已分享到歷屆試題（新版）', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: '分享到歷屆試題', exact: true }).click();
+  await expect(page.getByText('已分享到歷屆試題', { exact: true })).toBeVisible();
   await page.goto('/exams?question=law-114-01');
   const postText = page.getByText('排版測試重點', { exact: true }).locator('..');
   await expect(postText).toHaveCSS('white-space', 'pre-wrap');

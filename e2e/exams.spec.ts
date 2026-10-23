@@ -17,13 +17,13 @@ test('past exams opens from the navigation and keeps browsing on /exams', async 
 }) => {
   await page.goto('/');
   const nav = await openNavigation(page);
-  await nav.getByRole('link', { name: '歷屆試題（新版）', exact: true }).click();
+  await nav.getByRole('link', { name: '歷屆試題', exact: true }).click();
   await expect(page).toHaveURL(/\/exams$/);
-  await expect(page).toHaveTitle('歷屆試題（新版）｜建築師考試');
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('歷屆試題（新版）');
+  await expect(page).toHaveTitle('歷屆試題｜建築師考試');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('歷屆試題');
   await expect(
     (await openNavigation(page)).getByRole('link', {
-      name: '歷屆試題（新版）',
+      name: '歷屆試題',
       exact: true,
     }),
   ).toHaveAttribute('aria-current', 'page');

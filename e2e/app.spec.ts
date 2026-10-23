@@ -151,12 +151,12 @@ test('all retained routes support direct visits and the removed old pages return
   test.skip(testInfo.project.name !== 'desktop');
   const routes = [
     { path: '/', title: '首頁' },
-    { path: '/practice', title: '每日練習（新版）' },
+    { path: '/practice', title: '每日練習' },
     { path: '/practice/quiz', title: '選擇題練習' },
     { path: '/practice/law-cloze', title: '法規克漏字' },
     { path: '/practice/mock-exam', title: '歷屆試題模擬考' },
-    { path: '/exams', title: '歷屆試題（新版）' },
-    { path: '/resources', title: '統計分析（新版）' },
+    { path: '/exams', title: '歷屆試題' },
+    { path: '/resources', title: '統計分析' },
     { path: '/resources/analysis', title: '考題分析' },
     { path: '/resources/memory-gallery', title: '速記圖庫' },
     { path: '/resources/laws', title: '法規資料庫' },

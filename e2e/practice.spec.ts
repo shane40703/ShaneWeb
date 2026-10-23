@@ -150,8 +150,8 @@ test('the hub links the three practices in one column, and 選擇題練習 picks
   isMobile,
 }, testInfo) => {
   await page.goto('/practice');
-  await expect(page).toHaveTitle('每日練習（新版）｜建築師考試');
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('每日練習（新版）');
+  await expect(page).toHaveTitle('每日練習｜建築師考試');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('每日練習');
   const practices = page.getByRole('article');
   await expect(practices.locator('h2')).toHaveText([
     '選擇題練習',
@@ -183,9 +183,10 @@ test('the hub links the three practices in one column, and 選擇題練習 picks
   await expect(page).toHaveTitle('選擇題練習｜建築師考試');
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('選擇題練習');
   const nav = await openNavigation(page);
-  await expect(
-    nav.getByRole('link', { name: '每日練習（新版）', exact: true }),
-  ).toHaveAttribute('aria-current', 'page');
+  await expect(nav.getByRole('link', { name: '每日練習', exact: true })).toHaveAttribute(
+    'aria-current',
+    'page',
+  );
   if (isMobile) {
     await page.keyboard.press('Escape');
     await expect(page.getByRole('dialog', { name: '主要功能', exact: true })).toHaveCount(
@@ -277,9 +278,10 @@ test('the mock exam answers a whole paper, keeps it when leaving, and scores it 
   await setup.getByRole('radio', { name: /113 年/ }).click();
   await expect(page).toHaveURL(/\?subject=env&year=113$/);
   await expect(setup).toContainText('選擇題 40 題，每題 1.5 分，滿分 60 分');
-  await expect(
-    setup.getByRole('link', { name: /到歷屆試題（新版）閱讀/ }),
-  ).toHaveAttribute('href', '/exams?question=env-113-written-01');
+  await expect(setup.getByRole('link', { name: /到歷屆試題閱讀/ })).toHaveAttribute(
+    'href',
+    '/exams?question=env-113-written-01',
+  );
   await expectNoHorizontalOverflow(page);
   await page.screenshot({ path: testInfo.outputPath('mock-setup.png'), fullPage: true });
 
@@ -430,7 +432,7 @@ test('the home subject cards, 考題分析 and question cards lead to the new pa
   ).toBeChecked();
 
   await page.goto('/resources/analysis?subject=law&year=114');
-  // Each listed question opens in 歷屆試題（新版）; nothing leads to the old 作答頁.
+  // Each listed question opens in 歷屆試題; nothing leads to the old 作答頁.
   await expect(page.locator('a[href^="/exams?question=law-114-"]').first()).toBeVisible();
   expect(await page.locator('a[href*="/questions/"], a[href*="mode="]').count()).toBe(0);
   await page.getByRole('button', { name: '到選擇題練習抽題' }).click();

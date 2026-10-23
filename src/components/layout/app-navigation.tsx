@@ -13,7 +13,7 @@ interface NavigationLinkItem { href: string; label: string; icon: typeof IconFil
 interface NavigationSectionItem { id: string; label: string; icon: typeof IconFileText; items: readonly NavigationLinkItem[] }
 const primaryNavigation: readonly (NavigationLinkItem | NavigationSectionItem)[] = [
   { href: practiceHub.href, label: practiceHub.label, icon: practiceHub.icon },
-  { href: '/exams', label: '歷屆試題（新版）', icon: IconBooks },
+  { href: '/exams', label: '歷屆試題', icon: IconBooks },
   { href: resourcesHub.href, label: resourcesHub.label, icon: resourcesHub.icon },
   { id: 'personal', label: '我的作答存摺', icon: IconNotebook, items: [
     { href: '/notes', label: '使用者筆記', icon: IconNotebook },
@@ -48,13 +48,6 @@ interface NavigationProps {
   inDrawer?: boolean;
 }
 
-// Keeps a trailing note such as （新版） in one piece, so a label too long for the sidebar
-// wraps before the note instead of cutting it off.
-export function NavigationLabel({ label }: { label: string }) {
-  const note = /（[^（）]+）$/.exec(label)?.[0];
-  return note ? <>{label.slice(0, -note.length)}<span className={styles.navLabelNote}>{note}</span></> : <>{label}</>;
-}
-
 function NavigationLink({ item, pathname, onNavigate, onOpenSettings, linkRef }: NavigationProps & { item: NavigationLinkItem; linkRef?: Ref<HTMLAnchorElement> }) {
   return <Link ref={linkRef} href={item.href} className={styles.navItem}
     aria-current={isActive(pathname, item.href) ? 'page' : undefined}
@@ -63,7 +56,7 @@ function NavigationLink({ item, pathname, onNavigate, onOpenSettings, linkRef }:
       onNavigate?.();
     }}>
     <span className={styles.navSymbol} aria-hidden="true"><item.icon size={20} stroke={1.9} /></span>
-    <span className={styles.navLabel}><NavigationLabel label={item.label} /></span>
+    <span className={styles.navLabel}>{item.label}</span>
   </Link>;
 }
 

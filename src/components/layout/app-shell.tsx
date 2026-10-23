@@ -14,7 +14,7 @@ import { useCloudSync } from '@/components/cloud-sync-provider';
 import { SettingsPanel } from '@/features/settings/settings-panel';
 import { useAppState } from '@/state/app-state';
 import { ThemeToggle } from './theme-toggle';
-import { NavigationLabel, navigationPageTitle, SidebarContent } from './app-navigation';
+import { navigationPageTitle, SidebarContent } from './app-navigation';
 import styles from './app-shell.module.css';
 
 const persistenceMessages = {
@@ -91,7 +91,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 onOpenSettings={() => setSettingsOpen(true)}
               />
             </SideDrawer>
-            <h1 className={styles.pageTitle}><NavigationLabel label={pageTitle} /></h1>
+            <h1 className={styles.pageTitle}>{pageTitle}</h1>
           </div>
           <div className={styles.topbarActions}>
             <ThemeToggle />

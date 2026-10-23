@@ -18,7 +18,7 @@ export interface MockExamPaper {
   /** Multiple-choice questions, the only ones answered and scored. */
   questionCount: number;
   writtenCount: number;
-  /** Opens the paper's essay questions in 歷屆試題（新版）. */
+  /** Opens the paper's essay questions in 歷屆試題. */
   firstWrittenId: string | null;
 }
 

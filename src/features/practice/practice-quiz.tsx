@@ -125,7 +125,7 @@ export function PracticeQuiz({
   }
 
   return (
-    <section className={styles.practice} aria-label="每日練習（新版）作答">
+    <section className={styles.practice} aria-label="選擇題練習作答">
       <div className={styles.questionArea}>
         {status === 'loading' ? (
           <div className={styles.loading}>

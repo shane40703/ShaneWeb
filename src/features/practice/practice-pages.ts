@@ -11,7 +11,7 @@ import {
  */
 export const practiceHub = {
   href: '/practice',
-  label: '每日練習（新版）',
+  label: '每日練習',
   icon: IconCalendarCheck,
 } as const;
 

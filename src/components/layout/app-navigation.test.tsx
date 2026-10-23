@@ -39,9 +39,9 @@ describe('grouped app navigation', () => {
   it('lists only the new pages, then 我的作答存摺, and uses only the brand as the home link', () => {
     render(<SidebarContent pathname="/" />);
     const nav = screen.getByRole('navigation', { name: '主要功能' });
-    expect(nav.children[0]).toHaveTextContent(/^每日練習（新版）$/);
-    expect(nav.children[1]).toHaveTextContent(/^歷屆試題（新版）$/);
-    expect(nav.children[2]).toHaveTextContent(/^統計分析（新版）$/);
+    expect(nav.children[0]).toHaveTextContent(/^每日練習$/);
+    expect(nav.children[1]).toHaveTextContent(/^歷屆試題$/);
+    expect(nav.children[2]).toHaveTextContent(/^統計分析$/);
     expect(nav.children[3]).toHaveTextContent(/^我的作答存摺$/);
     expect(screen.queryByRole('link', { name: '首頁' })).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: '建築師考試首頁' })).toHaveAttribute(
@@ -121,12 +121,11 @@ describe('grouped app navigation', () => {
     expect(notes).toHaveAttribute('aria-current', 'page');
   });
 
-  it('keeps the resources hub current on its pages and wraps its （新版） note as one piece', () => {
+  it('keeps the resources hub current on its pages', () => {
     render(<SidebarContent pathname="/resources/laws" />);
-    const hub = screen.getByRole('link', { name: '統計分析（新版）' });
+    const hub = screen.getByRole('link', { name: '統計分析' });
     expect(hub).toHaveAttribute('href', '/resources');
     expect(hub).toHaveAttribute('aria-current', 'page');
-    expect(within(hub).getByText('（新版）').tagName).toBe('SPAN');
     expect(screen.getByRole('button', { name: personal.label })).not.toHaveAttribute(
       'data-active',
     );
@@ -153,14 +152,14 @@ describe('grouped app navigation', () => {
   });
 
   it.each(['/practice', '/practice/quiz', '/practice/law-cloze', '/practice/mock-exam'])(
-    'keeps 每日練習（新版） current on %s',
+    'keeps 每日練習 current on %s',
     (pathname) => {
       render(<SidebarContent pathname={pathname} />);
-      expect(screen.getByRole('link', { name: '每日練習（新版）' })).toHaveAttribute(
+      expect(screen.getByRole('link', { name: '每日練習' })).toHaveAttribute(
         'aria-current',
         'page',
       );
-      expect(screen.getByRole('link', { name: '歷屆試題（新版）' })).not.toHaveAttribute(
+      expect(screen.getByRole('link', { name: '歷屆試題' })).not.toHaveAttribute(
         'aria-current',
       );
     },
@@ -168,12 +167,12 @@ describe('grouped app navigation', () => {
 
   it.each([
     ['/', '首頁'],
-    ['/practice', '每日練習（新版）'],
+    ['/practice', '每日練習'],
     ['/practice/quiz', '選擇題練習'],
     ['/practice/law-cloze', '法規克漏字'],
     ['/practice/mock-exam', '歷屆試題模擬考'],
-    ['/exams', '歷屆試題（新版）'],
-    ['/resources', '統計分析（新版）'],
+    ['/exams', '歷屆試題'],
+    ['/resources', '統計分析'],
     ['/resources/analysis', '考題分析'],
     ['/resources/memory-gallery', '速記圖庫'],
     ['/resources/memory-gallery/[[...category]]', '速記圖庫'],

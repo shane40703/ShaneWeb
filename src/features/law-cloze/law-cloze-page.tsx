@@ -10,7 +10,7 @@ import { CLOZE_COUNTS, CLOZE_STORAGE_KEY, clozeBank, getClozeCategories, getCloz
 import styles from './law-cloze-page.module.css';
 
 type ClozeEvidence = ClozeQuestion['evidence'][number];
-// Related past questions open in 歷屆試題（新版）, which shows the question with its answer.
+// Related past questions open in 歷屆試題, which shows the question with its answer.
 const examQuestionHref = (item: ClozeEvidence) => `/exams?question=${item.id}`;
 
 export function LawClozePage() {

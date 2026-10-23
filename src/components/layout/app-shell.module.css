@@ -146,12 +146,6 @@
   transition: opacity 150ms ease;
 }
 
-/* A label too long for the sidebar wraps before （新版） instead of ending in an ellipsis. Stays inline so
-   the link's accessible name keeps no extra space before the note. */
-.navLabelNote {
-  white-space: nowrap;
-}
-
 .navSectionTrigger { justify-content: flex-start; }
 .navSectionTrigger[data-popup-open] { background: var(--sidebar-hover); }
 .navChevron { margin-left: auto; flex: 0 0 auto; color: var(--sidebar-muted); transition: transform 120ms ease; }

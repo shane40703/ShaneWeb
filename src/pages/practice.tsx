@@ -22,7 +22,7 @@ export default function PracticeRoute({
   return (
     <>
       <Head>
-        <title>每日練習（新版）｜建築師考試</title>
+        <title>每日練習｜建築師考試</title>
       </Head>
       <PracticeHubPage overview={overview} />
     </>

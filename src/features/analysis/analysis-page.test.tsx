@@ -58,7 +58,7 @@ describe('AnalysisPage category quiz', () => {
     expect(screen.getByLabelText('分析結束年度')).toHaveValue('114');
   });
 
-  it('opens 選擇題練習 with the category and year, and each question in 歷屆試題（新版）', () => {
+  it('opens 選擇題練習 with the category and year, and each question in 歷屆試題', () => {
     const questions = [
       question('law-114-01', 1),
       question('law-114-02', 2),

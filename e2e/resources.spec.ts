@@ -69,7 +69,7 @@ async function enterHubWithFixture(page: Page, isMobile: boolean) {
   await (
     await openNavigation(page)
   )
-    .getByRole('link', { name: '統計分析（新版）', exact: true })
+    .getByRole('link', { name: '統計分析', exact: true })
     .click();
   await expect(page).toHaveURL(/\/resources$/);
   await closeNavigation(page, isMobile);
@@ -83,11 +83,11 @@ test('the resources hub opens from the sidebar and reaches every resource page',
   await (
     await openNavigation(page)
   )
-    .getByRole('link', { name: '統計分析（新版）', exact: true })
+    .getByRole('link', { name: '統計分析', exact: true })
     .click();
   await expect(page).toHaveURL(/\/resources$/);
-  await expect(page).toHaveTitle('統計分析（新版）｜建築師考試');
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('統計分析（新版）');
+  await expect(page).toHaveTitle('統計分析｜建築師考試');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('統計分析');
   await expect(page.getByRole('dialog', { name: '主要功能', exact: true })).toHaveCount(
     0,
   );
@@ -118,7 +118,7 @@ test('the resources hub opens from the sidebar and reaches every resource page',
   );
   await expect(
     (await openNavigation(page)).getByRole('link', {
-      name: '統計分析（新版）',
+      name: '統計分析',
       exact: true,
     }),
   ).toHaveAttribute('aria-current', 'page');
@@ -268,18 +268,13 @@ test('the whole card opens its resource page and its title shows a focus ring', 
   expect(ring.colour).not.toBe(ring.fill);
 });
 
-test('on a 320px phone the title keeps （新版） whole and the switcher stays in the page', async ({
+test('on a 320px phone the title, menu button and switcher stay in the page', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 320, height: 640 });
   await page.goto('/resources');
   const title = page.getByRole('heading', { level: 1 });
-  await expect(title).toHaveText('統計分析（新版）');
-  expect(
-    await title
-      .getByText('（新版）', { exact: true })
-      .evaluate((note) => note.getClientRects().length),
-  ).toBe(1);
+  await expect(title).toHaveText('統計分析');
   expect(
     (await page.getByRole('button', { name: '開啟選單' }).boundingBox())!.width,
   ).toBeGreaterThanOrEqual(40);
@@ -300,15 +295,12 @@ test('law rows fit tablet-width panels', async ({ page }) => {
   }
 });
 
-test('the sidebar shows the full hub name without cutting off （新版）', async ({
-  page,
-  isMobile,
-}) => {
+test('the sidebar shows the full hub name', async ({ page, isMobile }) => {
   test.skip(isMobile, 'The phone drawer is wide enough for the name on one line.');
   await page.goto('/resources');
   const label = page
     .getByRole('navigation', { name: '主要功能', exact: true })
-    .getByRole('link', { name: '統計分析（新版）', exact: true })
+    .getByRole('link', { name: '統計分析', exact: true })
     .locator(':scope > span')
     .last();
   const size = await label.evaluate((node) => ({
@@ -316,8 +308,4 @@ test('the sidebar shows the full hub name without cutting off （新版）', asy
     clientWidth: node.clientWidth,
   }));
   expect(size.scrollWidth).toBeLessThanOrEqual(size.clientWidth);
-  const note = label.getByText('（新版）', { exact: true });
-  await expect(note).toBeVisible();
-  // One line box: whenever the name wraps, the note moves down whole instead of splitting as （新 / 版）.
-  expect(await note.evaluate((node) => node.getClientRects().length)).toBe(1);
 });

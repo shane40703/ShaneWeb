@@ -89,7 +89,7 @@ describe('LawClozePage', () => {
     expect(screen.queryByText('完整條文・第 41 條')).not.toBeInTheDocument();
   });
 
-  it('opens related past questions in 歷屆試題（新版）', async () => {
+  it('opens related past questions in 歷屆試題', async () => {
     const evidence = clozeBank.questions.find((q) => q.id === 'daylight')!.evidence[0];
     const name = `${evidence.year} 年・第 ${evidence.number} 題`;
     render(<LawClozePage />);

@@ -271,7 +271,7 @@ export function ReviewNoteEditor({ question }: { question: ReviewQuestion }) {
     try {
       const result = await discussion.publish('explanation', content, images);
       notify(
-        '筆記已分享到歷屆試題（新版）',
+        '筆記已分享到歷屆試題',
         discussion.enabled && images.length
           ? result.imagesShared
             ? '文字與圖片已同步共享。'
@@ -335,7 +335,7 @@ export function ReviewNoteEditor({ question }: { question: ReviewQuestion }) {
       <footer>
         <Button disabled={sharing} onClick={() => void shareNote()}>
           <IconMessages size={16} stroke={2} aria-hidden="true" />
-          {sharing ? '正在分享…' : '分享到歷屆試題（新版）'}
+          {sharing ? '正在分享…' : '分享到歷屆試題'}
         </Button>
         <Button variant="primary" onClick={saveNote}>儲存筆記</Button>
       </footer>

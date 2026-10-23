@@ -27,22 +27,18 @@ test('navigation lists only the new pages and 我的作答存摺, and returns ho
   await page.goto('/');
   const nav = await openNavigation(page);
   const links = nav.locator(':scope > a');
-  await expect(links).toHaveText([
-    '每日練習（新版）',
-    '歷屆試題（新版）',
-    '統計分析（新版）',
-  ]);
+  await expect(links).toHaveText(['每日練習', '歷屆試題', '統計分析']);
   await expect(links.nth(0)).toHaveAttribute('href', '/practice');
   await expect(links.nth(1)).toHaveAttribute('href', '/exams');
   await expect(links.nth(2)).toHaveAttribute('href', '/resources');
   await expect(nav.getByRole('button')).toHaveText([personal.label]);
-  for (const removed of ['每日練習', '詳解與討論', '歷屆試題題練習', '歷屆試題資料集成'])
+  for (const removed of ['詳解與討論', '歷屆試題題練習', '歷屆試題資料集成'])
     await expect(nav.getByText(removed, { exact: true })).toHaveCount(0);
   await expect(nav.getByRole('link', { name: '設定', exact: true })).toBeVisible();
   await expect(nav.getByRole('link', { name: '問題回報', exact: true })).toBeVisible();
   await page.screenshot({ path: testInfo.outputPath('navigation.png') });
 
-  await nav.getByRole('link', { name: '每日練習（新版）', exact: true }).click();
+  await nav.getByRole('link', { name: '每日練習', exact: true }).click();
   await expect(page).toHaveURL(/\/practice$/);
   await expect(page.getByRole('dialog', { name: '主要功能', exact: true })).toHaveCount(
     0,
