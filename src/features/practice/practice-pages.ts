@@ -7,7 +7,7 @@ import {
 
 /**
  * Single source for the new daily practice hub and its pages, shared by the sidebar,
- * hub cards, practice URLs and topbar titles so their wording never drifts.
+ * hub links, practice URLs and topbar titles so their wording never drifts.
  */
 export const practiceHub = {
   href: '/practice',

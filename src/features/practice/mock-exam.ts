@@ -22,7 +22,7 @@ export interface MockExamPaper {
   firstWrittenId: string | null;
 }
 
-/** What the hub needs of a paper to list its draft. */
+/** What a draft needs of its paper. */
 export type MockExamPaperRef = Pick<MockExamPaper, 'subject' | 'year' | 'questionCount'>;
 
 type PaperSource = Pick<
@@ -230,7 +230,7 @@ export function addMockExamTime(
   };
 }
 
-/** Stamps the question just changed, so the hub lists the paper worked on last first. */
+/** Stamps the question just changed, so drafts list the paper worked on last first. */
 export function touchMockExamQuestion(
   progress: QuizProgressByQuestion,
   questionId: string,

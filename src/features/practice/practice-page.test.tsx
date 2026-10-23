@@ -440,8 +440,8 @@ describe('PracticePage setup', () => {
   });
 });
 
-describe('PracticePage from the hub', () => {
-  it('opens the setup with the subject picked on the hub, and drops it from the URL', async () => {
+describe('PracticePage arriving from other pages', () => {
+  it('opens the setup with the subject a link chose, and drops it from the URL', async () => {
     renderAt('/practice/quiz?subject=env');
     await waitFor(() =>
       expect(screen.getByRole('radio', { name: /建築環境控制/ })).toBeChecked(),
@@ -481,7 +481,7 @@ describe('PracticePage from the hub', () => {
     await screen.findByText('100% 正確率');
     view.unmount();
 
-    // The hub's 看結果 link.
+    // Back from the hub to the result's entry.
     const back = renderAt('/practice/quiz?view=result');
     expect(await screen.findByText('100% 正確率')).toBeInTheDocument();
     back.unmount();

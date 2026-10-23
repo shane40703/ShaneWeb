@@ -11,9 +11,9 @@ import {
 } from '@/lib/storage';
 
 /**
- * Paper drafts live in storage only, so the exam page, the hub card and other tabs
- * all read the same copy. A write the browser refuses is kept here instead, so the
- * paper still works in this tab until a reload.
+ * Paper drafts live in storage only, so the exam page and other tabs all read the
+ * same copy. A write the browser refuses is kept here instead, so the paper still
+ * works in this tab until a reload.
  */
 const listeners = new Set<() => void>();
 let unsaved: string | null = null;

@@ -1,31 +1,36 @@
-import type { Question, SubjectId } from '@/lib/types';
+import type { Question } from '@/lib/types';
 import { subjects } from '@/question-bank/catalog';
-import { buildMockExamPapers, type MockExamPaperRef } from './mock-exam';
+import { buildMockExamPapers } from './mock-exam';
 import { DEFAULT_PRACTICE_SETTINGS, resolvePracticePool } from './practice-session';
 
-/** Build-time figures for the practice hub, small enough that the hub never ships a bank. */
+/** Build-time figures the practice hub shows beside each practice, so it never ships a bank. */
 export interface PracticeOverview {
-  /** Questions each subject draws from with the default settings, in catalog order. */
-  subjects: { subject: SubjectId; count: number }[];
+  /** Subjects, and the questions they draw from with the default settings. */
+  quiz: { subjects: number; questions: number };
   cloze: { laws: number; questions: number };
-  /** The mock exam's papers, with only what the hub's draft list needs. */
-  papers: MockExamPaperRef[];
+  /** Subjects with a paper, and the papers. */
+  mockExam: { subjects: number; papers: number };
 }
 
 export function buildPracticeOverview(
   questions: readonly Question[],
   cloze: { laws: readonly unknown[]; questions: readonly unknown[] },
 ): PracticeOverview {
+  const papers = buildMockExamPapers(questions);
   return {
-    subjects: subjects.map(({ id }) => ({
-      subject: id,
-      count: resolvePracticePool(questions, id, DEFAULT_PRACTICE_SETTINGS).eligibleCount,
-    })),
+    quiz: {
+      subjects: subjects.length,
+      questions: subjects.reduce(
+        (total, { id }) =>
+          total +
+          resolvePracticePool(questions, id, DEFAULT_PRACTICE_SETTINGS).eligibleCount,
+        0,
+      ),
+    },
     cloze: { laws: cloze.laws.length, questions: cloze.questions.length },
-    papers: buildMockExamPapers(questions).map(({ subject, year, questionCount }) => ({
-      subject,
-      year,
-      questionCount,
-    })),
+    mockExam: {
+      subjects: new Set(papers.map((paper) => paper.subject)).size,
+      papers: papers.length,
+    },
   };
 }

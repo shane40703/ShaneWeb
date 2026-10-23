@@ -1,7 +1,6 @@
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CLOZE_STORAGE_KEY, clozeBank, createClozeSession, parseClozeSession } from './cloze';
-import { parseClozeRoundProgress } from './cloze-progress';
 import { LawClozePage } from './law-cloze-page';
 
 vi.mock('@/state/app-state', () => ({ useAppState: () => ({ reportPersistence: vi.fn() }) }));
@@ -88,14 +87,6 @@ describe('LawClozePage', () => {
     fireEvent.click(screen.getByRole('button', { name: '下一題' }));
     expect(screen.getAllByRole('textbox').every((element) => !(element as HTMLInputElement).value)).toBe(true);
     expect(screen.queryByText('完整條文・第 41 條')).not.toBeInTheDocument();
-  });
-
-  it('saves the figures the practice hub shows with the round', async () => {
-    render(<LawClozePage />);
-    const inputs = await screen.findAllByRole('textbox');
-    ['1/5', '1/8', '75'].forEach((value, i) => fireEvent.change(inputs[i], { target: { value } }));
-    fireEvent.click(screen.getByRole('button', { name: '提交答案' }));
-    await waitFor(() => expect(parseClozeRoundProgress(window.localStorage.getItem(CLOZE_STORAGE_KEY))).toEqual({ total: 10, submitted: 1, correct: 1, revealed: 0, complete: false }));
   });
 
   it('opens related past questions in 歷屆試題（新版）', async () => {

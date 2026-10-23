@@ -199,7 +199,7 @@ export function PracticePage() {
     };
   }, [commitSession, ready, restored]);
 
-  // The result outlives this page until a reload, so the hub can lead back to it.
+  // The result outlives this page until a reload, so Back can return to it.
   useEffect(() => {
     if (restored) keepPracticeResult(result);
   }, [restored, result]);
@@ -329,8 +329,8 @@ export function PracticePage() {
       // No set, nothing to rewind. Never count here: an own replace whose
       // promise settled before this effect ran also arrives untagged.
       depth.current = 0;
-      // The hub's subject shortcuts open the setup with that subject chosen, and
-      // 考題分析 adds its year range and category.
+      // A link can open the setup with a subject chosen; 考題分析's also brings its
+      // year range and category.
       const setupLink = [category, from, to].some((value) => value !== undefined);
       if (isSubjectId(chosen) || setupLink) {
         void Promise.resolve().then(() => {

@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/ui';
 import { useAppState } from '@/state/app-state';
 import { readStoredValue, writeStoredValue } from '@/lib/storage';
 import { useClientReady } from '@/lib/use-client-ready';
-import { CLOZE_COUNTS, CLOZE_STORAGE_KEY, clozeBank, getClozeCategories, getClozePool, getFullArticleParts, createClozeSession, gradeCloze, parseClozeSession, revealClozeAnswer, serializeClozeSession, type ClozeOptions, type ClozeQuestion, type ClozeSession } from './cloze';
+import { CLOZE_COUNTS, CLOZE_STORAGE_KEY, clozeBank, getClozeCategories, getClozePool, getFullArticleParts, createClozeSession, gradeCloze, parseClozeSession, revealClozeAnswer, type ClozeOptions, type ClozeQuestion, type ClozeSession } from './cloze';
 import styles from './law-cloze-page.module.css';
 
 type ClozeEvidence = ClozeQuestion['evidence'][number];
@@ -30,7 +30,7 @@ export function LawClozePage() {
     return () => { active = false; };
   }, [ready]);
   useEffect(() => {
-    if (session) reportPersistence('law-cloze', writeStoredValue(CLOZE_STORAGE_KEY, serializeClozeSession(session)));
+    if (session) reportPersistence('law-cloze', writeStoredValue(CLOZE_STORAGE_KEY, JSON.stringify(session)));
   }, [session, reportPersistence]);
 
   if (!session) return <p role='status'>正在準備法規克漏字…</p>;

@@ -477,7 +477,7 @@ describe('MockExamPage answering', () => {
     expect(storedDraft()['law-114-01']?.elapsedSeconds).toBe(4);
   });
 
-  it('stamps the question answered, so the hub lists this paper first', async () => {
+  it('stamps the question answered, so drafts list this paper first', async () => {
     seedDraft({
       'law-114-01': { elapsedSeconds: 0, startedAt: '2026-10-01T00:00:00.000Z' },
     });

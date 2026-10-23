@@ -145,28 +145,43 @@ test('paper download from the setup draws its own set without starting online pr
   ).toBeNull();
 });
 
-test('the hub opens the multiple-choice practice, and leads back to the set and its result', async ({
+test('the hub links the three practices in one column, and 選擇題練習 picks its set up again', async ({
   page,
   isMobile,
 }, testInfo) => {
   await page.goto('/practice');
   await expect(page).toHaveTitle('每日練習（新版）｜建築師考試');
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('每日練習（新版）');
-  const quiz = page.getByRole('article', { name: '選擇題練習' });
-  const cloze = page.getByRole('article', { name: '法規克漏字' });
-  await expect(quiz.getByText('選科目開始')).toBeVisible();
-  await expect(cloze.getByText('還沒開始')).toBeVisible();
-  await expect(quiz.getByRole('link', { name: /建築法規與實務/ })).toContainText(
-    /[\d,]+ 題/,
+  const practices = page.getByRole('article');
+  await expect(practices.locator('h2')).toHaveText([
+    '選擇題練習',
+    '法規克漏字',
+    '歷屆試題模擬考',
+  ]);
+  await expect(practices.nth(0).getByText(/^4 科・[\d,]+ 題$/)).toBeVisible();
+  await expect(practices.nth(1).getByText(/^\d+ 部法規・[\d,]+ 題$/)).toBeVisible();
+  await expect(practices.nth(2).getByText(/^\d 科・\d+ 份試卷$/)).toBeVisible();
+  // Words and one link each, stacked in a single column: no shortcuts into the pages.
+  const list = page.getByRole('list').filter({ has: page.getByRole('article') });
+  await expect(list.getByRole('link')).toHaveCount(3);
+  await expect(list.getByRole('button')).toHaveCount(0);
+  const boxes = await practices.evaluateAll((items) =>
+    items.map((item) => {
+      const { left, top, bottom } = item.getBoundingClientRect();
+      return { left, top, bottom };
+    }),
   );
+  expect(new Set(boxes.map((box) => box.left)).size).toBe(1);
+  boxes
+    .slice(1)
+    .forEach((box, index) => expect(box.top).toBeGreaterThan(boxes[index].bottom));
   await expectNoHorizontalOverflow(page);
   await page.screenshot({ path: testInfo.outputPath('hub.png'), fullPage: true });
 
-  await quiz.getByRole('link', { name: /建築環境控制/ }).click();
+  await practices.nth(0).getByRole('link').click();
   await expect(page).toHaveURL(/\/practice\/quiz$/);
   await expect(page).toHaveTitle('選擇題練習｜建築師考試');
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('選擇題練習');
-  await expect(page.getByRole('radio', { name: /建築環境控制/ })).toBeChecked();
   const nav = await openNavigation(page);
   await expect(
     nav.getByRole('link', { name: '每日練習（新版）', exact: true }),
@@ -178,6 +193,7 @@ test('the hub opens the multiple-choice practice, and leads back to the set and 
     );
   }
 
+  await page.getByRole('radio', { name: /建築環境控制/ }).check();
   await page.getByRole('button', { name: /進階選項/ }).click();
   await page.getByRole('button', { name: /^5 題/ }).click();
   await page.getByRole('button', { name: '線上作答' }).click();
@@ -190,11 +206,11 @@ test('the hub opens the multiple-choice practice, and leads back to the set and 
   await expect(page).toHaveURL(/\?q=2$/);
   await page.screenshot({ path: testInfo.outputPath('quiz.png') });
 
+  // The hub stays the same; the practice itself picks the set up where it stopped.
   await page.getByRole('link', { name: '返回每日練習' }).click();
   await expect(page).toHaveURL(/\/practice$/);
-  await expect(quiz.getByText('進行中的題組')).toBeVisible();
-  await expect(quiz.getByText(/^已作答 1／5 題・答對 [01] 題$/)).toBeVisible();
-  await quiz.getByRole('link', { name: '繼續第 2 題' }).click();
+  await expect(list.getByRole('link')).toHaveCount(3);
+  await practices.nth(0).getByRole('link').click();
   await expect(page).toHaveURL(/\/practice\/quiz\?q=2$/);
   await expect(page.getByLabel('第 2 題，共 5 題')).toBeVisible();
 
@@ -204,22 +220,16 @@ test('the hub opens the multiple-choice practice, and leads back to the set and 
     .getByRole('button', { name: /交卷/ })
     .click();
   await expect(page).toHaveURL(/\?view=result$/);
-  await page.getByRole('link', { name: '返回每日練習' }).click();
-  await expect(quiz.getByText('剛交卷')).toBeVisible();
-  await expect(quiz.getByText(/^答對 [01]／1 題・正確率 (0|100)%$/)).toBeVisible();
-  await page.screenshot({ path: testInfo.outputPath('hub-result.png'), fullPage: true });
-  await quiz.getByRole('link', { name: '看結果' }).click();
-  await expect(page).toHaveURL(/\/practice\/quiz\?view=result$/);
   await expect(page.getByText(/^(0|100)% 正確率$/)).toBeVisible();
   await expectNoHorizontalOverflow(page);
 });
 
-test('law cloze opens from the hub, keeps its round, and starts the next round from the hub', async ({
+test('law cloze opens from the hub and picks its round up again from there', async ({
   page,
 }, testInfo) => {
   await page.goto('/practice');
   const cloze = page.getByRole('article', { name: '法規克漏字' });
-  await cloze.getByRole('link', { name: '開始練習' }).click();
+  await cloze.getByRole('link').click();
   await expect(page).toHaveURL(/\/practice\/law-cloze$/);
   await expect(page).toHaveTitle('法規克漏字｜建築師考試');
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('法規克漏字');
@@ -237,43 +247,31 @@ test('law cloze opens from the hub, keeps its round, and starts the next round f
   await expectNoHorizontalOverflow(page);
   await page.screenshot({ path: testInfo.outputPath('cloze.png'), fullPage: true });
 
-  // The round survives a reload.
+  // The round survives a reload, and a trip to the hub and back.
   const title = await page.locator('form h3').textContent();
   await page.reload();
   await expect(page.locator('form h3')).toHaveText(title!);
-
-  await page.goto('/practice');
-  await expect(cloze.getByText('已完成 1／5 題・全對 0 題')).toBeVisible();
-  await cloze.getByRole('link', { name: '繼續本輪' }).click();
-  await expect(page).toHaveURL(/\/practice\/law-cloze$/);
-  for (let index = 0; index < 4; index += 1) {
-    await page.getByRole('button', { name: '下一題' }).click();
-    await page.getByRole('button', { name: '直接看答案' }).click();
-  }
-  await expect(page.getByRole('heading', { name: '本輪測驗完成' })).toBeVisible();
-
   await page.getByRole('link', { name: '返回每日練習' }).click();
-  await expect(cloze.getByText('本輪完成')).toBeVisible();
-  await expect(cloze.getByText('直接看答案 5 題，不計分')).toBeVisible();
-  await cloze.getByRole('button', { name: '再練一輪' }).click();
+  await expect(page).toHaveURL(/\/practice$/);
+  await cloze.getByRole('link').click();
   await expect(page).toHaveURL(/\/practice\/law-cloze$/);
+  await expect(page.locator('form h3')).toHaveText(title!);
   await expect(page.getByText(/^1 \/ 5$/)).toBeVisible();
-  await expect(page.getByRole('heading', { name: '本輪測驗完成' })).toHaveCount(0);
 });
 
 test('the mock exam answers a whole paper, keeps it when leaving, and scores it on submission', async ({
   page,
 }, testInfo) => {
   await page.goto('/practice');
-  const exam = page.getByRole('article', { name: '歷屆試題模擬考' });
-  await expect(exam.getByText('選科目開始')).toBeVisible();
-  await exam.getByRole('link', { name: /建築環境控制/ }).click();
-  await expect(page).toHaveURL(/\/practice\/mock-exam\?subject=env$/);
+  await page.getByRole('article', { name: '歷屆試題模擬考' }).getByRole('link').click();
+  await expect(page).toHaveURL(/\/practice\/mock-exam$/);
   await expect(page).toHaveTitle('歷屆試題模擬考｜建築師考試');
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('歷屆試題模擬考');
 
   const setup = page.getByRole('region', { name: '歷屆試題模擬考設定' });
-  await expect(setup.getByRole('radio', { name: /建築環境控制/ })).toBeChecked();
+  await expect(setup.getByRole('radio', { name: /建築法規與實務/ })).toBeChecked();
+  await setup.getByRole('radio', { name: /建築環境控制/ }).click();
+  await expect(page).toHaveURL(/\?subject=env&year=114$/);
   await expect(setup.getByRole('radio', { name: /114 年/ })).toBeChecked();
   // The whole year tile is its radio.
   await setup.getByRole('radio', { name: /113 年/ }).click();
@@ -315,11 +313,14 @@ test('the mock exam answers a whole paper, keeps it when leaving, and scores it 
   await page.getByRole('button', { name: /先離開，保留進度/ }).click();
   await expect(page).toHaveURL(/\?subject=env&year=113$/);
   await expect(setup.getByRole('button', { name: '繼續作答（第 3 題）' })).toBeVisible();
+  // The paper waits on its setup, whichever way the setup is reached again.
   await page.getByRole('link', { name: '返回每日練習' }).click();
-  await expect(exam.getByText('作答中的試卷')).toBeVisible();
-  const draft = exam.getByRole('link', { name: /^環控 113 年/ });
-  await expect(draft).toContainText('環控 113 年 已作答 2／40 題');
-  await draft.click();
+  await expect(page).toHaveURL(/\/practice$/);
+  await page.getByRole('article', { name: '歷屆試題模擬考' }).getByRole('link').click();
+  await setup.getByRole('radio', { name: /建築環境控制/ }).click();
+  await setup.getByRole('radio', { name: /113 年/ }).click();
+  await expect(page).toHaveURL(/\?subject=env&year=113$/);
+  await setup.getByRole('button', { name: '繼續作答（第 3 題）' }).click();
   await expect(page).toHaveURL(/\?subject=env&year=113&q=3$/);
 
   page.once('dialog', (dialog) => {
@@ -339,13 +340,12 @@ test('the mock exam answers a whole paper, keeps it when leaving, and scores it 
   await page.screenshot({ path: testInfo.outputPath('mock-result.png'), fullPage: true });
 
   // The result survives a reload and took the exam's place in history: Back returns
-  // to the hub the paper was resumed from.
+  // to the setup the paper was resumed from, which now offers the result.
   await page.reload();
   await expect(result).toContainText(/分／滿分 60 分/);
   await page.goBack();
-  await expect(page).toHaveURL(/\/practice$/);
-  await expect(exam.getByText('最近交卷')).toBeVisible();
-  await expect(exam.getByText(/^環控 113 年・\d+\.\d{2} 分$/)).toBeVisible();
+  await expect(page).toHaveURL(/\?subject=env&year=113$/);
+  await expect(setup.getByRole('link', { name: /查看結果/ })).toBeVisible();
   await page.goForward();
   await expect(result).toContainText(/分／滿分 60 分/);
 

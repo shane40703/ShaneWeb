@@ -1,7 +1,8 @@
-/* Cards follow the resources hub (統計分析（新版）), without its step numbers: the two
-   practices are not done in order. */
+/* One column of links, each a practice named and described in words. The rows keep the
+   look of the resources hub's cards, but stay narrow enough to read across at a glance. */
 .hub {
   min-width: 0;
+  max-width: 720px;
   display: grid;
   gap: 18px;
   container-type: inline-size;
@@ -14,30 +15,28 @@
   line-height: 1.8;
 }
 
-.cards {
+.links {
   margin: 0;
   padding: 0;
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 18px;
+  gap: 12px;
   list-style: none;
 }
 
-.cards > li {
+.links > li {
   min-width: 0;
-  display: flex;
 }
 
 .card {
   position: relative;
-  width: 100%;
   min-width: 0;
-  padding: 22px;
+  padding: 18px 20px;
   display: grid;
-  grid-template-rows: auto 1fr auto;
-  gap: 18px;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px;
   border: 1px solid var(--line);
-  border-radius: 20px;
+  border-radius: 18px;
   background: var(--surface);
   box-shadow: var(--shadow-sm);
   transition:
@@ -47,22 +46,14 @@
 }
 
 .card:hover {
-  transform: translateY(-3px);
+  transform: translateY(-2px);
   border-color: color-mix(in srgb, var(--primary) 45%, var(--line));
   box-shadow: var(--shadow-md);
-}
-
-.cardHeader {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  align-items: center;
-  gap: 4px 14px;
 }
 
 .cardIcon {
   width: 48px;
   height: 48px;
-  grid-row: span 2;
   display: grid;
   place-items: center;
   border-radius: 14px;
@@ -70,17 +61,30 @@
   color: var(--primary);
 }
 
-.cardHeader h2 {
+.cardText {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.cardText h2 {
   margin: 0;
-  font-size: 19px;
+  font-size: 18px;
   line-height: 1.4;
 }
 
-.cardHeader p {
+.cardText p {
   margin: 0;
-  color: var(--muted);
+  color: var(--text-soft);
   font-size: 13px;
   line-height: 1.6;
+}
+
+.cardText .stat {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .cardLink {
@@ -89,12 +93,12 @@
   outline: none;
 }
 
-/* Stretched over the whole card; the shortcuts in the body sit above it. */
+/* Stretched over the whole row, so the icon, the words and the arrow all open the page. */
 .cardLink::after {
   content: '';
   position: absolute;
   inset: 0;
-  border-radius: 20px;
+  border-radius: 18px;
 }
 
 .cardLink:focus-visible::after {
@@ -102,263 +106,30 @@
   outline-offset: 3px;
 }
 
-.cardBody {
-  min-width: 0;
-  display: grid;
-  align-content: start;
-  gap: 10px;
-}
-
-/* Shortcuts, and an unlinked subject beside them, sit above the stretched card link, so a
-   click on an empty subject does not open the page. */
-.cardBody a,
-.cardBody button,
-.unavailable {
-  position: relative;
-  z-index: 1;
-}
-
-.cardBody a:focus-visible,
-.cardBody button:focus-visible {
-  outline: 3px solid var(--focus);
-  outline-offset: 2px;
-}
-
-.quickLabel {
-  margin: 0;
-  color: var(--muted);
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-}
-
-.quickText {
-  margin: 0;
-  color: var(--text-soft);
-  font-size: 13px;
-  line-height: 1.7;
-}
-
-.pending {
-  min-height: 132px;
-  margin: 0;
-  display: grid;
-  place-items: center;
-  border: 1px dashed var(--line);
-  border-radius: 14px;
-  color: var(--muted);
-  font-size: 12px;
-}
-
-.status {
-  min-width: 0;
-  padding: 14px 16px;
-  display: grid;
-  gap: 6px;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  background: var(--surface-2);
-}
-
-.status strong {
-  color: var(--text);
-  font-size: 15px;
-  font-weight: 800;
-  line-height: 1.5;
-}
-
-.status span {
-  color: var(--muted);
-  font-size: 12px;
-  font-weight: 700;
-  line-height: 1.6;
-}
-
-.meter {
-  height: 6px;
-  margin-top: 4px;
-  display: block;
-  overflow: hidden;
-  border-radius: 999px;
-  background: var(--surface-3);
-}
-
-.meter > span {
-  height: 100%;
-  display: block;
-  border-radius: inherit;
-  background: var(--primary);
-}
-
-/* A link or button styled as the primary button of the shared UI kit. */
-.resume {
-  min-height: 44px;
-  padding: 0 18px;
-  justify-self: start;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  border: 1px solid var(--primary-solid);
-  border-radius: 12px;
-  background: linear-gradient(
-    135deg,
-    var(--primary-solid),
-    var(--primary-solid-gradient)
-  );
-  box-shadow: 0 8px 20px color-mix(in srgb, var(--primary) 24%, transparent);
-  color: var(--on-primary);
-  font: inherit;
-  font-size: 14px;
-  font-weight: 800;
-  text-decoration: none;
-  cursor: pointer;
-  transition:
-    background 150ms ease,
-    border-color 150ms ease;
-}
-
-.resume:hover:not(:disabled) {
-  border-color: var(--primary-solid-hover);
-  background: var(--primary-solid-hover);
-}
-
-.resume:disabled {
-  opacity: 0.6;
-  cursor: progress;
-}
-
-.cardFooter {
-  padding-top: 14px;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px 12px;
-  border-top: 1px solid var(--line);
-  color: var(--muted);
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.cardAction {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--primary-strong);
-  font-size: 13px;
-  font-weight: 850;
-}
-
-.cardAction svg {
+.chevron {
+  color: var(--primary);
   transition: transform 180ms ease;
 }
 
-.card:hover .cardAction svg {
+.card:hover .chevron {
   transform: translateX(3px);
 }
 
-.subjectLinks {
-  display: grid;
-  gap: 6px;
-}
-
-.subjectLink {
-  min-width: 0;
-  min-height: 48px;
-  padding: 6px 10px 6px 7px;
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto auto;
-  align-items: center;
-  gap: 10px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: var(--surface-2);
-  color: var(--text);
-  text-decoration: none;
-  transition:
-    border-color 150ms ease,
-    background-color 150ms ease;
-}
-
-a.subjectLink:hover {
-  border-color: color-mix(in srgb, var(--primary) 45%, var(--line));
-  background: var(--primary-soft);
-}
-
-.subjectLink strong {
-  overflow: hidden;
-  font-size: 14px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.subjectLink small {
-  color: var(--muted);
-  font-size: 12px;
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-/* The name over its progress or score: neither is cut short on a narrow card. */
-.twoLineLink {
-  grid-template-columns: auto minmax(0, 1fr) auto;
-}
-
-.twoLineLink > span {
-  min-width: 0;
-  display: grid;
-  gap: 1px;
-}
-
-.twoLineLink small {
-  white-space: normal;
-}
-
-.subjectLink svg {
-  color: var(--primary);
-}
-
-.unavailable {
-  border-style: dashed;
-  color: var(--disabled-text);
-  cursor: default;
-}
-
-/* Side by side once each card keeps room for a subject name and its count; an odd
-   last card spans the row until all three fit in one. */
-@container (min-width: 640px) {
-  .cards {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .cards > li:last-child:nth-child(odd) {
-    grid-column: 1 / -1;
-  }
-}
-
-@container (min-width: 960px) {
-  .cards {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  .cards > li:last-child:nth-child(odd) {
-    grid-column: auto;
-  }
-}
-
-@container (max-width: 599.98px) {
+@container (max-width: 479.98px) {
   .card {
-    padding: 18px;
-    gap: 16px;
+    padding: 16px;
+    gap: 14px;
+  }
+
+  .cardIcon {
+    width: 44px;
+    height: 44px;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .card,
-  .cardAction svg,
-  .resume,
-  .subjectLink {
+  .chevron {
     transition-duration: 0.01ms;
   }
 

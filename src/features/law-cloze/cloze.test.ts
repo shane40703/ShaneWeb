@@ -201,6 +201,12 @@ describe('cloze exam selection and restoration', () => {
     expect(parseClozeSession(JSON.stringify({ ...old, order: ['b-review', ...old.order.slice(1)] }))).toBeNull();
   });
 
+  it('restores rounds saved with the progress figures the practice hub used to show, without them', () => {
+    const session = createClozeSession({ count: 5 });
+    const saved = { ...session, progress: { total: 5, submitted: 0, correct: 0, revealed: 0, complete: false } };
+    expect(parseClozeSession(JSON.stringify(saved))).toEqual(session);
+  });
+
   it('supports every requested count with unique random questions from the selected law', () => {
     for (const lawId of ['全部', ...clozeBank.laws.map((law) => law.id)]) {
       for (const count of CLOZE_COUNTS) {
