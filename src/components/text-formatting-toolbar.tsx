@@ -7,7 +7,7 @@ const actions: Array<{ format: TextFormat; label: string; content: ReactNode }> 
   { format: 'italic', label: '斜體', content: <em>I</em> },
   { format: 'superscript', label: '上標', content: <>X<sup>2</sup></> },
   { format: 'subscript', label: '下標', content: <>X<sub>2</sub></> },
-  { format: 'red', label: '紅字', content: '紅字' },
+  { format: 'red', label: '紅字', content: 'A' },
 ];
 
 export function TextFormattingToolbar({
@@ -49,8 +49,8 @@ export function TextFormattingToolbar({
             });
           }}
         >
-          {action.content}
-          <span>{action.label}</span>
+          <span className={styles.sample}>{action.content}</span>
+          <span className={styles.label}>{action.label}</span>
         </button>
       ))}
     </div>

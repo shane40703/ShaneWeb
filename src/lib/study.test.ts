@@ -202,6 +202,12 @@ describe('result helpers', () => {
     expect(formatCorrectAnswer(question!)).toBe('D');
   });
 
+  it('lists several correct answers in option order', () => {
+    expect(
+      formatCorrectAnswer({ answerKey: { kind: 'accepted', options: [3, 0, 2] } }),
+    ).toBe('A、C、D');
+  });
+
   it('calculates fixed per-question scores and subject maximums', () => {
     expect(calculateScore(1, 'law')).toBe(1.25);
     expect(calculateScore(80, 'construction')).toBe(100);

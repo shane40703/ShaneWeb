@@ -43,5 +43,5 @@
 @media (max-width: 560px) {
   .editorFooter { align-items: stretch; flex-direction: column; }
   .editorFooter > div { justify-content: stretch; }
-  .editorFooter > div > * { flex: 1; }
+  .editorFooter > div > * { flex: 1 1 auto; white-space: nowrap; }
 }

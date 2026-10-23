@@ -282,7 +282,8 @@ export function formatCorrectAnswer(question: Pick<Question, 'answerKey'>) {
   if (question.answerKey.kind === 'written') return '申論題無選項答案';
   return question.answerKey.kind === 'all-credit'
     ? '本題一律給分'
-    : question.answerKey.options
+    : [...question.answerKey.options]
+        .sort((left, right) => left - right)
         .map((index) => String.fromCharCode(65 + index))
         .join('、');
 }

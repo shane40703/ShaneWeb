@@ -13,6 +13,7 @@ import {
   IconChevronDown,
   IconEye,
   IconEyeOff,
+  IconInfoCircle,
   IconMenu2,
   IconX,
 } from '@tabler/icons-react';
@@ -192,40 +193,57 @@ export function OptionGroup({
   );
 }
 
+/** success: an action finished; error: it failed; info: nothing was done, and why. */
+export type ToastTone = 'success' | 'error' | 'info';
+
 interface ToastContextValue {
-  notify: (title: string, description?: string) => void;
+  notify: (title: string, description?: string, tone?: ToastTone) => void;
 }
 
 const ToastContext = createContext<ToastContextValue | null>(null);
+
+const toastIcons = {
+  success: IconCheck,
+  error: IconAlertTriangle,
+  info: IconInfoCircle,
+} satisfies Record<ToastTone, typeof IconCheck>;
+
+function toastTone(type: string | undefined): ToastTone {
+  return type === 'error' || type === 'info' ? type : 'success';
+}
 
 function ToastBridge({ children }: { children: ReactNode }) {
   const manager = Toast.useToastManager();
   return (
     <ToastContext.Provider
       value={{
-        notify: (title, description) =>
-          manager.add({ title, description, timeout: 2600 }),
+        notify: (title, description, tone = 'success') =>
+          manager.add({ title, description, type: tone, timeout: 2600 }),
       }}
     >
       {children}
       <Toast.Portal>
         <Toast.Viewport className={styles.toastViewport}>
-          {manager.toasts.map((toast) => (
-            <Toast.Root key={toast.id} toast={toast} className={styles.toastRoot}>
-              <Toast.Content className={styles.toastContent}>
-                <span className={styles.toastMark}>
-                  <IconCheck size={18} stroke={2.5} aria-hidden="true" />
-                </span>
-                <div className={styles.toastText}>
-                  <Toast.Title className={styles.toastTitle} />
-                  <Toast.Description className={styles.toastDescription} />
-                </div>
-                <Toast.Close className={styles.toastClose} aria-label="關閉通知">
-                  <IconX size={19} stroke={2} aria-hidden="true" />
-                </Toast.Close>
-              </Toast.Content>
-            </Toast.Root>
-          ))}
+          {manager.toasts.map((toast) => {
+            const tone = toastTone(toast.type);
+            const ToneIcon = toastIcons[tone];
+            return (
+              <Toast.Root key={toast.id} toast={toast} className={styles.toastRoot}>
+                <Toast.Content className={styles.toastContent}>
+                  <span className={styles.toastMark} data-tone={tone}>
+                    <ToneIcon size={18} stroke={2.5} aria-hidden="true" />
+                  </span>
+                  <div className={styles.toastText}>
+                    <Toast.Title className={styles.toastTitle} />
+                    <Toast.Description className={styles.toastDescription} />
+                  </div>
+                  <Toast.Close className={styles.toastClose} aria-label="關閉通知">
+                    <IconX size={19} stroke={2} aria-hidden="true" />
+                  </Toast.Close>
+                </Toast.Content>
+              </Toast.Root>
+            );
+          })}
         </Toast.Viewport>
       </Toast.Portal>
     </ToastContext.Provider>

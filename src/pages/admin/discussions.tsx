@@ -1,6 +1,7 @@
 import Head from 'next/head';
 import { useState } from 'react';
 import { IconMessageCircle, IconTrash } from '@tabler/icons-react';
+import { RichText } from '@/components/rich-text';
 import { Button, ConfirmDialog } from '@/components/ui/ui';
 import { formatDateTime } from '@/lib/study';
 import { useAppState } from '@/state/app-state';
@@ -56,7 +57,7 @@ export default function DiscussionAdminPage() {
             <header><strong>{state.discussionPosts.length} 則留言</strong><Button onClick={() => setAuthorized(false)}>鎖定後台</Button></header>
             {state.discussionPosts.length ? state.discussionPosts.map((post) => (
               <article key={post.id}>
-                <div><span>{post.questionId}・{formatDateTime(post.createdAt)}</span><p>{post.content || `圖片留言 ${post.images.length} 張`}</p></div>
+                <div><span>{post.questionId}・{formatDateTime(post.createdAt)}</span><p>{post.content ? <RichText>{post.content}</RichText> : `圖片留言 ${post.images.length} 張`}</p></div>
                 <ConfirmDialog
                   trigger={<Button variant="danger"><IconTrash size={16} aria-hidden="true" />刪除留言</Button>}
                   title="刪除這則留言？"
@@ -66,7 +67,7 @@ export default function DiscussionAdminPage() {
                 />
                 {post.replies.map((reply) => (
                   <div className={styles.reply} key={reply.id}>
-                    <span>回覆・{formatDateTime(reply.createdAt)}</span><p>{reply.content}</p>
+                    <span>回覆・{formatDateTime(reply.createdAt)}</span><p><RichText>{reply.content}</RichText></p>
                     <Button variant="danger" onClick={() => dispatch({ type: 'delete-discussion-reply', postId: post.id, replyId: reply.id })}>刪除回覆</Button>
                   </div>
                 ))}

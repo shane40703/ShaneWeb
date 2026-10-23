@@ -216,7 +216,7 @@ export function HistoryPage({
     reportPersistence('practice-session', saved);
     // The practice page reads the set back from storage, so without it there is nothing to open.
     if (saved !== 'saved') {
-      notify('瀏覽器無法儲存練習進度，暫時無法開始這組題目。');
+      notify('瀏覽器無法儲存練習進度，暫時無法開始這組題目。', undefined, 'error');
       return;
     }
     void router.push(practiceQuestionHref(0));

@@ -1,11 +1,12 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { Toast } from '@base-ui/react/toast';
 import { useEffect, useRef } from 'react';
-import { Button, ToastProvider, useToast } from '@/components/ui/ui';
+import { Button, ToastProvider, useToast, type ToastTone } from '@/components/ui/ui';
 
 interface ToastMessage {
   title: string;
   description?: string;
+  tone?: ToastTone;
 }
 
 /** 網站實際會跳出的通知（notes-page、exams-page、history-page 的 notify）。 */
@@ -13,8 +14,13 @@ const siteToasts: ToastMessage[] = [
   { title: '筆記已儲存' },
   { title: '已加入我的筆記', description: '文字與圖片已保存到這一題。' },
   { title: '投稿完成', description: '內容已保存在目前瀏覽器。' },
-  { title: '無法貼上圖片', description: '僅接受 2 MB 以下圖片，每題最多 4 張。' },
-  { title: '瀏覽器無法儲存練習進度，暫時無法開始這組題目。' },
+  { title: '尚無可分享的筆記', tone: 'info' },
+  {
+    title: '無法貼上圖片',
+    description: '僅接受 2 MB 以下圖片，每題最多 4 張。',
+    tone: 'error',
+  },
+  { title: '瀏覽器無法儲存練習進度，暫時無法開始這組題目。', tone: 'error' },
 ];
 
 /**
@@ -27,9 +33,14 @@ function ToastButtons({ keepOpen = false }: { keepOpen?: boolean }) {
   const manager = Toast.useToastManager();
   function show(toast: ToastMessage) {
     if (keepOpen) {
-      manager.add({ title: toast.title, description: toast.description, timeout: 0 });
+      manager.add({
+        title: toast.title,
+        description: toast.description,
+        type: toast.tone,
+        timeout: 0,
+      });
     } else {
-      notify(toast.title, toast.description);
+      notify(toast.title, toast.description, toast.tone);
     }
   }
   const shownInitialToast = useRef(false);
@@ -65,8 +76,9 @@ const buttonModes = {
  * ToastProvider 裡（children），按鈕上的文字就是通知標題。
  *
  * 一開始跳出「已加入我的筆記」（標題加說明文字）。畫面上可以操作看到：
- * - 「筆記已儲存」只有標題；「已加入我的筆記」「投稿完成」有說明文字；「無法貼上圖片」是
- *   操作失敗的原因（同樣是綠色勾勾）；最後一個是會換行的長標題。
+ * - 「筆記已儲存」只有標題；「已加入我的筆記」「投稿完成」有說明文字（綠色勾勾）；
+ *   「尚無可分享的筆記」是提醒（藍色 i）；「無法貼上圖片」與最後一個會換行的長標題是操作
+ *   失敗（紅色驚嘆號）。
  * - 連按幾個：通知疊在一起，後面的縮小、往上露出一點；滑鼠移上去展開成一列（最多三則）。
  * - 按通知右上角的叉叉關閉。
  *

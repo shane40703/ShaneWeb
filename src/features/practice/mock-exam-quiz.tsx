@@ -103,7 +103,9 @@ export function MockExamQuiz({
         ) : status === 'missing' || !question ? (
           <div className={styles.loading} role="alert">
             <IconAlertTriangle size={26} aria-hidden="true" />
-            <span>找不到這一題的資料，可以跳到其他題目或直接交卷。</span>
+            <span>
+              找不到這一題的資料，請重新整理頁面再試。可以先作答其他題目，整份試卷的題目都能顯示後才能交卷。
+            </span>
             {!isLast ? <Button onClick={() => onGoTo(index + 1)}>下一題</Button> : null}
           </div>
         ) : (

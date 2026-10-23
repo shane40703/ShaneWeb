@@ -44,8 +44,9 @@
 .post > header { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .post time { color: var(--muted); font-size: 10px; }
 .post > p { margin: 15px 0; line-height: 1.75; white-space: pre-wrap; }
-.postActions { display: flex; gap: 6px; }
-.postActions button { min-height: 34px; padding-inline: 8px; font-size: 12px; }
+.postActions { display: flex; flex-wrap: wrap; gap: 6px; }
+.postActions button { min-height: 34px; padding-inline: 8px; font-size: 12px; white-space: nowrap; }
+.postActions button[aria-pressed='true'] { color: var(--danger); }
 
 .replies { margin: 12px 0; padding-left: 13px; display: grid; gap: 8px; border-left: 2px solid var(--line-strong); }
 .replies > div { padding: 10px; border-radius: 10px; background: var(--surface); }

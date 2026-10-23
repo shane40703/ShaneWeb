@@ -11,6 +11,7 @@
   background: var(--surface);
   font: inherit;
   font-weight: 750;
+  text-decoration: none;
   cursor: pointer;
   transition: border-color 150ms ease, background 150ms ease, color 150ms ease,
     transform 150ms ease;
@@ -309,6 +310,7 @@
       var(--toast-swipe-movement-y)
   );
   position: absolute;
+  z-index: calc(1000 - var(--toast-index));
   right: 0;
   bottom: 0;
   width: 100%;
@@ -365,6 +367,16 @@
   background: var(--success-soft);
   color: var(--success);
   font-weight: 900;
+}
+
+.toastMark[data-tone='error'] {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.toastMark[data-tone='info'] {
+  background: var(--primary-soft);
+  color: var(--primary-strong);
 }
 
 .toastText {

@@ -78,11 +78,6 @@
   display: none;
 }
 
-/* Buttons rendered as links (e.g. 管理者上傳) should not pick up the link underline. */
-.actions a {
-  text-decoration: none;
-}
-
 .lead {
   margin: 0;
   color: var(--muted);

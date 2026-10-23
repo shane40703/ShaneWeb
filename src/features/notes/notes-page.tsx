@@ -42,6 +42,7 @@ import {
   formatQuestionNumberLabel,
   getQuestionDisplayCategories,
 } from '@/lib/study';
+import { stripTextFormatting } from '@/lib/text-formatting';
 import type { ImageAttachment, Question, SubjectId } from '@/lib/types';
 import { useClientReady } from '@/lib/use-client-ready';
 import { useAppState } from '@/state/app-state';
@@ -364,7 +365,7 @@ export function NotesPage({
                 {visibleNoteEntries.map(({ id, subject, year, format, questionNumber, content, imageCount }) => (
                   <button key={id} onClick={() => void navigateTo(id)} aria-current={id === currentQuestion.id}>
                     <span>{year}・{getSubject(subject)?.shortName}・{formatQuestionNumberLabel({ format, questionNumber })}</span>
-                    <strong>{content || `圖片筆記 ${imageCount} 張`}</strong>
+                    <strong>{stripTextFormatting(content).trim() || `圖片筆記 ${imageCount} 張`}</strong>
                   </button>
                 ))}
               </div>
@@ -411,7 +412,7 @@ function NoteEditor({
     if (sharing) return;
     const trimmed = content.trim();
     if (!trimmed && !images.length) {
-      notify('尚無可分享的筆記');
+      notify('尚無可分享的筆記', undefined, 'info');
       return;
     }
     dispatch({ type: 'save-note', questionId: question.id, content, images });
@@ -425,11 +426,13 @@ function NoteEditor({
             ? '文字與圖片已同步共享。'
             : '文字已共享；圖片僅保存在本機筆記。'
           : undefined,
+        discussion.enabled && images.length && !result.imagesShared ? 'info' : 'success',
       );
     } catch (reason) {
       notify(
         '分享失敗',
         reason instanceof Error ? reason.message : '請稍後再試。',
+        'error',
       );
     } finally {
       setSharing(false);
@@ -498,9 +501,11 @@ function NoteEditor({
               event.preventDefault();
               void appendImageFiles(images, files).then((result) => {
                 onChange({ content, images: result.images });
+                const pasted = result.images.length > images.length;
                 notify(
-                  result.images.length > images.length ? '已貼上筆記圖片' : '無法貼上圖片',
+                  pasted ? '已貼上筆記圖片' : '無法貼上圖片',
                   result.error || undefined,
+                  pasted ? (result.error ? 'info' : 'success') : 'error',
                 );
               });
             }}

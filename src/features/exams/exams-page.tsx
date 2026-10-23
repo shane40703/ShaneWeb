@@ -5,6 +5,7 @@ import {
   IconArrowRight,
   IconAlertCircle,
   IconHeart,
+  IconHeartFilled,
   IconHelpCircle,
   IconLoader2,
   IconMessageCircle,
@@ -235,7 +236,7 @@ export function ExamsPage({
         shared.enabled ? '所有使用者現在都能看到這則內容。' : '內容已保存在目前瀏覽器。',
       );
     } catch (reason) {
-      notify('投稿失敗', reason instanceof Error ? reason.message : '請稍後再試。');
+      notify('投稿失敗', reason instanceof Error ? reason.message : '請稍後再試。', 'error');
     }
   }
 
@@ -266,7 +267,7 @@ export function ExamsPage({
       await shared.addReply(postId, content);
       setReplyDrafts((current) => ({ ...current, [postId]: '' }));
     } catch (reason) {
-      notify('回覆失敗', reason instanceof Error ? reason.message : '請稍後再試。');
+      notify('回覆失敗', reason instanceof Error ? reason.message : '請稍後再試。', 'error');
     }
   }
 
@@ -274,8 +275,14 @@ export function ExamsPage({
     try {
       await action();
     } catch (reason) {
-      notify(title, reason instanceof Error ? reason.message : '請稍後再試。');
+      notify(title, reason instanceof Error ? reason.message : '請稍後再試。', 'error');
     }
+  }
+
+  function isLiked(post: { id: string; likedByCurrentUser?: boolean }) {
+    return shared.enabled
+      ? Boolean(post.likedByCurrentUser)
+      : state.likedDiscussionPostIds.includes(post.id);
   }
 
   async function saveEditedPost(postId: string) {
@@ -285,7 +292,7 @@ export function ExamsPage({
       setEditingContent('');
       notify('投稿已更新');
     } catch (reason) {
-      notify('編輯失敗', reason instanceof Error ? reason.message : '請稍後再試。');
+      notify('編輯失敗', reason instanceof Error ? reason.message : '請稍後再試。', 'error');
     }
   }
 
@@ -445,25 +452,21 @@ export function ExamsPage({
                     <div className={styles.postActions}>
                       <Button
                         variant="ghost"
-                        aria-pressed={
-                          shared.enabled
-                            ? Boolean(post.likedByCurrentUser)
-                            : state.likedDiscussionPostIds.includes(post.id)
-                        }
+                        aria-pressed={isLiked(post)}
                         onClick={() =>
                           void runPostAction(
                             () =>
-                              shared.toggleLike(
-                                post.id,
-                                shared.enabled
-                                  ? Boolean(post.likedByCurrentUser)
-                                  : state.likedDiscussionPostIds.includes(post.id),
-                              ),
+                              shared.toggleLike(post.id, isLiked(post)),
                             '無法更新按讚',
                           )
                         }
                       >
-                        <IconHeart size={17} stroke={2} aria-hidden="true" /> 讚{' '}
+                        {isLiked(post) ? (
+                          <IconHeartFilled size={17} aria-hidden="true" />
+                        ) : (
+                          <IconHeart size={17} stroke={2} aria-hidden="true" />
+                        )}{' '}
+                        讚{' '}
                         {post.likes}
                       </Button>
                       <Button variant="ghost" onClick={() => savePostToNote(post)}>

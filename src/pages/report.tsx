@@ -57,7 +57,7 @@ export default function ReportPage() {
       setDescription('');
       notify('問題已回報', sharedReportsEnabled ? '回報已送至雲端，後端工程師可統一查看。' : '回報已保存在目前瀏覽器。');
     } catch (reason) {
-      notify('回報失敗', reason instanceof Error ? reason.message : '請稍後再試。');
+      notify('回報失敗', reason instanceof Error ? reason.message : '請稍後再試。', 'error');
     }
   }
 

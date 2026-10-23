@@ -64,3 +64,16 @@ export function toggleBoldFormatting(
 ): TextFormattingResult {
   return toggleTextFormatting(value, selectionStart, selectionEnd, 'bold');
 }
+
+// Same tokens, in the same order, as RichText: links first, so their underscores stay.
+const formattingToken =
+  /(https?:\/\/[^\s<]+)|\*\*([^*\n]+)\*\*|!!([^!\n]+)!!|_([^_\n]+)_|\^([^^\n]+)\^|~([^~\n]+)~/g;
+
+/** The text RichText would show, without its formatting: for one-line previews. */
+export function stripTextFormatting(value: string): string {
+  return value.replace(
+    formattingToken,
+    (_match, link: string | undefined, ...inner) =>
+      link ?? stripTextFormatting(inner.slice(0, 5).find((part) => part !== undefined)),
+  );
+}

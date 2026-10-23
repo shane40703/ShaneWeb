@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { toggleBoldFormatting, toggleTextFormatting } from '@/lib/text-formatting';
+import {
+  stripTextFormatting,
+  toggleBoldFormatting,
+  toggleTextFormatting,
+} from '@/lib/text-formatting';
 
 describe('toggleBoldFormatting', () => {
   it('adds bold markers around selected text', () => {
@@ -38,5 +42,18 @@ describe('toggleTextFormatting', () => {
     expect(added.value).toBe(marked);
     expect(toggleTextFormatting(added.value, added.selectionStart, added.selectionEnd, format).value)
       .toBe('文字');
+  });
+});
+
+describe('stripTextFormatting', () => {
+  it('keeps the text and drops every formatting marker, nested ones included', () => {
+    expect(stripTextFormatting('**建築法第 5 條**：集合住宅要 _6 層以上_，!!5 層樓**不**算!!。m^2^ H~2~O'))
+      .toBe('建築法第 5 條：集合住宅要 6 層以上，5 層樓不算。m2 H2O');
+  });
+
+  it('leaves links and unmatched markers as they are', () => {
+    expect(stripTextFormatting('見 https://law.moj.gov.tw/a_b_c 與 2*3')).toBe(
+      '見 https://law.moj.gov.tw/a_b_c 與 2*3',
+    );
   });
 });
