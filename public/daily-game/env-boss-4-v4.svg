@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" shape-rendering="crispEdges">
-  <title>回聲音波獸・少色像素造型</title>
-  <path d="M11 7H23V10H26V23H23V27H19V25H13V28H9V25H7V22H5V12H7V10H11Z" fill="#ac9bb7" stroke="#253344" stroke-width="2" stroke-linejoin="miter"/>
-  <path d="M2 12v9M29 10v13M22 11v5" fill="none" stroke="#857396" stroke-width="2"/>
-  <path d="M10 14h3v4h-3ZM16 14h3v4h-3Z" fill="#253344"/>
-  <path d="M10 14h1v1h-1ZM16 14h1v1h-1Z" fill="#f4ecd8"/>
-</svg>

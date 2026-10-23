@@ -419,7 +419,7 @@ function NoteEditor({
     try {
       const result = await discussion.publish('explanation', content, images);
       notify(
-        '已分享至詳解與討論',
+        '已分享到歷屆試題（新版）',
         discussion.enabled && images.length
           ? result.imagesShared
             ? '文字與圖片已同步共享。'
@@ -548,7 +548,7 @@ function NoteEditor({
             />
           ) : null}
           <Button disabled={sharing} onClick={() => void shareNote()}>
-            {sharing ? '正在分享…' : '分享至詳解與討論'}
+            {sharing ? '正在分享…' : '分享到歷屆試題（新版）'}
           </Button>
           {editing ? (
             <Button variant="primary" onClick={saveNote}>儲存筆記</Button>

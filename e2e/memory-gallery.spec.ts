@@ -20,30 +20,29 @@ async function routeImages(page: Page) {
   }
   return image;
 }
+/** Opens the gallery from the 統計分析（新版） switcher, so its page data arrives as a fetch. */
 async function enterGallery(page: Page) {
-  await page.goto('/');
-  const nav = page.getByRole('navigation', { name: '主要功能', exact: true });
-  // The phone drawer button can render before hydration, so retry until it opens.
-  await expect(async () => {
-    if (!(await nav.isVisible())) await page.getByRole('button', { name: '開啟選單' }).click({ timeout: 1000 });
-    await expect(nav).toBeVisible({ timeout: 1000 });
-  }).toPass();
-  await page.getByRole('button', { name: '歷屆試題資料集成', exact: true }).click();
-  await page.getByRole('link', { name: '速記圖庫', exact: true }).click();
-  await expect(page.getByRole('dialog', { name: '主要功能', exact: true })).toHaveCount(0);
+  await page.goto('/resources');
+  await page.getByRole('navigation', { name: '統計分析頁面' }).getByRole('link', { name: '速記圖庫', exact: true }).click();
+  await expect(page).toHaveURL(/\/resources\/memory-gallery$/);
 }
 async function enterPopulatedGallery(page: Page) {
   await routeImages(page);
-  await page.route('**/_next/data/**/memory-gallery.json*', route => route.fulfill({ json: { pageProps: { items }, __N_SSG: true } }));
+  // Each subject is its own page: /resources/memory-gallery is 法規, the others add the subject.
+  await page.route('**/_next/data/**/resources/memory-gallery**', route => {
+    const category = /memory-gallery\/(\w+)\.json/.exec(route.request().url())?.[1] ?? 'law';
+    return route.fulfill({ json: { pageProps: { items, category }, __N_SSG: true } });
+  });
   await enterGallery(page);
   return page.getByRole('region', { name: '速記圖庫', exact: true });
 }
 
-test('gallery is publicly accessible from navigation without exposing an upload form', async ({ page }, testInfo) => {
+test('gallery is publicly accessible from 統計分析（新版） without exposing an upload form', async ({ page }, testInfo) => {
   await enterGallery(page);
   const gallery = page.getByRole('region', { name: '速記圖庫', exact: true });
   await expect(gallery.getByRole('group', { name: '圖片分類' })).toBeVisible();
-  await expect(gallery.getByRole('link', { name: '管理者上傳' })).toBeVisible();
+  // The upload link only appears on a local dev server, beside the page title.
+  await expect(page.getByRole('link', { name: '管理者上傳' })).toBeVisible();
   await expect(gallery.locator('input[type=file]')).toHaveCount(0);
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(page.viewportSize()!.width);
   await page.screenshot({ path: testInfo.outputPath('gallery-empty.png'), fullPage: true });
@@ -52,19 +51,22 @@ test('gallery is publicly accessible from navigation without exposing an upload 
 test('public gallery filters, searches and enlarges images on desktop and mobile', async ({ page }, testInfo) => {
   const gallery = await enterPopulatedGallery(page);
   const categories = gallery.getByRole('group', { name: '圖片分類' });
-  await expect(categories.getByRole('button')).toHaveCount(4);
-  await expect(categories.getByRole('button', { name: /^全部/ })).toHaveCount(0);
-  await expect(categories.getByRole('button', { name: /^法規/ })).toHaveAttribute('aria-pressed', 'true');
+  await expect(categories.getByRole('link')).toHaveCount(4);
+  await expect(categories.getByRole('link', { name: /^全部/ })).toHaveCount(0);
+  await expect(categories.getByRole('link', { name: /^法規/ })).toHaveAttribute('aria-current', 'page');
   await expect(gallery.getByRole('article')).toHaveCount(1);
   await page.screenshot({ path: testInfo.outputPath('gallery-populated.png'), fullPage: true });
-  await gallery.getByRole('button', { name: /^構造/ }).click();
+  // Each subject is its own page, so a choice survives a reload or a shared link.
+  await categories.getByRole('link', { name: /^構造/ }).click();
+  await expect(page).toHaveURL(/\/resources\/memory-gallery\/construction$/);
   await expect(gallery.getByRole('article')).toHaveCount(1);
   await expect(gallery.getByRole('heading', { name: '構造整理測試圖' })).toBeVisible();
-  await gallery.getByRole('button', { name: /^結構/ }).click();
+  await categories.getByRole('link', { name: /^結構/ }).click();
   await expect(gallery.getByRole('heading', { name: '結構整理測試圖' })).toBeVisible();
   await gallery.getByRole('searchbox').fill('空氣線圖');
   await expect(gallery.getByRole('article')).toHaveCount(0);
-  await gallery.getByRole('button', { name: /^環控/ }).click();
+  await categories.getByRole('link', { name: /^環控/ }).click();
+  await gallery.getByRole('searchbox').fill('空氣線圖');
   await expect(gallery.getByRole('article')).toHaveCount(1);
   await gallery.getByRole('button', { name: '放大圖片 環控整理測試圖' }).click();
   const dialog = page.getByRole('dialog', { name: '放大檢視 環控整理測試圖' });
@@ -77,7 +79,8 @@ test('public gallery filters, searches and enlarges images on desktop and mobile
 test('portrait and landscape previews fill the card width without padding or cropping', async ({ page }, testInfo) => {
   const gallery = await enterPopulatedGallery(page);
   for (const item of [items[0], items[3]]) {
-    await gallery.getByRole('button', { name: item.category === 'law' ? /^法規/ : /^結構/ }).click();
+    await gallery.getByRole('group', { name: '圖片分類' }).getByRole('link', { name: item.category === 'law' ? /^法規/ : /^結構/ }).click();
+    await expect(gallery.getByRole('heading', { name: item.title })).toBeVisible();
     const image = gallery.getByRole('img', { name: item.title, exact: true });
     await expect(image).toHaveAttribute('src', item.src);
     await expect.poll(() => image.evaluate(node => (node as HTMLImageElement).naturalWidth)).toBe(item.width);

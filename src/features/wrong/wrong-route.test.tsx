@@ -15,9 +15,16 @@ vi.mock('@/state/app-state', () => ({
     hydrated: true,
     state: {
       attempts: [
-        { subject: 'law', year: 114 },
-        { subject: 'law', year: 112 },
-        { subject: 'env', year: 113 },
+        { subject: 'law', year: 114, answers: { 'law-114-01': 0 } },
+        { subject: 'law', year: 112, answers: { 'law-112-03': 1 } },
+        { subject: 'env', year: 113, answers: { 'env-113-02': 0 } },
+        // 選擇題練習 spans years; only its answered questions count.
+        {
+          mode: 'practice',
+          subject: 'law',
+          year: null,
+          answers: { 'law-105-07': 2, 'law-114-09': 0 },
+        },
       ],
     },
   }),
@@ -41,13 +48,13 @@ describe('wrong route question loading', () => {
     }));
   });
 
-  it('loads only subject years found in completed attempts', () => {
+  it('loads only the subject years of answered questions', () => {
     render(<WrongRoute />);
 
     expect(mocks.useSubjectQuestions).toHaveBeenNthCalledWith(
       1,
       ['law'],
-      [114, 112],
+      [114, 112, 105],
     );
     expect(mocks.useSubjectQuestions).toHaveBeenNthCalledWith(
       2,

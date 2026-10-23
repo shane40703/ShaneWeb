@@ -17,7 +17,6 @@ function question(
     tags: [],
     relatedLaws,
     text: id,
-    path: `/questions/${subject}/114/01`,
   };
 }
 

@@ -16,6 +16,13 @@ import {
 } from '@/lib/study';
 import { loadAllQuestions } from '@/server/question-bank.server';
 import { AppStateProvider } from '@/state/app-state';
+import {
+  PRACTICE_SESSION_STORAGE_KEY,
+  type PracticeSession,
+} from '@/features/practice/practice-session';
+
+const router = vi.hoisted(() => ({ push: vi.fn() }));
+vi.mock('next/router', () => ({ useRouter: () => router }));
 
 const questions = await loadAllQuestions();
 const paperQuestions = questions
@@ -215,7 +222,7 @@ describe('HistoryPage', () => {
     ).not.toBeInTheDocument();
     expect(
       screen.getByRole('button', { name: /繼續作答 113 年/ }),
-    ).toHaveAttribute('href', '/papers?subject=law&year=113');
+    ).toHaveAttribute('href', '/practice/mock-exam?subject=law&year=113');
   });
 
   it('continues with unattempted catalog years even when only attempted banks are loaded', async () => {
@@ -249,7 +256,7 @@ describe('HistoryPage', () => {
 
     expect(
       await screen.findByRole('button', { name: /繼續作答 104 年/ }),
-    ).toHaveAttribute('href', '/papers?subject=law&year=104');
+    ).toHaveAttribute('href', '/practice/mock-exam?subject=law&year=104');
     expect(screen.queryByText('已完成所有年度')).not.toBeInTheDocument();
   });
 
@@ -279,7 +286,7 @@ describe('HistoryPage', () => {
       elapsedSeconds: 30,
     });
     const mixedAttempt = createAttempt({
-      mode: 'random',
+      mode: 'practice',
       source: [...paperQuestions, ...environmentQuestions],
       answers: Object.fromEntries(
         [...paperQuestions, ...environmentQuestions].map((question) => [
@@ -505,5 +512,201 @@ describe('HistoryPage', () => {
     expect(
       within(environmentGroup!).getByText('尚有 1 題內容暫時無法顯示'),
     ).toBeInTheDocument();
+  });
+
+  describe('records of the new practices', () => {
+    // A 選擇題練習 set across years, two answered (one right, one wrong) and one blank.
+    const practiceQuestions = [
+      ...questions.filter(
+        (question) =>
+          question.subject === 'law' &&
+          question.year === 105 &&
+          question.answerKey.kind === 'accepted',
+      ),
+    ]
+      .slice(0, 2)
+      .concat(
+        questions
+          .filter(
+            (question) =>
+              question.subject === 'law' &&
+              question.year === 112 &&
+              question.answerKey.kind === 'accepted',
+          )
+          .slice(0, 1),
+      );
+    const practiceAttempt = {
+      id: 'attempt-practice',
+      mode: 'practice' as const,
+      subject: 'law' as const,
+      year: null,
+      questionIds: practiceQuestions.map((question) => question.id),
+      answers: {
+        [practiceQuestions[0].id]: acceptedAnswer(practiceQuestions[0]),
+        [practiceQuestions[1].id]: wrongAnswer(practiceQuestions[1]),
+      },
+      startedAt: '2026-10-20T00:00:00.000Z',
+      submittedAt: '2026-10-20T00:10:00.000Z',
+      elapsedSeconds: 600,
+      correctCount: 1,
+      wrongCount: 1,
+      unansweredCount: 1,
+    };
+
+    function renderHistory(attempts: unknown[], bank = questions) {
+      const state = createDefaultState();
+      state.attempts = attempts as typeof state.attempts;
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      return render(
+        <ToastProvider>
+          <AppStateProvider>
+            <HistoryPage questions={bank} />
+          </AppStateProvider>
+        </ToastProvider>,
+      );
+    }
+
+    beforeEach(() => {
+      router.push.mockReset();
+    });
+
+    it('shows a 選擇題練習 record with the result page’s accuracy', async () => {
+      renderHistory([practiceAttempt]);
+
+      const group = await screen.findByLabelText('選擇題練習作答紀錄');
+      fireEvent.click(group.querySelector('summary')!);
+      const card = within(group)
+        .getByRole('heading', { name: '建築法規與實務・選擇題練習 3 題' })
+        .closest('article')!;
+      expect(within(card).getByText('選擇題練習')).toBeInTheDocument();
+      expect(within(card).getByText('105–112 年')).toBeInTheDocument();
+      expect(within(card).getByText('正確率 50%')).toBeInTheDocument();
+      expect(within(card).getByText('答對 1／2 題')).toBeInTheDocument();
+
+      fireEvent.click(within(card).getByRole('button', { name: /查看完整作答紀錄/ }));
+      expect(
+        within(card).getByText('選項依原試卷順序顯示，可能和作答時的順序不同。'),
+      ).toBeInTheDocument();
+      // A blank question is 未作答, never 答錯.
+      const review = within(card).getByRole('region', { name: '完整作答紀錄' });
+      expect(review.querySelectorAll('[data-result="wrong"]')).toHaveLength(1);
+      expect(review.querySelectorAll('[data-result="unanswered"]')).toHaveLength(1);
+    });
+
+    it('starts the same 選擇題練習 questions again, asking before replacing a set in progress', async () => {
+      const inProgress: PracticeSession = {
+        version: 1,
+        id: 'current',
+        subject: 'env',
+        rangeStart: 113,
+        rangeEnd: 114,
+        category: 'all',
+        questionIds: ['env-114-01'],
+        optionOrders: {},
+        answers: { 'env-114-01': { selected: 0, correct: true } },
+        drafts: {},
+        eliminated: {},
+        elapsedSeconds: {},
+        currentIndex: 0,
+      };
+      window.localStorage.setItem(PRACTICE_SESSION_STORAGE_KEY, JSON.stringify(inProgress));
+      const confirm = vi.spyOn(window, 'confirm').mockReturnValueOnce(false);
+      renderHistory([practiceAttempt]);
+      const group = await screen.findByLabelText('選擇題練習作答紀錄');
+      fireEvent.click(group.querySelector('summary')!);
+      const retry = within(group).getByRole('button', { name: '再做一次' });
+
+      fireEvent.click(retry);
+      expect(confirm).toHaveBeenCalledWith(
+        '目前的選擇題練習還沒交卷，要放棄並改練這組題目嗎？作答進度會清除。',
+      );
+      expect(router.push).not.toHaveBeenCalled();
+      expect(
+        JSON.parse(window.localStorage.getItem(PRACTICE_SESSION_STORAGE_KEY)!).id,
+      ).toBe('current');
+
+      confirm.mockReturnValueOnce(true);
+      fireEvent.click(retry);
+      expect(router.push).toHaveBeenCalledWith('/practice/quiz?q=1');
+      const session = JSON.parse(
+        window.localStorage.getItem(PRACTICE_SESSION_STORAGE_KEY)!,
+      ) as PracticeSession;
+      expect(session).toMatchObject({
+        subject: 'law',
+        rangeStart: 105,
+        rangeEnd: 112,
+        questionIds: practiceAttempt.questionIds,
+        answers: {},
+        currentIndex: 0,
+      });
+      expect(Object.keys(session.optionOrders)).toEqual(practiceAttempt.questionIds);
+      confirm.mockRestore();
+    });
+
+    it('stays put and says why when the browser cannot save the new set', async () => {
+      const setItem = Storage.prototype.setItem;
+      const spy = vi
+        .spyOn(Storage.prototype, 'setItem')
+        .mockImplementation(function (this: Storage, key: string, value: string) {
+          if (key === PRACTICE_SESSION_STORAGE_KEY) {
+            throw new DOMException('full', 'QuotaExceededError');
+          }
+          return setItem.call(this, key, value);
+        });
+      renderHistory([practiceAttempt]);
+      const group = await screen.findByLabelText('選擇題練習作答紀錄');
+      fireEvent.click(group.querySelector('summary')!);
+      fireEvent.click(within(group).getByRole('button', { name: '再做一次' }));
+
+      expect(router.push).not.toHaveBeenCalled();
+      expect(
+        await screen.findByText('瀏覽器無法儲存練習進度，暫時無法開始這組題目。'),
+      ).toBeInTheDocument();
+      spy.mockRestore();
+    });
+
+    it('waits for the set’s questions before starting it again', async () => {
+      renderHistory([practiceAttempt], []);
+      const group = await screen.findByLabelText('選擇題練習作答紀錄');
+      fireEvent.click(group.querySelector('summary')!);
+
+      const retry = within(group).getByRole('button', { name: '再做一次' });
+      expect(retry).toBeDisabled();
+      expect(retry).toHaveAccessibleDescription('題目載入完成後才能再做一次');
+    });
+
+    it('opens the same paper in the mock exam for a 模擬考 record', async () => {
+      const paperAttempt = createAttempt({
+        mode: 'paper',
+        source: paperQuestions,
+        answers: {},
+        startedAt: '2026-07-25T00:00:00.000Z',
+        elapsedSeconds: 60,
+      });
+      renderHistory([paperAttempt]);
+      const group = await screen.findByLabelText('114 年作答紀錄');
+      fireEvent.click(group.querySelector('summary')!);
+
+      expect(within(group).getByText('歷屆試題模擬考')).toBeInTheDocument();
+      // Buttons rendered as links keep the button role.
+      expect(within(group).getByRole('button', { name: '再做一次' })).toHaveAttribute(
+        'href',
+        '/practice/mock-exam?subject=law&year=114',
+      );
+    });
+
+    it('offers both practices before the first record', async () => {
+      renderHistory([]);
+
+      expect(await screen.findByRole('heading', { name: '還沒有作答紀錄' })).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: '選擇題練習' })).toHaveAttribute(
+        'href',
+        '/practice/quiz',
+      );
+      expect(screen.getByRole('link', { name: '開始第一份試卷' })).toHaveAttribute(
+        'href',
+        '/practice/mock-exam',
+      );
+    });
   });
 });

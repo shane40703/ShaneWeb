@@ -98,15 +98,12 @@ describe('LawClozePage', () => {
     await waitFor(() => expect(parseClozeRoundProgress(window.localStorage.getItem(CLOZE_STORAGE_KEY))).toEqual({ total: 10, submitted: 1, correct: 1, revealed: 0, complete: false }));
   });
 
-  it('opens related past questions where the host page links them', async () => {
+  it('opens related past questions in 歷屆試題（新版）', async () => {
     const evidence = clozeBank.questions.find((q) => q.id === 'daylight')!.evidence[0];
     const name = `${evidence.year} 年・第 ${evidence.number} 題`;
-    const view = render(<LawClozePage />);
+    render(<LawClozePage />);
     fireEvent.click(await screen.findByRole('button', { name: '直接看答案' }));
-    expect(screen.getByRole('link', { name, hidden: true })).toHaveAttribute('href', `/questions/law/${evidence.year}/${String(evidence.number).padStart(2, '0')}`);
-    view.unmount();
-    render(<LawClozePage examQuestionHref={(item) => `/exams?question=${item.id}`} />);
-    expect(await screen.findByRole('link', { name, hidden: true })).toHaveAttribute('href', `/exams?question=${evidence.id}`);
+    expect(screen.getByRole('link', { name, hidden: true })).toHaveAttribute('href', `/exams?question=${evidence.id}`);
   });
 
   it('applies settings only on start and completes a short pool with a summary', async () => {

@@ -325,7 +325,7 @@ export function CategoryAdminPage({
                   </h2>
                 </div>
                 <Link
-                  href={`${selectedQuestion.path}?mode=single`}
+                  href={`/exams?question=${selectedQuestion.id}`}
                   target="_blank"
                   rel="noreferrer"
                 >

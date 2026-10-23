@@ -89,7 +89,51 @@ function cloudAttempt(data: unknown): QuizAttempt | null {
   if (!data || typeof data !== 'object') return null;
   const attempt = { ...(data as Record<string, unknown>) };
   delete attempt.syncedAt;
-  return isQuizAttempt(attempt) && attempt.mode === 'paper' ? attempt : null;
+  return isQuizAttempt(attempt) ? attempt : null;
+}
+
+/**
+ * What a batch of the attempts listener means for this device. `confirmed` holds the
+ * records the server has accepted; only those can be deleted from elsewhere. A write the
+ * server refused comes back as a removal when the SDK rolls it back, and this device's own
+ * pending write echoes back first, so neither changes what was confirmed.
+ */
+export function readAttemptChanges(
+  changes: readonly {
+    type: 'added' | 'modified' | 'removed';
+    id: string;
+    data: unknown;
+    pending: boolean;
+  }[],
+  confirmed: Set<string>,
+) {
+  const incoming: QuizAttempt[] = [];
+  const removed: string[] = [];
+  changes.forEach((change) => {
+    if (change.type === 'removed') {
+      if (confirmed.delete(change.id)) removed.push(change.id);
+      return;
+    }
+    const attempt = cloudAttempt(change.data);
+    if (!attempt) return;
+    if (!change.pending) confirmed.add(attempt.id);
+    incoming.push(attempt);
+  });
+  return { incoming, removed };
+}
+
+/** Uploads each record on its own: one the server refuses leaves the others synced. */
+export async function uploadEach<T extends { id: string }>(
+  items: readonly T[],
+  upload: (item: T) => Promise<unknown>,
+) {
+  const results = await Promise.allSettled(
+    items.map((item) => upload(item).then(() => item.id)),
+  );
+  return {
+    synced: results.flatMap((result) => (result.status === 'fulfilled' ? [result.value] : [])),
+    failed: results.some((result) => result.status === 'rejected'),
+  };
 }
 
 export function parseCloudNote(data: DocumentData): SyncedNote | null {
@@ -216,19 +260,18 @@ export function CloudSyncProvider({ children }: { children: ReactNode }) {
         }
         syncedDifficultSignature.current = JSON.stringify(difficultQuestionIds);
 
-        await Promise.all(
-          localAttempts.current.map((attempt) =>
-            setDoc(
-              doc(attempts, attempt.id),
-              { ...attempt, syncedAt: serverTimestamp() },
-              { merge: true },
-            ),
+        // One record the server refuses must not keep notes and 難題標記 from syncing;
+        // it stays unsynced and is offered again with the next change.
+        const uploads = await uploadEach(localAttempts.current, (attempt) =>
+          setDoc(
+            doc(attempts, attempt.id),
+            { ...attempt, syncedAt: serverTimestamp() },
+            { merge: true },
           ),
         );
         if (!active) return;
-        localAttempts.current.forEach((attempt) =>
-          syncedAttemptIds.current.add(attempt.id),
-        );
+        uploads.synced.forEach((attemptId) => syncedAttemptIds.current.add(attemptId));
+        const attemptUploadFailed = uploads.failed;
 
         const remoteNoteIds = new Set(
           remoteNotes.map((note) => note.questionId),
@@ -260,24 +303,28 @@ export function CloudSyncProvider({ children }: { children: ReactNode }) {
           );
         }
         setReadyUserId(user.uid);
-        setStatus('synced');
+        if (attemptUploadFailed) {
+          setError('部分作答紀錄暫時無法同步到雲端，已保存在本機。');
+          setStatus('error');
+        } else {
+          setStatus('synced');
+        }
 
         stopListening = onSnapshot(
           attempts,
           (nextSnapshot) => {
-            const incoming = nextSnapshot.docChanges().flatMap((change) => {
-              if (change.type === 'removed') {
-                syncedAttemptIds.current.delete(change.doc.id);
-                dispatch({
-                  type: 'remove-synced-attempt',
-                  attemptId: change.doc.id,
-                });
-                return [];
-              }
-              const attempt = cloudAttempt(change.doc.data());
-              if (attempt) syncedAttemptIds.current.add(attempt.id);
-              return attempt ? [attempt] : [];
-            });
+            const { incoming, removed } = readAttemptChanges(
+              nextSnapshot.docChanges().map((change) => ({
+                type: change.type,
+                id: change.doc.id,
+                data: change.doc.data(),
+                pending: change.doc.metadata.hasPendingWrites,
+              })),
+              syncedAttemptIds.current,
+            );
+            removed.forEach((attemptId) =>
+              dispatch({ type: 'remove-synced-attempt', attemptId }),
+            );
             if (incoming.length) dispatch({ type: 'merge-attempts', attempts: incoming });
             setStatus('synced');
           },

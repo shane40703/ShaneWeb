@@ -9,7 +9,7 @@ test('every question presents its complete article before submission with only r
   await page.addInitScript(({ key, value }) => {
     if (!localStorage.getItem(key)) localStorage.setItem(key, JSON.stringify(value));
   }, { key: CLOZE_STORAGE_KEY, value: session });
-  await page.goto('/law-cloze');
+  await page.goto('/practice/law-cloze');
   for (const id of session.order) {
     const q = clozeBank.questions.find((q) => q.id === id)!;
     const passage = page.getByLabel('填空完整條文', { exact: true });
@@ -51,7 +51,7 @@ test('four added statutes support answer-only reading and mixed scores across re
   await page.addInitScript(({ key, value }) => {
     if (!localStorage.getItem(key)) localStorage.setItem(key, JSON.stringify(value));
   }, { key: CLOZE_STORAGE_KEY, value: session });
-  await page.goto('/law-cloze');
+  await page.goto('/practice/law-cloze');
   for (const [index, id] of session.order.entries()) {
     const q = clozeBank.questions.find((q) => q.id === id)!;
     await expect(page.getByRole('heading', { name: q.title, exact: true })).toBeVisible();
@@ -88,7 +88,7 @@ test('four added statutes support answer-only reading and mixed scores across re
 });
 
 test('new-law selections disclose capped counts and only draw from that law', async ({ page }) => {
-  await page.goto('/law-cloze');
+  await page.goto('/practice/law-cloze');
   for (const lawId of ['building-act', 'architects-act', 'urban-planning-act', 'national-land-planning-act', 'condominium-act', 'nonurban-land-rules', 'procurement-act', 'construction-industry-act']) {
     await page.getByRole('combobox', { name: '法規', exact: true }).selectOption(lawId);
     await page.getByRole('combobox', { name: '每次測驗題數' }).selectOption('30');
@@ -109,7 +109,7 @@ test('law cloze preserves statute notation, shows full articles and saves progre
   await page.addInitScript(({ key, value }) => {
     if (!localStorage.getItem(key)) localStorage.setItem(key, JSON.stringify(value));
   }, { key: CLOZE_STORAGE_KEY, value: session });
-  await page.goto('/law-cloze');
+  await page.goto('/practice/law-cloze');
   const inputs = page.getByRole('textbox');
   await expect(inputs).toHaveCount(3);
   await expect(page.locator('[aria-label="填空完整條文"] input')).toHaveCount(3);
@@ -156,7 +156,7 @@ test('law cloze preserves statute notation, shows full articles and saves progre
 });
 
 test('law/count/category selections start a new round and disclose small pools', async ({ page }, testInfo) => {
-  await page.goto('/law-cloze');
+  await page.goto('/practice/law-cloze');
   await page.getByRole('combobox', { name: '法規', exact: true }).selectOption('accessibility');
   await page.getByRole('combobox', { name: '每次測驗題數' }).selectOption('30');
   await page.getByRole('button', { name: '開始新測驗' }).click();
@@ -179,7 +179,7 @@ test('repeated thresholds synchronize the same inline blank', async ({ page }) =
   const session = createClozeSession({ count: 5 });
   session.order = ['fire-area', ...session.order.filter((id) => id !== 'fire-area')].slice(0, 5);
   await page.addInitScript(({ key, value }) => localStorage.setItem(key, JSON.stringify(value)), { key: CLOZE_STORAGE_KEY, value: session });
-  await page.goto('/law-cloze');
+  await page.goto('/practice/law-cloze');
   const q = clozeBank.questions.find((q) => q.id === 'fire-area')!;
   for (const [i, blank] of q.blanks.entries()) {
     const fields = page.getByRole('textbox', { name: `第 ${i + 1} 空：${blank.label}`, exact: true });
@@ -200,7 +200,7 @@ test('bank expansion keeps the previous saved two-question underground round', a
   await page.addInitScript(({ key, value }) => {
     if (!localStorage.getItem(key)) localStorage.setItem(key, JSON.stringify(value));
   }, { key: CLOZE_STORAGE_KEY, value: session });
-  await page.goto('/law-cloze');
+  await page.goto('/practice/law-cloze');
   await expect(page.getByRole('heading', { name: '地下通道尺寸' })).toBeVisible();
   await expect(page.getByRole('status')).toHaveText('本題答對 3 / 3 空');
   await expect(page.getByRole('note')).toContainText('保留先前的 2 題順序、草稿與成績');
@@ -222,7 +222,7 @@ test('expanded construction topics support inline notation and exact red origina
   const session = createClozeSession({ lawId: 'design-construction', count: 5 });
   session.order = ['d-windowless-definition', 'd-shadow-height', 'd-slope-retaining', 'd-highrise-drift', 'd-detention'];
   await page.addInitScript(({ key, value }) => localStorage.setItem(key, JSON.stringify(value)), { key: CLOZE_STORAGE_KEY, value: session });
-  await page.goto('/law-cloze');
+  await page.goto('/practice/law-cloze');
   for (const id of session.order) {
     const q = clozeBank.questions.find((q) => q.id === id)!;
     await expect(page.getByRole('heading', { name: q.title, exact: true })).toBeVisible();

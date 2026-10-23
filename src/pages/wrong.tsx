@@ -1,30 +1,24 @@
 import Head from 'next/head';
 import { WrongPage } from '@/features/wrong/wrong-page';
 import { useSubjectQuestions } from '@/lib/question-bank-client';
-import { isSubjectId } from '@/lib/study';
+import { parseQuestionId, subjectsOfQuestionIds } from '@/lib/question-path';
 import type { SubjectId } from '@/lib/types';
 import { useAppState } from '@/state/app-state';
 
 export default function WrongRoute() {
   const { state, hydrated } = useAppState();
+  // Only answered questions can be wrong. 選擇題練習 records span many years, so the
+  // years come from the questions themselves rather than from the record.
+  const answeredIds = state.attempts.flatMap((attempt) => Object.keys(attempt.answers));
   const yearsFor = (subject: SubjectId) => [
     ...new Set(
-      state.attempts.flatMap((attempt) =>
-        attempt.subject === subject && typeof attempt.year === 'number'
-          ? [attempt.year]
-          : [],
-      ),
+      answeredIds.flatMap((questionId) => {
+        const parsed = parseQuestionId(questionId);
+        return parsed?.subject === subject ? [parsed.year] : [];
+      }),
     ),
   ];
-  const attemptedSubjects = hydrated
-    ? [
-        ...new Set(
-          state.attempts.flatMap((attempt) =>
-            isSubjectId(attempt.subject) ? [attempt.subject] : [],
-          ),
-        ),
-      ]
-    : [];
+  const attemptedSubjects = hydrated ? subjectsOfQuestionIds(answeredIds) : [];
   const lawYears = yearsFor('law');
   const environmentYears = yearsFor('env');
   const constructionYears = yearsFor('construction');

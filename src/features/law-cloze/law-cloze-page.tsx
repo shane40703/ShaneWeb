@@ -10,10 +10,10 @@ import { CLOZE_COUNTS, CLOZE_STORAGE_KEY, clozeBank, getClozeCategories, getCloz
 import styles from './law-cloze-page.module.css';
 
 type ClozeEvidence = ClozeQuestion['evidence'][number];
-const questionPageHref = (item: ClozeEvidence) => `/questions/law/${item.year}/${String(item.number).padStart(2, '0')}`;
+// Related past questions open in 歷屆試題（新版）, which shows the question with its answer.
+const examQuestionHref = (item: ClozeEvidence) => `/exams?question=${item.id}`;
 
-/** `examQuestionHref` decides where the related past questions open; their own pages by default. */
-export function LawClozePage({ examQuestionHref = questionPageHref }: { examQuestionHref?: (item: ClozeEvidence) => string } = {}) {
+export function LawClozePage() {
   const ready = useClientReady();
   const { reportPersistence } = useAppState();
   const [session, setSession] = useState<ClozeSession | null>(null);

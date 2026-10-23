@@ -15,7 +15,7 @@ import {
   parseStoredQuizProgress,
   quizProgressReducer,
   type QuizProgressAction,
-} from '@/features/quiz/quiz-state';
+} from './mock-exam-progress';
 import { useSubjectQuestions } from '@/lib/question-bank-client';
 import { parseQuestionId } from '@/lib/question-path';
 import { isQuestionCorrect, isSubjectId, parseYear } from '@/lib/study';

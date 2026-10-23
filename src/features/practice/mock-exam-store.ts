@@ -3,7 +3,7 @@ import {
   parseStoredQuizProgress,
   QUIZ_PROGRESS_STORAGE_KEY,
   type QuizProgressByQuestion,
-} from '@/features/quiz/quiz-state';
+} from './mock-exam-progress';
 import {
   readStoredValue,
   writeStoredValue,

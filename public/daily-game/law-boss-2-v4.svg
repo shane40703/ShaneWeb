@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" shape-rendering="crispEdges">
-  <title>公寓管家獸・少色像素造型</title>
-  <path d="M7 5H19V7H22V19H19V21H16V25H23V28H12V21H7V19H4V8H7Z" fill="#c1a35b" stroke="#253344" stroke-width="2" stroke-linejoin="miter"/>
-  <path d="M9 8h7v4H9Z" fill="#f4ecd8"/><path d="M18 25v3" stroke="#253344" stroke-width="2"/>
-  <path d="M8 15h3v4h-3ZM14 15h3v4h-3Z" fill="#253344"/>
-  <path d="M8 15h1v1h-1ZM14 15h1v1h-1Z" fill="#f4ecd8"/>
-</svg>

@@ -10,7 +10,7 @@ import {
 import { IconLoader2 } from '@tabler/icons-react';
 import { useSubjectQuestions } from '@/lib/question-bank-client';
 import { readStoredValue, writeStoredValue } from '@/lib/storage';
-import { isSubjectId } from '@/lib/study';
+import { isSubjectId, parseYear } from '@/lib/study';
 import type { SubjectId } from '@/lib/types';
 import { useClientReady } from '@/lib/use-client-ready';
 import { useAppState } from '@/state/app-state';
@@ -19,6 +19,7 @@ import { PracticeResultView } from './practice-result';
 import {
   addPracticeTime,
   confirmPracticeAnswer,
+  createPracticeAttempt,
   createPracticePaper,
   createPracticeResult,
   createPracticeSession,
@@ -86,7 +87,7 @@ function ignoreRepeatClick(event: MouseEvent) {
 export function PracticePage() {
   const router = useRouter();
   const ready = useClientReady();
-  const { reportPersistence } = useAppState();
+  const { dispatch, reportPersistence } = useAppState();
   const [restored, setRestored] = useState(false);
   const [session, setSession] = useState<PracticeSession | null>(null);
   const [result, setResult] = useState<PracticeResult | null>(null);
@@ -323,14 +324,27 @@ export function PracticePage() {
     // Our own route changes already match the state; routeTo tags them.
     if (ownNavigations.current > 0) return;
     const current = sessionRef.current;
-    const { q, view, subject: chosen } = router.query;
+    const { q, view, subject: chosen, category, from, to } = router.query;
     if (!current) {
       // No set, nothing to rewind. Never count here: an own replace whose
       // promise settled before this effect ran also arrives untagged.
       depth.current = 0;
-      // The hub's subject shortcuts open the setup with that subject chosen.
-      if (isSubjectId(chosen)) void Promise.resolve().then(() => setSubject(chosen));
-      if (q !== undefined || view !== undefined || chosen !== undefined) {
+      // The hub's subject shortcuts open the setup with that subject chosen, and
+      // 考題分析 adds its year range and category.
+      const setupLink = [category, from, to].some((value) => value !== undefined);
+      if (isSubjectId(chosen) || setupLink) {
+        void Promise.resolve().then(() => {
+          if (isSubjectId(chosen)) setSubject(chosen);
+          if (!setupLink) return;
+          setSettings((latest) => ({
+            ...latest,
+            category: typeof category === 'string' && category ? category : 'all',
+            fromYear: parseYear(from) ?? undefined,
+            toYear: parseYear(to) ?? undefined,
+          }));
+        });
+      }
+      if (q !== undefined || view !== undefined || chosen !== undefined || setupLink) {
         void routeTo('replace', undefined, 0);
       } else {
         writeEntryTag(null);
@@ -510,6 +524,9 @@ export function PracticePage() {
     ) {
       return;
     }
+    // Saved once, here: 已作答紀錄 and 常錯題目 keep every submission with an answer.
+    const record = createPracticeAttempt(timed, questionById);
+    if (record) dispatch({ type: 'save-attempt', ...record });
     setResult(createPracticeResult(timed));
     setResultShown(true);
     commitSession(resetPracticeAnswers(timed));

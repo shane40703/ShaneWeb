@@ -15,7 +15,6 @@ const questions = [
     options: ['選項 A', '選項 B', '選項 C', '選項 D'],
     answerKey: { kind: 'accepted' as const, options: [1] },
     explanation: '官方題目詳解',
-    path: '/questions/law/114/01',
   },
   {
     id: 'law-114-02',
@@ -24,7 +23,6 @@ const questions = [
     text: '第二題',
     options: ['選項 A', '選項 B', '選項 C', '選項 D'],
     answerKey: { kind: 'accepted' as const, options: [2] },
-    path: '/questions/law/114/02',
   },
 ];
 
@@ -65,12 +63,12 @@ describe('AttemptReview', () => {
     vi.stubEnv('NEXT_PUBLIC_FIREBASE_APP_ID', '');
   });
 
-  it('counts repeated wrong answers only through the selected same-year attempt', () => {
+  it('counts repeated wrong answers through the selected attempt, mock exams and practice alike', () => {
     const current = { ...attempt, id: 'attempt-2', submittedAt: '2026-07-26T00:01:00.000Z' };
     const later = { ...attempt, id: 'attempt-3', submittedAt: '2026-07-27T00:01:00.000Z' };
-    const otherYear = { ...attempt, id: 'attempt-other-year', year: 113 };
-    expect(countWrongAttemptsThrough(current, questions[1], [attempt, current, later, otherYear]))
-      .toBe(2);
+    const practice = { ...attempt, id: 'attempt-practice', mode: 'practice' as const, year: null };
+    expect(countWrongAttemptsThrough(current, questions[1], [attempt, current, later, practice]))
+      .toBe(3);
   });
 
   it('renders every answer and its complete options', () => {
@@ -134,7 +132,7 @@ describe('AttemptReview', () => {
     fireEvent.change(screen.getByLabelText('第 1 題筆記內容'), {
       target: { value: '從對答案分享的詳解' },
     });
-    fireEvent.click(screen.getByRole('button', { name: /分享至詳解與討論/ }));
+    fireEvent.click(screen.getByRole('button', { name: /分享到歷屆試題（新版）/ }));
 
     expect(await screen.findByLabelText('共享詳解狀態')).toHaveTextContent(
       '從對答案分享的詳解',
@@ -143,7 +141,7 @@ describe('AttemptReview', () => {
     fireEvent.change(screen.getByLabelText('第 1 題筆記內容'), {
       target: { value: '修正後的詳解' },
     });
-    fireEvent.click(screen.getByRole('button', { name: /分享至詳解與討論/ }));
+    fireEvent.click(screen.getByRole('button', { name: /分享到歷屆試題（新版）/ }));
 
     const result = await screen.findByLabelText('共享詳解狀態');
     expect(result).toHaveTextContent('修正後的詳解');

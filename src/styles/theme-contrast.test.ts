@@ -6,7 +6,6 @@ const questionNumberCss = readFileSync(
   'src/components/question-number-button.module.css',
   'utf8',
 );
-const quizCss = readFileSync('src/features/quiz/quiz-page.module.css', 'utf8');
 
 function themeTokens(selector: string) {
   const escapedSelector = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -168,17 +167,5 @@ describe('selected question number colors', () => {
 
     expect(activeRule).toContain('background: var(--primary-solid)');
     expect(activeRule).toContain('color: var(--on-primary)');
-  });
-
-  it('does not rely on the quiz card scoped accent variable', () => {
-    const navigatorActiveRule = quizCss.match(
-      /\.questionNumbers a\[aria-current='step'\]\s*\{([\s\S]*?)\}/,
-    )?.[1];
-
-    expect(navigatorActiveRule).toContain(
-      'background: var(--primary-solid)',
-    );
-    expect(navigatorActiveRule).toContain('color: var(--on-primary)');
-    expect(navigatorActiveRule).not.toContain('var(--quiz-accent)');
   });
 });

@@ -28,7 +28,6 @@ function question(id: string, questionNumber: number): QuestionSummary {
     tags: ['建築技術規則'],
     relatedLaws: ['建築技術規則'],
     text: `${id} 題幹`,
-    path: `/questions/law/114/${String(questionNumber).padStart(2, '0')}`,
   };
 }
 
@@ -59,24 +58,52 @@ describe('AnalysisPage category quiz', () => {
     expect(screen.getByLabelText('分析結束年度')).toHaveValue('114');
   });
 
-  it('starts a quiz containing every question in the selected category', () => {
+  it('opens 選擇題練習 with the category and year, and each question in 歷屆試題（新版）', () => {
     const questions = [
       question('law-114-01', 1),
       question('law-114-02', 2),
     ];
     render(<AnalysisPage questions={questions} />);
 
-    fireEvent.click(
-      screen.getByRole('button', { name: '作答全部 2 題' }),
+    expect(screen.getByRole('link', { name: /law-114-02 題幹/ })).toHaveAttribute(
+      'href',
+      '/exams?question=law-114-02',
     );
+    fireEvent.click(screen.getByRole('button', { name: '到選擇題練習抽題' }));
 
     expect(router.push).toHaveBeenCalledWith({
-      pathname: questions[0].path,
-      query: {
-        mode: 'random',
-        questions: 'law-114-01,law-114-02',
-      },
+      pathname: '/practice/quiz',
+      query: { subject: 'law', from: '114', to: '114', category: '建築技術規則' },
     });
+  });
+
+  it('asks before replacing a 選擇題練習 set in progress', () => {
+    window.localStorage.setItem(
+      'shaneweb:practice-session',
+      JSON.stringify({
+        version: 1,
+        id: 'current',
+        subject: 'law',
+        questionIds: ['law-114-09'],
+        answers: { 'law-114-09': { selected: 0, correct: true } },
+      }),
+    );
+    const confirm = vi.spyOn(window, 'confirm').mockReturnValueOnce(false);
+    render(<AnalysisPage questions={[question('law-114-01', 1)]} />);
+
+    fireEvent.click(screen.getByRole('button', { name: '到選擇題練習抽題' }));
+    expect(confirm).toHaveBeenCalledWith(
+      '目前的選擇題練習還沒交卷，要放棄並改用這個類別抽題嗎？作答進度會清除。',
+    );
+    expect(router.push).not.toHaveBeenCalled();
+    expect(window.localStorage.getItem('shaneweb:practice-session')).not.toBeNull();
+
+    confirm.mockReturnValueOnce(true);
+    fireEvent.click(screen.getByRole('button', { name: '到選擇題練習抽題' }));
+    expect(window.localStorage.getItem('shaneweb:practice-session')).toBeNull();
+    expect(router.push).toHaveBeenCalledTimes(1);
+    confirm.mockRestore();
+    window.localStorage.clear();
   });
 
   it('can start from a secondary related-law category', () => {
@@ -98,15 +125,12 @@ describe('AnalysisPage category quiz', () => {
       screen.getByRole('button', { name: /建築技術規則1 題/ }),
     );
     fireEvent.click(
-      screen.getByRole('button', { name: '作答全部 1 題' }),
+      screen.getByRole('button', { name: '到選擇題練習抽題' }),
     );
 
     expect(router.push).toHaveBeenCalledWith({
-      pathname: questions[0].path,
-      query: {
-        mode: 'random',
-        questions: questions[0].id,
-      },
+      pathname: '/practice/quiz',
+      query: { subject: 'law', from: '114', to: '114', category: '建築技術規則' },
     });
   });
 

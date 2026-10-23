@@ -126,7 +126,7 @@ export function QuestionCard({
       <div className={styles.questionActions}>
         <DifficultButton active={difficult} onClick={onToggleDifficult} />
         {action ?? (
-          <Button variant="primary" render={<Link href={`/community?question=${question.id}`} />}>
+          <Button variant="primary" render={<Link href={`/exams?question=${question.id}`} />}>
             查看詳解
           </Button>
         )}

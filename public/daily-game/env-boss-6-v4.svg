@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" shape-rendering="crispEdges">
-  <title>綠建築森龍・少色像素造型</title>
-  <path d="M10 8H19V11H22V16H25V22H28V18H30V26H25V28H13V26H9V23H12V20H6V17H3V11H10Z" fill="#8fa37b" stroke="#253344" stroke-width="2" stroke-linejoin="miter"/>
-  <path d="M12 8V5H9V2h7v6M21 18v-5h6v3h-3v3" fill="#627c62" stroke="#253344" stroke-width="2"/>
-  <path d="M8 12h3v4h-3ZM14 12h3v4h-3Z" fill="#253344"/>
-  <path d="M8 12h1v1h-1ZM14 12h1v1h-1Z" fill="#f4ecd8"/>
-</svg>

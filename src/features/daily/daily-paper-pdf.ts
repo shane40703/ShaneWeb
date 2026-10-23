@@ -136,7 +136,7 @@ export async function generateDailyPaperPdf(paper: DailyPaper, assets: DailyPape
   y -= 25;
   draw('注意：㈠本試題均為選擇題，請選出一個正確或最適當的答案。', MARGIN, y, 10);
   y -= 15;
-  draw(`　　　㈡本試題共 ${paper.questions.length} 題${paper.mode === 'adventure' ? '（含闖關備用題）' : ''}，參考答案另附於試題後。`, MARGIN, y, 10);
+  draw(`　　　㈡本試題共 ${paper.questions.length} 題，參考答案另附於試題後。`, MARGIN, y, 10);
   y -= 15;
   draw('　　　㈢答案請自行書寫，可利用空白處計算。', MARGIN, y, 10);
   y -= 25;

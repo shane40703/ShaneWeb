@@ -18,7 +18,6 @@ const summary: QuestionSummary = {
   topic: '建築法',
   tags: ['建築法'],
   text: '測試題幹',
-  path: '/questions/law/114/01',
 };
 
 const updatedQuestion: Question = {
@@ -108,7 +107,6 @@ describe('CategoryAdminPage', () => {
       primaryCategory: '其他',
       topic: '其他',
       tags: ['其他'],
-      path: '/questions/env/114/01',
     };
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,

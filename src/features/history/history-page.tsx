@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import { useState } from 'react';
 import {
   IconArrowRight,
@@ -18,7 +19,8 @@ import { Button, ConfirmDialog, useToast } from '@/components/ui/ui';
 import { WrongCategoryAnalysis } from '@/components/wrong-category-analysis';
 import { getSubject, subjects, years as paperYears } from '@/question-bank/catalog';
 import type { QuestionBankStatus } from '@/lib/question-bank-client';
-import { parseQuestionId, questionPathFromId } from '@/lib/question-path';
+import { parseQuestionId } from '@/lib/question-path';
+import { readStoredValue, writeStoredValue } from '@/lib/storage';
 import {
   calculateScore,
   formatDateTime,
@@ -27,6 +29,16 @@ import {
   isQuestionCorrect,
 } from '@/lib/study';
 import type { Question, QuizAttempt, SubjectId } from '@/lib/types';
+import { mockExamHref } from '@/features/practice/mock-exam';
+import { practiceMockExamPage, practiceQuizPage } from '@/features/practice/practice-pages';
+import {
+  createPracticeSessionFromQuestions,
+  DEFAULT_PRACTICE_SETTINGS,
+  hasPracticeProgress,
+  parsePracticeSession,
+  PRACTICE_SESSION_STORAGE_KEY,
+  practiceQuestionHref,
+} from '@/features/practice/practice-session';
 import { useAppState } from '@/state/app-state';
 import styles from './history-page.module.css';
 
@@ -64,13 +76,25 @@ function groupAttemptsByYear(attempts: QuizAttempt[]) {
     }));
 }
 
-function retryHref(attempt: QuizAttempt) {
-  const baseHref = questionPathFromId(attempt.questionIds[0] ?? '') ?? '/papers';
-  return attempt.mode === 'random' && attempt.questionIds.length
-    ? `${baseHref}?mode=random&questions=${encodeURIComponent(
-        attempt.questionIds.join(','),
-      )}`
-    : baseHref;
+/** The years a 選擇題練習 set drew from, e.g. 「104–114 年」. */
+function practiceYearRange(attempt: QuizAttempt) {
+  const attemptYears = attempt.questionIds.flatMap((questionId) => {
+    const parsed = parseQuestionId(questionId);
+    return parsed ? [parsed.year] : [];
+  });
+  if (!attemptYears.length) return null;
+  const from = Math.min(...attemptYears);
+  const to = Math.max(...attemptYears);
+  return from === to ? `${from} 年` : `${from}–${to} 年`;
+}
+
+/** 選擇題練習 scores like its result page: answered questions only. */
+function practiceAccuracy(attempt: QuizAttempt) {
+  const answered = attempt.correctCount + attempt.wrongCount;
+  return {
+    answered,
+    accuracy: answered ? Math.round((attempt.correctCount / answered) * 100) : null,
+  };
 }
 
 export function HistoryPage({
@@ -82,7 +106,8 @@ export function HistoryPage({
   questionBankStatuses?: Partial<Record<SubjectId, QuestionBankStatus>>;
   onRetryQuestionBank?: (subject: SubjectId) => void;
 }) {
-  const { state, dispatch, hydrated } = useAppState();
+  const router = useRouter();
+  const { state, dispatch, hydrated, reportPersistence } = useAppState();
   const { notify } = useToast();
   const [subjectFilter, setSubjectFilter] = useState<'mixed' | SubjectId>();
   const [historyView, setHistoryView] = useState<ResultView>('review');
@@ -119,8 +144,11 @@ export function HistoryPage({
   const nextPaperYear = availablePaperYears.find(
     (year) => !completedPaperYears.has(year),
   );
+  const paperAttemptCount = filteredAttempts.filter(
+    (attempt) => attempt.mode === 'paper',
+  ).length;
   const repeatPaperYear = availablePaperYears.length
-    ? availablePaperYears[filteredAttempts.length % availablePaperYears.length]
+    ? availablePaperYears[paperAttemptCount % availablePaperYears.length]
     : undefined;
   const continuationYear = nextPaperYear ?? repeatPaperYear;
   const mixedCount = state.attempts.filter(
@@ -162,6 +190,37 @@ export function HistoryPage({
       }),
     ),
   ];
+
+  /** 再做一次 for 選擇題練習: the same questions in the same order, options reshuffled. */
+  function retryPractice(attempt: QuizAttempt) {
+    if (attempt.subject === 'mixed') return;
+    const setQuestions = attempt.questionIds.flatMap((questionId) => {
+      const question = questionById.get(questionId);
+      return question ? [question] : [];
+    });
+    if (setQuestions.length !== attempt.questionIds.length) return;
+    const current = parsePracticeSession(readStoredValue(PRACTICE_SESSION_STORAGE_KEY));
+    if (
+      current &&
+      hasPracticeProgress(current) &&
+      !window.confirm('目前的選擇題練習還沒交卷，要放棄並改練這組題目嗎？作答進度會清除。')
+    ) {
+      return;
+    }
+    const session = createPracticeSessionFromQuestions(
+      setQuestions,
+      attempt.subject,
+      DEFAULT_PRACTICE_SETTINGS.shuffleOptions,
+    );
+    const saved = writeStoredValue(PRACTICE_SESSION_STORAGE_KEY, JSON.stringify(session));
+    reportPersistence('practice-session', saved);
+    // The practice page reads the set back from storage, so without it there is nothing to open.
+    if (saved !== 'saved') {
+      notify('瀏覽器無法儲存練習進度，暫時無法開始這組題目。');
+      return;
+    }
+    void router.push(practiceQuestionHref(0));
+  }
 
   function deleteAttempt(attemptId: string) {
     dispatch({ type: 'delete-attempt', attemptId });
@@ -275,7 +334,7 @@ export function HistoryPage({
             <EmptyState
               icon={IconHistory}
               title="目前沒有跨年度錯題"
-              description="完成其他年度試卷後，這裡會彙整每次答錯的分類與題目。"
+              description="完成選擇題練習或歷屆試題模擬考後，這裡會彙整每次答錯的分類與題目。"
             />
           )}
         </section>
@@ -302,11 +361,11 @@ export function HistoryPage({
                 <details
                   className={styles.yearGroup}
                   key={yearGroup.key}
-                  aria-label={`${yearGroup.year ? `${yearGroup.year} 年` : '跨年度'}作答紀錄`}
+                  aria-label={`${yearGroup.year ? `${yearGroup.year} 年` : '選擇題練習'}作答紀錄`}
                 >
                   <summary>
                     <strong>
-                      {yearGroup.year ? `${yearGroup.year} 年` : '跨年度'}
+                      {yearGroup.year ? `${yearGroup.year} 年` : '選擇題練習'}
                     </strong>
                     <span>共作答 {yearGroup.entries.length} 次</span>
                     <IconChevronDown size={20} stroke={2} aria-hidden="true" />
@@ -316,13 +375,17 @@ export function HistoryPage({
               const first = entries[0];
               const subject =
                 first.subject === 'mixed' ? null : getSubject(first.subject);
+              const isPractice = first.mode === 'practice';
+              const practiceReady = first.questionIds.every((questionId) =>
+                questionById.has(questionId),
+              );
               return (
                 <article className={styles.attemptGroup} key={key}>
                   <header className={styles.groupHeader}>
                     <div>
                       <div className={styles.tags}>
-                        <Tag tone={first.mode === 'paper' ? 'blue' : 'purple'}>
-                          {first.mode === 'paper' ? '歷屆試題' : '隨機題組'}
+                        <Tag tone={isPractice ? 'purple' : 'blue'}>
+                          {isPractice ? '選擇題練習' : '歷屆試題模擬考'}
                         </Tag>
                         {subject ? (
                           <Tag tone="green">{subject.name}</Tag>
@@ -330,17 +393,50 @@ export function HistoryPage({
                           <Tag tone="green">跨科目</Tag>
                         )}
                         {first.year ? <Tag>{first.year} 年</Tag> : null}
+                        {isPractice && practiceYearRange(first) ? (
+                          <Tag>{practiceYearRange(first)}</Tag>
+                        ) : null}
                       </div>
                       <h2>
                         {subject?.name ?? '跨科目練習'}
                         {first.year ? `・${first.year} 年` : ''}
+                        {isPractice ? `・選擇題練習 ${first.questionIds.length} 題` : ''}
                       </h2>
                     </div>
                     <div className={styles.groupActions}>
                       <strong>共作答 {entries.length} 次</strong>
-                      <Button variant="primary" render={<Link href={retryHref(first)} />}>
-                        再做一次
-                      </Button>
+                      {isPractice && !practiceReady ? (
+                        <small className={styles.retryHint} id={`retry-hint-${first.id}`}>
+                          題目載入完成後才能再做一次
+                        </small>
+                      ) : null}
+                      {isPractice ? (
+                        <Button
+                          variant="primary"
+                          disabled={!practiceReady}
+                          aria-describedby={
+                            practiceReady ? undefined : `retry-hint-${first.id}`
+                          }
+                          onClick={() => retryPractice(first)}
+                        >
+                          再做一次
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="primary"
+                          render={
+                            <Link
+                              href={
+                                first.subject !== 'mixed' && first.year !== null
+                                  ? mockExamHref({ subject: first.subject, year: first.year })
+                                  : practiceMockExamPage.href
+                              }
+                            />
+                          }
+                        >
+                          再做一次
+                        </Button>
+                      )}
                     </div>
                   </header>
 
@@ -423,13 +519,17 @@ export function HistoryPage({
                               </time>
                             </div>
                             <div className={styles.score}>
-                              {attempt.mode === 'random' ? (
+                              {attempt.mode === 'practice' ? (
                                 <>
                                   <strong>
-                                    {attempt.correctCount} /{' '}
-                                    {attempt.questionIds.length} 題
+                                    {practiceAccuracy(attempt).accuracy === null
+                                      ? '—'
+                                      : `正確率 ${practiceAccuracy(attempt).accuracy}%`}
                                   </strong>
-                                  <span>答對題數</span>
+                                  <span>
+                                    答對 {attempt.correctCount}／
+                                    {practiceAccuracy(attempt).answered} 題
+                                  </span>
                                 </>
                               ) : (
                                 <>
@@ -518,6 +618,11 @@ export function HistoryPage({
                                     : undefined
                                 }
                               >
+                                {attempt.mode === 'practice' ? (
+                                  <p className={styles.practiceNote}>
+                                    選項依原試卷順序顯示，可能和作答時的順序不同。
+                                  </p>
+                                ) : null}
                                 {activeAttemptView === 'wrong-analysis' &&
                                 hasVisibleWrongQuestions ? (
                                   <WrongCategoryAnalysis
@@ -609,7 +714,10 @@ export function HistoryPage({
                     variant="primary"
                     render={
                       <Link
-                        href={`/papers?subject=${activeSubjectFilter}&year=${continuationYear}`}
+                        href={mockExamHref({
+                          subject: activeSubjectFilter,
+                          year: continuationYear,
+                        })}
                       />
                     }
                   >
@@ -625,11 +733,20 @@ export function HistoryPage({
             <EmptyState
               icon={IconHistory}
               title="還沒有作答紀錄"
-              description="完成並交卷後，結果會保存在這裡。"
+              description="完成選擇題練習或歷屆試題模擬考並交卷後，結果會保存在這裡。"
               action={
-                <Button variant="primary" render={<Link href="/papers" />}>
-                  開始第一份試卷
-                </Button>
+                <>
+                  <Button role="link" render={<Link href={practiceQuizPage.href} />}>
+                    選擇題練習
+                  </Button>
+                  <Button
+                    role="link"
+                    variant="primary"
+                    render={<Link href={practiceMockExamPage.href} />}
+                  >
+                    開始第一份試卷
+                  </Button>
+                </>
               }
             />
           )}

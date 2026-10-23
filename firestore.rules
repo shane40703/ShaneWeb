@@ -14,7 +14,7 @@ service cloud.firestore {
           'wrongCount', 'unansweredCount', 'syncedAt'
         ])
         && request.resource.data.id == attemptId
-        && request.resource.data.mode == 'paper'
+        && request.resource.data.mode in ['paper', 'practice']
         && request.resource.data.subject is string
         && request.resource.data.questionIds is list
         && request.resource.data.questionIds.size() <= 200

@@ -214,7 +214,7 @@ test('the hub opens the multiple-choice practice, and leads back to the set and 
   await expectNoHorizontalOverflow(page);
 });
 
-test('law cloze opens from the hub, shares its round with the old page, and starts the next round from the hub', async ({
+test('law cloze opens from the hub, keeps its round, and starts the next round from the hub', async ({
   page,
 }, testInfo) => {
   await page.goto('/practice');
@@ -237,22 +237,10 @@ test('law cloze opens from the hub, shares its round with the old page, and star
   await expectNoHorizontalOverflow(page);
   await page.screenshot({ path: testInfo.outputPath('cloze.png'), fullPage: true });
 
-  // The old page keeps its own links but continues the same round.
+  // The round survives a reload.
   const title = await page.locator('form h3').textContent();
-  await page.goto('/law-cloze');
+  await page.reload();
   await expect(page.locator('form h3')).toHaveText(title!);
-  await page
-    .locator('details')
-    .filter({ hasText: '題型相關考古題' })
-    .locator('summary')
-    .click();
-  await expect(
-    page
-      .locator('details')
-      .filter({ hasText: '題型相關考古題' })
-      .getByRole('link')
-      .first(),
-  ).toHaveAttribute('href', /^\/questions\/law\/\d{3}\/\d{2}$/);
 
   await page.goto('/practice');
   await expect(cloze.getByText('已完成 1／5 題・全對 0 題')).toBeVisible();
@@ -371,4 +359,95 @@ test('the mock exam answers a whole paper, keeps it when leaving, and scores it 
   await expect(year.locator('summary')).toContainText('共作答 1 次');
   await year.locator('summary').click();
   await expect(year.getByRole('heading', { name: '建築環境控制・113 年' })).toBeVisible();
+});
+
+test('選擇題練習 submissions go to 已作答紀錄, and 再做一次 starts the same questions', async ({
+  page,
+}) => {
+  const setup = await openSetup(page);
+  await setup.getByRole('button', { name: /進階選項/ }).click();
+  await setup.getByRole('button', { name: /^5 題/ }).click();
+  await setup.getByRole('button', { name: '線上作答' }).click();
+  await expect(page).toHaveURL(/\/practice\/quiz\?q=1$/);
+  const question = page.getByRole('region', { name: '題目與選項' });
+  await question.getByRole('radio').first().click();
+  await page.getByRole('button', { name: '確認答案' }).click();
+  page.once('dialog', (dialog) => void dialog.accept());
+  await page
+    .getByRole('complementary', { name: '題組資訊' })
+    .getByRole('button', { name: /交卷/ })
+    .click();
+  await expect(page.getByText(/^(0|100)% 正確率$/)).toBeVisible();
+
+  await page.goto('/history');
+  const group = page.getByRole('group', { name: '選擇題練習作答紀錄' });
+  await group.locator('summary').click();
+  const card = group.getByRole('article').first();
+  await expect(card.getByRole('heading', { level: 2 })).toHaveText(
+    '建築法規與實務・選擇題練習 5 題',
+  );
+  await expect(card.getByText(/^正確率 (0|100)%$/)).toBeVisible();
+  await expect(card.getByText(/^答對 [01]／1 題$/)).toBeVisible();
+  await card.getByRole('button', { name: '再做一次' }).click();
+  await expect(page).toHaveURL(/\/practice\/quiz\?q=1$/);
+  await expect(page.getByLabel('第 1 題，共 5 題')).toBeVisible();
+});
+
+test('the mock exam scores a blank 一律給分 question, as the real exam does', async ({
+  page,
+}) => {
+  // Construction 114 has two 一律給分 questions.
+  await page.goto('/practice/mock-exam?subject=construction&year=114');
+  await page.getByRole('button', { name: '開始作答' }).click();
+  await expect(page.getByRole('region', { name: '題目與選項' })).toBeVisible();
+  page.once('dialog', (dialog) => {
+    expect(dialog.message()).toBe(
+      '還有 80 題未作答，其中 2 題一律給分仍會計分，其餘不給分。確定要交卷嗎？',
+    );
+    void dialog.accept();
+  });
+  await page
+    .getByRole('complementary', { name: '試卷資訊' })
+    .getByRole('button', { name: /交卷/ })
+    .click();
+  const result = page.getByRole('region', { name: /構造 114 年模擬考結果/ });
+  await expect(result).toContainText('2.50 分／滿分 100 分');
+  await expect(result).toContainText(
+    '共 80 題，作答 0 題，未作答 80 題；其中 2 題一律給分，計入答對，其餘不給分。',
+  );
+});
+
+test('the home subject cards, 考題分析 and question cards lead to the new pages', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await page.getByRole('link', { name: /建築環境控制/ }).click();
+  await expect(page).toHaveURL(/\/practice\/mock-exam\?subject=env$/);
+  await expect(
+    page.getByRole('region', { name: '歷屆試題模擬考設定' }).getByRole('radio', {
+      name: /建築環境控制/,
+    }),
+  ).toBeChecked();
+
+  await page.goto('/resources/analysis?subject=law&year=114');
+  // Each listed question opens in 歷屆試題（新版）; nothing leads to the old 作答頁.
+  await expect(page.locator('a[href^="/exams?question=law-114-"]').first()).toBeVisible();
+  expect(await page.locator('a[href*="/questions/"], a[href*="mode="]').count()).toBe(0);
+  await page.getByRole('button', { name: '到選擇題練習抽題' }).click();
+  await expect(page).toHaveURL(/\/practice\/quiz$/);
+  await expect(page.getByRole('radio', { name: /建築法規與實務/ })).toBeChecked();
+  await expect(page.getByRole('button', { name: /進階選項/ })).toContainText(
+    '114–114 年',
+  );
+
+  await page.addInitScript(() => {
+    const state = JSON.parse(localStorage.getItem('shaneweb:state') ?? '{}');
+    localStorage.setItem(
+      'shaneweb:state',
+      JSON.stringify({ ...state, difficultQuestionIds: ['law-114-01'] }),
+    );
+  });
+  await page.goto('/difficult');
+  await page.getByRole('button', { name: '查看詳解' }).first().click();
+  await expect(page).toHaveURL(/\/exams\?question=law-114-01$/);
 });

@@ -31,9 +31,9 @@ and [Chrome's Local Font Access documentation](https://developer.chrome.com/docs
 
 1. Run `npm run generate:question-data`.
 2. Install Python `fonttools`, then run `python scripts/prepare-daily-paper-font.py`.
-3. Confirm source hashes and zero missing glyphs. Run the paper tests and
-   `python scripts/verify-daily-paper-pdfs.py` (requires PyMuPDF) after the
-   desktop browser downloads. Inspect first/last pages and contact sheets.
+3. Confirm source hashes and zero missing glyphs. Run the paper tests
+   (`npx vitest run src/features/daily`) and the 選擇題練習 paper download in
+   `e2e/practice.spec.ts`, then inspect the downloaded PDF's first and last pages.
 4. Optionally run `npx tsx scripts/generate-daily-paper-font-proof.ts` to compare
    locally installed requested fonts with open fallbacks, without publishing them.
 

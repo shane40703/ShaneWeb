@@ -1,9 +1,9 @@
 import {
-  createQuizProgressScope,
+  paperProgressScope,
   parseStoredQuizProgress,
   quizProgressReducer,
   type QuizProgressByQuestion,
-} from '@/features/quiz/quiz-state';
+} from './mock-exam-progress';
 import { calculateScore, createAttempt, getSubjectScoreConfig } from '@/lib/study';
 import type { Question, QuizAttempt, SubjectId } from '@/lib/types';
 import { subjects } from '@/question-bank/catalog';
@@ -97,7 +97,7 @@ export function mockExamHref({ subject, year, q, result }: MockExamLocation) {
 
 /** The draft key the original 歷屆試題 used, so a paper keeps one draft whichever page opens it. */
 export function mockExamScope(subject: SubjectId, year: number) {
-  return createQuizProgressScope({ mode: 'paper', subject, year })!;
+  return paperProgressScope(subject, year);
 }
 
 /** The paper's multiple-choice questions in their original order. */

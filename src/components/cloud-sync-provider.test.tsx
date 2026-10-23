@@ -5,7 +5,9 @@ import {
   getFirebaseSignInErrorMessage,
   parseCloudDifficultSettings,
   parseCloudNote,
+  readAttemptChanges,
   shouldRetrySignInWithRedirect,
+  uploadEach,
   useCloudSync,
 } from '@/components/cloud-sync-provider';
 
@@ -87,5 +89,62 @@ describe('CloudSyncProvider', () => {
   it('falls back to redirect for environments that cannot open a popup', () => {
     expect(shouldRetrySignInWithRedirect({ code: 'auth/popup-blocked' })).toBe(true);
     expect(shouldRetrySignInWithRedirect({ code: 'auth/popup-closed-by-user' })).toBe(false);
+  });
+
+  it('keeps uploading the other records when the server refuses one', async () => {
+    const upload = vi.fn((record: { id: string }) =>
+      record.id === 'practice'
+        ? Promise.reject(new Error('permission-denied'))
+        : Promise.resolve(),
+    );
+
+    await expect(
+      uploadEach([{ id: 'paper' }, { id: 'practice' }, { id: 'later' }], upload),
+    ).resolves.toEqual({ synced: ['paper', 'later'], failed: true });
+    expect(upload).toHaveBeenCalledTimes(3);
+    await expect(uploadEach([{ id: 'paper' }], upload)).resolves.toEqual({
+      synced: ['paper'],
+      failed: false,
+    });
+  });
+
+  it('keeps a record the server refused, but removes one deleted on another device', () => {
+    const record = {
+      id: 'attempt-practice',
+      mode: 'practice',
+      subject: 'law',
+      year: null,
+      questionIds: ['law-114-01'],
+      answers: { 'law-114-01': 0 },
+      startedAt: '2026-10-20T00:00:00.000Z',
+      submittedAt: '2026-10-20T00:01:00.000Z',
+      elapsedSeconds: 60,
+      correctCount: 1,
+      wrongCount: 0,
+      unansweredCount: 0,
+    };
+    const confirmed = new Set(['attempt-old']);
+
+    // This device's write echoes back, then the server refuses it and the SDK rolls it back.
+    expect(
+      readAttemptChanges([{ type: 'added', id: record.id, data: record, pending: true }], confirmed),
+    ).toEqual({ incoming: [record], removed: [] });
+    expect(
+      readAttemptChanges([{ type: 'removed', id: record.id, data: record, pending: false }], confirmed),
+    ).toEqual({ incoming: [], removed: [] });
+
+    // A record the server accepted and another device deleted goes here too.
+    expect(
+      readAttemptChanges([{ type: 'removed', id: 'attempt-old', data: {}, pending: false }], confirmed),
+    ).toEqual({ incoming: [], removed: ['attempt-old'] });
+    readAttemptChanges([{ type: 'added', id: record.id, data: record, pending: false }], confirmed);
+    expect(confirmed.has(record.id)).toBe(true);
+    // Retired 隨機出題 records are not read back.
+    expect(
+      readAttemptChanges(
+        [{ type: 'added', id: 'random', data: { ...record, id: 'random', mode: 'random' }, pending: false }],
+        confirmed,
+      ).incoming,
+    ).toEqual([]);
   });
 });

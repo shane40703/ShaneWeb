@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { IconArrowRight } from '@tabler/icons-react';
 import { SubjectIconBadge } from '@/components/subject-icon';
+import { mockExamHref } from '@/features/practice/mock-exam';
 import { subjects } from '@/question-bank/catalog';
 import styles from './home-page.module.css';
 
@@ -11,7 +12,7 @@ export function HomePage() {
         {subjects.map((subject, index) => (
           <Link
             key={subject.id}
-            href={`/papers?subject=${subject.id}`}
+            href={mockExamHref({ subject: subject.id })}
             className={styles.subjectCard}
             data-subject={subject.id}
           >

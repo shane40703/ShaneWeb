@@ -17,7 +17,7 @@ import {
   serializeClozeSession,
   type ClozeSession,
 } from '@/features/law-cloze/cloze';
-import { writeQuizProgress } from '@/features/quiz/quiz-state';
+import { writeQuizProgress } from './mock-exam-progress';
 import type { QuizAttempt } from '@/lib/types';
 import { mockExamScope } from './mock-exam';
 import { PracticeHubPage } from './practice-hub-page';

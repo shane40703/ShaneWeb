@@ -3,9 +3,12 @@ import type { Question, SubjectId } from '@/lib/types';
 import {
   addPracticeTime,
   confirmPracticeAnswer,
+  createPracticeAttempt,
   createPracticePaper,
   createPracticeSession,
+  createPracticeSessionFromQuestions,
   createPracticeTimer,
+  displayPracticeQuestion,
   getPracticeCategories,
   DEFAULT_PRACTICE_SETTINGS,
   getDisplayedQuestion,
@@ -19,6 +22,7 @@ import {
   summarizePractice,
   tickPracticeTimer,
   togglePracticeElimination,
+  toOriginalOption,
   type PracticeSession,
 } from './practice-session';
 
@@ -358,7 +362,6 @@ describe('createPracticePaper', () => {
     expect(paper).toMatchObject({
       date: '2026-10-22',
       subjectName: '建築法規與實務',
-      mode: 'normal',
     });
     expect(paper.questions[0].options).toEqual(['選項 D', '選項 C', '選項 B', '選項 A']);
     expect(paper.referenceAnswers).toEqual(['D', '本題一律給分']);
@@ -524,5 +527,118 @@ describe('createPracticeTimer', () => {
     timer.tick('law-114-01');
     timer.tick('law-114-02');
     expect(timer.take()).toEqual({ questionId: 'law-114-02', seconds: 1 });
+  });
+});
+
+describe('practice records', () => {
+  const questions = [
+    makeQuestion('law-114-01'),
+    makeQuestion('law-113-02'),
+    makeQuestion('law-110-03', { answerKey: { kind: 'all-credit' } }),
+  ];
+  const byId = new Map(questions.map((question) => [question.id, question]));
+  function practiceSet(overrides: Partial<PracticeSession>): PracticeSession {
+    return {
+      version: 1,
+      id: 'set',
+      subject: 'law',
+      rangeStart: 110,
+      rangeEnd: 114,
+      category: 'all',
+      questionIds: questions.map((question) => question.id),
+      optionOrders: {},
+      answers: {},
+      drafts: {},
+      eliminated: {},
+      elapsedSeconds: {},
+      currentIndex: 0,
+      ...overrides,
+    };
+  }
+
+  it('maps a choice on the shuffled screen back to the paper’s option', () => {
+    expect(toOriginalOption(questions[0], [2, 0, 3, 1], 0)).toBe(2);
+    expect(toOriginalOption(questions[0], undefined, 3)).toBe(3);
+    // An order that does not fit the question was never shown.
+    expect(toOriginalOption(questions[0], [1, 0], 0)).toBe(0);
+    expect(toOriginalOption(questions[0], [0, 0, 1, 2], 1)).toBe(1);
+  });
+
+  it('records the numbers of the result page, and nothing for an empty submission', () => {
+    expect(createPracticeAttempt(practiceSet({}), byId)).toBeNull();
+
+    const record = createPracticeAttempt(
+      practiceSet({
+        optionOrders: { 'law-114-01': [1, 0, 2, 3] },
+        answers: {
+          'law-114-01': { selected: 1, correct: true },
+          'law-113-02': { selected: 2, correct: false },
+        },
+        elapsedSeconds: { 'law-114-01': 20, 'law-113-02': 10, 'law-110-03': 5 },
+      }),
+      byId,
+      '2026-10-20T00:10:00.000Z',
+    )!;
+
+    expect(record.attempt).toMatchObject({
+      mode: 'practice',
+      subject: 'law',
+      year: null,
+      questionIds: ['law-114-01', 'law-113-02', 'law-110-03'],
+      answers: { 'law-114-01': 0, 'law-113-02': 2 },
+      submittedAt: '2026-10-20T00:10:00.000Z',
+      startedAt: '2026-10-20T00:09:25.000Z',
+      elapsedSeconds: 35,
+      // The blank 一律給分 question counts as unanswered, as on the result page.
+      correctCount: 1,
+      wrongCount: 1,
+      unansweredCount: 1,
+    });
+    expect(record.attempt.id).toMatch(/^attempt-2026-10-20T00:10:00.000Z-/);
+    expect(record.results).toEqual({ 'law-114-01': true, 'law-113-02': false });
+  });
+
+  it('starts exactly the recorded questions again, describing them', () => {
+    const shared = [
+      makeQuestion('law-114-01', { law: '建築法' }),
+      makeQuestion('law-105-02', { year: 105, law: '建築法' }),
+    ];
+    const session = createPracticeSessionFromQuestions(shared, 'law', true, seeded(3));
+
+    expect(session).toMatchObject({
+      subject: 'law',
+      rangeStart: 105,
+      rangeEnd: 114,
+      category: '建築法',
+      questionIds: ['law-114-01', 'law-105-02'],
+      answers: {},
+      currentIndex: 0,
+    });
+    expect(Object.keys(session.optionOrders)).toEqual(['law-114-01', 'law-105-02']);
+    expect([...session.optionOrders['law-114-01']].sort()).toEqual([0, 1, 2, 3]);
+
+    const mixed = createPracticeSessionFromQuestions(
+      [...shared, makeQuestion('law-110-03', { year: 110 })],
+      'law',
+      false,
+    );
+    expect(mixed.category).toBe('all');
+    expect(mixed.optionOrders).toEqual({});
+  });
+});
+
+describe('displayPracticeQuestion', () => {
+  it('shows the stored option order and remaps the key, ignoring an order that does not fit', () => {
+    const question = makeQuestion('law-114-01', {
+      answerKey: { kind: 'accepted', options: [0] },
+    });
+
+    expect(displayPracticeQuestion(question, [2, 0, 3, 1])).toMatchObject({
+      options: ['選項 C', '選項 A', '選項 D', '選項 B'],
+      answerKey: { kind: 'accepted', options: [1] },
+    });
+    expect(displayPracticeQuestion(question, [0, 0, 1, 2])).toBe(question);
+    expect(displayPracticeQuestion(question, [1, 0])).toBe(question);
+    expect(displayPracticeQuestion(question, undefined)).toBe(question);
   });
 });

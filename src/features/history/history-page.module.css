@@ -178,6 +178,11 @@
   flex-wrap: wrap;
 }
 
+.retryHint {
+  color: var(--muted);
+  font-size: 12px;
+}
+
 .groupActions > strong {
   min-height: 34px;
   padding: 0 12px;
@@ -377,4 +382,11 @@
     border-inline: 0;
     border-radius: 0;
   }
+}
+
+.practiceNote {
+  margin: 0 0 12px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
 }

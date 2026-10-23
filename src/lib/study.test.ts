@@ -1,8 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   loadAllQuestions,
-  loadQuizQuestions,
-  loadWrittenQuestions,
+  loadSubjectQuestions,
 } from '@/server/question-bank.server';
 import {
   createAttempt,
@@ -97,27 +96,19 @@ describe('question data', () => {
   });
 
   it('does not expose removed placeholder explanations', async () => {
-    const quizQuestions = await loadQuizQuestions('law');
+    const lawQuestions = await loadSubjectQuestions('law');
     expect(
-      quizQuestions.some((question) => question.explanation),
+      lawQuestions.some((question) => question.explanation),
     ).toBe(false);
   });
 
   it('loads all 100–114 environmental-control and structure essay questions separately', async () => {
-    const environment = (
-      await Promise.all(
-        Array.from({ length: 15 }, (_, index) =>
-          loadWrittenQuestions('env', 100 + index),
-        ),
-      )
-    ).flat();
-    const structure = (
-      await Promise.all(
-        Array.from({ length: 15 }, (_, index) =>
-          loadWrittenQuestions('structure', 100 + index),
-        ),
-      )
-    ).flat();
+    const essays = async (subject: 'env' | 'structure') =>
+      (await loadSubjectQuestions(subject)).filter(
+        (question) => question.format === 'written',
+      );
+    const environment = await essays('env');
+    const structure = await essays('structure');
     const writtenQuestions = [...environment, ...structure];
 
     expect(environment).toHaveLength(37);
@@ -127,7 +118,7 @@ describe('question data', () => {
       expect(question.format).toBe('written');
       expect(question.answerKey).toEqual({ kind: 'written' });
       expect(question.options).toEqual([]);
-      expect(question.path).toMatch(/\/written-\d{2}$/);
+      expect(question.id).toMatch(/-written-\d{2}$/);
     });
   });
 });
@@ -147,7 +138,7 @@ describe('local state validation', () => {
     expect(parseStoredState(JSON.stringify(state))).toEqual(state);
   });
 
-  it('removes legacy random attempts from stored history', () => {
+  it('keeps 模擬考 and 選擇題練習 records but drops the retired 隨機出題 ones', () => {
     const question = questions.find((item) => item.id === 'law-114-01');
     expect(question).toBeDefined();
     const paperAttempt = createAttempt({
@@ -160,14 +151,21 @@ describe('local state validation', () => {
     const randomAttempt = {
       ...paperAttempt,
       id: 'random-attempt',
-      mode: 'random' as const,
+      mode: 'random',
+    };
+    const practiceAttempt = {
+      ...paperAttempt,
+      id: 'practice-attempt',
+      mode: 'practice' as const,
+      year: null,
     };
     const stored = {
       ...createDefaultState(),
-      attempts: [randomAttempt, paperAttempt],
+      attempts: [randomAttempt, practiceAttempt, paperAttempt],
     };
 
     expect(parseStoredState(JSON.stringify(stored)).attempts).toEqual([
+      practiceAttempt,
       paperAttempt,
     ]);
   });
@@ -236,7 +234,7 @@ describe('result helpers', () => {
     expect(formatDuration(3661)).toBe('01:01:01');
   });
 
-  it('groups repeated papers and identical random sets for attempt counts', () => {
+  it('groups repeated papers and identical practice sets for attempt counts', () => {
     const paperQuestions = questions
       .filter((question) => question.subject === 'law' && question.year === 114)
       .slice(0, 2);
@@ -247,16 +245,16 @@ describe('result helpers', () => {
       startedAt: '2026-01-01T00:00:00.000Z',
       elapsedSeconds: 1,
     });
-    const random = { ...paper, mode: 'random' as const };
+    const practice = { ...paper, mode: 'practice' as const, year: null };
 
     expect(getAttemptScopeKey(paper)).toBe(getAttemptScopeKey({ ...paper }));
-    expect(getAttemptScopeKey(random)).toBe(
+    expect(getAttemptScopeKey(practice)).toBe(
       getAttemptScopeKey({
-        ...random,
-        questionIds: [...random.questionIds].reverse(),
+        ...practice,
+        questionIds: [...practice.questionIds].reverse(),
       }),
     );
-    expect(getAttemptScopeKey(paper)).not.toBe(getAttemptScopeKey(random));
+    expect(getAttemptScopeKey(paper)).not.toBe(getAttemptScopeKey(practice));
   });
 
   it('accepts every corrected answer and awards all-credit questions without a selection', () => {

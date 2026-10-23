@@ -6,7 +6,7 @@ import {
   parseStoredQuizProgress,
   writeQuizProgress,
   type QuizProgressByQuestion,
-} from '@/features/quiz/quiz-state';
+} from './mock-exam-progress';
 import type { Question, QuizAttempt, SubjectId } from '@/lib/types';
 import { mockExamScope, type MockExamPaper } from './mock-exam';
 import { MockExamPage } from './mock-exam-page';

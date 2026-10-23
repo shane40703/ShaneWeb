@@ -1,7 +1,4 @@
 import type { Question } from '@/lib/types';
-import { subjects } from '@/question-bank/catalog';
-import { formatCorrectAnswer } from '@/lib/study';
-import { applyDailyOptionOrder, type DailyPracticeSession } from './daily-practice';
 
 export const DAILY_PAPER_TITLE = '專門職業及技術人員高等考試建築師每日練習試題';
 export const DAILY_PAPER_FONT = '/fonts/daily-paper/paper-ming.ttf';
@@ -12,30 +9,20 @@ export type DailyPaperQuestion = Pick<Question, 'id' | 'year' | 'questionNumber'
 export interface DailyPaper {
   date: string;
   subjectName: string;
-  mode: 'normal' | 'adventure';
   questions: DailyPaperQuestion[];
   referenceAnswers: string[];
   /** Replaces the answer page's order note; unset keeps the daily wording. */
   answerKeyNote?: string;
 }
 
-export function createDailyPaper(session: DailyPracticeSession, questionById: ReadonlyMap<string, Question>): DailyPaper {
-  const questions = session.questionIds.map(id => {
-    const question = questionById.get(id);
-    if (!question) throw new Error('當日題目尚未完整載入，請重新載入後再試。');
-    const displayed = applyDailyOptionOrder(question, session.optionOrders[id]);
-    return { id, year: question.year, questionNumber: question.questionNumber,
-      content: question.content, options: displayed.options };
-  });
-  if (!questions.length) throw new Error('請先建立今日試題。');
-  return {
-    date: session.date,
-    subjectName: subjects.find(subject => subject.id === session.subjects[0])?.name ?? '',
-    mode: session.mode === 'adventure' ? 'adventure' : 'normal', questions,
-    referenceAnswers: session.questionIds.map(id => formatCorrectAnswer(
-      applyDailyOptionOrder(questionById.get(id)!, session.optionOrders[id]),
-    )),
-  };
+/** The paper's date in the exam board's timezone, e.g. 2026-10-15. */
+export function getTaipeiDateKey(date = new Date()) {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Taipei',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(date);
 }
 
 export function dailyPaperFilename(paper: DailyPaper) {

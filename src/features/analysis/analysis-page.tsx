@@ -2,9 +2,9 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { type CSSProperties, useState } from 'react';
 import {
+  IconArrowRight,
   IconChartPie,
-  IconExternalLink,
-  IconPlayerPlay,
+  IconListCheck,
 } from '@tabler/icons-react';
 import { EmptyState } from '@/components/content/content';
 import { Button } from '@/components/ui/ui';
@@ -23,6 +23,14 @@ import {
   parseYear,
 } from '@/lib/study';
 import type { QuestionSummary, SubjectId } from '@/lib/types';
+import { readStoredValue } from '@/lib/storage';
+import { practiceQuizPage } from '@/features/practice/practice-pages';
+import {
+  hasPracticeProgress,
+  parsePracticeSession,
+  practiceCategoryFor,
+  PRACTICE_SESSION_STORAGE_KEY,
+} from '@/features/practice/practice-session';
 import { DetailedTrendAnalysis } from './detailed-trend-analysis';
 import styles from './analysis-page.module.css';
 
@@ -188,16 +196,33 @@ export function AnalysisPage({ questions }: { questions: QuestionSummary[] }) {
     updateQuery({ year: nextYear });
   }
 
-  function startSelectedCategoryQuiz() {
-    const firstQuestion = selectedCategoryQuestions[0];
-    if (!firstQuestion) return;
+  /**
+   * Opens 選擇題練習's setup with this subject, year range and category. A set in
+   * progress would keep the setup from showing, so it goes first, after asking.
+   */
+  function practiceSelectedCategory() {
+    if (!selectedCategoryQuestions.length) return;
+    const current = parsePracticeSession(readStoredValue(PRACTICE_SESSION_STORAGE_KEY));
+    if (
+      current &&
+      hasPracticeProgress(current) &&
+      !window.confirm('目前的選擇題練習還沒交卷，要放棄並改用這個類別抽題嗎？作答進度會清除。')
+    ) {
+      return;
+    }
+    try {
+      window.localStorage.removeItem(PRACTICE_SESSION_STORAGE_KEY);
+    } catch {
+      // Without storage there is no saved set to replace.
+    }
+    const category = practiceCategoryFor(selectedCategoryQuestions, selectedCategory);
     void router.push({
-      pathname: firstQuestion.path,
+      pathname: practiceQuizPage.href,
       query: {
-        mode: 'random',
-        questions: selectedCategoryQuestions
-          .map((question) => question.id)
-          .join(','),
+        subject: subjectId,
+        from: String(year === 'all' ? rangeStart : year),
+        to: String(year === 'all' ? rangeEnd : year),
+        ...(category ? { category } : {}),
       },
     });
   }
@@ -304,23 +329,23 @@ export function AnalysisPage({ questions }: { questions: QuestionSummary[] }) {
                   <span>對應考古題</span>
                   <strong>{selectedCategory}</strong>
                   <p>
-                    目前範圍共 {selectedCategoryQuestions.length} 題，點選即可前往作答。
+                    目前範圍共 {selectedCategoryQuestions.length} 題，點題目可查看詳解；也可以到選擇題練習用這個類別抽題。
                   </p>
                   <Button
                     variant="primary"
-                    onClick={startSelectedCategoryQuiz}
+                    onClick={practiceSelectedCategory}
                     disabled={!selectedCategoryQuestions.length}
                   >
-                    <IconPlayerPlay size={16} stroke={2} aria-hidden="true" />
-                    作答全部 {selectedCategoryQuestions.length} 題
+                    <IconListCheck size={16} stroke={2} aria-hidden="true" />
+                    到選擇題練習抽題
                   </Button>
                 </header>
                 <div>
                   {selectedCategoryQuestions.map((question) => (
-                    <Link href={`${question.path}?mode=single`} key={question.id}>
+                    <Link href={`/exams?question=${question.id}`} key={question.id}>
                       <span>{question.year} 年・{question.questionNumber} 題</span>
                       <strong>{question.text || `${question.topic}題目`}</strong>
-                      <IconExternalLink size={16} stroke={2} aria-hidden="true" />
+                      <IconArrowRight size={16} stroke={2} aria-hidden="true" />
                     </Link>
                   ))}
                 </div>

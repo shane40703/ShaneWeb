@@ -4,8 +4,8 @@ import { existsSync } from 'node:fs';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { PDFDocument, PDFPage, PageSizes } from 'pdf-lib';
 import type { Question } from '@/lib/types';
-import { createDailyPracticeSession } from './daily-practice';
-import { createDailyPaper, dailyPaperFilename, DAILY_PAPER_TITLE } from './daily-paper';
+import { createPracticePaper, createPracticeSession } from '@/features/practice/practice-session';
+import { dailyPaperFilename, DAILY_PAPER_TITLE, getTaipeiDateKey } from './daily-paper';
 import { allowsDailyFontEmbedding, generateDailyPaperPdf, wrapPaperText } from './daily-paper-pdf';
 
 const questions: Question[] = Array.from({ length: 74 }, (_, index) => ({
@@ -16,6 +16,11 @@ const questions: Question[] = Array.from({ length: 74 }, (_, index) => ({
   explanation: '不可出現在試卷的私人詳解', source: { kind: 'sample' },
 }));
 const bank = new Map(questions.map(question => [question.id, question]));
+/** 選擇題練習's paper, the only one left: `count` questions of law 114. */
+function practicePaper(count = 50, date = '2026-10-15') {
+  const session = createPracticeSession({ candidates: questions, count, rangeStart: 114, rangeEnd: 114, category: 'all' }, 'law', false, () => .5);
+  return { session, paper: createPracticePaper(session, bank, date) };
+}
 async function fonts() {
   return { font: new Uint8Array(await readFile('public/fonts/daily-paper/paper-ming.ttf')),
     latinFont: new Uint8Array(await readFile('public/fonts/daily-paper/paper-times.ttf')) };
@@ -23,11 +28,11 @@ async function fonts() {
 
 describe('daily paper snapshot', () => {
   it('retains the assigned order and shuffled options, remaps the separate key without changing session data', () => {
-    const session = createDailyPracticeSession(questions, ['law'], '2026-10-15', () => .5, 'normal');
+    const { session } = practicePaper();
     session.optionOrders[session.questionIds[0]] = [2, 0, 3, 1];
     session.answers[session.questionIds[0]] = { selected: 1, correct: true };
     const original = JSON.stringify(session);
-    const paper = createDailyPaper(session, bank);
+    const paper = createPracticePaper(session, bank, '2026-10-15');
     expect(paper.questions.map(question => question.id)).toEqual(session.questionIds);
     expect(paper.questions[0].options).toEqual(['丙選項', '甲選項', '丁選項', '乙選項']);
     expect(paper.referenceAnswers[0]).toBe('B');
@@ -38,15 +43,21 @@ describe('daily paper snapshot', () => {
     expect(dailyPaperFilename(paper)).toBe('建築師每日練習-2026-10-15-建築法規與實務.pdf');
   });
 
-  it('includes the full adventure reserve and handles accepted alternatives and all-credit answers', () => {
-    const session = createDailyPracticeSession(questions, ['law'], '2026-10-15', () => .5, 'adventure');
+  it('handles accepted alternatives and all-credit answers, and refuses a set that is not loaded', () => {
+    const { session } = practicePaper(74);
     const mixed = new Map(bank);
     mixed.set(session.questionIds[0], { ...bank.get(session.questionIds[0])!, answerKey: { kind: 'accepted', options: [0, 3] } });
     mixed.set(session.questionIds[1], { ...bank.get(session.questionIds[1])!, answerKey: { kind: 'all-credit' } });
     session.optionOrders[session.questionIds[0]] = [2, 0, 3, 1];
-    expect(createDailyPaper(session, mixed)).toMatchObject({ mode: 'adventure', referenceAnswers: ['B、C', '本題一律給分', ...createDailyPaper(session, mixed).referenceAnswers.slice(2)] });
-    expect(createDailyPaper(session, mixed).questions).toHaveLength(74);
-    expect(() => createDailyPaper(session, new Map())).toThrow('尚未完整載入');
+    const paper = createPracticePaper(session, mixed, '2026-10-15');
+    expect(paper.referenceAnswers.slice(0, 2)).toEqual(['B、C', '本題一律給分']);
+    expect(paper.questions).toHaveLength(74);
+    expect(() => createPracticePaper(session, new Map())).toThrow('尚未完整載入');
+  });
+
+  it('dates the paper in the exam board’s timezone', () => {
+    expect(getTaipeiDateKey(new Date('2026-10-11T15:59:00Z'))).toBe('2026-10-11');
+    expect(getTaipeiDateKey(new Date('2026-10-11T16:01:00Z'))).toBe('2026-10-12');
   });
 });
 
@@ -55,7 +66,7 @@ describe('exam PDF layout', () => {
 
   it.skipIf(!existsSync('C:/Windows/Fonts/mingliu.ttc'))('embeds the actual locally supplied PMingLiU and Times New Roman faces, never publishing font files', async () => {
     const drawText = vi.spyOn(PDFPage.prototype, 'drawText');
-    const paper = createDailyPaper(createDailyPracticeSession(questions, ['law'], '2026-10-16', () => .5, 'normal'), bank);
+    const { paper } = practicePaper(50, '2026-10-16');
     const onFontNotice = vi.fn();
     const bytes = await generateDailyPaperPdf(paper, { ...await fonts(), localFonts: {
       chinese: new Uint8Array(await readFile('C:/Windows/Fonts/mingliu.ttc')),
@@ -83,8 +94,7 @@ describe('exam PDF layout', () => {
   it('generates a real A4, embedded-font multi-page PDF with an independent final answer sheet', async () => {
     const drawText = vi.spyOn(PDFPage.prototype, 'drawText');
     const onFontNotice = vi.fn();
-    const session = createDailyPracticeSession(questions, ['law'], '2026-10-15', () => .5, 'normal');
-    const paper = createDailyPaper(session, bank);
+    const { paper } = practicePaper();
     const bytes = await generateDailyPaperPdf(paper, { ...await fonts(), image: vi.fn(), onFontNotice });
     expect(onFontNotice).toHaveBeenCalledWith(expect.stringContaining('未取得完整指定字型'));
     expect(drawText.mock.calls.map(([text]) => text).join('')).not.toContain('字型：');
@@ -98,8 +108,7 @@ describe('exam PDF layout', () => {
   });
 
   it('rejects incomplete keys and missing images instead of delivering an incomplete paper', async () => {
-    const session = createDailyPracticeSession(questions, ['law'], '2026-10-15', () => .5, 'normal');
-    const paper = createDailyPaper(session, bank);
+    const { paper } = practicePaper();
     const assets = await fonts();
     await expect(generateDailyPaperPdf({ ...paper, referenceAnswers: [] }, { ...assets, image: vi.fn() })).rejects.toThrow('參考答案不完整');
     paper.questions[0] = { ...paper.questions[0], content: [{ kind: 'image', src: '/question-bank/missing.png', width: 100, height: 100, alt: '必要題圖' }] };

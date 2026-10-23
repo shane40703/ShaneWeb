@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" shape-rendering="crispEdges">
-  <title>日光稜晶獸・少色像素造型</title>
-  <path d="M12 5H20V8H24V12H27V20H24V24H20V27H12V24H8V20H5V12H8V8H12Z" fill="#d6b773" stroke="#253344" stroke-width="2" stroke-linejoin="miter"/>
-  <path d="M13 3V1M23 5l2-2M29 13h2M3 13H1" fill="none" stroke="#b69055" stroke-width="2"/><path d="M11 8h5v2h-5" fill="#f4ecd8"/>
-  <path d="M10 13h3v4h-3ZM16 13h3v4h-3Z" fill="#253344"/>
-  <path d="M10 13h1v1h-1ZM16 13h1v1h-1Z" fill="#f4ecd8"/>
-</svg>

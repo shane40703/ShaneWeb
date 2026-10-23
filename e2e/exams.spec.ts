@@ -70,15 +70,20 @@ test('past exams opens from the navigation and keeps browsing on /exams', async 
   ).toBeLessThanOrEqual(0);
 });
 
-test('posts on past exams are the same discussion as 詳解與討論', async ({ page }) => {
+test('posts on past exams stay with the question', async ({ page }) => {
   const content = `歷屆試題頁的共享投稿 ${test.info().project.name}`;
   await page.goto('/exams?question=law-114-03');
   await page.getByLabel('內容').fill(content);
   await page.getByRole('button', { name: '送出共享投稿' }).click();
   await expect(page.locator('article').filter({ hasText: content })).toBeVisible();
 
-  await page.goto('/community?question=law-114-03');
-  await expect(page.locator('article').filter({ hasText: content })).toBeVisible();
+  // Moving within the page keeps the loaded posts, so their absence on the next question counts.
+  await page.getByRole('button', { name: '下一題' }).click();
+  await expect(page).toHaveURL(/\/exams\?question=law-114-04$/);
+  await expect(
+    page.getByRole('group', { name: '題號' }).getByRole('button', { name: '第 4 題' }),
+  ).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('article').filter({ hasText: content })).toHaveCount(0);
   await page.goto('/exams?question=law-114-03');
   await expect(page.locator('article').filter({ hasText: content })).toBeVisible();
 });

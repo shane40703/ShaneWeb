@@ -1,121 +1,160 @@
 import { expect, test, type Page } from '@playwright/test';
 
-const sections = [
-  { label: '歷屆試題題練習', links: [['歷屆試題', '/papers'], ['隨機出題', '/random'], ['法規克漏字', '/law-cloze']] },
-  { label: '歷屆試題資料集成', links: [['考題分析', '/analysis'], ['速記圖庫', '/memory-gallery'], ['法規資料庫', '/laws']] },
-  { label: '我的作答存摺', links: [['使用者筆記', '/notes'], ['難題標記', '/difficult'], ['常錯題目', '/wrong'], ['已作答紀錄', '/history']] },
-];
+const personal = {
+  label: '我的作答存摺',
+  links: [
+    ['使用者筆記', '/notes'],
+    ['難題標記', '/difficult'],
+    ['常錯題目', '/wrong'],
+    ['已作答紀錄', '/history'],
+  ],
+};
 
 async function openNavigation(page: Page) {
   const nav = page.getByRole('navigation', { name: '主要功能', exact: true });
   // The phone drawer button can render before hydration, so retry until it opens.
   await expect(async () => {
-    if (!(await nav.isVisible())) await page.getByRole('button', { name: '開啟選單' }).click({ timeout: 1000 });
+    if (!(await nav.isVisible()))
+      await page.getByRole('button', { name: '開啟選單' }).click({ timeout: 1000 });
     await expect(nav).toBeVisible({ timeout: 1000 });
   }).toPass();
   return nav;
 }
 
-test('navigation starts with the new daily practice, past exams and resources hub, keeps discussion independent, and returns home via the brand', async ({ page }, testInfo) => {
+test('navigation lists only the new pages and 我的作答存摺, and returns home via the brand', async ({
+  page,
+}, testInfo) => {
   await page.goto('/');
   const nav = await openNavigation(page);
-  await expect(nav.locator(':scope > a').first()).toHaveText('每日練習（新版）');
-  await expect(nav.locator(':scope > a').nth(1)).toHaveText('歷屆試題（新版）');
-  await expect(nav.locator(':scope > a').nth(1)).toHaveAttribute('href', '/exams');
-  await expect(nav.locator(':scope > a').nth(2)).toHaveText('統計分析（新版）');
-  await expect(nav.locator(':scope > a').nth(2)).toHaveAttribute('href', '/resources');
-  await expect(nav.locator(':scope > a').nth(3)).toHaveText('每日練習');
-  await expect(nav.getByRole('link', { name: '首頁', exact: true })).toHaveCount(0);
-  await expect(nav.getByRole('button')).toHaveCount(3);
-  await expect(nav.getByRole('link', { name: '詳解與討論', exact: true })).toBeVisible();
-  await page.screenshot({ path: testInfo.outputPath('navigation-grouped.png') });
-  await nav.getByRole('link', { name: '每日練習', exact: true }).click();
-  await expect(page).toHaveURL(/\/daily$/);
-  await expect(page.getByRole('dialog', { name: '主要功能', exact: true })).toHaveCount(0);
+  const links = nav.locator(':scope > a');
+  await expect(links).toHaveText([
+    '每日練習（新版）',
+    '歷屆試題（新版）',
+    '統計分析（新版）',
+  ]);
+  await expect(links.nth(0)).toHaveAttribute('href', '/practice');
+  await expect(links.nth(1)).toHaveAttribute('href', '/exams');
+  await expect(links.nth(2)).toHaveAttribute('href', '/resources');
+  await expect(nav.getByRole('button')).toHaveText([personal.label]);
+  for (const removed of ['每日練習', '詳解與討論', '歷屆試題題練習', '歷屆試題資料集成'])
+    await expect(nav.getByText(removed, { exact: true })).toHaveCount(0);
+  await expect(nav.getByRole('link', { name: '設定', exact: true })).toBeVisible();
+  await expect(nav.getByRole('link', { name: '問題回報', exact: true })).toBeVisible();
+  await page.screenshot({ path: testInfo.outputPath('navigation.png') });
+
+  await nav.getByRole('link', { name: '每日練習（新版）', exact: true }).click();
+  await expect(page).toHaveURL(/\/practice$/);
+  await expect(page.getByRole('dialog', { name: '主要功能', exact: true })).toHaveCount(
+    0,
+  );
   await openNavigation(page);
   await page.getByRole('link', { name: '建築師考試首頁', exact: true }).click();
   await expect(page).toHaveURL(/\/$/);
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('首頁');
-  await expect(page.getByRole('dialog', { name: '主要功能', exact: true })).toHaveCount(0);
+  await expect(page.getByRole('dialog', { name: '主要功能', exact: true })).toHaveCount(
+    0,
+  );
 });
 
-for (const section of sections) {
-  test(`${section.label} contains the requested links and supports click, navigation, and active states`, async ({ page }, testInfo) => {
-    await page.goto('/');
-    for (const [label, href] of section.links) {
-      await openNavigation(page);
-      const trigger = page.getByRole('button', { name: section.label, exact: true });
-      await trigger.click();
-      const popup = page.getByRole('group', { name: `${section.label}子選單`, exact: true });
-      await expect(popup.getByRole('link')).toHaveCount(section.links.length);
-      for (const [child, path] of section.links) await expect(popup.getByRole('link', { name: child, exact: true })).toHaveAttribute('href', path);
-      await page.screenshot({ path: testInfo.outputPath(`navigation-${href.slice(1)}.png`) });
-      await popup.getByRole('link', { name: label, exact: true }).click();
-      await expect(page).toHaveURL(new RegExp(`${href}$`));
-      await expect(page.getByRole('heading', { level: 1 })).toHaveText(label);
-      await expect(page.getByRole('group', { name: `${section.label}子選單`, exact: true })).toHaveCount(0);
-      await expect(page.getByRole('dialog', { name: '主要功能', exact: true })).toHaveCount(0);
-      await openNavigation(page);
-      await expect(page.getByRole('button', { name: section.label, exact: true })).toHaveAttribute('data-active', 'true');
-      await page.getByRole('button', { name: section.label, exact: true }).click();
-      await expect(page.getByRole('group', { name: `${section.label}子選單` }).getByRole('link', { name: label, exact: true })).toHaveAttribute('aria-current', 'page');
-      await page.getByRole('button', { name: `關閉${section.label}子選單`, exact: true }).click();
-      const drawer = page.getByRole('dialog', { name: '主要功能', exact: true });
-      if (await drawer.isVisible()) { await page.keyboard.press('Escape'); await expect(drawer).toHaveCount(0); }
+test('我的作答存摺 contains its pages and supports click, navigation, and active states', async ({
+  page,
+}) => {
+  await page.goto('/');
+  for (const [label, href] of personal.links) {
+    await openNavigation(page);
+    await page.getByRole('button', { name: personal.label, exact: true }).click();
+    const popup = page.getByRole('group', {
+      name: `${personal.label}子選單`,
+      exact: true,
+    });
+    await expect(popup.getByRole('link')).toHaveCount(personal.links.length);
+    for (const [child, path] of personal.links)
+      await expect(popup.getByRole('link', { name: child, exact: true })).toHaveAttribute(
+        'href',
+        path,
+      );
+    await popup.getByRole('link', { name: label, exact: true }).click();
+    await expect(page).toHaveURL(new RegExp(`${href}$`));
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(label);
+    await expect(popup).toHaveCount(0);
+    await expect(page.getByRole('dialog', { name: '主要功能', exact: true })).toHaveCount(
+      0,
+    );
+    await openNavigation(page);
+    const trigger = page.getByRole('button', { name: personal.label, exact: true });
+    await expect(trigger).toHaveAttribute('data-active', 'true');
+    await trigger.click();
+    await expect(popup.getByRole('link', { name: label, exact: true })).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
+    await page
+      .getByRole('button', { name: `關閉${personal.label}子選單`, exact: true })
+      .click();
+    const drawer = page.getByRole('dialog', { name: '主要功能', exact: true });
+    if (await drawer.isVisible()) {
+      await page.keyboard.press('Escape');
+      await expect(drawer).toHaveCount(0);
     }
-  });
-}
+  }
+});
 
-test('desktop hover opens a usable submenu without stealing focus and closes after leaving', async ({ page, isMobile }) => {
+test('desktop hover opens a usable submenu without stealing focus and closes after leaving', async ({
+  page,
+  isMobile,
+}) => {
   test.skip(isMobile, 'Touch devices use explicit taps.');
   await page.goto('/');
-  const trigger = page.getByRole('button', { name: sections[0].label, exact: true });
+  const trigger = page.getByRole('button', { name: personal.label, exact: true });
   await page.getByRole('link', { name: '建築師考試首頁' }).focus();
   await trigger.hover();
-  const popup = page.getByRole('group', { name: `${sections[0].label}子選單` });
+  const popup = page.getByRole('group', { name: `${personal.label}子選單` });
   await expect(popup).toBeVisible();
   await expect(page.getByRole('link', { name: '建築師考試首頁' })).toBeFocused();
-  await popup.getByRole('link', { name: '隨機出題', exact: true }).hover();
+  await popup.getByRole('link', { name: '常錯題目', exact: true }).hover();
   await expect(popup).toBeVisible();
   await page.mouse.move(650, 30);
   await expect(popup).toHaveCount(0);
 });
 
-test('keyboard Enter and Escape work with only one group open and no viewport overflow', async ({ page, isMobile }, testInfo) => {
+test('keyboard Enter and Escape work without viewport overflow', async ({
+  page,
+}, testInfo) => {
   await page.goto('/');
   await openNavigation(page);
-  const trigger = page.getByRole('button', { name: sections[0].label, exact: true });
+  const trigger = page.getByRole('button', { name: personal.label, exact: true });
   await trigger.focus();
   await page.keyboard.press('Enter');
-  const popup = page.getByRole('group', { name: `${sections[0].label}子選單` });
-  await expect(popup.getByRole('link', { name: '歷屆試題', exact: true })).toBeFocused();
-  await page.keyboard.press('Escape');
-  await expect(popup).toHaveCount(0);
-  await expect(trigger).toBeFocused();
-  await trigger.click();
-  // On a narrow drawer, the flyout intentionally overlays later groups.
-  // Dismiss it using its visible close control before choosing another group.
-  if (isMobile) await page.getByRole('button', { name: `關閉${sections[0].label}子選單`, exact: true }).click();
-  await page.getByRole('button', { name: sections[1].label, exact: true }).click();
-  await expect(popup).toHaveCount(0);
-  const resources = page.getByRole('group', { name: `${sections[1].label}子選單` });
-  await expect(resources).toBeVisible();
-  const rect = (await resources.boundingBox())!;
+  const popup = page.getByRole('group', { name: `${personal.label}子選單` });
+  await expect(
+    popup.getByRole('link', { name: '使用者筆記', exact: true }),
+  ).toBeFocused();
+  const rect = (await popup.boundingBox())!;
   expect(rect.x).toBeGreaterThanOrEqual(0);
   expect(rect.x + rect.width).toBeLessThanOrEqual(page.viewportSize()!.width);
   expect(rect.y + rect.height).toBeLessThanOrEqual(page.viewportSize()!.height);
-  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(page.viewportSize()!.width);
+  expect(
+    await page.evaluate(() => document.documentElement.scrollWidth),
+  ).toBeLessThanOrEqual(page.viewportSize()!.width);
   await page.screenshot({ path: testInfo.outputPath('navigation-submenu.png') });
+  await page.keyboard.press('Escape');
+  await expect(popup).toHaveCount(0);
+  await expect(trigger).toBeFocused();
 });
 
-test('clicking or tapping the group trigger again closes the child list without navigating', async ({ page, isMobile }) => {
+test('clicking or tapping the group trigger again closes the child list without navigating', async ({
+  page,
+  isMobile,
+}) => {
   await page.goto('/');
   const nav = await openNavigation(page);
-  const trigger = nav.getByRole('button', { name: sections[2].label, exact: true });
-  if (isMobile) await trigger.tap(); else await trigger.click();
-  const popup = page.getByRole('group', { name: `${sections[2].label}子選單` });
+  const trigger = nav.getByRole('button', { name: personal.label, exact: true });
+  if (isMobile) await trigger.tap();
+  else await trigger.click();
+  const popup = page.getByRole('group', { name: `${personal.label}子選單` });
   await expect(popup).toBeVisible();
-  if (isMobile) await trigger.tap(); else await trigger.click();
+  if (isMobile) await trigger.tap();
+  else await trigger.click();
   await expect(popup).toHaveCount(0);
   await expect(nav).toBeVisible();
   await expect(page).toHaveURL(/\/$/);

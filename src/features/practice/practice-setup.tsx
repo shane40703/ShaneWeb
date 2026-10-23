@@ -256,9 +256,7 @@ export function PracticeSetup({
           </fieldset>
 
           <div className={styles.advancedFooter}>
-            <small>
-              預設和原本的每日練習相同：50 題、全部年度與類別、打亂選項、不含一律給分。
-            </small>
+            <small>預設：50 題、全部年度與類別、打亂選項、不含一律給分。</small>
             <Button
               disabled={!customized || busy}
               onClick={() => onSettingsChange(DEFAULT_PRACTICE_SETTINGS)}

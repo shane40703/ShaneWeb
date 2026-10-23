@@ -1,5 +1,4 @@
-import type { DailyPaper } from '@/features/daily/daily-paper';
-import { applyDailyOptionOrder, getTaipeiDateKey } from '@/features/daily/daily-practice';
+import { getTaipeiDateKey, type DailyPaper } from '@/features/daily/daily-paper';
 import {
   formatCorrectAnswer,
   getAnalysisCategory,
@@ -7,7 +6,7 @@ import {
   isSubjectId,
   pickRandomItems,
 } from '@/lib/study';
-import type { Question, SubjectId } from '@/lib/types';
+import type { Question, QuizAttempt, SubjectId } from '@/lib/types';
 import { getSubject, years } from '@/question-bank/catalog';
 import { analysisCategoryCatalog } from '@/question-bank/schema';
 import { practiceQuizPage } from './practice-pages';
@@ -93,6 +92,32 @@ export function getPracticeCategories(
           getAnalysisCategory(question.subject, question.topic, question.primaryCategory),
         ),
       ];
+}
+
+/**
+ * The 選擇題練習 category that covers most of these questions, for links from pages that
+ * group questions their own way (考題分析). Ties go to the name the page showed.
+ */
+export function practiceCategoryFor(
+  questions: readonly Pick<
+    Question,
+    'subject' | 'topic' | 'primaryCategory' | 'relatedLaws'
+  >[],
+  shown?: string,
+) {
+  const counts = new Map<string, number>();
+  questions.forEach((question) =>
+    getPracticeCategories(question).forEach((category) =>
+      counts.set(category, (counts.get(category) ?? 0) + 1),
+    ),
+  );
+  const preferred = shown ? normalizeCategory(shown) : null;
+  return (
+    [...counts.entries()].sort(
+      ([leftName, left], [rightName, right]) =>
+        right - left || Number(rightName === preferred) - Number(leftName === preferred),
+    )[0]?.[0] ?? null
+  );
 }
 
 export interface PracticeCategory {
@@ -243,28 +268,34 @@ function createSessionId(random: () => number) {
   );
 }
 
-/** Every draw is new; nothing is cached per day or per subject. */
-export function createPracticeSession(
-  pool: Pick<
-    PracticePool,
-    'candidates' | 'count' | 'rangeStart' | 'rangeEnd' | 'category'
-  >,
+/**
+ * A new set of exactly these questions, in this order: what 再做一次 in 已作答紀錄 starts.
+ * The range and category describe the questions: a category shared by all of them, else 全部.
+ */
+export function createPracticeSessionFromQuestions(
+  questions: readonly Question[],
   subject: SubjectId,
   shuffleOptions: boolean,
   random: () => number = Math.random,
 ): PracticeSession {
-  const picked = pickRandomItems(pool.candidates, pool.count, random);
+  const questionYears = questions.map((question) => question.year);
+  const [first, ...rest] = questions;
+  const shared = first
+    ? getPracticeCategories(first).filter((category) =>
+        rest.every((question) => getPracticeCategories(question).includes(category)),
+      )
+    : [];
   return {
     version: 1,
     id: createSessionId(random),
     subject,
-    rangeStart: pool.rangeStart,
-    rangeEnd: pool.rangeEnd,
-    category: pool.category,
-    questionIds: picked.map((question) => question.id),
+    rangeStart: questionYears.length ? Math.min(...questionYears) : years.at(-1)!,
+    rangeEnd: questionYears.length ? Math.max(...questionYears) : years[0],
+    category: shared[0] ?? 'all',
+    questionIds: questions.map((question) => question.id),
     optionOrders: shuffleOptions
       ? Object.fromEntries(
-          picked.map((question) => {
+          questions.map((question) => {
             const indexes = question.options.map((_, index) => index);
             return [question.id, pickRandomItems(indexes, indexes.length, random)];
           }),
@@ -278,12 +309,47 @@ export function createPracticeSession(
   };
 }
 
-/** Reorders the options and remaps the answer key, so graded indexes match the screen. */
+/** Every draw is new; nothing is cached per day or per subject. */
+export function createPracticeSession(
+  pool: Pick<
+    PracticePool,
+    'candidates' | 'count' | 'rangeStart' | 'rangeEnd' | 'category'
+  >,
+  subject: SubjectId,
+  shuffleOptions: boolean,
+  random: () => number = Math.random,
+): PracticeSession {
+  const picked = pickRandomItems(pool.candidates, pool.count, random);
+  return {
+    ...createPracticeSessionFromQuestions(picked, subject, shuffleOptions, random),
+    rangeStart: pool.rangeStart,
+    rangeEnd: pool.rangeEnd,
+    category: pool.category,
+  };
+}
+
+/**
+ * Reorders the options and remaps the answer key, so graded indexes match the screen.
+ * An order that does not fit the question (the bank changed) leaves it as it is.
+ */
 export function displayPracticeQuestion(
   question: Question,
   optionOrder: readonly number[] | undefined,
-) {
-  return applyDailyOptionOrder(question, optionOrder);
+): Question {
+  if (!optionOrder || !fitsOptions(optionOrder, question.options.length)) return question;
+  return {
+    ...question,
+    options: optionOrder.map((index) => question.options[index]),
+    answerKey:
+      question.answerKey.kind === 'accepted'
+        ? {
+            kind: 'accepted',
+            options: question.answerKey.options.map((index) =>
+              optionOrder.indexOf(index),
+            ),
+          }
+        : question.answerKey,
+  };
 }
 
 export function getDisplayedQuestion(
@@ -490,6 +556,71 @@ export function summarizePractice(session: PracticeSession): PracticeSummary {
   };
 }
 
+/** An order that does not fit the question was never applied (see displayPracticeQuestion). */
+function fitsOptions(order: readonly number[], optionCount: number) {
+  return (
+    order.length === optionCount &&
+    new Set(order).size === optionCount &&
+    order.every((index) => Number.isInteger(index) && index >= 0 && index < optionCount)
+  );
+}
+
+/** The option of the original paper behind a choice made on the (maybe shuffled) screen. */
+export function toOriginalOption(
+  question: Pick<Question, 'options'> | undefined,
+  order: readonly number[] | undefined,
+  displayed: number,
+) {
+  return order && fitsOptions(order, question?.options.length ?? order.length)
+    ? order[displayed]
+    : displayed;
+}
+
+/**
+ * The 已作答紀錄 entry of a submitted set, or null when nothing was answered. Its numbers
+ * are the result page's: blanks, 一律給分 included, never count. Answers are stored in the
+ * original option order, like every other record.
+ */
+export function createPracticeAttempt(
+  session: PracticeSession,
+  questionById: ReadonlyMap<string, Pick<Question, 'options'>>,
+  submittedAt = new Date().toISOString(),
+): { attempt: QuizAttempt; results: Record<string, boolean> } | null {
+  const summary = summarizePractice(session);
+  if (!summary.answered) return null;
+  const answers: Record<string, number> = {};
+  const results: Record<string, boolean> = {};
+  session.questionIds.forEach((questionId) => {
+    const answer = session.answers[questionId];
+    if (!answer) return;
+    answers[questionId] = toOriginalOption(
+      questionById.get(questionId),
+      session.optionOrders[questionId],
+      answer.selected,
+    );
+    results[questionId] = answer.correct;
+  });
+  return {
+    attempt: {
+      id: `attempt-${submittedAt}-${Math.random().toString(36).slice(2, 8)}`,
+      mode: 'practice',
+      subject: session.subject,
+      year: null,
+      questionIds: [...session.questionIds],
+      answers,
+      startedAt: new Date(
+        Date.parse(submittedAt) - summary.elapsedSeconds * 1000,
+      ).toISOString(),
+      submittedAt,
+      elapsedSeconds: summary.elapsedSeconds,
+      correctCount: summary.correct,
+      wrongCount: summary.wrong,
+      unansweredCount: summary.unanswered,
+    },
+    results,
+  };
+}
+
 /** Kept only in memory: a reload after submitting returns to the blank set. */
 export interface PracticeResult {
   session: PracticeSession;
@@ -515,7 +646,6 @@ export function createPracticePaper(
   return {
     date,
     subjectName: getSubject(session.subject)?.name ?? '',
-    mode: 'normal',
     questions: displayed.map((question) => ({
       id: question.id,
       year: question.year,

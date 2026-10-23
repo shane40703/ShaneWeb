@@ -361,19 +361,13 @@ test('on a 320px phone the title keeps （新版） whole and the switcher stays
   await expectNoHorizontalScroll(page);
 });
 
-test('law rows fit tablet-width panels on the hub and on the original page', async ({
-  page,
-}) => {
+test('law rows fit tablet-width panels', async ({ page }) => {
   // 600px has no sidebar and 900px sits beside it; both leave under 620px for a row.
   for (const width of [600, 900]) {
     await page.setViewportSize({ width, height: 800 });
-    for (const path of ['/resources/laws', '/laws']) {
-      await page.goto(path);
-      await expect(
-        page.getByRole('link', { name: /建築技術規則/ }).first(),
-      ).toBeVisible();
-      await expectNoHorizontalScroll(page);
-    }
+    await page.goto('/resources/laws');
+    await expect(page.getByRole('link', { name: /建築技術規則/ }).first()).toBeVisible();
+    await expectNoHorizontalScroll(page);
   }
 });
 
@@ -397,24 +391,4 @@ test('the sidebar shows the full hub name without cutting off （新版）', asy
   await expect(note).toBeVisible();
   // One line box: whenever the name wraps, the note moves down whole instead of splitting as （新 / 版）.
   expect(await note.evaluate((node) => node.getClientRects().length)).toBe(1);
-});
-
-test('the original resource pages keep their own headers outside the hub', async ({
-  page,
-}) => {
-  await page.goto('/laws');
-  await expect(page.getByRole('heading', { level: 2, name: '法規資料庫' })).toBeVisible();
-  await expect(page.getByRole('navigation', { name: '統計分析頁面' })).toHaveCount(0);
-
-  await page.goto('/memory-gallery');
-  await expect(page.getByRole('heading', { level: 2, name: '速記圖庫' })).toBeVisible();
-  await expect(page.getByRole('navigation', { name: '統計分析頁面' })).toHaveCount(0);
-
-  await page.goto('/analysis?subject=construction&year=113');
-  await expect(
-    page
-      .getByRole('group', { name: '科目' })
-      .getByRole('button', { name: /建築構造與施工/ }),
-  ).toHaveAttribute('aria-pressed', 'true');
-  await expect(page.getByRole('navigation', { name: '統計分析頁面' })).toHaveCount(0);
 });

@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" shape-rendering="crispEdges">
-  <title>旋風精靈・少色像素造型</title>
-  <path d="M8 8H22V11H25V19H22V22H17V25H22V28H10V25H6V22H13V19H6V16H4V11H8Z" fill="#a9c7be" stroke="#253344" stroke-width="2" stroke-linejoin="miter"/>
-  <path d="M10 9h11M9 25h7" fill="none" stroke="#78a5a7" stroke-width="2"/>
-  <path d="M10 13h3v4h-3ZM16 13h3v4h-3Z" fill="#253344"/>
-  <path d="M10 13h1v1h-1ZM16 13h1v1h-1Z" fill="#f4ecd8"/>
-</svg>

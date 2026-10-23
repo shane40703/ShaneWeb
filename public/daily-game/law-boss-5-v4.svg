@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" shape-rendering="crispEdges">
-  <title>都市更新獅・少色像素造型</title>
-  <path d="M5 11H7V8H12V11H15V5H21V11H25V15H28V25H24V28H20V25H11V28H7V25H4V13H5Z" fill="#b58f78" stroke="#253344" stroke-width="2" stroke-linejoin="miter"/>
-  <path d="M17 8h2v4h-2M22 20h3v4h-3" fill="#84675f"/>
-  <path d="M9 16h3v4h-3ZM15 16h3v4h-3Z" fill="#253344"/>
-  <path d="M9 16h1v1h-1ZM15 16h1v1h-1Z" fill="#f4ecd8"/>
-</svg>

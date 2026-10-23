@@ -1,9 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  QUIZ_PROGRESS_STORAGE_KEY,
-  createQuizProgressScope,
-  writeQuizProgress,
-} from '@/features/quiz/quiz-state';
+import { QUIZ_PROGRESS_STORAGE_KEY, writeQuizProgress } from './mock-exam-progress';
 import { readStoredValue } from '@/lib/storage';
 import type { Question, SubjectId } from '@/lib/types';
 import {
@@ -117,10 +113,8 @@ describe('mock exam papers', () => {
     );
   });
 
-  it('shares the original 歷屆試題 draft of the same paper', () => {
-    expect(mockExamScope('law', 114)).toBe(
-      createQuizProgressScope({ mode: 'paper', subject: 'law', year: 114 }),
-    );
+  it('keeps the draft key the original 歷屆試題 used for the paper', () => {
+    expect(mockExamScope('law', 114)).toBe('paper:law:114');
   });
 });
 

@@ -71,28 +71,7 @@ export interface QuestionSummary {
   relatedLaws?: readonly string[];
   fineTopic?: string;
   text: string;
-  path: string;
 }
-
-export type QuizQuestion = Pick<
-  Question,
-  | 'id'
-  | 'format'
-  | 'subject'
-  | 'year'
-  | 'questionNumber'
-  | 'topic'
-  | 'primaryCategory'
-  | 'relatedLaws'
-  | 'fineTopic'
-  | 'text'
-  | 'content'
-  | 'options'
-  | 'answerKey'
-  | 'explanation'
-> & {
-  path: string;
-};
 
 export interface AnswerRecord {
   selected: number;
@@ -102,7 +81,8 @@ export interface AnswerRecord {
 
 export interface QuizAttempt {
   id: string;
-  mode: 'paper' | 'random';
+  /** paper: 歷屆試題模擬考 (and the original 歷屆試題); practice: 選擇題練習. */
+  mode: 'paper' | 'practice';
   subject: SubjectId | 'mixed';
   year: number | null;
   questionIds: QuestionId[];

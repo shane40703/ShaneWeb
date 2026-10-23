@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" shape-rendering="crispEdges">
-  <title>鋼筋堡壘獸・少色像素造型</title>
-  <path d="M8 8H24V11H27V25H24V28H20V25H12V28H8V25H5V11H8Z" fill="#a6a396" stroke="#253344" stroke-width="2" stroke-linejoin="miter"/>
-  <path d="M11 3v5M21 3v5M21 21h4v3h-7" fill="none" stroke="#777f79" stroke-width="2"/>
-  <path d="M10 14h3v4h-3ZM16 14h3v4h-3Z" fill="#253344"/>
-  <path d="M10 14h1v1h-1ZM16 14h1v1h-1Z" fill="#f4ecd8"/>
-</svg>

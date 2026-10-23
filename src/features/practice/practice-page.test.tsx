@@ -420,7 +420,7 @@ describe('PracticePage setup', () => {
     fireEvent.click(screen.getByRole('button', { name: '製作紙本檔案' }));
     await waitFor(() => expect(paperDownload).toHaveBeenCalledTimes(2));
     const [first, second] = paperDownload.mock.calls.map(([paper]) => paper);
-    expect(first).toMatchObject({ subjectName: '建築法規與實務', mode: 'normal' });
+    expect(first).toMatchObject({ subjectName: '建築法規與實務' });
     expect(first.answerKeyNote).toBeUndefined();
     expect(first.questions).toHaveLength(50);
     expect(first.referenceAnswers).toHaveLength(50);
@@ -448,6 +448,21 @@ describe('PracticePage from the hub', () => {
     );
     await waitFor(() => expect(router.snapshot.asPath).toBe('/practice/quiz'));
     expect(screen.getByRole('radio', { name: /建築法規與實務/ })).not.toBeChecked();
+  });
+
+  it('opens the setup with 考題分析’s year range and category, and drops them from the URL', async () => {
+    renderAt(
+      `/practice/quiz?subject=env&from=114&to=114&category=${encodeURIComponent('建築法')}`,
+    );
+    await waitFor(() =>
+      expect(screen.getByRole('radio', { name: /建築環境控制/ })).toBeChecked(),
+    );
+    await waitFor(() => expect(router.snapshot.asPath).toBe('/practice/quiz'));
+    // env 114 has six questions, two of them tagged 建築法.
+    expect(screen.getByRole('button', { name: /進階選項/ })).toHaveTextContent(
+      '2 題・114–114 年・建築法',
+    );
+    expect(screen.getByRole('button', { name: /進階選項/ })).toHaveTextContent('已調整');
   });
 
   it('keeps the set in progress when a subject arrives in the URL', async () => {
@@ -577,7 +592,7 @@ describe('PracticePage answering', () => {
     await screen.findByLabelText('第 2 題，共 5 題');
   });
 
-  it('keeps struck-out options and difficult marks, and never saves answers to the shared records', async () => {
+  it('keeps struck-out options and difficult marks, and saves only what was submitted', async () => {
     const confirm = vi.spyOn(window, 'confirm').mockReturnValue(true);
     seed({});
     const view = renderAt('/practice/quiz?q=1');
@@ -603,8 +618,57 @@ describe('PracticePage answering', () => {
     submitFromSidebar();
     expect(confirm).toHaveBeenCalled();
     await screen.findByText('100% 正確率');
+    // Answering itself records nothing; the submission is one 已作答紀錄 entry.
     const recordTypes = appState.dispatch.mock.calls.map(([action]) => action.type);
-    expect(recordTypes).toEqual(['toggle-difficult']);
+    expect(recordTypes).toEqual(['toggle-difficult', 'save-attempt']);
+  });
+
+  it('records a submitted set in 已作答紀錄 with the original options and the result page’s numbers', async () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    seed({
+      // Shown shuffled: 選項 A sits second on the screen, 選項 B first.
+      optionOrders: { 'law-114-01': [1, 0, 2, 3] },
+      answers: {
+        'law-114-01': { selected: 1, correct: true },
+        'law-113-02': { selected: 0, correct: false },
+      },
+      elapsedSeconds: { 'law-114-01': 30, 'law-113-02': 12 },
+    });
+    renderAt('/practice/quiz?q=1');
+    await screen.findByLabelText('第 1 題，共 5 題');
+    submitFromSidebar();
+    await screen.findByText('50% 正確率');
+
+    const saved = appState.dispatch.mock.calls.find(
+      ([action]) => action.type === 'save-attempt',
+    )![0];
+    expect(saved.attempt).toMatchObject({
+      mode: 'practice',
+      subject: 'law',
+      year: null,
+      questionIds: lawQuestions.slice(0, 5).map((question) => question.id),
+      // The shuffled second option is the paper's 選項 A; an unshuffled one stays as is.
+      answers: { 'law-114-01': 0, 'law-113-02': 0 },
+      correctCount: 1,
+      wrongCount: 1,
+      unansweredCount: 3,
+      elapsedSeconds: 42,
+    });
+    expect(saved.attempt.id).toMatch(/^attempt-/);
+    expect(saved.results).toEqual({ 'law-114-01': true, 'law-113-02': false });
+  });
+
+  it('keeps no record of a set submitted without a single answer', async () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    seed({});
+    renderAt('/practice/quiz?q=1');
+    await screen.findByLabelText('第 1 題，共 5 題');
+    submitFromSidebar();
+    await screen.findByText('這次沒有作答任何題目');
+
+    expect(
+      appState.dispatch.mock.calls.some(([action]) => action.type === 'save-attempt'),
+    ).toBe(false);
   });
 
   it('follows the question in the URL and keeps progress through a reload', async () => {

@@ -14,7 +14,7 @@ import {
   QuestionNumberGrid,
 } from '@/components/question-number-button';
 import { Button, OptionGroup } from '@/components/ui/ui';
-import type { QuizProgressByQuestion } from '@/features/quiz/quiz-state';
+import type { QuizProgressByQuestion } from './mock-exam-progress';
 import type { Question } from '@/lib/types';
 import { getSubject } from '@/question-bank/catalog';
 import { useAppState } from '@/state/app-state';

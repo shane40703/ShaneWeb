@@ -53,19 +53,17 @@ describe('appReducer', () => {
     expect(duplicate.answers['law-114-01']?.correct).toBe(true);
   });
 
-  it('does not record random quiz attempts or their answers', () => {
+  it('records 選擇題練習 attempts and their answers like mock exams', () => {
     const paperAttempt = attempt();
-    const randomAttempt = { ...paperAttempt, mode: 'random' as const };
-    const initial = createDefaultState();
-    const state = appReducer(initial, {
+    const practiceAttempt = { ...paperAttempt, mode: 'practice' as const, year: null };
+    const state = appReducer(createDefaultState(), {
       type: 'save-attempt',
-      attempt: randomAttempt,
+      attempt: practiceAttempt,
       results: resultsFor(paperAttempt),
     });
 
-    expect(state).toBe(initial);
-    expect(state.attempts).toHaveLength(0);
-    expect(state.answers).toEqual({});
+    expect(state.attempts).toEqual([practiceAttempt]);
+    expect(Object.keys(state.answers)).toEqual(Object.keys(practiceAttempt.answers));
   });
 
   it('keeps the complete attempt history beyond 100 attempts', () => {

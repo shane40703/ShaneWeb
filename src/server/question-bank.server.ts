@@ -13,14 +13,8 @@ import {
   type SourceAnswerKey,
   type SubjectId,
 } from '@/question-bank/schema';
-import { questionPath } from '@/lib/question-path';
-import { getQuestionDisplayCategories, toQuizQuestion } from '@/lib/study';
-import type {
-  Question,
-  QuestionFormat,
-  QuestionSummary,
-  QuizQuestion,
-} from '@/lib/types';
+import { getQuestionDisplayCategories } from '@/lib/study';
+import type { Question, QuestionFormat, QuestionSummary } from '@/lib/types';
 
 const bankRoot = path.join(process.cwd(), 'public/question-bank');
 const yearDirectoryPattern = /^\d{3}$/;
@@ -529,12 +523,6 @@ async function discoverQuestionSummaries(
         ...(question.relatedLaws?.length ? { relatedLaws: question.relatedLaws } : {}),
         ...(question.fineTopic ? { fineTopic: question.fineTopic } : {}),
         text: question.text,
-        path: questionPath(
-          entry.subject,
-          entry.year,
-          entry.questionNumber,
-          entry.format,
-        ),
       };
     }),
   );
@@ -563,16 +551,6 @@ export async function getMultipleChoiceQuestions(): Promise<Question[]> {
     loadQuestions(entries.filter((entry) => entry.format === 'multiple-choice')),
   );
   return cache.multipleChoice;
-}
-
-export async function getQuestionStaticPaths() {
-  return (await getQuestionEntries()).map((entry) => ({
-    params: {
-      subject: entry.subject,
-      year: String(entry.year),
-      number: entry.entryName,
-    },
-  }));
 }
 
 export async function findQuestionEntry(subject: string, year: string, number: string) {
@@ -910,32 +888,4 @@ export async function loadSubjectQuestions(
       entry.subject === subject && (year === undefined || entry.year === year),
   );
   return loadQuestions(entries);
-}
-
-export async function loadQuizQuestions(
-  subject: SubjectId,
-  year?: number,
-): Promise<QuizQuestion[]> {
-  const entries = (await getQuestionEntries()).filter(
-    (entry) =>
-      entry.format === 'multiple-choice' &&
-      entry.subject === subject &&
-      (year === undefined || entry.year === year),
-  );
-  const questions = await loadQuestions(entries);
-  return questions.map(toQuizQuestion);
-}
-
-export async function loadWrittenQuestions(
-  subject: SubjectId,
-  year: number,
-): Promise<QuizQuestion[]> {
-  const entries = (await getQuestionEntries()).filter(
-    (entry) =>
-      entry.format === 'written' &&
-      entry.subject === subject &&
-      entry.year === year,
-  );
-  const questions = await loadQuestions(entries);
-  return questions.map(toQuizQuestion);
 }

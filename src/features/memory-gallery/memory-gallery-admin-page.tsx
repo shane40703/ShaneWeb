@@ -92,7 +92,7 @@ export function MemoryGalleryAdminPage({ initialItems, editingAvailable }: { ini
   return <section className={styles.page} aria-label="速記圖庫管理">
     <header className={styles.heading}><div><span>AUTHOR ADMIN</span><h2><IconPhoto size={26} aria-hidden="true" />速記圖庫管理</h2>
       <p>僅管理者能上傳、修改分類及下架圖片；發布後所有使用者皆可瀏覽。</p></div>
-      <Button role="link" render={<Link href="/memory-gallery" />}>查看速記圖庫</Button></header>
+      <Button role="link" render={<Link href="/resources/memory-gallery" />}>查看速記圖庫</Button></header>
     <aside className={styles.instructions}>
       <strong>本機上傳，隨網站部署發布</strong>
       <p>在專案設定 AUTHOR_EDIT_KEY 並執行 npm run dev，再從本頁上傳。圖片與索引會存入專案，完成後一起 commit／push。</p>

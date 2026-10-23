@@ -1,20 +1,9 @@
 import { subjects } from '@/question-bank/catalog';
-import type { QuestionFormat } from '@/lib/types';
 import type { SubjectId } from '@/question-bank/schema';
 
 const questionIdPattern = new RegExp(
   `^(${subjects.map((subject) => subject.id).join('|')})-(\\d{3})-(?:(written)-)?(\\d{2})$`,
 );
-
-export function questionPath(
-  subject: SubjectId,
-  year: number,
-  questionNumber: number,
-  format: QuestionFormat = 'multiple-choice',
-) {
-  const number = String(questionNumber).padStart(2, '0');
-  return `/questions/${subject}/${year}/${format === 'written' ? `written-${number}` : number}`;
-}
 
 export function parseQuestionId(questionId: string) {
   const match = questionIdPattern.exec(questionId);
@@ -25,13 +14,6 @@ export function parseQuestionId(questionId: string) {
         format: match[3] ? ('written' as const) : ('multiple-choice' as const),
         questionNumber: Number(match[4]),
       }
-    : null;
-}
-
-export function questionPathFromId(questionId: string) {
-  const parsed = parseQuestionId(questionId);
-  return parsed
-    ? questionPath(parsed.subject, parsed.year, parsed.questionNumber, parsed.format)
     : null;
 }
 

@@ -11,7 +11,7 @@ export function SimilarQuestions({
 }: {
   question: Question;
   questions: readonly Question[];
-  basePath: '/notes' | '/community' | '/exams';
+  basePath: '/notes' | '/exams';
 }) {
   const similar = getSimilarLawQuestions(question, questions);
   if (!similar.topic || !similar.questions.length) return null;

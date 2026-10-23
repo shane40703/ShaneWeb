@@ -1,5 +1,4 @@
 import { subjects, years } from '@/question-bank/catalog';
-import { questionPath } from '@/lib/question-path';
 import { analysisCategoryCatalog } from '@/question-bank/schema';
 import type {
   AnswerRecord,
@@ -9,7 +8,6 @@ import type {
   ImageAttachment,
   Question,
   QuizAttempt,
-  QuizQuestion,
   SubjectId,
 } from '@/lib/types';
 
@@ -49,7 +47,7 @@ export function isQuizAttempt(value: unknown): value is QuizAttempt {
   const attempt = value as Partial<QuizAttempt>;
   return (
     typeof attempt.id === 'string' &&
-    (attempt.mode === 'paper' || attempt.mode === 'random') &&
+    (attempt.mode === 'paper' || attempt.mode === 'practice') &&
     (attempt.subject === 'mixed' || isSubjectId(attempt.subject)) &&
     (attempt.year === null || Number.isInteger(attempt.year)) &&
     typeof attempt.startedAt === 'string' &&
@@ -174,9 +172,9 @@ export function parseStoredState(raw: string | null): AppState {
   return {
     answers: keepValidEntries(state.answers, isAnswerRecord),
     difficultQuestionIds: keepValidItems(state.difficultQuestionIds, isQuestionId),
+    // Records of the retired 隨機出題 (mode 'random') stay dropped, as they have been since July.
     attempts: keepValidItems(state.attempts, isQuizAttempt).filter(
-      (attempt) =>
-        attempt.mode === 'paper' && !deletedAttemptIds.includes(attempt.id),
+      (attempt) => !deletedAttemptIds.includes(attempt.id),
     ),
     deletedAttemptIds,
     notes: keepValidEntries(state.notes, isNoteContent),
@@ -236,7 +234,7 @@ export function getAttemptScopeKey(
     return `paper:${attempt.subject}:${attempt.year}`;
   }
 
-  return `random:${[...attempt.questionIds].sort().join(',')}`;
+  return `practice:${[...attempt.questionIds].sort().join(',')}`;
 }
 
 const subjectScoreConfigs: Record<
@@ -327,31 +325,6 @@ export function isQuestionCorrect(
 }
 
 type AttemptSource = Pick<Question, 'id' | 'subject' | 'year' | 'answerKey'>;
-
-export function toQuizQuestion(question: Question): QuizQuestion {
-  return {
-    id: question.id,
-    ...(question.format ? { format: question.format } : {}),
-    subject: question.subject,
-    year: question.year,
-    questionNumber: question.questionNumber,
-    topic: question.topic,
-    primaryCategory: question.primaryCategory,
-    ...(question.relatedLaws ? { relatedLaws: question.relatedLaws } : {}),
-    ...(question.fineTopic ? { fineTopic: question.fineTopic } : {}),
-    text: question.text,
-    content: question.content,
-    options: question.options,
-    answerKey: question.answerKey,
-    ...(question.explanation ? { explanation: question.explanation } : {}),
-    path: questionPath(
-      question.subject,
-      question.year,
-      question.questionNumber,
-      question.format,
-    ),
-  };
-}
 
 export function isWrittenQuestion(
   question: Pick<Question, 'format'>,

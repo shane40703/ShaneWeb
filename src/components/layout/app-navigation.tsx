@@ -2,9 +2,8 @@ import Link from 'next/link';
 import { useRef, useState, type Ref } from 'react';
 import { Popover } from '@base-ui/react/popover';
 import {
-  IconBooks, IconBuildingSkyscraper, IconBulb, IconChartPie, IconChevronRight, IconDatabase,
-  IconFileText, IconFlag, IconHistory, IconMessages, IconNotebook, IconPhoto,
-  IconRepeat, IconScale, IconSettings, IconSparkles, IconTargetArrow, IconX,
+  IconBooks, IconBuildingSkyscraper, IconBulb, IconChevronRight, IconFileText, IconFlag,
+  IconHistory, IconNotebook, IconRepeat, IconSettings, IconX,
 } from '@tabler/icons-react';
 import { practiceHub, practicePages } from '@/features/practice/practice-pages';
 import { resourcePages, resourcesHub } from '@/features/resources/resource-pages';
@@ -16,18 +15,6 @@ const primaryNavigation: readonly (NavigationLinkItem | NavigationSectionItem)[]
   { href: practiceHub.href, label: practiceHub.label, icon: practiceHub.icon },
   { href: '/exams', label: '歷屆試題（新版）', icon: IconBooks },
   { href: resourcesHub.href, label: resourcesHub.label, icon: resourcesHub.icon },
-  { href: '/daily', label: '每日練習', icon: IconTargetArrow },
-  { id: 'practice', label: '歷屆試題題練習', icon: IconFileText, items: [
-    { href: '/papers', label: '歷屆試題', icon: IconFileText },
-    { href: '/random', label: '隨機出題', icon: IconSparkles },
-    { href: '/law-cloze', label: '法規克漏字', icon: IconFileText },
-  ] },
-  { id: 'resources', label: '歷屆試題資料集成', icon: IconDatabase, items: [
-    { href: '/analysis', label: '考題分析', icon: IconChartPie },
-    { href: '/memory-gallery', label: '速記圖庫', icon: IconPhoto },
-    { href: '/laws', label: '法規資料庫', icon: IconScale },
-  ] },
-  { href: '/community', label: '詳解與討論', icon: IconMessages },
   { id: 'personal', label: '我的作答存摺', icon: IconNotebook, items: [
     { href: '/notes', label: '使用者筆記', icon: IconNotebook },
     { href: '/difficult', label: '難題標記', icon: IconBulb },
@@ -50,7 +37,6 @@ function isActive(pathname: string, href: string) {
 
 export function navigationPageTitle(pathname: string) {
   if (pathname === '/') return '首頁';
-  if (pathname.startsWith('/questions/')) return '作答頁';
   const path = pathname === '/appearance' ? '/settings' : pathname;
   return titledPages.find(item => isActive(path, item.href))?.label ?? '建築師考試';
 }
@@ -122,7 +108,7 @@ function Navigation(props: NavigationProps) {
 }
 
 export function SidebarContent(props: NavigationProps) {
-  const pathname = props.pathname.startsWith('/questions/') ? '/papers' : props.pathname;
+  const { pathname } = props;
   return <div className={styles.sidebarInner}>
     <Link href="/" className={styles.brand} aria-label="建築師考試首頁" onClick={() => props.onNavigate?.()}>
       <span className={styles.brandMark} aria-hidden="true"><IconBuildingSkyscraper size={25} stroke={1.9} /></span>

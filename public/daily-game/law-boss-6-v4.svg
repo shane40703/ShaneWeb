@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" shape-rendering="crispEdges">
-  <title>技規法典龍・少色像素造型</title>
-  <path d="M9 6H23V11H26V22H29V19H31V26H26V28H12V26H8V22H5V17H3V11H9Z" fill="#88919a" stroke="#253344" stroke-width="2" stroke-linejoin="miter"/>
-  <path d="M20 7v19M23 12h2v10h-2" fill="none" stroke="#5f7287" stroke-width="2"/><path d="M9 6V3h3v3M16 6V3h3v3" fill="none" stroke="#253344" stroke-width="2"/>
-  <path d="M8 12h3v4h-3ZM14 12h3v4h-3Z" fill="#253344"/>
-  <path d="M8 12h1v1h-1ZM14 12h1v1h-1Z" fill="#f4ecd8"/>
-</svg>

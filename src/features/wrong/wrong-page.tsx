@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { useState } from 'react';
 import {
   IconAlertTriangle,
@@ -177,7 +178,17 @@ export function WrongPage({
         <EmptyState
           icon={IconRepeat}
           title="還沒有作答紀錄"
-          description="完成並交卷歷屆試題後，答錯的題目與累計次數會整理在這裡。"
+          description="完成選擇題練習或歷屆試題模擬考並交卷後，答錯的題目與累計次數會整理在這裡。"
+          action={
+            <>
+              <Button role="link" render={<Link href="/practice/quiz" />}>
+                選擇題練習
+              </Button>
+              <Button role="link" variant="primary" render={<Link href="/practice/mock-exam" />}>
+                歷屆試題模擬考
+              </Button>
+            </>
+          }
         />
       </section>
     );
@@ -201,7 +212,7 @@ export function WrongPage({
         <EmptyState
           icon={IconCircleCheck}
           title="目前沒有答錯題目"
-          description="已載入的歷屆試題紀錄中沒有錯題，繼續保持。"
+          description="已載入的作答紀錄中沒有錯題，繼續保持。"
         />
       </section>
     );
@@ -259,7 +270,7 @@ export function WrongPage({
                 <span>累計答錯</span>
                 <strong>{stats.reduce((total, item) => total + item.wrongCount, 0)}</strong>
               </div>
-              <p>依已儲存的歷屆試題交卷紀錄統計；重新答對不會刪除過去的錯題次數。</p>
+              <p>依選擇題練習與歷屆試題模擬考的交卷紀錄統計；重新答對不會刪除過去的錯題次數。</p>
             </section>
             <div className={styles.selector}>
               <QuestionSelector
