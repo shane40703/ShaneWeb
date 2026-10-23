@@ -13,3 +13,6 @@ public/question-data/
 
 # Storybook
 storybook-static/
+
+# Git worktrees
+.worktrees/
