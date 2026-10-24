@@ -49,7 +49,7 @@ const colorFields: Array<{
   label: string;
   description: string;
 }> = [
-  { key: 'background', label: '頁面背景', description: '網站最底層的背景色' },
+  { key: 'background', label: '頁面背景', description: '網站最底層的方格紙底色' },
   { key: 'surface', label: '卡片背景', description: '卡片與主要內容區塊' },
   { key: 'text', label: '主要文字', description: '標題與正文內容' },
   { key: 'muted', label: '次要文字', description: '說明與輔助資訊' },
@@ -279,7 +279,11 @@ export function AppearanceSettings({ embedded = false }: { embedded?: boolean })
           <title>介面配色設定｜建築師考試</title>
         </Head>
       ) : null}
-      <section className={styles.page} aria-label="介面配色設定">
+      <section
+        className={styles.page}
+        aria-label="介面配色設定"
+        data-embedded={embedded || undefined}
+      >
 
         <fieldset
           className={styles.modeFieldset}
@@ -600,7 +604,7 @@ export function AppearanceSettings({ embedded = false }: { embedded?: boolean })
                   </div>
                 </article>
                 <div className={styles.previewSecondary}>
-                  次層卡片會由核心色自動產生，並保留清楚邊框。
+                  補充說明以分隔線與卡片區隔，不另外加框。
                 </div>
               </div>
             </div>

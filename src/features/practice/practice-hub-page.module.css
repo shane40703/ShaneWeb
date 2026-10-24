@@ -1,25 +1,25 @@
-/* One column of links, each a practice named and described in words. The rows keep the
-   look of the resources hub's cards, but stay narrow enough to read across at a glance. */
+/* One column of links on the paper, each a dashed-frame card like the reference's legal
+   page: a name, a description and a figure, nothing else. */
 .hub {
   min-width: 0;
   max-width: 720px;
   display: grid;
-  gap: 18px;
+  gap: 20px;
   container-type: inline-size;
 }
 
 .intro {
   margin: 0;
-  color: var(--muted);
-  font-size: 13px;
-  line-height: 1.8;
+  color: var(--text-soft);
+  font-size: 15px;
+  line-height: 1.7;
 }
 
 .links {
   margin: 0;
   padding: 0;
   display: grid;
-  gap: 12px;
+  gap: 14px;
   list-style: none;
 }
 
@@ -30,41 +30,26 @@
 .card {
   position: relative;
   min-width: 0;
-  padding: 18px 20px;
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 16px;
-  border: 1px solid var(--line);
-  border-radius: 18px;
+  padding: 22px 24px;
+  border: var(--frame-dashed);
+  border-radius: var(--radius-frame);
   background: var(--surface);
-  box-shadow: var(--shadow-sm);
-  transition:
-    transform 180ms ease,
-    border-color 180ms ease,
-    box-shadow 180ms ease;
 }
 
 .card:hover {
-  transform: translateY(-2px);
-  border-color: color-mix(in srgb, var(--primary) 45%, var(--line));
-  box-shadow: var(--shadow-md);
+  border-color: var(--primary);
 }
 
-.cardIcon {
-  width: 48px;
-  height: 48px;
-  display: grid;
-  place-items: center;
-  border-radius: 14px;
-  background: var(--primary-soft);
-  color: var(--primary);
+/* Words only: the icon tile and the arrow are left out. */
+.cardIcon,
+.chevron {
+  display: none;
 }
 
 .cardText {
   min-width: 0;
   display: grid;
-  gap: 2px;
+  gap: 6px;
 }
 
 .cardText h2 {
@@ -76,15 +61,16 @@
 .cardText p {
   margin: 0;
   color: var(--text-soft);
-  font-size: 13px;
+  font-size: 15px;
   line-height: 1.6;
 }
 
 .cardText .stat {
   margin-top: 4px;
   color: var(--muted);
+  font-family: var(--font-mono);
   font-size: 12px;
-  font-weight: 700;
+  letter-spacing: 0.04em;
 }
 
 .cardLink {
@@ -93,47 +79,24 @@
   outline: none;
 }
 
-/* Stretched over the whole row, so the icon, the words and the arrow all open the page. */
+.cardLink:hover {
+  color: var(--primary-strong);
+}
+
+/* Stretched over the whole card, so the words and the frame all open the page. */
 .cardLink::after {
   content: '';
   position: absolute;
   inset: 0;
-  border-radius: 18px;
 }
 
 .cardLink:focus-visible::after {
-  outline: 3px solid var(--focus);
+  outline: 2px solid var(--primary);
   outline-offset: 3px;
-}
-
-.chevron {
-  color: var(--primary);
-  transition: transform 180ms ease;
-}
-
-.card:hover .chevron {
-  transform: translateX(3px);
 }
 
 @container (max-width: 479.98px) {
   .card {
     padding: 16px;
-    gap: 14px;
-  }
-
-  .cardIcon {
-    width: 44px;
-    height: 44px;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .card,
-  .chevron {
-    transition-duration: 0.01ms;
-  }
-
-  .card:hover {
-    transform: none;
   }
 }

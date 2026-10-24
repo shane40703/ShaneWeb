@@ -1,19 +1,163 @@
-.page { display: grid; gap: 16px; }
-.settingSection { overflow: hidden; border: 1px solid var(--line); border-radius: 18px; background: var(--surface); box-shadow: var(--shadow-sm); }
-.settingSection > summary { padding: 20px 24px; display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 5px 18px; cursor: pointer; }
-.settingSection > summary::marker { color: var(--primary); }
-.settingSection > summary span { font-size: 18px; font-weight: 850; }
-.settingSection > summary small { grid-column: 1; color: var(--muted); font-size: 12px; font-weight: 500; }
-.settingSection[open] > summary { border-bottom: 1px solid var(--line); }
-.sectionContent { padding: 20px; display: grid; gap: 18px; }
-.controls { padding: 22px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
-.controls label { padding: 18px; display: grid; grid-template-columns: 1fr auto; gap: 12px; border-radius: 14px; background: var(--surface-2); }
-.controls label > span { font-size: 14px; font-weight: 800; }
-.controls label > strong { color: var(--primary-strong); }
-.controls input { grid-column: 1 / -1; width: 100%; accent-color: var(--primary); }
-.preview { padding: 24px; display: grid; gap: 14px; }
-.preview p { margin: 0; line-height: 1.65; text-wrap: pretty; }
-.preview ol { margin: 0; padding: 0; display: grid; gap: 9px; list-style: none; }
-.preview li { padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; }
-.appearanceContent { padding: 20px; }
-@media (max-width: 650px) { .controls { grid-template-columns: 1fr; } .sectionContent, .appearanceContent { padding: 14px; } .settingSection > summary { padding: 17px 18px; } }
+/* Settings: open sections on the paper (or inside the settings dialog, which already draws the
+   frame), separated by dashed rules. Each section is a title, a description and plain controls;
+   nothing inside is a card. */
+.page {
+  min-width: 0;
+  display: grid;
+}
+
+.settingSection {
+  min-width: 0;
+  padding: 4px 0 24px;
+}
+
+.settingSection + .settingSection {
+  padding-top: 24px;
+  border-top: var(--rule-dashed);
+}
+
+.settingSection:last-child {
+  padding-bottom: 0;
+}
+
+/* The summary keeps the browser's disclosure triangle (inside the line, in blue) so the title
+   reads as something to open, like the 進階設定 summary on the appearance screen. */
+.settingSection > summary {
+  padding: 4px 0;
+  list-style-position: inside;
+  cursor: pointer;
+}
+
+.settingSection > summary::marker {
+  color: var(--primary);
+  font-size: 14px;
+}
+
+.settingSection > summary span {
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.settingSection > summary:hover span {
+  color: var(--primary-strong);
+}
+
+.settingSection > summary small {
+  display: block;
+  margin-top: 2px;
+  padding-left: 22px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.sectionContent {
+  padding: 20px 0 0;
+  display: grid;
+  gap: 20px;
+}
+
+/* Slider rows: label left, the size in mono on the right, the slider underneath. */
+.controls {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px 28px;
+}
+
+.controls label {
+  min-width: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 8px 12px;
+  background: transparent;
+}
+
+.controls label > span {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.controls label > strong {
+  color: var(--primary);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.controls input {
+  grid-column: 1 / -1;
+  width: 100%;
+  min-width: 0;
+  min-height: 32px;
+  margin: 0;
+  accent-color: var(--primary);
+}
+
+.controls input:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-control);
+}
+
+/* Preview: a mono kicker, the sample sentence, then the sample options as rule-separated rows. */
+.preview {
+  padding: 20px 0 0;
+  display: grid;
+  gap: 12px;
+  border-top: var(--rule);
+}
+
+.preview > span {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+}
+
+.preview p {
+  margin: 0;
+  line-height: 1.65;
+  text-wrap: pretty;
+}
+
+.preview ol {
+  margin: 0;
+  padding: 0;
+  display: grid;
+  list-style: none;
+  border-top: var(--rule);
+}
+
+.preview li {
+  padding: 10px 2px;
+  border-bottom: var(--rule);
+  line-height: 1.55;
+}
+
+.appearanceContent {
+  padding: 20px 0 0;
+}
+
+@media (max-width: 650px) {
+  .controls {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .sectionContent,
+  .appearanceContent {
+    padding-top: 16px;
+  }
+
+  .settingSection {
+    padding-bottom: 20px;
+  }
+
+  .settingSection + .settingSection {
+    padding-top: 20px;
+  }
+}

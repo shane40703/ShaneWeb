@@ -1,32 +1,36 @@
+/* Tags: small monospace labels with a thin frame, tinted by tone. */
 .tag {
-  min-height: 25px;
-  padding: 0 9px;
+  min-height: 22px;
+  padding: 0 7px;
   display: inline-flex;
   align-items: center;
-  border-radius: 999px;
-  background: var(--primary-soft);
+  border: 1px solid color-mix(in srgb, currentColor 45%, transparent);
+  border-radius: var(--radius-frame);
+  background: color-mix(in srgb, currentColor 8%, transparent);
   color: var(--primary-strong);
+  font-family: var(--font-mono);
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  line-height: 1;
+  white-space: nowrap;
 }
 
 .tag[data-tone='green'] {
-  background: var(--success-soft);
   color: var(--success);
 }
 
 .tag[data-tone='purple'] {
-  background: var(--purple-soft);
   color: var(--purple);
 }
 
 .tag[data-tone='orange'] {
-  background: var(--warning-soft);
   color: var(--warning);
 }
 
+/* Empty state: a dashed placeholder square, like an unfilled frame on the drawing. */
 .emptyState {
-  min-height: 350px;
+  min-height: 320px;
   padding: 40px 20px;
   display: grid;
   place-content: center;
@@ -35,20 +39,21 @@
 }
 
 .emptySymbol {
-  width: 68px;
-  height: 68px;
+  width: 56px;
+  height: 56px;
   margin-bottom: 14px;
   display: grid;
   place-items: center;
-  border-radius: 21px;
-  background: var(--primary-soft);
+  border: var(--frame-dashed);
+  border-radius: var(--radius-frame);
+  background: var(--surface);
   color: var(--primary);
-  font-size: 32px;
 }
 
 .emptyState h2 {
   margin: 0 0 8px;
-  font-size: 22px;
+  font-size: 20px;
+  font-weight: 600;
 }
 
 .emptyState p {
@@ -66,16 +71,16 @@
   gap: 10px;
 }
 
+/* A question in a list: one framed cream card holding plain text and its controls. */
 .questionRow {
-  padding: 20px;
+  padding: 18px 20px;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: 22px;
-  border: 1px solid var(--line);
-  border-radius: 16px;
+  border: var(--frame);
+  border-radius: var(--radius-frame);
   background: var(--surface);
-  box-shadow: var(--shadow-sm);
 }
 
 .questionContent {
@@ -103,11 +108,11 @@
   width: fit-content;
   max-width: min(100%, 820px);
   margin: 0;
-  padding: 12px;
+  padding: 10px;
   position: relative;
   overflow: hidden;
   border: 1px solid var(--line);
-  border-radius: 14px;
+  border-radius: var(--radius-frame);
   background: var(--image-surface);
 }
 
@@ -123,7 +128,7 @@
   inset: 0;
   display: grid;
   place-items: end;
-  padding: 12px;
+  padding: 10px;
 }
 
 .questionPrompt[data-compact='true'] {
@@ -148,7 +153,9 @@
   align-items: center;
   gap: 5px;
   color: var(--muted);
+  font-family: var(--font-mono);
   font-size: 12px;
+  letter-spacing: 0.02em;
   line-height: 1.5;
   text-decoration: none;
 }
@@ -174,6 +181,7 @@ a.questionSource:hover {
 
 @media (max-width: 720px) {
   .questionRow {
+    padding: 16px;
     grid-template-columns: 1fr;
   }
 

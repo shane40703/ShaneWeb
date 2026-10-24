@@ -8,39 +8,30 @@
   margin-inline: auto;
 }
 
+/* The way back: a plain text link above the page. */
 .back {
   width: fit-content;
-  min-height: 38px;
-  margin-bottom: 18px;
-  padding: 0 14px 0 11px;
+  min-height: 36px;
+  margin-bottom: 16px;
+  padding: 0 4px 0 0;
   display: flex;
   align-items: center;
-  gap: 7px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: var(--surface);
-  box-shadow: var(--shadow-sm);
-  color: var(--muted);
-  font-size: 13px;
-  font-weight: 800;
+  gap: 6px;
+  border-radius: var(--radius-frame);
+  color: var(--primary);
+  font-size: 14px;
+  font-weight: 500;
   text-decoration: none;
-  transition:
-    border-color 150ms ease,
-    color 150ms ease;
 }
 
 .back:hover {
-  border-color: color-mix(in srgb, var(--primary) 45%, var(--line));
   color: var(--primary-strong);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
 }
 
 .back:focus-visible {
-  outline: 3px solid var(--focus);
+  outline: 2px solid var(--primary);
   outline-offset: 2px;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .back {
-    transition-duration: 0.01ms;
-  }
 }

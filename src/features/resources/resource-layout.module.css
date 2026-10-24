@@ -1,6 +1,10 @@
+/*
+ * Header shared by the resources pages: the section switcher (one framed control holding the
+ * links, the current one filled solid), the page's action buttons, and a plain lead sentence.
+ */
 .header {
   min-width: 0;
-  margin-bottom: 18px;
+  margin-bottom: 20px;
   display: grid;
   /* Keeps the switcher from widening the column past the content edge on narrow phones. */
   grid-template-columns: minmax(0, 1fr);
@@ -18,41 +22,41 @@
 .sectionNav {
   min-width: 0;
   max-width: 100%;
-  padding: 4px;
+  padding: 3px;
   display: flex;
-  gap: 4px;
+  gap: 2px;
   overflow-x: auto;
-  border: 1px solid var(--line);
-  border-radius: 12px;
+  border: var(--frame);
+  border-radius: var(--radius-control);
   background: var(--surface);
-  box-shadow: var(--shadow-sm);
   scrollbar-width: none;
 }
 
 .sectionNav a {
-  min-height: 38px;
-  padding: 0 14px;
+  min-height: 32px;
+  padding: 0 12px;
   flex: none;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 7px;
-  border-radius: 8px;
+  gap: 6px;
+  border-radius: var(--radius-frame);
   color: var(--muted);
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 500;
   text-decoration: none;
   white-space: nowrap;
-  transition: background-color 150ms ease, color 150ms ease;
 }
 
 .sectionNav a:hover {
+  background: var(--surface-2);
   color: var(--primary-strong);
 }
 
 .sectionNav a[aria-current='page'] {
   background: var(--primary-solid);
   color: var(--on-primary);
+  font-weight: 600;
 }
 
 /* Inset so the scrollable switcher cannot clip the ring; the current link's solid fill
@@ -81,13 +85,13 @@
 .lead {
   margin: 0;
   color: var(--muted);
-  font-size: 13px;
-  line-height: 1.8;
+  font-size: 14px;
+  line-height: 1.7;
 }
 
 .lead strong {
   color: var(--text);
-  font-weight: 750;
+  font-weight: 600;
 }
 
 @media (max-width: 560px) {
@@ -108,11 +112,5 @@
 @media (max-width: 359.98px) {
   .sectionNav a {
     padding-inline: 7px;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .sectionNav a {
-    transition-duration: 0.01ms;
   }
 }

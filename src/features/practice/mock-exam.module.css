@@ -6,13 +6,15 @@
   scroll-padding-top: 88px;
 }
 
+/* The years: a dashed-rule section of the setup panel; the tiles are radio controls. */
 .years {
   min-width: 0;
-  margin: 0;
-  padding: 4px 28px 16px;
+  margin: 12px 24px 0;
+  padding: 18px 0 20px;
   display: grid;
   gap: 12px;
   border: 0;
+  border-top: var(--rule-dashed);
 }
 
 .years legend {
@@ -20,8 +22,8 @@
   width: 100%;
   padding: 0;
   color: var(--text);
-  font-size: 14px;
-  font-weight: 850;
+  font-size: 15px;
+  font-weight: 600;
 }
 
 .yearGrid {
@@ -33,13 +35,13 @@
 .yearGrid label {
   position: relative;
   min-width: 0;
-  min-height: 58px;
-  padding: 9px 10px;
+  min-height: 56px;
+  padding: 8px 12px;
   display: grid;
   align-content: center;
   gap: 3px;
-  border: 1px solid var(--control-line);
-  border-radius: 12px;
+  border: var(--frame);
+  border-radius: var(--radius-control);
   background: var(--surface);
   cursor: pointer;
 }
@@ -51,11 +53,10 @@
 .yearGrid label[data-checked] {
   border-color: var(--primary);
   background: var(--primary-soft);
-  box-shadow: inset 0 0 0 1px var(--primary);
 }
 
 .yearGrid label:has(input:focus-visible) {
-  outline: 3px solid var(--focus);
+  outline: 2px solid var(--primary);
   outline-offset: 2px;
 }
 
@@ -70,29 +71,35 @@
 
 .yearGrid strong {
   color: var(--text);
-  font-size: 14px;
+  font-size: 15px;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
+}
+
+.yearGrid label[data-checked] strong {
+  color: var(--primary-strong);
 }
 
 .yearGrid small {
   color: var(--muted);
+  font-family: var(--font-mono);
   font-size: 11px;
+  letter-spacing: 0.04em;
   line-height: 1.35;
 }
 
 .yearGrid label[data-draft] small {
   color: var(--primary-strong);
-  font-weight: 800;
+  font-weight: 500;
 }
 
+/* The chosen paper: plain text under a rule, no box. */
 .paperSummary {
-  margin: 0 28px 18px;
-  padding: 14px 16px;
+  margin: 0 24px;
+  padding: 16px 0 20px;
   display: grid;
   gap: 6px;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  background: var(--surface-2);
+  border-top: var(--rule);
 }
 
 .paperSummary h2 {
@@ -103,7 +110,7 @@
 .paperSummary p {
   margin: 0;
   color: var(--text-soft);
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1.7;
 }
 
@@ -111,15 +118,26 @@
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  color: var(--primary-strong);
-  font-weight: 800;
+  color: var(--primary);
+  font-weight: 500;
 }
 
-.latest {
+/* The last submission: mono meta (date, score) with the action link in the body face. */
+.paperSummary .latest {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 4px 12px;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+}
+
+.paperSummary .latest a {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  letter-spacing: 0;
 }
 
 .review {
@@ -148,7 +166,7 @@
 .resultTitle {
   margin: 0;
   color: var(--text);
-  font-size: 28px;
+  font-size: 20px;
 }
 
 @media (forced-colors: active) {
@@ -173,18 +191,28 @@
 
 @container (max-width: 640px) {
   .years {
-    padding: 4px 16px 14px;
+    margin-inline: 16px;
+    padding: 16px 0;
   }
 
   .yearGrid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
+  /* Three tiles across 390px: tighter sides and no tracking keep the mono meta on one line. */
+  .yearGrid label {
+    padding-inline: 8px;
+  }
+
+  .yearGrid small {
+    letter-spacing: 0;
+  }
+
   .paperSummary {
-    margin: 0 16px 16px;
+    margin-inline: 16px;
   }
 
   .resultTitle {
-    font-size: 24px;
+    font-size: 18px;
   }
 }

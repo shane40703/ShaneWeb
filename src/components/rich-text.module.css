@@ -1,2 +1,10 @@
-.content { white-space: pre-wrap; overflow-wrap: anywhere; tab-size: 4; }
-.red { color: var(--danger); font-weight: 700; }
+.content {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  tab-size: 4;
+}
+
+.red {
+  color: var(--danger);
+  font-weight: 600;
+}

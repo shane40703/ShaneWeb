@@ -1,19 +1,208 @@
-.page { display: grid; gap: 20px; }
-.page > header, .login, .posts { border: 1px solid var(--line); border-radius: 18px; background: var(--surface); box-shadow: var(--shadow-sm); }
-.page > header { padding: 24px; display: flex; gap: 15px; }
-.page > header svg { color: var(--primary); }
-.page header span { color: var(--primary-strong); font-size: 10px; font-weight: 850; letter-spacing: .1em; }
-.page h1 { margin: 4px 0; font-size: 24px; }
-.page header p { margin: 0; color: var(--muted); font-size: 13px; }
-.login { max-width: 620px; padding: 24px; display: grid; gap: 12px; }
-.login label { font-size: 11px; font-weight: 800; }
-.login input { min-height: 44px; padding: 0 12px; border: 1px solid var(--control-line); border-radius: 10px; background: var(--surface); color: var(--text); }
-.login p { margin: 0; color: var(--danger); font-size: 12px; }
-.posts { padding: 20px; display: grid; gap: 12px; }
-.posts > header { display: flex; align-items: center; justify-content: space-between; }
-.posts article { padding: 16px; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; border: 1px solid var(--line); border-radius: 13px; }
-.posts p { margin: 4px 0 0; line-height: 1.6; }
-.reply { grid-column: 1 / -1; margin-left: 20px; padding: 12px; display: grid; grid-template-columns: 1fr auto; border-left: 3px solid var(--line-strong); }
-.reply span, .reply p { grid-column: 1; }
-.reply button { grid-column: 2; grid-row: 1 / 3; }
-.empty { padding: 30px; color: var(--muted); text-align: center; }
+/* Author admin for comments and reports. The heading is text on the paper; the key form and
+   each list are framed panels whose entries are rows separated by rules. */
+.page {
+  min-width: 0;
+  display: grid;
+  gap: 20px;
+}
+
+.page > header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.page > header svg {
+  flex: 0 0 auto;
+  margin-top: 2px;
+  color: var(--primary);
+}
+
+.page header span {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.page h1 {
+  margin: 4px 0 6px;
+  font-size: 20px;
+}
+
+.page header p {
+  margin: 0;
+  color: var(--text-soft);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.login,
+.posts {
+  min-width: 0;
+  border: var(--frame);
+  border-radius: var(--radius-frame);
+  background: var(--surface);
+}
+
+.login {
+  max-width: 620px;
+  padding: 20px 24px 24px;
+  display: grid;
+  gap: 10px;
+}
+
+.login label {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+}
+
+.login input {
+  min-height: 40px;
+  padding: 0 12px;
+  border: var(--frame);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+}
+
+.login input:focus-visible {
+  border-color: var(--primary);
+  outline: 2px solid var(--focus);
+  outline-offset: 1px;
+}
+
+.login > button {
+  margin-top: 6px;
+  justify-self: start;
+}
+
+.login p {
+  margin: 0;
+  color: var(--danger);
+  font-size: 13px;
+}
+
+/* A list panel: a header with the count, then one row per post or report. */
+.posts {
+  display: grid;
+}
+
+.posts > header {
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: var(--rule);
+}
+
+.posts > header strong {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.posts article {
+  min-width: 0;
+  padding: 16px 20px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 12px 16px;
+  border-bottom: var(--rule);
+}
+
+.posts article:last-child {
+  border-bottom: 0;
+}
+
+.posts article > div {
+  min-width: 0;
+}
+
+.posts article span {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.02em;
+}
+
+.posts p {
+  margin: 4px 0 0;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.posts small {
+  display: block;
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+/* Replies hang under their post behind a single left rule. */
+.reply {
+  grid-column: 1 / -1;
+  margin-left: 20px;
+  padding: 8px 0 8px 14px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 0 16px;
+  border-left: 2px solid var(--line-strong);
+}
+
+.reply span,
+.reply p {
+  grid-column: 1;
+}
+
+.reply button {
+  grid-column: 2;
+  grid-row: 1 / 3;
+}
+
+.empty {
+  margin: 0;
+  padding: 28px 20px;
+  color: var(--muted);
+  font-size: 14px;
+  text-align: center;
+}
+
+@media (max-width: 620px) {
+  .login {
+    padding: 16px;
+  }
+
+  .posts > header {
+    padding: 12px 16px;
+  }
+
+  .posts article {
+    padding: 14px 16px;
+    grid-template-columns: 1fr;
+  }
+
+  .posts article > button,
+  .reply button {
+    justify-self: start;
+  }
+
+  .reply {
+    margin-left: 8px;
+    grid-template-columns: 1fr;
+    gap: 8px 0;
+  }
+
+  .reply button {
+    grid-column: 1;
+    grid-row: auto;
+  }
+}

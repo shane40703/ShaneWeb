@@ -1,60 +1,257 @@
-.panel { min-height: 420px; padding: 18px; border: 1px solid var(--line); border-radius: 20px; background: var(--surface); box-shadow: var(--shadow-sm); }
-.loadedContent { display: grid; gap: 16px; }
-.selector > section { margin-bottom: 0; }
-.bankNotice { padding: 14px 16px; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 12px; border: 1px solid color-mix(in srgb, var(--warning) 42%, var(--line)); border-radius: 14px; background: var(--warning-soft); color: var(--text-soft); }
-.bankNotice svg { color: var(--warning); }
-.bankNotice strong { display: block; color: var(--text); font-size: 14px; }
-.bankNotice p { margin: 3px 0 0; font-size: 13px; line-height: 1.5; }
-.subjectFilters { padding: 12px; display: flex; flex-wrap: wrap; gap: 8px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface-2); }
-.subjectFilters button { min-height: 38px; padding: 0 12px; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--control-line); border-radius: 11px; background: var(--surface); color: var(--text-soft); font: inherit; font-size: 12px; font-weight: 750; cursor: pointer; }
-.subjectFilters button:hover:not(:disabled) { border-color: var(--primary); color: var(--primary-strong); }
-.subjectFilters button[aria-pressed='true'] { border-color: var(--primary-solid); background: var(--primary-solid); color: var(--on-primary); }
-.subjectFilters button:disabled { opacity: .45; cursor: not-allowed; }
-.subjectFilters button span { min-width: 21px; height: 21px; padding-inline: 5px; display: grid; place-items: center; border-radius: 7px; background: var(--surface-3); color: var(--muted); font-size: 11px; }
-.subjectFilters button[aria-pressed='true'] span { background: var(--on-primary-soft-overlay); color: var(--on-primary); }
-.subjectList,
-.yearList,
-.questionList { display: grid; }
-.subjectList { gap: 20px; }
-.subjectGroup { overflow: hidden; border: 1px solid var(--line); border-radius: 18px; background: var(--surface); }
-.subjectHeader { min-height: 68px; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px; border-bottom: 1px solid var(--line); background: var(--surface-2); }
-.subjectHeader h2,
-.yearHeader h3 { margin: 0; }
-.subjectHeader h2 { color: var(--text); font-size: 20px; }
-.subjectHeader span,
-.yearHeader span { flex: 0 0 auto; color: var(--muted); font-size: 12px; font-weight: 750; }
-.yearList { gap: 0; }
-.yearGroup + .yearGroup { border-top: 1px solid var(--line); }
-.yearHeader { min-height: 52px; padding: 12px 18px; display: flex; align-items: center; justify-content: space-between; gap: 12px; background: color-mix(in srgb, var(--primary-soft) 44%, var(--surface)); }
-.yearHeader h3 { color: var(--primary-strong); font-size: 16px; }
-.questionList { padding: 14px; gap: 12px; }
-.difficultItem { overflow: hidden; border: 1px solid var(--line); border-radius: 16px; background: var(--surface); box-shadow: var(--shadow-sm); }
-.difficultItem > article { border: 0; border-radius: 0; box-shadow: none; }
-.fullQuestion { border-top: 1px solid var(--line); background: var(--surface-2); }
-.fullQuestion > summary { min-height: 48px; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; gap: 12px; color: var(--primary-strong); font-size: 13px; font-weight: 850; list-style: none; cursor: pointer; }
-.fullQuestion > summary::-webkit-details-marker { display: none; }
-.fullQuestion > summary svg { transition: transform 150ms ease; }
-.fullQuestion[open] > summary svg { transform: rotate(180deg); }
-.fullQuestion > div { padding: 24px; display: grid; gap: 16px; border-top: 1px solid var(--line); background: var(--surface); }
-.practicePanel { display: grid; gap: 12px; }
-.practiceResult { padding: 12px 14px; display: flex; align-items: center; gap: 8px; border: 1px solid color-mix(in srgb, var(--success) 40%, var(--line)); border-radius: 11px; background: var(--success-soft); color: var(--success); }
-.practiceResult[data-result='wrong'] { border-color: color-mix(in srgb, var(--danger) 40%, var(--line)); background: var(--danger-soft); color: var(--danger); }
-.practiceResult span { margin-left: auto; color: var(--text-soft); font-size: 12px; }
-.practiceActions { display: flex; justify-content: flex-end; }
-.explanationPanel { margin-top: 4px; padding: 16px; display: grid; gap: 7px; border: 1px solid color-mix(in srgb, var(--primary) 28%, var(--line)); border-radius: 13px; background: var(--primary-soft); }
-.explanationPanel > span { color: var(--primary-strong); font-size: 11px; font-weight: 850; letter-spacing: .06em; }
-.explanationPanel p { margin: 0; color: var(--text-soft); font-size: 14px; line-height: 1.75; white-space: pre-line; }
-.noteEditor > section { margin-top: 0; grid-column: auto; }
+/*
+ * 難題標記. The page sits directly on the paper (pattern B): the subject/year filter panel, then an
+ * open section whose heading is closed by a dashed rule, then one framed card per question. Inside a
+ * card everything is text, rules and controls: the fold-out details, the practice result, the 詳解 and
+ * the note editor are separated by rules, never boxed.
+ */
+.panel {
+  min-height: 420px;
+}
+
+.loadedContent {
+  display: grid;
+  gap: 20px;
+}
+
+.selector > section {
+  margin-bottom: 0;
+}
+
+/* Loading / failed-bank notice: one framed status panel on the paper. */
+.bankNotice {
+  padding: 14px 16px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  border: var(--frame);
+  border-radius: var(--radius-frame);
+  background: var(--warning-soft);
+  color: var(--text-soft);
+}
+
+.bankNotice svg {
+  color: var(--warning);
+}
+
+.bankNotice strong {
+  display: block;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.bankNotice p {
+  margin: 3px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.subjectList {
+  display: grid;
+  gap: 28px;
+}
+
+/* Open section: heading row + dashed rule, then the cards. */
+.subjectGroup {
+  display: grid;
+  gap: 16px;
+}
+
+.subjectHeader {
+  padding-bottom: 12px;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  border-bottom: var(--rule-dashed);
+}
+
+.subjectHeader h2 {
+  margin: 0;
+  color: var(--text);
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.subjectHeader span {
+  flex: 0 0 auto;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+}
+
+.questionList {
+  display: grid;
+  gap: 14px;
+}
+
+/* One framed card per question; the QuestionCard inside drops its own frame. */
+.difficultItem {
+  overflow: hidden;
+  border: var(--frame);
+  border-radius: var(--radius-frame);
+  background: var(--surface);
+}
+
+.difficultItem > article {
+  border: 0;
+  border-radius: 0;
+}
+
+.fullQuestion {
+  border-top: var(--rule);
+}
+
+.fullQuestion > summary {
+  min-height: 48px;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--primary);
+  font-size: 13px;
+  font-weight: 600;
+  list-style: none;
+  cursor: pointer;
+}
+
+.fullQuestion > summary:hover {
+  background: var(--surface-2);
+  color: var(--primary-strong);
+}
+
+.fullQuestion > summary:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: -2px;
+}
+
+.fullQuestion > summary::-webkit-details-marker {
+  display: none;
+}
+
+/* The chevron flips when the details are open: a state, not a hover effect. */
+.fullQuestion[open] > summary svg {
+  transform: rotate(180deg);
+}
+
+.fullQuestion > div {
+  padding: 20px;
+  display: grid;
+  gap: 20px;
+  border-top: var(--rule);
+}
+
+.practicePanel {
+  display: grid;
+  gap: 14px;
+}
+
+/* Practice result: a status line in its colour, not a tinted box. */
+.practiceResult {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--success);
+  font-size: 14px;
+}
+
+.practiceResult[data-result='wrong'] {
+  color: var(--danger);
+}
+
+.practiceResult strong {
+  font-weight: 600;
+}
+
+.practiceResult span {
+  margin-left: auto;
+  color: var(--text-soft);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+}
+
+.practiceActions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* 詳解 and the note editor follow under dashed rules. */
+.explanationPanel {
+  padding-top: 20px;
+  display: grid;
+  gap: 8px;
+  border-top: var(--rule-dashed);
+}
+
+.explanationPanel > span {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+}
+
+.explanationPanel p {
+  margin: 0;
+  color: var(--text);
+  font-size: 15px;
+  line-height: 1.75;
+  white-space: pre-line;
+}
+
+.noteEditor {
+  padding-top: 20px;
+  border-top: var(--rule-dashed);
+}
+
+/* The embedded ReviewNoteEditor draws its own box elsewhere; inside this card it is plain. */
+.noteEditor > section {
+  margin-top: 0;
+  padding: 0;
+  grid-column: auto;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
 @media (max-width: 600px) {
-  .panel { padding: 10px; }
-  .bankNotice { grid-template-columns: auto minmax(0, 1fr); }
-  .bankNotice button { grid-column: 1 / -1; width: 100%; }
-  .subjectFilters button { flex: 1 1 145px; justify-content: space-between; }
-  .subjectList { gap: 14px; }
-  .subjectHeader { min-height: 60px; padding: 14px 16px; }
-  .subjectHeader h2 { font-size: 18px; }
-  .yearHeader { padding-inline: 14px; }
-  .questionList { padding: 10px; }
-  .practiceResult { align-items: flex-start; flex-wrap: wrap; }
-  .practiceResult span { width: 100%; margin-left: 28px; }
+  .bankNotice {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .bankNotice button {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+
+  .subjectList {
+    gap: 22px;
+  }
+
+  .subjectHeader h2 {
+    font-size: 18px;
+  }
+
+  .fullQuestion > summary {
+    padding: 0 16px;
+  }
+
+  .fullQuestion > div {
+    padding: 16px;
+    gap: 16px;
+  }
+
+  .practiceResult {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .practiceResult span {
+    width: 100%;
+    margin-left: 28px;
+  }
 }

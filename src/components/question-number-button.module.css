@@ -1,7 +1,9 @@
+/* Question number tiles: framed 2px squares whose fill says the state
+   (current = solid blue, correct = green tint, wrong = red tint, difficult = amber tint). */
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, 38px);
-  gap: 8px;
+  gap: 6px;
 }
 
 .button {
@@ -11,86 +13,69 @@
   padding: 0;
   display: grid;
   place-items: center;
-  border: 1px solid var(--control-line);
-  border-radius: 10px;
-  background: var(--surface-2);
+  border: var(--frame);
+  border-radius: var(--radius-frame);
+  background: var(--surface);
   color: var(--text-soft);
-  font: inherit;
+  font-family: var(--font-mono);
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 500;
   line-height: 1;
   text-decoration: none;
   cursor: pointer;
-  transition: border-color 150ms ease, background 150ms ease, color 150ms ease;
 }
 
 .button:hover {
-  border-color: var(--primary);
-  color: var(--primary-strong);
+  border-color: var(--line-strong);
+  background: var(--surface-2);
 }
 
 .button[data-answered='true'] {
-  border-color: color-mix(in srgb, var(--success) 35%, var(--line));
+  border-color: color-mix(in srgb, var(--success) 45%, var(--control-line));
   background: var(--success-soft);
   color: var(--success);
 }
 
 .button[data-difficult='true'] {
-  border-color: color-mix(in srgb, var(--warning) 55%, var(--line));
+  border-color: var(--warning);
   background: var(--warning-soft);
   color: var(--warning);
-  box-shadow: inset 0 -3px 0 var(--warning);
 }
 
 .button[data-answered='true'][data-difficult='true'] {
+  border-color: var(--warning);
   background: var(--success-soft);
   color: var(--success);
 }
 
 .button[data-wrong='true'] {
-  border-color: color-mix(in srgb, var(--danger) 50%, var(--line));
+  border-color: color-mix(in srgb, var(--danger) 55%, var(--control-line));
   background: var(--danger-soft);
   color: var(--danger);
 }
 
 .button[data-wrong='true'][data-difficult='true'] {
-  border-color: var(--danger);
+  border-color: var(--warning);
   background: var(--danger-soft);
   color: var(--danger);
-  box-shadow:
-    0 0 0 2px color-mix(in srgb, var(--warning) 35%, transparent),
-    inset 0 -4px 0 var(--warning);
 }
 
-.button[data-noted='true']::after {
-  content: '';
-  width: 9px;
-  height: 9px;
-  position: absolute;
-  top: -4px;
-  right: -4px;
-  border: 2px solid var(--surface);
-  border-radius: 50%;
-  background: var(--purple);
-  box-shadow: 0 2px 5px color-mix(in srgb, var(--purple) 25%, transparent);
-}
-
+/* Small marks in the top corners: a note (right) and shared content (left when both). */
+.button[data-noted='true']::after,
 .button[data-content='true']::before {
   content: '';
-  width: 9px;
-  height: 9px;
+  width: 6px;
+  height: 6px;
   position: absolute;
-  top: -4px;
-  right: -4px;
-  border: 2px solid var(--surface);
+  top: 3px;
+  right: 3px;
   border-radius: 50%;
   background: var(--purple);
-  box-shadow: 0 2px 5px color-mix(in srgb, var(--purple) 25%, transparent);
 }
 
 .button[data-content='true'][data-noted='true']::before {
   right: auto;
-  left: -4px;
+  left: 3px;
 }
 
 .button[aria-current='step'],
@@ -98,8 +83,13 @@
   border-color: var(--primary-solid);
   background: var(--primary-solid);
   color: var(--on-primary);
-  box-shadow:
-    0 7px 15px color-mix(in srgb, var(--primary-solid) 22%, transparent);
+}
+
+.button[aria-current='step']::before,
+.button[aria-current='step']::after,
+.button[aria-pressed='true']::before,
+.button[aria-pressed='true']::after {
+  background: var(--on-primary);
 }
 
 .button[data-difficult='true'][aria-current='step'],
@@ -107,12 +97,9 @@
   border-color: var(--warning);
   background: var(--primary-solid);
   color: var(--on-primary);
-  box-shadow:
-    0 7px 15px color-mix(in srgb, var(--primary-solid) 22%, transparent),
-    inset 0 0 0 3px var(--warning);
 }
 
 .button:focus-visible {
-  outline: 3px solid color-mix(in srgb, var(--primary) 28%, transparent);
+  outline: 2px solid var(--primary);
   outline-offset: 2px;
 }

@@ -1,11 +1,90 @@
-.scopeCount {
+/*
+ * 考題分析 on paper. Every block is one framed cream panel (pattern A): a header closed by a
+ * quiet rule, then rows separated by rules. Nothing inside a panel is boxed again — the old
+ * tiles, chips and inner tables became rule-separated rows, and bars are solid chart fills.
+ */
+
+/* Cross-year range: a plain row of controls on the paper, right under the selector. */
+.yearRange {
+  margin: 0 0 20px;
+  padding: 0 4px;
+  display: flex;
+  align-items: end;
+  gap: 12px;
+}
+
+.yearRange > div {
+  min-width: 0;
+  margin-right: auto;
+  display: grid;
+  gap: 3px;
+}
+
+.yearRange > div strong {
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.yearRange > div span {
   color: var(--muted);
   font-size: 13px;
 }
 
-.scopeCount strong {
+.yearRange > span,
+.trendYearRange > span {
+  height: 40px;
+  display: inline-grid;
+  place-items: center;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.yearRange label,
+.trendHeader label {
+  display: grid;
+  gap: 5px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.yearRange select,
+.trendHeader select {
+  min-width: 112px;
+  min-height: 40px;
+  padding: 0 32px 0 12px;
+  border: var(--frame);
+  border-radius: var(--radius-control);
+  background: var(--surface);
   color: var(--text);
-  font-size: 15px;
+  font: inherit;
+  font-size: 14px;
+}
+
+.yearRange select:focus-visible,
+.trendHeader select:focus-visible {
+  border-color: var(--primary);
+  outline: 2px solid var(--focus);
+  outline-offset: 1px;
+}
+
+/* The panels: one thin frame each. */
+.lawDistribution,
+.lawQuestions,
+.chartCard,
+.tableCard,
+.detailedAnalysis {
+  min-width: 0;
+  border: var(--frame);
+  border-radius: var(--radius-frame);
+  background: var(--surface);
+}
+
+.lawDistribution,
+.lawQuestions,
+.chartCard {
+  padding: 22px;
 }
 
 .lawAnalysis {
@@ -15,40 +94,40 @@
   gap: 20px;
 }
 
-.lawDistribution,
-.lawQuestions {
-  min-width: 0;
-  padding: 22px;
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  background: var(--surface);
-  box-shadow: var(--shadow-sm);
-}
-
+/* Panel headers: mono kicker, title, note; closed by a quiet rule. */
 .lawDistribution > header,
-.lawQuestions > header {
+.lawQuestions > header,
+.chartCard > header {
+  padding-bottom: 14px;
   display: grid;
   gap: 4px;
+  border-bottom: var(--rule);
 }
 
-.lawDistribution > header span,
-.lawQuestions > header span {
-  color: var(--primary-strong);
+.lawDistribution > header > span,
+.lawQuestions > header > span,
+.chartCard > header > span,
+.trendHeader > div > span,
+.forecastHeader > div > span {
+  color: var(--muted);
+  font-family: var(--font-mono);
   font-size: 11px;
-  font-weight: 850;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.04em;
 }
 
-.lawDistribution > header strong,
-.lawQuestions > header strong {
-  font-size: 18px;
+.lawDistribution > header > strong,
+.lawQuestions > header > strong,
+.chartCard > header > strong {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.3;
 }
 
-.lawDistribution > header p,
-.lawQuestions > header p {
+.lawDistribution > header > p,
+.lawQuestions > header > p {
   margin: 0;
   color: var(--muted);
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.6;
 }
 
@@ -57,25 +136,29 @@
   margin-top: 10px;
 }
 
+/* Category rows: name and count, a solid bar, the share. The chosen row is tinted with a
+   2px ink rule at its left edge. Rows are exactly 57px and the list shows nine of them, so
+   it always cuts on a rule; a closing rule marks the edge of the scroll region (the extra
+   pixel in each max-height is that rule, which border-box counts inside). */
 .lawList {
-  max-height: 520px;
-  margin-top: 14px;
-  padding-right: 4px;
+  max-height: 514px;
   display: grid;
-  gap: 6px;
+  align-content: start;
   overflow-y: auto;
+  border-bottom: var(--rule);
 }
 
 .lawList button {
   min-width: 0;
-  min-height: 58px;
-  padding: 9px 11px;
+  min-height: 57px;
+  padding: 9px 10px 9px 12px;
   display: grid;
   grid-template-columns: minmax(150px, 1fr) minmax(90px, 1.4fr) 54px;
   align-items: center;
   gap: 12px;
-  border: 1px solid transparent;
-  border-radius: 12px;
+  border: 0;
+  border-top: var(--rule);
+  border-left: 2px solid transparent;
   background: transparent;
   color: var(--text);
   font: inherit;
@@ -83,15 +166,23 @@
   cursor: pointer;
 }
 
-.lawList button:hover,
+.lawList button:first-child {
+  border-top-color: transparent;
+}
+
+.lawList button:hover {
+  background: var(--surface-2);
+}
+
 .lawList button[aria-pressed='true'] {
-  border-color: color-mix(in srgb, var(--primary) 35%, var(--line));
+  border-left-color: var(--primary);
   background: var(--primary-soft);
+  color: var(--primary-strong);
 }
 
 .lawList button:focus-visible {
-  outline: 3px solid var(--focus);
-  outline-offset: 2px;
+  outline: 2px solid var(--primary);
+  outline-offset: -2px;
 }
 
 .lawList button > span {
@@ -103,76 +194,99 @@
 .lawList button strong {
   overflow: hidden;
   font-size: 13px;
+  font-weight: 500;
+  line-height: 20px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.lawList button small {
+.lawList button small,
+.lawQuestions a > span,
+.trendPicker small,
+.trendStats > div > span {
   color: var(--muted);
+  font-family: var(--font-mono);
   font-size: 11px;
+  letter-spacing: 0.04em;
+}
+
+.lawList button small,
+.lawQuestions a > span {
+  line-height: 16px;
 }
 
 .lawList button > i {
-  height: 9px;
+  height: 8px;
   overflow: hidden;
-  border-radius: 999px;
   background: var(--surface-3);
 }
 
 .lawList button > i > span {
-  min-width: 5px;
+  min-width: 4px;
   height: 100%;
   display: block;
-  border-radius: inherit;
-  background: var(--primary);
+  background: var(--chart-1);
 }
 
 .lawList button > b {
-  color: var(--muted);
-  font-size: 11px;
+  color: var(--text-soft);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
   text-align: right;
 }
 
+/* Matching questions: one link per row, separated by rules. Rows are exactly 62px and the
+   list shows eight, closed by a rule. */
 .lawQuestions > div {
-  max-height: 520px;
-  margin-top: 14px;
-  padding-right: 4px;
+  max-height: 497px;
   display: grid;
   align-content: start;
-  gap: 9px;
   overflow-y: auto;
+  border-bottom: var(--rule);
 }
 
 .lawQuestions a {
   min-width: 0;
-  padding: 13px;
+  padding: 11px 4px 11px 0;
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  gap: 4px 12px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
+  gap: 3px 12px;
+  border-top: var(--rule);
   color: var(--text);
   text-decoration: none;
 }
 
+.lawQuestions a:first-child {
+  border-top-color: transparent;
+}
+
 .lawQuestions a:hover {
-  border-color: var(--primary);
   color: var(--primary-strong);
 }
 
-.lawQuestions a span {
+.lawQuestions a:hover strong {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.lawQuestions a:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: -2px;
+}
+
+.lawQuestions a > span {
   grid-column: 1;
-  color: var(--primary-strong);
-  font-size: 11px;
-  font-weight: 800;
 }
 
 .lawQuestions a strong {
   grid-column: 1;
   overflow: hidden;
-  font-size: 12px;
-  line-height: 1.55;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 20px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -180,59 +294,35 @@
 .lawQuestions a svg {
   grid-column: 2;
   grid-row: 1 / 3;
+  color: var(--primary);
 }
 
-.chartGrid {
-  display: grid;
-  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
-  gap: 20px;
-}
-
-.chartCard,
-.yearCard,
-.tableCard {
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  background: var(--surface);
-  box-shadow: var(--shadow-sm);
-}
-
-.chartCard,
-.yearCard { padding: 22px; }
-
+/* Share of each category: a donut (a true circle, drawn from the chart tokens) beside a
+   rule-separated legend. Legend rows are 35px; ten show before it scrolls, closed by a rule. */
 .pieOverview {
   margin-bottom: 20px;
 }
 
 .pieOverview .legend {
-  max-height: 290px;
+  max-height: 351px;
   padding-right: 4px;
   overflow-y: auto;
+  border-bottom: var(--rule);
 }
-
-.chartCard header,
-.yearCard header {
-  display: grid;
-  gap: 4px;
-}
-
-.chartCard header span,
-.yearCard header span { color: var(--muted); font-size: 11px; }
-.chartCard header strong,
-.yearCard header strong { font-size: 18px; }
 
 .pieLayout {
-  min-height: 290px;
+  min-height: 260px;
+  margin-top: 18px;
   display: grid;
-  grid-template-columns: 190px 1fr;
+  grid-template-columns: 190px minmax(0, 1fr);
   align-items: center;
-  gap: 25px;
+  gap: 28px;
 }
 
 .pie {
   width: 190px;
   aspect-ratio: 1;
-  padding: 25px;
+  padding: 24px;
   display: grid;
   place-items: center;
   border-radius: 50%;
@@ -245,141 +335,73 @@
   display: grid;
   place-content: center;
   justify-items: center;
+  gap: 2px;
   border-radius: 50%;
   background: var(--surface);
 }
 
-.pie strong { font-size: 28px; }
-.pie span span { color: var(--muted); }
-
-.legend { display: grid; gap: 12px; }
-.legend > div { display: grid; grid-template-columns: 10px 1fr auto; gap: 8px; align-items: center; font-size: 12px; }
-.legend i { width: 9px; height: 9px; border-radius: 50%; }
-
-.bars {
-  min-height: 290px;
-  padding-top: 25px;
-  display: grid;
-  align-content: center;
-  gap: 18px;
+.pie strong {
+  font-family: var(--font-mono);
+  font-size: 26px;
+  font-weight: 600;
+  line-height: 1.1;
 }
 
-.barRow { display: grid; grid-template-columns: minmax(100px, 0.8fr) minmax(120px, 1.4fr) 45px; gap: 10px; align-items: center; font-size: 12px; }
-.barRow > div { height: 10px; border-radius: 999px; background: var(--surface-3); overflow: hidden; }
-.barRow i { height: 100%; display: block; min-width: 5px; border-radius: inherit; }
-.barRow strong { text-align: right; }
-
-.yearCard { margin-top: 20px; }
-.yearBars { height: 190px; padding-top: 20px; display: flex; align-items: end; justify-content: space-between; gap: 8px; }
-.yearBars > div { height: 100%; flex: 1; display: flex; flex-direction: column-reverse; align-items: center; gap: 6px; color: var(--muted); font-size: 10px; }
-.yearBars i { width: min(28px, 70%); min-height: 5px; display: block; border-radius: 6px 6px 2px 2px; background: linear-gradient(var(--primary-bright), var(--primary)); }
-.yearBars strong { color: var(--text); font-size: 11px; }
-
-.tableCard { margin-top: 20px; overflow-x: auto; }
-.tableCard table { width: 100%; border-collapse: collapse; }
-.tableCard caption { padding: 20px; color: var(--muted); text-align: left; font-size: 12px; }
-.tableCard th,
-.tableCard td { padding: 15px 20px; border-top: 1px solid var(--line); text-align: left; }
-.tableCard thead th { background: var(--surface-2); color: var(--muted); font-size: 11px; }
-.tableCard tbody th,
-.tableCard tbody td { font-size: 13px; }
-.tableCard tfoot { background: var(--primary-soft); }
-
-@media (max-width: 950px) {
-  .lawAnalysis,
-  .chartGrid { grid-template-columns: 1fr; }
-}
-
-@media (max-width: 760px) {
-  .pieLayout { grid-template-columns: 1fr; justify-items: center; }
-  .legend { width: 100%; }
-}
-
-@media (max-width: 520px) {
-  .lawDistribution,
-  .lawQuestions {
-    padding: 18px;
-  }
-
-  .lawList button {
-    grid-template-columns: minmax(120px, 1fr) 70px 45px;
-    gap: 8px;
-  }
-
-  .lawQuestions > header button {
-    width: 100%;
-  }
-
-  .barRow { grid-template-columns: 90px 1fr 38px; }
-  .yearBars { gap: 2px; }
-  .yearBars i { width: 14px; }
-}
-.yearRange {
-  margin: -4px 0 20px;
-  padding: 16px 20px;
-  display: flex;
-  align-items: end;
-  gap: 12px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: var(--surface);
-}
-
-.yearRange > div {
-  min-width: 0;
-  margin-right: auto;
-  display: grid;
-  gap: 4px;
-}
-
-.yearRange > div strong {
-  color: var(--text);
-  font-size: 14px;
-}
-
-.yearRange > div span,
-.yearRange > span {
+.pie span span {
   color: var(--muted);
   font-size: 12px;
 }
 
-.yearRange label {
+.legend {
   display: grid;
-  gap: 5px;
-  color: var(--muted);
-  font-size: 11px;
+  align-content: start;
 }
 
-.yearRange select {
-  min-width: 112px;
-  height: 38px;
-  padding: 0 32px 0 11px;
-  border: 1px solid var(--control-line);
-  border-radius: 9px;
-  background: var(--surface);
-  color: var(--text-soft);
-  font: inherit;
+.legend > div {
+  padding: 7px 0;
+  display: grid;
+  grid-template-columns: 10px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  border-top: var(--rule);
   font-size: 13px;
-  font-weight: 650;
+  line-height: 20px;
 }
 
-.yearRange select:focus-visible {
-  outline: 3px solid var(--focus);
-  outline-offset: 2px;
+.legend > div:first-child {
+  border-top-color: transparent;
 }
 
+.legend i,
+.trendLegend i {
+  width: 9px;
+  height: 9px;
+  flex: none;
+  border-radius: 50%;
+}
+
+.legend strong {
+  color: var(--text-soft);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* Empty range: the panel only frames the empty state. */
+.tableCard {
+  margin-top: 20px;
+}
+
+/* Detailed trend analysis: a collapsible panel. Its body is a stack of sections, each
+   opened by a quiet rule; the forecast is its own section behind a dashed rule. */
 .detailedAnalysis {
   margin-bottom: 20px;
   overflow: hidden;
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  background: var(--surface);
-  box-shadow: var(--shadow-sm);
 }
 
 .detailedAnalysis > summary {
-  min-height: 78px;
-  padding: 18px 22px;
+  min-height: 64px;
+  padding: 14px 22px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -388,90 +410,542 @@
   list-style: none;
 }
 
-.detailedAnalysis > summary::-webkit-details-marker { display: none; }
-.detailedAnalysis > summary > span { display: flex; align-items: center; gap: 12px; }
-.detailedAnalysis > summary svg { color: var(--primary-strong); }
-.detailedAnalysis > summary > span > span { display: grid; gap: 3px; }
-.detailedAnalysis > summary strong { font-size: 16px; }
-.detailedAnalysis > summary small { color: var(--muted); font-size: 11px; }
-.detailedAnalysis > summary > b { color: var(--primary-strong); font-size: 12px; }
-.detailedAnalysis[open] > summary { border-bottom: 1px solid var(--line); }
-.summaryOpen { display: none; }
-.detailedAnalysis[open] .summaryClosed { display: none; }
-.detailedAnalysis[open] .summaryOpen { display: inline; }
+.detailedAnalysis > summary::-webkit-details-marker {
+  display: none;
+}
 
-.trendBody { padding: 22px; display: grid; gap: 20px; }
-.trendHeader { display: flex; align-items: end; justify-content: space-between; gap: 18px; }
-.trendHeader > div > span { color: var(--primary-strong); font-size: 10px; font-weight: 850; letter-spacing: .1em; }
-.trendHeader h2 { margin: 4px 0; font-size: 20px; }
-.trendHeader p { margin: 0; color: var(--muted); font-size: 12px; }
-.trendHeader label { min-width: 180px; display: grid; gap: 6px; color: var(--muted); font-size: 11px; font-weight: 750; }
-.trendHeader select { height: 40px; padding: 0 34px 0 12px; border: 1px solid var(--control-line); border-radius: 10px; background: var(--surface-2); color: var(--text); font: inherit; }
-.trendControls { display: flex; align-items: end; gap: 12px; }
-.trendYearRange { margin: 0; padding: 0; display: flex; align-items: end; gap: 8px; border: 0; }
-.trendYearRange legend { height: 0; position: absolute; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-.trendYearRange label { min-width: 110px; }
-.trendYearRange > span { height: 40px; display: inline-grid; place-items: center; color: var(--muted); font-size: 11px; }
+.detailedAnalysis > summary:hover {
+  background: var(--surface-2);
+}
 
-.trendPicker { max-height: 190px; padding: 12px; display: flex; align-content: flex-start; gap: 8px; flex-wrap: wrap; overflow-y: auto; border: 1px solid var(--line); border-radius: 14px; background: var(--surface-2); }
-.trendPicker label { padding: 8px 10px; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 7px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--text-soft); font-size: 12px; cursor: pointer; }
-.trendPicker label[data-selected] { border-color: color-mix(in srgb, var(--primary) 55%, var(--line)); background: var(--primary-soft); color: var(--primary-strong); }
-.trendPicker label:has(input:disabled) { opacity: .55; cursor: not-allowed; }
-.trendPicker input { margin: 0; accent-color: var(--primary); }
-.trendPicker small { color: var(--muted); font-size: 10px; }
+.detailedAnalysis > summary:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: -2px;
+}
 
-.trendStats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
-.trendStats > div { min-width: 0; padding: 15px; display: grid; gap: 4px; border: 1px solid var(--line); border-radius: 13px; background: var(--surface-2); }
-.trendStats span { color: var(--muted); font-size: 10px; }
-.trendStats strong { font-size: 18px; }
-.trendStats small { overflow: hidden; color: var(--primary-strong); font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
-.trendStats[data-empty] { opacity: .72; }
+.detailedAnalysis > summary > span {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
 
-.trendPanel { padding: 18px; overflow: hidden; border: 1px solid var(--line); border-radius: 14px; }
-.trendLegend { min-height: 40px; display: flex; align-content: flex-start; gap: 12px 18px; flex-wrap: wrap; }
-.trendLegend span { display: inline-flex; align-items: center; gap: 6px; color: var(--text-soft); font-size: 11px; }
-.trendLegend i { width: 9px; height: 9px; border-radius: 50%; }
-.trendChartScroll { margin-top: 12px; overflow-x: auto; }
-.trendChart { width: 100%; min-width: 680px; height: auto; display: block; }
-.trendChart text { fill: var(--muted); font-size: 10px; }
-.trendGridLine { stroke: var(--line); stroke-width: 1; }
-.trendAxisLabel { fill: var(--text-soft) !important; font-size: 11px !important; font-weight: 800; }
-.trendChartEmpty { fill: var(--primary-strong) !important; font-size: 13px !important; font-weight: 750; }
+.detailedAnalysis > summary svg {
+  flex: none;
+  color: var(--primary);
+}
 
-.trendTable { overflow-x: auto; border: 1px solid var(--line); border-radius: 14px; }
-.trendTable table { width: 100%; min-width: 680px; border-collapse: collapse; }
-.trendTable caption { padding: 14px 16px; color: var(--muted); font-size: 11px; font-weight: 750; text-align: left; }
+.detailedAnalysis > summary > span > span {
+  display: grid;
+  gap: 3px;
+}
+
+.detailedAnalysis > summary strong {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.detailedAnalysis > summary small {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.detailedAnalysis > summary > b {
+  color: var(--primary);
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.detailedAnalysis > summary:hover > b {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.detailedAnalysis[open] > summary {
+  border-bottom: var(--rule);
+}
+
+.summaryOpen {
+  display: none;
+}
+
+.detailedAnalysis[open] .summaryClosed {
+  display: none;
+}
+
+.detailedAnalysis[open] .summaryOpen {
+  display: inline;
+}
+
+.trendBody {
+  padding: 22px;
+  display: grid;
+}
+
+.trendBody > * + * {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: var(--rule);
+}
+
+.trendHeader {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.trendHeader > div > span,
+.forecastHeader > div > span {
+  text-transform: uppercase;
+}
+
+.trendHeader h2 {
+  margin: 4px 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.trendHeader p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.trendHeader label {
+  min-width: 180px;
+}
+
+.trendControls {
+  display: flex;
+  align-items: end;
+  gap: 12px;
+}
+
+.trendYearRange {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: end;
+  gap: 8px;
+  border: 0;
+}
+
+.trendYearRange legend {
+  height: 0;
+  position: absolute;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.trendYearRange label {
+  min-width: 110px;
+}
+
+/* Which categories to compare: checkbox rows in columns, each row opened by a rule. The
+   rows carry their own rules and the list closes with one, so neither the picker nor the
+   figures after it draw a section rule of their own. Rows size to their content (a wrapped
+   name makes a taller row) and a gap keeps each column's rules apart from the next. */
+.trendBody > .trendPicker {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.trendBody > .trendStats {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.trendPicker {
+  max-height: 419px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-auto-rows: max-content;
+  align-content: start;
+  column-gap: 24px;
+  overflow-y: auto;
+  border-bottom: var(--rule);
+}
+
+.trendPicker label {
+  min-width: 0;
+  min-height: 38px;
+  padding: 7px 10px 7px 8px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  border-top: var(--rule);
+  border-left: 2px solid transparent;
+  color: var(--text-soft);
+  font-size: 13px;
+  line-height: 20px;
+  cursor: pointer;
+}
+
+.trendPicker label:hover {
+  background: var(--surface-2);
+}
+
+.trendPicker label[data-selected] {
+  border-left-color: var(--primary);
+  background: var(--primary-soft);
+  color: var(--primary-strong);
+}
+
+.trendPicker label:has(input:disabled) {
+  color: var(--disabled-text);
+  cursor: not-allowed;
+}
+
+.trendPicker label:has(input:focus-visible) {
+  outline: 2px solid var(--primary);
+  outline-offset: -2px;
+}
+
+.trendPicker input {
+  margin: 0;
+  accent-color: var(--primary);
+}
+
+/* Three figures side by side, divided by rules instead of tiles. */
+.trendStats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.trendStats > div {
+  min-width: 0;
+  padding-right: 20px;
+  display: grid;
+  align-content: start;
+  gap: 4px;
+}
+
+.trendStats > div + div {
+  padding-left: 20px;
+  border-left: var(--rule);
+}
+
+.trendStats strong {
+  font-family: var(--font-mono);
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.trendStats small {
+  overflow: hidden;
+  color: var(--text-soft);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.trendStats[data-empty] strong {
+  color: var(--muted);
+}
+
+/* The line chart sits directly in the section; it scrolls sideways on narrow screens. */
+.trendPanel {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.trendLegend {
+  min-height: 24px;
+  display: flex;
+  align-content: flex-start;
+  gap: 8px 18px;
+  flex-wrap: wrap;
+}
+
+.trendLegend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-soft);
+  font-size: 12px;
+}
+
+.trendChartScroll {
+  margin-top: 12px;
+  overflow-x: auto;
+}
+
+.trendChart {
+  width: 100%;
+  min-width: 680px;
+  height: auto;
+  display: block;
+}
+
+.trendChart text {
+  fill: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.trendGridLine {
+  stroke: var(--line);
+  stroke-width: 1;
+}
+
+.trendChart .trendAxisLabel {
+  fill: var(--text-soft);
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.trendChart .trendChartEmpty {
+  fill: var(--muted);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* Tables: a title, mono column heads, rows separated by rules, numbers in mono. */
+.trendTable,
+.forecastTable {
+  min-width: 0;
+  overflow-x: auto;
+}
+
+.trendTable table,
+.forecastTable table {
+  width: 100%;
+  min-width: 680px;
+  border-collapse: collapse;
+}
+
+.forecastTable table {
+  min-width: 920px;
+}
+
+/* The ranking opens with its own rule under the weighting figures. */
+.forecastTable {
+  padding-top: 4px;
+  border-top: var(--rule);
+}
+
+.trendTable caption {
+  padding: 0 0 10px;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: left;
+}
+
 .trendTable th,
-.trendTable td { padding: 11px 14px; border-top: 1px solid var(--line); font-size: 11px; text-align: center; white-space: nowrap; }
-.trendTable thead th { background: var(--surface-2); color: var(--muted); }
-.trendTable tbody th { color: var(--primary-strong); }
-.trendEmpty { margin: 0; padding: 30px; border-radius: 13px; background: var(--surface-2); color: var(--muted); font-size: 12px; text-align: center; }
-
-.forecastSection { padding-top: 22px; display: grid; gap: 14px; border-top: 1px solid var(--line); }
-.forecastHeader { display: flex; align-items: end; justify-content: space-between; gap: 16px; }
-.forecastHeader > div > span { color: var(--primary-strong); font-size: 10px; font-weight: 850; letter-spacing: .1em; }
-.forecastHeader h3 { margin: 4px 0 0; font-size: 20px; }
-.forecastHeader > strong { padding: 7px 10px; border-radius: 999px; background: var(--primary-soft); color: var(--primary-strong); font-size: 11px; white-space: nowrap; }
-.forecastNotice { margin: 0; padding: 12px 14px; border: 1px solid color-mix(in srgb, var(--warning) 34%, var(--line)); border-radius: 11px; background: color-mix(in srgb, var(--warning) 8%, transparent); color: var(--text-soft); font-size: 11px; line-height: 1.7; }
-.forecastMethod { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
-.forecastMethod > div { padding: 12px; display: grid; gap: 3px; border: 1px solid var(--line); border-radius: 11px; background: var(--surface-2); }
-.forecastMethod strong { color: var(--primary-strong); font-size: 16px; }
-.forecastMethod span { color: var(--muted); font-size: 10px; }
-.forecastTable { overflow-x: auto; border: 1px solid var(--line); border-radius: 14px; }
-.forecastTable table { width: 100%; min-width: 920px; border-collapse: collapse; }
+.trendTable td,
 .forecastTable th,
-.forecastTable td { padding: 11px 12px; border-top: 1px solid var(--line); font-size: 11px; text-align: center; white-space: nowrap; }
-.forecastTable thead th { border-top: 0; background: var(--surface-2); color: var(--muted); }
-.forecastTable tbody th { max-width: 230px; color: var(--text); text-align: left; overflow: hidden; text-overflow: ellipsis; }
-.forecastTable tbody th > span { width: 24px; height: 24px; margin-right: 9px; display: inline-grid; place-items: center; border-radius: 8px; background: var(--primary-soft); color: var(--primary-strong); font-weight: 850; }
-.forecastTable td[data-tone='up'] { color: var(--success); font-weight: 800; }
-.forecastTable td[data-tone='down'] { color: var(--danger); }
-.forecastTable td[data-tone='flat'] { color: var(--muted); }
-.forecastScore { min-width: 92px; display: flex; align-items: center; gap: 8px; }
-.forecastScore > strong { width: 24px; color: var(--primary-strong); font-size: 13px; text-align: right; }
-.forecastScore > i { width: 58px; height: 5px; overflow: hidden; border-radius: 99px; background: var(--line); }
-.forecastScore > i > b { height: 100%; display: block; border-radius: inherit; background: var(--primary); }
-.forecastSignal { padding: 5px 8px; border-radius: 999px; background: var(--surface-2); color: var(--text-soft); font-size: 10px; font-weight: 750; }
+.forecastTable td {
+  padding: 10px 14px;
+  border-top: var(--rule);
+  font-size: 12px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.trendTable thead th,
+.forecastTable thead th {
+  border-top: 0;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+}
+
+.trendTable tbody th {
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-weight: 500;
+}
+
+.trendTable tbody td,
+.forecastTable tbody td {
+  font-family: var(--font-mono);
+}
+
+.trendEmpty {
+  margin: 0;
+  padding: 30px 0;
+  color: var(--muted);
+  font-size: 13px;
+  text-align: center;
+}
+
+/* Revision priority: its own section behind a dashed rule. */
+.trendBody > .forecastSection {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: var(--rule-dashed);
+}
+
+.forecastSection {
+  display: grid;
+  gap: 16px;
+}
+
+.forecastHeader {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.forecastHeader h3 {
+  margin: 4px 0 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+/* Mono tags: the coverage figure and the reading of each row. */
+.forecastHeader > strong,
+.forecastSignal {
+  min-height: 22px;
+  padding: 0 7px;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid color-mix(in srgb, currentColor 45%, transparent);
+  border-radius: var(--radius-frame);
+  color: var(--primary-strong);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.forecastSignal {
+  color: var(--text-soft);
+}
+
+.forecastNotice {
+  margin: 0;
+  padding: 2px 0 2px 12px;
+  border-left: 2px solid var(--warning);
+  color: var(--text-soft);
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+/* How the index is weighted: four figures divided by rules. */
+.forecastMethod {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.forecastMethod > div {
+  min-width: 0;
+  padding-right: 16px;
+  display: grid;
+  align-content: start;
+  gap: 2px;
+}
+
+.forecastMethod > div + div {
+  padding-left: 16px;
+  border-left: var(--rule);
+}
+
+.forecastMethod strong {
+  font-family: var(--font-mono);
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.forecastMethod span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.forecastTable thead th:first-child {
+  text-align: left;
+}
+
+.forecastTable tbody th {
+  max-width: 230px;
+  color: var(--text);
+  font-weight: 500;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.forecastTable tbody th > span {
+  width: 22px;
+  margin-right: 8px;
+  display: inline-block;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  text-align: right;
+}
+
+.forecastTable td[data-tone='up'] {
+  color: var(--success);
+  font-weight: 600;
+}
+
+.forecastTable td[data-tone='down'] {
+  color: var(--danger);
+}
+
+.forecastTable td[data-tone='flat'] {
+  color: var(--muted);
+}
+
+.forecastScore {
+  min-width: 92px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.forecastScore > strong {
+  width: 24px;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: right;
+}
+
+.forecastScore > i {
+  width: 58px;
+  height: 5px;
+  overflow: hidden;
+  background: var(--surface-3);
+}
+
+.forecastScore > i > b {
+  height: 100%;
+  display: block;
+  background: var(--chart-1);
+}
+
+@media (max-width: 950px) {
+  .lawAnalysis {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .pieLayout {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+
+  .legend {
+    width: 100%;
+  }
+}
 
 @media (max-width: 620px) {
   .yearRange {
@@ -491,19 +965,119 @@
     width: 100%;
   }
 
-  .detailedAnalysis > summary,
-  .trendBody { padding: 17px; }
-  .trendHeader { align-items: stretch; flex-direction: column; }
-  .trendControls { align-items: stretch; flex-direction: column; }
-  .trendControls > label { width: 100%; }
-  .trendYearRange { width: 100%; }
-  .trendYearRange label { min-width: 0; flex: 1; }
-  .trendYearRange select { width: 100%; }
-  .trendStats { grid-template-columns: 1fr; }
-  .forecastHeader { align-items: start; flex-direction: column; }
-  .forecastMethod { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .detailedAnalysis > summary {
+    padding: 14px 16px;
+  }
+
+  .trendBody {
+    padding: 16px;
+  }
+
+  .trendHeader {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .trendControls {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .trendControls > label {
+    width: 100%;
+  }
+
+  .trendYearRange {
+    width: 100%;
+  }
+
+  .trendYearRange label {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .trendYearRange select {
+    width: 100%;
+  }
+
+  .trendStats {
+    grid-template-columns: 1fr;
+  }
+
+  .trendStats > div {
+    padding: 10px 0;
+  }
+
+  .trendStats > div:first-child {
+    padding-top: 0;
+  }
+
+  .trendStats > div:last-child {
+    padding-bottom: 0;
+  }
+
+  .trendStats > div + div {
+    padding-left: 0;
+    border-left: 0;
+    border-top: var(--rule);
+  }
+
+  .forecastHeader {
+    align-items: start;
+    flex-direction: column;
+  }
+
+  .forecastMethod {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .forecastMethod > div {
+    padding: 10px 16px 10px 0;
+  }
+
+  .forecastMethod > div:nth-child(2n + 1) {
+    padding-left: 0;
+    border-left: 0;
+  }
+
+  .forecastMethod > div:nth-child(n + 3) {
+    border-top: var(--rule);
+  }
+}
+
+@media (max-width: 520px) {
+  .lawDistribution,
+  .lawQuestions,
+  .chartCard {
+    padding: 16px;
+  }
+
+  .lawList button {
+    grid-template-columns: minmax(120px, 1fr) 70px 45px;
+    gap: 8px;
+  }
+
+  .lawQuestions > header button {
+    width: 100%;
+  }
 }
 
 @media (max-width: 420px) {
-  .forecastMethod { grid-template-columns: 1fr; }
+  .forecastMethod {
+    grid-template-columns: 1fr;
+  }
+
+  .forecastMethod > div {
+    padding: 10px 0;
+  }
+
+  .forecastMethod > div:first-child {
+    padding-top: 0;
+  }
+
+  .forecastMethod > div + div {
+    padding-left: 0;
+    border-left: 0;
+    border-top: var(--rule);
+  }
 }

@@ -1,10 +1,13 @@
+/* 逐題作答結果: one framed panel on result pages; frameless when embedded in 已作答紀錄.
+   Each question is a rule-separated row with a 2px left rule in its status colour;
+   details, discussion and the note editor are rule-separated groups of text and controls. */
+
 .reviewSection {
   margin-top: 20px;
   padding: 24px;
-  border: 1px solid var(--line);
-  border-radius: 20px;
+  border: var(--frame);
+  border-radius: var(--radius-frame);
   background: var(--surface);
-  box-shadow: var(--shadow-sm);
 }
 
 .reviewSection[data-embedded='true'] {
@@ -13,49 +16,56 @@
   border: 0;
   border-radius: 0;
   background: transparent;
-  box-shadow: none;
 }
 
 .reviewHeader {
-  margin-bottom: 18px;
+  padding-bottom: 14px;
   display: flex;
-  align-items: flex-start;
+  align-items: flex-end;
   justify-content: space-between;
   gap: 16px;
 }
 
 .reviewHeader span {
-  color: var(--primary-strong);
+  color: var(--muted);
+  font-family: var(--font-mono);
   font-size: 11px;
-  font-weight: 850;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.04em;
 }
 
 .reviewHeader h2 {
-  margin: 5px 0 0;
+  margin: 4px 0 0;
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
 }
 
 .reviewHeader > strong {
-  color: var(--primary);
-  font-size: 13px;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
 }
 
 .reviewList {
   display: grid;
-  gap: 10px;
 }
 
 .reviewList > article {
   scroll-margin-top: 104px;
-  padding: 16px 18px;
+  padding: 16px 0 16px 14px;
   display: grid;
   grid-template-columns: 22px minmax(0, 1fr);
   align-items: start;
   gap: 10px;
-  border: 1px solid var(--line);
-  border-left: 4px solid var(--muted);
-  border-radius: 14px;
-  background: var(--surface);
+  border-top: var(--rule);
+  border-left: 2px solid var(--muted);
+}
+
+.reviewList > article:last-child {
+  border-bottom: var(--rule);
 }
 
 .reviewList > article[data-result='correct'] {
@@ -92,12 +102,30 @@
   justify-content: space-between;
   gap: 8px 12px;
 }
-.repeatWrong { padding: 3px 7px; border-radius: 999px; background: var(--danger-soft); color: var(--danger); font-size: 10px; line-height: 1.3; white-space: nowrap; }
+
+.repeatWrong {
+  min-height: 22px;
+  padding: 0 7px;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid color-mix(in srgb, var(--danger) 45%, transparent);
+  border-radius: var(--radius-frame);
+  background: var(--danger-soft);
+  color: var(--danger);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  line-height: 1;
+  white-space: nowrap;
+}
 
 .reviewQuestionHeader > span {
   color: var(--muted);
-  font-size: 15px;
-  font-weight: 850;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
   line-height: 1.45;
   white-space: nowrap;
 }
@@ -107,86 +135,98 @@
 }
 
 .reviewContent > strong {
-  font-size: 13px;
+  font-size: 15px;
+  font-weight: 500;
   line-height: 1.6;
 }
 
 .reviewPrompt {
-  font-size: 13px;
+  font-size: 15px;
 }
 
 .reviewContent p {
   margin: 0;
   color: var(--muted);
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .reviewContent p b {
   margin-left: 16px;
   color: var(--text);
+  font-weight: 600;
 }
 
+/* Disclosure controls are text links, not bars. */
 .reviewDiscussion {
   grid-column: 2 / -1;
 }
 
 .reviewDiscussion > button {
-  width: 100%;
-  min-height: 42px;
-  padding: 0 14px;
+  min-height: 28px;
+  padding: 0;
   display: inline-flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  border-left: 4px solid var(--primary);
-  border-radius: 0 11px 11px 0;
-  background: var(--primary-soft);
-  color: var(--primary-strong);
-  font-size: 12px;
-  font-weight: 800;
+  gap: 6px;
   border: 0;
+  background: transparent;
+  color: var(--primary);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
   cursor: pointer;
 }
 
 .reviewDiscussion > button:hover {
-  filter: brightness(0.98);
+  color: var(--primary-strong);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.reviewDiscussion > button:focus-visible {
+  border-radius: var(--radius-frame);
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
 }
 
 .reviewDiscussion > p {
-  margin: 10px 0 0;
+  margin: 8px 0 0;
   color: var(--muted);
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .reviewDiscussionContent {
-  margin-top: 10px;
+  margin-top: 8px;
   display: grid;
-  gap: 8px;
 }
 
 .reviewDiscussionContent article {
-  padding: 12px;
+  padding: 12px 0;
   display: grid;
-  gap: 7px;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  background: var(--surface);
+  gap: 6px;
+  border-top: var(--rule);
 }
 
 .reviewDiscussionContent article > strong {
-  color: var(--primary-strong);
-  font-size: 12px;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
 }
 
+.reviewDiscussionContent p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+/* Note editor: a rule-separated group holding a label, a toolbar, a textarea and buttons. */
 .reviewNote {
   margin-top: 12px;
-  padding: 13px 14px;
+  padding-top: 12px;
   display: grid;
   grid-column: 2 / -1;
   gap: 10px;
-  border: 1px solid color-mix(in srgb, var(--primary) 30%, var(--line));
-  border-radius: 11px;
-  background: color-mix(in srgb, var(--primary-soft) 58%, var(--surface));
+  border-top: var(--rule);
 }
 
 .reviewNote > header {
@@ -200,26 +240,36 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  color: var(--primary-strong);
-  font-size: 12px;
-  font-weight: 850;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
 }
 
 .reviewNote > header small {
   color: var(--muted);
-  font-size: 10px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
 }
 
 .reviewNote textarea {
   width: 100%;
-  padding: 11px 12px;
-  border: 1px solid var(--control-line);
-  border-radius: 10px;
+  min-height: 112px;
+  padding: 10px 12px;
+  border: var(--frame);
+  border-radius: var(--radius-control);
   background: var(--surface);
   color: var(--text);
+  font: inherit;
+  font-size: 14px;
   line-height: 1.6;
   resize: vertical;
-  min-height: 112px;
+}
+
+.reviewNote textarea:focus-visible {
+  border-color: var(--primary);
+  outline: 2px solid var(--focus);
+  outline-offset: 1px;
 }
 
 .reviewNote > footer {
@@ -232,18 +282,18 @@
 .reviewOptions {
   min-width: 0;
   grid-column: 2 / -1;
-  border-top: 1px solid var(--line);
+  border-top: var(--rule);
 }
 
 .reviewOptions summary {
+  min-height: 28px;
   padding-top: 12px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 10px;
+  gap: 6px;
   color: var(--primary);
-  font-size: 12px;
-  font-weight: 800;
+  font-size: 13px;
+  font-weight: 500;
   list-style: none;
   cursor: pointer;
 }
@@ -252,10 +302,20 @@
   display: none;
 }
 
-.reviewOptions summary svg {
-  transition: transform 150ms ease;
+.reviewOptions summary:hover {
+  color: var(--primary-strong);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
 }
 
+.reviewOptions summary:focus-visible {
+  border-radius: var(--radius-frame);
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* Open-state indicator for the chevron: a static flip, no transition. */
 .reviewOptions[open] summary svg {
   transform: rotate(180deg);
 }
@@ -265,21 +325,30 @@
 }
 
 @media (max-width: 600px) {
+  .reviewSection {
+    padding: 16px;
+  }
+
+  .reviewSection[data-embedded='true'] {
+    padding: 0;
+  }
+
   .reviewList > article {
     position: relative;
-    padding: 14px;
+    padding: 14px 0 14px 12px;
     grid-template-columns: minmax(0, 1fr);
   }
 
   .reviewStatus {
     position: absolute;
     top: 16px;
-    left: 14px;
+    left: 12px;
   }
 
   .reviewQuestionHeader {
     min-height: 22px;
     padding-left: 28px;
+    align-items: flex-start;
   }
 
   .reviewDiscussion,
@@ -295,10 +364,6 @@
 
   .reviewContent p b {
     margin-left: 0;
-  }
-
-  .reviewQuestionHeader {
-    align-items: flex-start;
   }
 
   .reviewNote > header {

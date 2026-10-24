@@ -1,6 +1,49 @@
-.toolbar { display: flex; flex-wrap: wrap; gap: 6px; }
-.toolbar button { min-height: 34px; padding: 0 9px; display: inline-flex; align-items: center; gap: 5px; border: 1px solid var(--control-line); border-radius: 9px; background: var(--surface-2); color: var(--text-soft); font: inherit; font-size: 12px; font-weight: 800; cursor: pointer; }
-.toolbar button:hover { border-color: var(--primary); color: var(--primary-strong); }
-.toolbar .sample { min-width: 14px; line-height: 1; text-align: center; }
-.toolbar .label { font-size: 11px; }
-.toolbar button[data-format='red'] { color: var(--danger); }
+/* Text formatting: a row of small framed controls (32px, 4px corners). The 紅字 control shows its colour. */
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.toolbar button {
+  height: 32px;
+  padding: 0 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: var(--frame);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--text-soft);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.toolbar button:hover {
+  border-color: var(--line-strong);
+  background: var(--surface-elevated);
+  color: var(--text);
+}
+
+.toolbar button:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.toolbar .sample {
+  min-width: 14px;
+  line-height: 1;
+  text-align: center;
+}
+
+.toolbar .label {
+  font-size: 11px;
+}
+
+.toolbar button[data-format='red'],
+.toolbar button[data-format='red']:hover {
+  color: var(--danger);
+}

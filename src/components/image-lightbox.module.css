@@ -1,3 +1,7 @@
+/*
+ * Picture zoom: the trigger sits over a picture and only shows its button on hover or
+ * focus; the lightbox is a floating paper sheet over the dimmed page, the picture on white.
+ */
 .trigger {
   border: 0;
   background: transparent;
@@ -9,11 +13,11 @@
   height: 36px;
   display: grid;
   place-items: center;
-  border-radius: 10px;
-  background: rgb(20 33 61 / 78%);
-  color: white;
+  border: var(--frame);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--primary);
   opacity: 0;
-  transition: opacity 150ms ease;
 }
 
 .trigger:hover > span,
@@ -22,7 +26,7 @@
 }
 
 .trigger:focus-visible {
-  outline: 3px solid var(--focus);
+  outline: 2px solid var(--primary);
   outline-offset: -4px;
 }
 
@@ -35,12 +39,13 @@
   place-items: center;
 }
 
+/* Dims the page with the same ink as every other dialog (the --backdrop token). */
 .backdrop {
   position: absolute;
   inset: 0;
   border: 0;
-  background: rgb(8 19 38 / 82%);
-  backdrop-filter: blur(6px);
+  background: var(--backdrop);
+  backdrop-filter: blur(2px);
   cursor: zoom-out;
 }
 
@@ -52,17 +57,18 @@
   z-index: 1;
   display: grid;
   gap: 10px;
-  border: 1px solid rgb(255 255 255 / 22%);
-  border-radius: 18px;
-  background: #0f1b31;
-  color: white;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-popup);
+  background: var(--surface-elevated);
+  color: var(--text);
   box-shadow: var(--shadow-lg);
 }
 
 .content > span {
   padding: 0 4px;
   overflow: hidden;
-  font-size: 12px;
+  color: var(--muted);
+  font-size: 13px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -72,8 +78,9 @@
   height: min(80vh, 900px);
   position: relative;
   overflow: hidden;
-  border-radius: 12px;
-  background: #071020;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-frame);
+  background: var(--image-surface);
 }
 
 .image img {
@@ -90,15 +97,20 @@
   z-index: 2;
   display: grid;
   place-items: center;
-  border: 1px solid rgb(255 255 255 / 24%);
-  border-radius: 11px;
-  background: rgb(7 16 32 / 78%);
-  color: white;
+  border: var(--frame);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--text);
   cursor: pointer;
 }
 
+.close:hover {
+  border-color: var(--line-strong);
+  background: var(--surface-elevated);
+}
+
 .close:focus-visible {
-  outline: 3px solid rgb(255 255 255 / 55%);
+  outline: 2px solid var(--primary);
   outline-offset: 2px;
 }
 

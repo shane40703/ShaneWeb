@@ -1,100 +1,100 @@
+/*
+ * Appearance. Open sections on the paper (the mode, the official palettes, the preview) separated
+ * by dashed rules; the mode and preset radios are framed 4px tiles because they are controls.
+ * The advanced colour editor is the one framed panel, its colour fields rows under rules. When the
+ * screen is embedded in the settings panel (data-embedded) the settings dialog already draws the
+ * frame, so the editor opens as a plain section. The preview canvas is a picture of the site: it
+ * draws the previewed palette's graph paper and a small cream shell on top of it. Everything inside
+ * the canvas writes its lines as `1px solid var(--control-line)` etc. rather than the --frame /
+ * --rule shortcuts: those shortcuts are substituted on :root with the site's colours, so only the
+ * bare tokens (set inline by deriveThemeTokens) follow the previewed palette. The grid gradient is
+ * spelled out for the same reason; --paper-grid would resolve to the site's grid.
+ */
 .page {
+  min-width: 0;
   display: grid;
-  gap: 20px;
+  gap: 24px;
 }
 
-.hero,
-.modeFieldset,
-.presetPanel,
-.stickyActions,
-.advancedSettings,
-.editor,
-.previewPanel {
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  background: var(--surface);
-  box-shadow: var(--shadow-sm);
-}
-
+/* Sticky action bar: cream, one frame, a sentence and the two buttons. It sits 76px down when the
+   window scrolls (under the shell topbar); a container that scrolls on its own sets --sticky-top. */
 .stickyActions {
-  padding: 12px 16px;
   position: sticky;
-  top: 76px;
+  top: var(--sticky-top, 76px);
   z-index: 4;
+  padding: 10px 12px 10px 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 14px;
-  background: color-mix(in srgb, var(--surface) 94%, transparent);
-  backdrop-filter: blur(14px);
+  border: var(--frame);
+  border-radius: var(--radius-frame);
+  background: var(--surface);
 }
 
 .stickyActions > span {
   color: var(--muted);
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .stickyActions .actions {
   margin: 0;
 }
 
-.hero {
-  padding: 24px;
-  display: flex;
-  align-items: flex-start;
-  gap: 15px;
-}
-
-.heroIcon {
-  width: 44px;
-  height: 44px;
-  flex: 0 0 auto;
-  display: grid;
-  place-items: center;
-  border-radius: 13px;
-  color: var(--primary-strong);
-  background: var(--primary-soft);
+/* Inside the settings dialog the dialog body is the scroll container and the shell topbar is outside
+   it, so the bar sticks to the top of that body instead of 76px below it. */
+:global([role='dialog']) .page[data-embedded] {
+  --sticky-top: 0px;
 }
 
 .eyebrow {
-  color: var(--primary-strong);
-  font-size: 10px;
-  font-weight: 850;
-  letter-spacing: 0.1em;
+  display: block;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
-.hero h2,
+.sectionHeading {
+  min-width: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
 .sectionHeading h3 {
-  margin: 3px 0;
+  margin: 4px 0 0;
+  font-size: 18px;
 }
 
-.hero h2 {
-  font-size: 24px;
-}
-
-.hero p,
 .modeFieldset > p,
+.presetHelp,
 .previewHint {
   margin: 0;
-  color: var(--muted);
-  font-size: 13px;
+  color: var(--text-soft);
+  font-size: 14px;
   line-height: 1.6;
 }
 
+/* Mode: an open section with two framed tiles. */
 .modeFieldset {
-  margin: 0;
-  padding: 22px;
   min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
 }
 
 .modeFieldset legend {
   padding: 0;
-  font-size: 15px;
-  font-weight: 800;
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
 }
 
 .modeFieldset > p {
-  margin-top: 4px;
+  margin-top: 6px;
 }
 
 .modeOptions {
@@ -105,19 +105,18 @@
 }
 
 .modeOption {
+  position: relative;
   min-width: 0;
-  min-height: 76px;
-  padding: 14px;
+  min-height: 68px;
+  padding: 12px 14px;
   display: grid;
-  grid-template-columns: 38px minmax(0, 1fr) auto;
+  grid-template-columns: 32px minmax(0, 1fr) auto;
   align-items: center;
-  gap: 11px;
-  border: 1px solid var(--control-line);
-  border-radius: 14px;
-  background: var(--surface-2);
+  gap: 12px;
+  border: var(--frame);
+  border-radius: var(--radius-control);
+  background: var(--surface);
   cursor: pointer;
-  transition: border-color 150ms ease, background-color 150ms ease,
-    box-shadow 150ms ease;
 }
 
 .modeOption:hover {
@@ -127,15 +126,15 @@
 .modeOption[data-selected] {
   border-color: var(--primary);
   background: var(--primary-soft);
-  box-shadow: inset 0 0 0 1px var(--primary);
 }
 
 .modeOption:has(input:focus-visible) {
-  outline: 3px solid var(--focus);
+  outline: 2px solid var(--primary);
   outline-offset: 2px;
 }
 
-.modeOption input {
+.modeOption input,
+.presetCard input {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -146,66 +145,65 @@
 }
 
 .modeIcon {
-  width: 38px;
-  height: 38px;
+  width: 32px;
+  height: 32px;
   display: grid;
   place-items: center;
-  border-radius: 11px;
-  color: var(--primary-strong);
-  background: var(--surface);
+  color: var(--primary);
 }
 
 .modeText {
   min-width: 0;
   display: grid;
-  gap: 3px;
+  gap: 2px;
 }
 
 .modeText strong {
-  font-size: 14px;
+  font-size: 15px;
+  font-weight: 600;
 }
 
 .modeText small {
   color: var(--muted);
-  font-size: 12px;
+  font-size: 13px;
 }
 
+/* Small mono tags: the state of a mode, the preset count, the current-mode badges. */
 .modeState,
 .currentBadge,
 .previewMode,
-.previewPill {
-  border-radius: 999px;
-  font-size: 10px;
-  font-weight: 800;
+.presetCount {
+  padding: 3px 7px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-frame);
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.03em;
   white-space: nowrap;
 }
 
-.modeState {
-  padding: 5px 8px;
-  color: var(--muted);
-  background: var(--surface);
+.currentBadge,
+.previewMode,
+.presetCount {
+  margin-top: 2px;
 }
 
+.modeOption[data-selected] .modeState {
+  border-color: color-mix(in srgb, var(--primary) 40%, var(--line));
+  color: var(--primary-strong);
+}
+
+/* Official palettes: an open section with five framed tiles. */
 .presetPanel {
   min-width: 0;
-  padding: 22px;
+  padding-top: 24px;
+  border-top: var(--rule-dashed);
 }
 
 .presetHelp {
-  margin: 6px 0 0;
-  color: var(--muted);
-  font-size: 13px;
-  line-height: 1.6;
-}
-
-.presetCount {
-  padding: 6px 9px;
-  border-radius: 999px;
-  color: var(--primary-strong);
-  background: var(--primary-soft);
-  font-size: 10px;
-  font-weight: 800;
-  white-space: nowrap;
+  margin-top: 6px;
 }
 
 .presetGrid {
@@ -216,35 +214,31 @@
 }
 
 .presetCard {
+  position: relative;
   min-width: 0;
-  min-height: 158px;
-  padding: 13px;
+  min-height: 150px;
+  padding: 12px;
   display: flex;
   flex-direction: column;
-  gap: 9px;
-  border: 1px solid var(--control-line);
-  border-radius: 13px;
-  background: var(--surface-2);
+  gap: 8px;
+  border: var(--frame);
+  border-radius: var(--radius-control);
+  background: var(--surface);
   cursor: pointer;
-  transition: border-color 150ms ease, background-color 150ms ease,
-    box-shadow 150ms ease, transform 150ms ease;
 }
 
 .presetCard:hover {
   border-color: var(--line-strong);
-  transform: translateY(-1px);
 }
 
 .presetCard[data-selected] {
   border-color: var(--primary);
   background: var(--primary-soft);
-  box-shadow: inset 0 0 0 1px var(--primary);
 }
 
 .presetCard:has(input:focus-visible) {
   outline: 2px solid var(--primary);
   outline-offset: 2px;
-  box-shadow: 0 0 0 4px var(--surface);
 }
 
 .presetCard:has(input:disabled) {
@@ -254,17 +248,6 @@
 
 .presetCard:has(input:disabled):hover {
   border-color: var(--control-line);
-  transform: none;
-}
-
-.presetCard input {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  clip-path: inset(50%);
-  white-space: nowrap;
 }
 
 .presetCardHeader {
@@ -278,21 +261,21 @@
 .presetCardHeader strong {
   min-width: 0;
   overflow: hidden;
-  font-size: 13px;
+  font-size: 14px;
+  font-weight: 600;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .presetBadge {
-  padding: 4px 6px;
+  flex: 0 0 auto;
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  border-radius: 999px;
   color: var(--muted);
-  background: var(--surface);
-  font-size: 9px;
-  font-weight: 800;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.03em;
   white-space: nowrap;
 }
 
@@ -302,18 +285,18 @@
 
 .presetDescription {
   color: var(--muted);
-  font-size: 11px;
-  line-height: 1.45;
+  font-size: 12px;
+  line-height: 1.5;
 }
 
+/* The six colours of a palette as one strip. */
 .presetSwatches {
-  height: 27px;
+  height: 24px;
   margin-top: auto;
   display: flex;
   overflow: hidden;
   border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--surface);
+  border-radius: var(--radius-frame);
 }
 
 .presetSwatches > span {
@@ -326,76 +309,82 @@
 }
 
 .workspace {
+  padding-top: 24px;
   display: grid;
   grid-template-columns: minmax(360px, 0.88fr) minmax(440px, 1.12fr);
   align-items: start;
-  gap: 20px;
+  gap: 24px;
+  border-top: var(--rule-dashed);
 }
 
+/* The colour editor: one framed panel whose colour fields are rows under rules. */
 .advancedSettings {
   min-width: 0;
-  overflow: hidden;
+  border: var(--frame);
+  border-radius: var(--radius-frame);
+  background: var(--surface);
 }
 
 .advancedSettings > summary {
-  padding: 18px 20px;
+  padding: 14px 20px;
   color: var(--text);
-  font-size: 15px;
-  font-weight: 850;
+  font-size: 16px;
+  font-weight: 600;
   cursor: pointer;
 }
 
-.advancedSettings[open] > summary {
-  border-bottom: 1px solid var(--line);
+.advancedSettings > summary::marker {
+  color: var(--primary);
 }
 
-.advancedSettings .editor {
+.advancedSettings[open] > summary {
+  border-bottom: var(--rule);
+}
+
+.editor {
+  min-width: 0;
+  padding: 20px;
+}
+
+.editor .sectionHeading h3 {
+  font-size: 16px;
+}
+
+/* Embedded in the settings panel: the dialog is the frame, so the editor is a plain section. */
+.page[data-embedded] .advancedSettings {
   border: 0;
   border-radius: 0;
-  box-shadow: none;
+  background: transparent;
 }
 
-.editor,
-.previewPanel {
-  min-width: 0;
-  padding: 22px;
+.page[data-embedded] .advancedSettings > summary {
+  padding: 0 0 12px;
 }
 
-.sectionHeading {
-  min-width: 0;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
+.page[data-embedded] .editor {
+  padding: 16px 0 0;
 }
 
-.sectionHeading h3 {
-  font-size: 19px;
-}
-
-.currentBadge,
-.previewMode {
-  padding: 6px 9px;
-  color: var(--primary-strong);
-  background: var(--primary-soft);
+/* Embedded, the 設定 section title is 18px, so these sub-headings step down to the panel-title size. */
+.page[data-embedded] .modeFieldset legend,
+.page[data-embedded] .sectionHeading h3 {
+  font-size: 16px;
 }
 
 .colorList {
-  margin-top: 18px;
+  margin-top: 16px;
   display: grid;
-  gap: 10px;
+  border-top: var(--rule);
 }
 
 .colorField {
   min-width: 0;
-  padding: 12px;
+  padding: 12px 0;
   display: grid;
   grid-template-columns: minmax(125px, 1fr) 44px 112px;
   align-items: center;
   gap: 10px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: var(--surface-2);
+  border-bottom: var(--rule);
 }
 
 .colorLabel {
@@ -405,14 +394,14 @@
 }
 
 .colorLabel label {
-  font-size: 13px;
-  font-weight: 800;
+  font-size: 14px;
+  font-weight: 500;
 }
 
 .colorLabel span {
   color: var(--muted);
-  font-size: 11px;
-  line-height: 1.35;
+  font-size: 12px;
+  line-height: 1.4;
 }
 
 .swatch {
@@ -420,8 +409,8 @@
   height: 40px;
   padding: 3px;
   display: block;
-  border: 1px solid var(--control-line);
-  border-radius: 10px;
+  border: var(--frame);
+  border-radius: var(--radius-control);
   background: var(--surface);
   cursor: pointer;
 }
@@ -432,7 +421,7 @@
   padding: 0;
   display: block;
   border: 0;
-  border-radius: 7px;
+  border-radius: var(--radius-frame);
   background: transparent;
   cursor: pointer;
 }
@@ -444,21 +433,21 @@
 .swatch input::-webkit-color-swatch,
 .swatch input::-moz-color-swatch {
   border: 0;
-  border-radius: 6px;
+  border-radius: var(--radius-frame);
 }
 
 .hexInput {
   width: 100%;
   height: 40px;
   padding: 0 10px;
-  border: 1px solid var(--control-line);
-  border-radius: 10px;
+  border: var(--frame);
+  border-radius: var(--radius-control);
   color: var(--text);
   background: var(--surface);
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.03em;
   text-transform: uppercase;
 }
 
@@ -469,44 +458,42 @@
 
 .swatch:has(input:focus-visible),
 .hexInput:focus-visible {
-  outline: 3px solid var(--focus);
-  outline-offset: 2px;
+  border-color: var(--primary);
+  outline: 2px solid var(--focus);
+  outline-offset: 1px;
 }
 
 .fieldError {
   grid-column: 1 / -1;
   color: var(--danger);
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.4;
 }
 
+/* Validation: plain coloured text with an icon, no tinted box inside the panel. */
 .validation {
   min-height: 46px;
   margin-top: 14px;
   display: grid;
   gap: 8px;
   color: var(--muted);
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.5;
 }
 
 .validationError,
 .validationSuccess {
-  padding: 11px 12px;
   display: flex;
   align-items: flex-start;
   gap: 8px;
-  border-radius: 11px;
 }
 
 .validationError {
   color: var(--danger);
-  background: var(--danger-soft);
 }
 
 .validationSuccess {
   color: var(--success);
-  background: var(--success-soft);
 }
 
 .validationError svg,
@@ -518,6 +505,7 @@
 .validationError strong {
   display: block;
   margin-bottom: 3px;
+  font-weight: 600;
 }
 
 .validationError ul {
@@ -536,8 +524,13 @@
   gap: 10px;
 }
 
+/* Preview: an open section; the canvas is a picture of the site in the previewed palette. */
+.previewPanel {
+  min-width: 0;
+}
+
 .previewHint {
-  margin-top: 12px;
+  margin-top: 6px;
 }
 
 .previewCanvas {
@@ -546,124 +539,141 @@
   display: grid;
   grid-template-columns: 142px minmax(0, 1fr);
   overflow: hidden;
-  border: 1px solid var(--line);
-  border-radius: 15px;
-  background: var(--bg);
+  border: 1px solid var(--control-line);
+  border-radius: var(--radius-frame);
+  background-color: var(--bg);
+  background-image:
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 0),
+    linear-gradient(var(--grid-line-soft) 1px, transparent 0);
+  background-size: var(--paper-grid-size);
   color: var(--text);
-  box-shadow: var(--shadow-md);
+  font-family: var(--font-sans);
 }
 
 .previewSidebar {
-  padding: 16px 12px;
-  border-right: 1px solid var(--line);
+  padding: 14px 12px;
+  border-right: 1px solid var(--control-line);
   background: var(--sidebar-surface);
   color: var(--sidebar-text);
 }
 
 .previewBrand {
   min-width: 0;
+  padding: 0 2px 10px;
   display: flex;
   align-items: center;
   gap: 8px;
+  border-bottom: 1px dashed var(--line-strong);
 }
 
 .previewBrand > span {
-  width: 29px;
-  height: 29px;
+  width: 24px;
+  height: 24px;
   flex: 0 0 auto;
   display: grid;
   place-items: center;
-  border-radius: 9px;
-  color: var(--on-primary);
-  background: var(--primary-solid);
-  font-size: 12px;
-  font-weight: 900;
+  border: 1px solid var(--primary);
+  border-radius: var(--radius-frame);
+  color: var(--primary);
+  font-size: 11px;
+  font-weight: 600;
 }
 
 .previewBrand div {
   min-width: 0;
   display: grid;
+  gap: 1px;
 }
 
 .previewBrand strong {
   overflow: hidden;
   font-size: 10px;
+  font-weight: 600;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .previewBrand small {
   color: var(--sidebar-muted);
-  font-size: 6px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
+  font-family: var(--font-mono);
+  font-size: 7px;
+  letter-spacing: 0.04em;
 }
 
 .previewSidebar nav {
-  margin-top: 22px;
+  margin-top: 10px;
   display: grid;
-  gap: 5px;
+  gap: 2px;
 }
 
 .previewSidebar nav span {
-  padding: 8px 9px;
-  border-radius: 8px;
-  color: var(--sidebar-muted);
+  padding: 7px 8px;
+  border-radius: var(--radius-frame);
+  color: var(--sidebar-text);
   font-size: 10px;
-  font-weight: 700;
 }
 
 .previewSidebar nav .previewNavActive {
   color: var(--primary-strong);
   background: var(--sidebar-active);
+  font-weight: 600;
 }
 
 .previewMain {
   min-width: 0;
-  padding: 15px;
+  padding: 0 0 14px;
   display: grid;
   align-content: start;
   gap: 12px;
 }
 
 .previewTopbar {
+  min-height: 40px;
+  padding: 0 14px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
+  border-bottom: 1px solid var(--control-line);
+  background: var(--surface);
   color: var(--text);
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .previewPill {
-  padding: 4px 7px;
-  color: var(--primary-strong);
-  background: var(--primary-soft);
-}
-
-.previewCard,
-.previewSecondary {
-  border: 1px solid var(--line);
-  border-radius: 12px;
+  padding: 2px 6px;
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius-frame);
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
 }
 
 .previewCard {
-  padding: 16px;
+  margin: 0 14px;
+  padding: 14px;
+  border: 1px solid var(--control-line);
+  border-radius: var(--radius-frame);
   background: var(--surface);
 }
 
 .previewKicker {
-  color: var(--primary-strong);
+  color: var(--muted);
+  font-family: var(--font-mono);
   font-size: 8px;
-  font-weight: 900;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .previewCard h4 {
-  margin: 5px 0 9px;
+  margin: 4px 0 8px;
   color: var(--text);
-  font-size: 14px;
+  font-size: 13px;
+  font-weight: 600;
   line-height: 1.35;
 }
 
@@ -675,12 +685,12 @@
 }
 
 .previewCard .previewMuted {
-  margin-top: 7px;
+  margin-top: 6px;
   color: var(--muted);
 }
 
 .previewControls {
-  margin-top: 14px;
+  margin-top: 12px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -688,31 +698,35 @@
 }
 
 .previewLink {
-  color: var(--primary-strong);
+  color: var(--primary);
   font-size: 10px;
-  font-weight: 800;
+  font-weight: 500;
   text-decoration: underline;
-  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
 }
 
 .previewButton {
-  min-height: 30px;
+  min-height: 26px;
   padding: 0 10px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   border: 1px solid var(--primary-solid);
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   color: var(--on-primary);
   background: var(--primary-solid);
   font-size: 9px;
-  font-weight: 850;
+  font-weight: 500;
 }
 
+/* The supplementary line under the card: open text on the paper under a quiet rule, like the
+   site's own open sections; no tinted or framed box. */
 .previewSecondary {
-  padding: 12px;
+  margin: 0 14px;
+  padding: 10px 2px 0;
+  border-top: 1px solid var(--line);
   color: var(--muted);
-  background: var(--surface-2);
   font-size: 9px;
   line-height: 1.5;
 }
@@ -750,6 +764,11 @@
     grid-template-columns: 1fr;
   }
 
+  .previewPanel {
+    padding-top: 24px;
+    border-top: var(--rule-dashed);
+  }
+
   .previewCanvas {
     min-height: 360px;
   }
@@ -757,25 +776,17 @@
 
 @media (max-width: 650px) {
   .page {
-    gap: 14px;
+    gap: 20px;
   }
 
-  .hero,
-  .modeFieldset,
   .presetPanel,
-  .stickyActions,
-  .advancedSettings,
-  .editor,
+  .workspace,
   .previewPanel {
-    border-radius: 15px;
+    padding-top: 20px;
   }
 
-  .hero,
-  .modeFieldset,
-  .presetPanel,
-  .editor,
-  .previewPanel {
-    padding: 17px;
+  .workspace {
+    gap: 20px;
   }
 
   .modeOptions {
@@ -787,7 +798,7 @@
   }
 
   .presetCard {
-    min-height: 142px;
+    min-height: 0;
   }
 
   .colorField {
@@ -820,13 +831,22 @@
   }
 
   .stickyActions {
-    top: 68px;
+    top: var(--sticky-top, 68px);
+    padding: 12px;
     align-items: stretch;
     flex-direction: column;
   }
 
   .actions > * {
     width: 100%;
+  }
+
+  .advancedSettings > summary {
+    padding: 12px 16px;
+  }
+
+  .editor {
+    padding: 16px;
   }
 
   .previewCanvas {
@@ -837,11 +857,11 @@
   .previewSidebar {
     padding: 12px;
     border-right: 0;
-    border-bottom: 1px solid var(--line);
+    border-bottom: 1px solid var(--control-line);
   }
 
   .previewSidebar nav {
-    margin-top: 12px;
+    margin-top: 10px;
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 

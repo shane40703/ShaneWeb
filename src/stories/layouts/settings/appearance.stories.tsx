@@ -31,7 +31,7 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-/** 全新使用者：淺色是預設的「藍圖晨光」，深色是「藍圖深夜」。 */
+/** 全新使用者：淺色是預設的「米紙方格」，深色是「墨紙方格」。 */
 export const 預設配色: Story = {};
 
 /** 兩個模式都存了不屬於官方配色的自訂色：網站整體換色，模式卡片顯示「自訂配色」。 */

@@ -10,7 +10,7 @@ export default function Document() {
     >
       <Head>
         <meta name="color-scheme" content="light dark" />
-        <meta name="theme-color" content="#f3f7fc" />
+        <meta name="theme-color" content="#eadfc9" />
         <script
           dangerouslySetInnerHTML={{ __html: THEME_INITIALIZATION_SCRIPT }}
         />

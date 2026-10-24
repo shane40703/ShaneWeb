@@ -1,47 +1,338 @@
-.interactionGuard { display: contents; }
-.selectorHint { color: var(--disabled-text); font-size: 12px; }
-.layout { display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: 20px; align-items: start; }
+/*
+ * 使用者筆記. The editor is one framed cream panel: question, then a quiet rule, the note fields,
+ * then a rule and the action row. The sidebar holds two framed panels (題號導覽, 已儲存筆記) whose
+ * contents are plain rows separated by rules, never inner boxes.
+ */
+.interactionGuard {
+  display: contents;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 330px;
+  gap: 20px;
+  align-items: start;
+}
+
 .editor,
 .savedNotes,
-.numberNavigator { border: 1px solid var(--line); border-radius: 20px; background: var(--surface); box-shadow: var(--shadow-sm); }
-.editor { padding: 24px; display: grid; gap: 18px; }
-.questionMeta { display: flex; gap: 7px; flex-wrap: wrap; }
-.editor h2 { margin: 0; font-size: 20px; line-height: 1.65; }
-.editor > .questionNumber { color: var(--primary-strong); font-size: 17px; line-height: 1.3; }
-.editor label { color: var(--muted); font-size: 12px; font-weight: 800; }
-.editor textarea { width: 100%; min-height: 360px; padding: 16px; border: 1px solid var(--control-line); border-radius: 13px; background: var(--surface-2); color: var(--text); font-size: 15px; line-height: 1.75; resize: vertical; }
-.noteToolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-.noteResult { min-height: 220px; padding: 18px; display: grid; align-content: start; gap: 16px; border: 1px solid var(--line); border-radius: 13px; background: var(--surface-2); }
-.noteResult > p { margin: 0; line-height: 1.75; white-space: pre-wrap; overflow-wrap: anywhere; }
-.editorFooter { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.editorFooter span { color: var(--muted); font-size: 11px; }
-.editorFooter > div { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
-.noteSidebar { position: sticky; top: 92px; display: grid; gap: 14px; }
-.numberNavigator { overflow: hidden; }
-.numberNavigator > header { padding: 19px; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; border-bottom: 1px solid var(--line); }
-.numberNavigator > header span { color: var(--primary-strong); font-size: 10px; font-weight: 850; letter-spacing: .12em; }
-.numberNavigator > header h2 { margin: 4px 0 0; font-size: 18px; }
-.numberNavigator > header strong { min-width: 44px; min-height: 31px; padding-inline: 8px; display: grid; place-items: center; border-radius: 10px; background: var(--primary-soft); color: var(--primary-strong); font-size: 11px; }
-.questionNumbers { padding: 17px 19px; overflow: visible; }
-.noteLegend { padding: 11px 19px; border-top: 1px solid var(--line); color: var(--muted); font-size: 10px; display: flex; gap: 14px; }
-.noteLegend span { display: inline-flex; align-items: center; gap: 6px; }
-.noteLegend i { width: 9px; height: 9px; display: block; border: 2px solid var(--surface); border-radius: 50%; background: var(--purple); box-shadow: 0 0 0 1px color-mix(in srgb, var(--purple) 25%, transparent); }
-.noteLegend span[data-tone='difficult'] i { background: var(--warning); box-shadow: 0 0 0 1px color-mix(in srgb, var(--warning) 30%, transparent); }
-.savedNotes { overflow: hidden; }
-.savedNotes > header { padding: 19px; position: relative; border-bottom: 1px solid var(--line); }
-.savedNotes > header span { color: var(--primary-strong); font-size: 10px; font-weight: 850; letter-spacing: .12em; }
-.savedNotes > header h2 { margin: 4px 0 0; font-size: 18px; }
-.savedNotes > header strong { width: 31px; height: 31px; position: absolute; top: 19px; right: 19px; display: grid; place-items: center; border-radius: 10px; background: var(--primary-soft); color: var(--primary-strong); }
-.savedNotes > div { max-height: 520px; overflow-y: auto; }
-.savedNotes button { width: 100%; padding: 14px 18px; display: grid; gap: 6px; border: 0; border-bottom: 1px solid var(--line); background: transparent; color: var(--text); text-align: left; cursor: pointer; }
-.savedNotes button:hover,
-.savedNotes button[aria-current='true'] { background: var(--primary-soft); }
-.savedNotes button span { color: var(--muted); font-size: 10px; }
-.savedNotes button strong { overflow: hidden; font-size: 12px; line-height: 1.5; text-overflow: ellipsis; white-space: nowrap; }
-.savedNotes > p { margin: 0; padding: 22px; color: var(--muted); font-size: 12px; }
-@media (max-width: 900px) { .layout { grid-template-columns: 1fr; } .noteSidebar { position: static; grid-row: 1; } }
+.numberNavigator {
+  border: var(--frame);
+  border-radius: var(--radius-frame);
+  background: var(--surface);
+}
+
+/* Editor panel (pattern A). */
+.editor {
+  padding: 24px;
+  display: grid;
+  gap: 18px;
+}
+
+.questionMeta {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+
+.editor h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.65;
+}
+
+.editor > .questionNumber {
+  color: var(--primary-strong);
+  font-size: 17px;
+  line-height: 1.3;
+}
+
+/* Only the 「我的筆記」 field label; the ImageAttachments upload <label> is a button and keeps its own look. */
+.noteToolbar > label {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.editor textarea {
+  width: 100%;
+  min-height: 360px;
+  padding: 12px;
+  border: var(--frame);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 15px;
+  line-height: 1.75;
+  resize: vertical;
+}
+
+.editor textarea:focus {
+  border-color: var(--primary);
+  outline: 2px solid var(--focus);
+  outline-offset: 1px;
+}
+
+/* The note section starts under a quiet rule: label + the small formatting controls on one row. */
+.noteToolbar {
+  padding-top: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  border-top: var(--rule);
+}
+
+/* Saved note, read-only: plain text under the same rule, no inner box. */
+.noteResult {
+  min-height: 160px;
+  padding-top: 18px;
+  display: grid;
+  align-content: start;
+  gap: 16px;
+  border-top: var(--rule);
+}
+
+.noteResult > p {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.75;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.editorFooter {
+  padding-top: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-top: var(--rule);
+}
+
+.editorFooter span {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+}
+
+.editorFooter > div {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+/* Sidebar: two framed panels, each with a header row closed by a rule. */
+.noteSidebar {
+  position: sticky;
+  top: 84px;
+  display: grid;
+  gap: 14px;
+}
+
+.numberNavigator {
+  overflow: hidden;
+}
+
+.numberNavigator > header,
+.savedNotes > header {
+  padding: 16px 18px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: var(--rule);
+}
+
+.numberNavigator > header span,
+.savedNotes > header span {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.numberNavigator > header h2,
+.savedNotes > header h2 {
+  margin: 4px 0 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.numberNavigator > header strong,
+.savedNotes > header strong {
+  flex: 0 0 auto;
+  color: var(--primary-strong);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  line-height: 1.3;
+}
+
+.questionNumbers {
+  padding: 16px 18px;
+  overflow: visible;
+}
+
+.noteLegend {
+  padding: 10px 18px;
+  display: flex;
+  gap: 14px;
+  border-top: var(--rule);
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+}
+
+.noteLegend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.noteLegend i {
+  width: 8px;
+  height: 8px;
+  display: block;
+  border-radius: 50%;
+  background: var(--purple);
+}
+
+.noteLegend span[data-tone='difficult'] i {
+  background: var(--warning);
+}
+
+/* Saved notes: rule-separated rows (changelog), the open one tinted with a left ink rule. */
+.savedNotes {
+  overflow: hidden;
+}
+
+/* This header has no wrapper around kicker + title, so it is a two-column grid with the count at right. */
+.savedNotes > header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+}
+
+.savedNotes > header strong {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+}
+
+.savedNotes > div {
+  max-height: 520px;
+  overflow-y: auto;
+}
+
+.savedNotes button {
+  width: 100%;
+  padding: 12px 18px 12px 16px;
+  display: grid;
+  gap: 4px;
+  border: 0;
+  border-left: 2px solid transparent;
+  border-bottom: var(--rule);
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.savedNotes button:last-child {
+  border-bottom: 0;
+}
+
+.savedNotes button:hover {
+  background: var(--surface-2);
+}
+
+.savedNotes button[aria-current='true'] {
+  border-left-color: var(--primary);
+  background: var(--primary-soft);
+}
+
+.savedNotes button:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: -2px;
+}
+
+.savedNotes button span {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+}
+
+.savedNotes button strong {
+  overflow: hidden;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.5;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.savedNotes > p {
+  margin: 0;
+  padding: 20px 18px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .noteSidebar {
+    position: static;
+    grid-row: 1;
+  }
+}
+
 @media (max-width: 560px) {
-  .editorFooter { align-items: stretch; flex-direction: column; }
-  .editorFooter > div { justify-content: stretch; }
-  .editorFooter > div > * { flex: 1 1 auto; white-space: nowrap; }
+  .editor {
+    padding: 16px;
+    gap: 14px;
+  }
+
+  .editor textarea {
+    min-height: 240px;
+  }
+
+  .numberNavigator > header,
+  .savedNotes > header {
+    padding: 14px 16px;
+  }
+
+  .questionNumbers {
+    padding: 14px 16px;
+  }
+
+  .noteLegend {
+    padding-inline: 16px;
+  }
+
+  .editorFooter {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .editorFooter > div {
+    justify-content: stretch;
+  }
+
+  .editorFooter > div > * {
+    flex: 1 1 auto;
+    white-space: nowrap;
+  }
 }

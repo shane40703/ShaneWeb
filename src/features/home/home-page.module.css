@@ -1,3 +1,6 @@
+/* Home: the four subjects as dashed-frame cream cards on the paper, like the reference's legal
+   page. A mono number, the subject icon, the name and the link line; the frame turns solid blue
+   on hover. No blob, no lift, no shadow. */
 .home {
   min-height: calc(100vh - 145px);
   display: grid;
@@ -7,70 +10,68 @@
 .subjectGrid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 18px;
+  gap: 16px;
 }
 
 .subjectCard {
-  min-height: 330px;
-  padding: 24px;
-  position: relative;
+  min-width: 0;
+  min-height: 300px;
+  padding: 22px 24px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  border: 1px solid var(--line);
-  border-radius: 22px;
-  overflow: hidden;
+  border: var(--frame-dashed);
+  border-radius: var(--radius-frame);
   background: var(--surface);
   color: var(--text);
   text-decoration: none;
-  box-shadow: var(--shadow-sm);
-  transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
-}
-
-.subjectCard::after {
-  content: '';
-  width: 170px;
-  height: 170px;
-  position: absolute;
-  right: -65px;
-  bottom: -65px;
-  border-radius: 50%;
-  background: var(--primary-soft);
 }
 
 .subjectCard:hover {
-  transform: translateY(-5px);
-  border-color: color-mix(in srgb, var(--primary) 45%, var(--line));
-  box-shadow: var(--shadow-md);
+  border-style: solid;
+  border-color: var(--primary);
+}
+
+.subjectCard:hover .cardAction {
+  color: var(--primary-strong);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.subjectCard:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
 }
 
 .cardNumber {
-  color: var(--line-strong);
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--muted);
+  font-family: var(--font-mono);
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 500;
+  letter-spacing: 0.04em;
 }
 
 .subjectIcon {
-  margin: 42px 0 24px;
+  margin: 36px 0 22px;
 }
 
 .subjectCard h2 {
   margin: 0;
-  font-size: clamp(19px, 1.8vw, 24px);
+  font-size: clamp(19px, 1.8vw, 22px);
+  font-weight: 600;
   line-height: 1.4;
 }
 
 .cardAction {
   margin-top: auto;
-  position: relative;
-  z-index: 1;
+  padding-top: 24px;
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  color: var(--primary-strong);
-  font-size: 13px;
-  font-weight: 850;
+  color: var(--primary);
+  font-size: 14px;
+  font-weight: 500;
 }
 
 @media (max-width: 1050px) {
@@ -79,11 +80,11 @@
   }
 
   .subjectCard {
-    min-height: 280px;
+    min-height: 260px;
   }
 
   .subjectIcon {
-    margin: 30px 0 20px;
+    margin: 28px 0 18px;
   }
 }
 
@@ -94,13 +95,19 @@
 
   .subjectGrid {
     grid-template-columns: 1fr;
+    gap: 14px;
   }
 
   .subjectCard {
-    min-height: 190px;
+    min-height: 0;
+    padding: 16px;
   }
 
   .subjectIcon {
-    margin: 20px 0 16px;
+    margin: 16px 0 12px;
+  }
+
+  .cardAction {
+    padding-top: 16px;
   }
 }

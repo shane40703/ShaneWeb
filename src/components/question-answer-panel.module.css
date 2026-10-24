@@ -1,13 +1,15 @@
+/* Answer rows: rule-separated rows, not boxes. The fill and a 2px left rule mark
+   the correct answer (green) and a wrong chosen answer (red). */
 .panel {
   display: grid;
-  gap: 10px;
+  gap: 8px;
 }
 
 .panel h3 {
   margin: 0;
-  color: var(--subtle-text);
+  color: var(--muted);
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .panel ol {
@@ -15,21 +17,21 @@
   padding: 0;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 10px;
   list-style: none;
+  border-top: var(--rule);
 }
 
+/* Every row reserves the 2px left rule (transparent) so text does not shift when a
+   status colours it. */
 .panel li {
   min-width: 0;
-  min-height: 56px;
-  padding: 12px 14px;
+  min-height: 52px;
+  padding: 10px 12px 10px 10px;
   display: grid;
-  grid-template-columns: 28px minmax(0, 1fr) auto;
+  grid-template-columns: 24px minmax(0, 1fr) auto;
   align-items: center;
-  gap: 10px;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  background: var(--surface);
+  gap: 12px;
+  border-left: 2px solid transparent;
   color: var(--text);
   font-size: var(--option-font-size, 18px);
   font-weight: 400;
@@ -37,47 +39,64 @@
   letter-spacing: 0;
 }
 
+.panel li + li {
+  border-top: var(--rule);
+}
+
 .panel li[data-selected='true'] {
-  border-color: color-mix(in srgb, var(--danger) 45%, var(--line));
+  border-left-color: var(--danger);
   background: var(--danger-soft);
 }
 
 .panel li[data-accepted='true'] {
-  border-color: color-mix(in srgb, var(--success) 38%, var(--line));
+  border-left-color: var(--success);
   background: var(--success-soft);
 }
 
 .panel li b {
-  width: 27px;
-  height: 27px;
+  width: 24px;
+  height: 24px;
   display: grid;
   place-items: center;
-  border-radius: 8px;
-  background: var(--neutral-fill);
-  color: var(--subtle-text);
+  border: 1px solid var(--control-line);
+  border-radius: var(--radius-frame);
+  color: var(--muted);
+  font-family: var(--font-mono);
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
+  line-height: 1;
 }
 
 .panel li[data-accepted='true'] b {
+  border-color: var(--success-solid);
   background: var(--success-solid);
   color: var(--on-success);
 }
 
 .panel li[data-selected='true']:not([data-accepted='true']) b {
+  border-color: var(--danger);
   color: var(--danger);
 }
 
 .panel li small {
   color: var(--muted);
-  font-size: 10px;
-  font-weight: 700;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
   white-space: nowrap;
+}
+
+.panel li[data-accepted='true'] small {
+  color: var(--success);
+}
+
+.panel li[data-selected='true']:not([data-accepted='true']) small {
+  color: var(--danger);
 }
 
 @media (max-width: 600px) {
   .panel li {
-    grid-template-columns: 28px minmax(0, 1fr);
+    grid-template-columns: 24px minmax(0, 1fr);
   }
 
   .panel li small {

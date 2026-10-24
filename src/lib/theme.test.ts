@@ -264,16 +264,18 @@ describe('contrast validation and derived tokens', () => {
     const dark = deriveThemeTokens('dark', DEFAULT_THEME_PALETTES.dark);
 
     expect(light).toMatchObject({
-      '--surface-2': '#f8fbff',
-      '--text-soft': '#34425b',
-      '--primary-solid-hover': '#1d4ed8',
-      '--sidebar-surface': '#fafafa',
+      '--surface-2': '#f6edda',
+      '--text-soft': '#4f4f4f',
+      '--primary-solid-hover': '#1f396c',
+      '--sidebar-surface': '#fef9f1',
+      '--grid-line': '#d3c9b5',
     });
     expect(dark).toMatchObject({
-      '--surface-2': '#172238',
-      '--text-soft': '#c0ccdc',
-      '--primary-solid': '#3b6fd8',
-      '--subject-blue': '#7db1ff',
+      '--surface-2': '#2a2620',
+      '--text-soft': '#cfc6b5',
+      '--primary-solid': '#3b60c5',
+      '--subject-blue': '#8fa9f0',
+      '--grid-line': '#2e2b26',
     });
   });
 

@@ -1,9 +1,13 @@
+/* 已作答紀錄: filters are controls on the paper, year groups are dashed-rule sections with a
+   mono label (changelog style), and each exam scope is the one framed card, holding
+   rule-separated attempt rows. Expanded results inside a row are frameless. */
+
 .panel {
   min-height: 430px;
 }
 
 .historyViewTabs {
-  margin-bottom: 14px;
+  margin-bottom: 20px;
 }
 
 .crossYearPanel {
@@ -15,24 +19,19 @@
 }
 
 .analysisNotice {
-  margin: 12px 0 0;
-  padding: 11px 13px;
-  border: 1px solid color-mix(in srgb, var(--warning) 36%, var(--line));
-  border-radius: 10px;
-  background: color-mix(in srgb, var(--warning) 10%, var(--surface));
+  margin: 16px 0 0;
+  padding: 2px 0 2px 12px;
+  border-left: 2px solid var(--warning);
   color: var(--text-soft);
-  font-size: 12px;
+  font-size: 13px;
+  line-height: 1.6;
 }
 
+/* Subject filter: toggle buttons straight on the paper; the chosen one is tinted. */
 .subjectFilters {
-  margin-bottom: 18px;
-  padding: 14px 16px;
+  margin-bottom: 16px;
   display: flex;
   align-items: center;
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  background: var(--surface);
-  box-shadow: var(--shadow-sm);
 }
 
 .subjectFilters > div {
@@ -44,66 +43,70 @@
 }
 
 .subjectFilters button {
-  min-height: 48px;
-  padding: 0 18px;
+  min-height: 40px;
+  padding: 0 14px;
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  border: 1px solid var(--control-line);
-  border-radius: 11px;
-  background: var(--surface-2);
-  color: var(--text-soft);
+  border: var(--frame);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--text);
   font: inherit;
   font-size: 14px;
-  font-weight: 750;
+  font-weight: 500;
   cursor: pointer;
 }
 
 .subjectFilters button:hover {
-  border-color: var(--primary);
-  color: var(--primary-strong);
+  border-color: var(--line-strong);
+  background: var(--surface-elevated);
+}
+
+.subjectFilters button:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
 }
 
 .subjectFilters button[aria-pressed='true'] {
-  border-color: var(--primary-solid);
-  background: var(--primary-solid);
-  color: var(--on-primary);
+  border-color: var(--primary);
+  background: var(--primary-soft);
+  color: var(--primary-strong);
 }
 
+/* Kept block-level: the count must read as a separate word in the button name (「建築法規與實務 2」). */
 .subjectFilters button span {
-  min-width: 21px;
-  height: 21px;
-  padding-inline: 5px;
-  display: grid;
-  place-items: center;
-  border-radius: 7px;
-  background: var(--surface);
+  display: inline-block;
   color: var(--muted);
-  font-size: 10px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.04em;
 }
 
-.list,
-.attemptList {
+.subjectFilters button[aria-pressed='true'] span {
+  color: var(--primary);
+}
+
+.list {
   display: grid;
-  gap: 14px;
 }
 
+/* Year groups: open sections separated by dashed rules, each with a mono year label. */
 .yearGroup {
-  overflow: hidden;
-  border: 1px solid var(--line);
-  border-radius: 19px;
-  background: var(--surface);
-  box-shadow: var(--shadow-sm);
+  border-top: var(--rule-dashed);
+}
+
+.yearGroup:last-of-type {
+  border-bottom: var(--rule-dashed);
 }
 
 .yearGroup > summary {
-  min-height: 76px;
-  padding: 18px 22px;
+  min-height: 60px;
+  padding: 16px 0;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto auto;
   align-items: center;
   gap: 14px;
-  background: var(--surface-2);
   cursor: pointer;
   list-style: none;
 }
@@ -114,67 +117,71 @@
 
 .yearGroup > summary > strong {
   color: var(--text);
-  font-size: 20px;
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.yearGroup > summary:hover > strong {
+  color: var(--primary-strong);
 }
 
 .yearGroup > summary > span {
-  color: var(--primary-strong);
+  color: var(--muted);
+  font-family: var(--font-mono);
   font-size: 12px;
-  font-weight: 800;
+  letter-spacing: 0.04em;
 }
 
 .yearGroup > summary > svg {
   color: var(--muted);
-  transition: transform 150ms ease;
 }
 
-.yearGroup[open] > summary {
-  border-bottom: 1px solid var(--line);
-}
-
+/* Open-state indicator for the chevron: a static flip, no transition. */
 .yearGroup[open] > summary > svg {
   transform: rotate(180deg);
 }
 
 .yearGroup > summary:focus-visible {
-  outline: 3px solid var(--focus);
-  outline-offset: -3px;
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
 }
 
 .yearGroupContent {
-  padding: 16px;
+  padding: 0 0 24px;
   display: grid;
-  gap: 14px;
+  gap: 16px;
 }
 
+/* One framed cream card per exam scope (subject + year + mode). Inside: text, rules, controls. */
 .attemptGroup {
-  overflow: hidden;
-  border: 1px solid var(--line);
-  border-radius: 19px;
+  border: var(--frame);
+  border-radius: var(--radius-frame);
   background: var(--surface);
-  box-shadow: var(--shadow-sm);
 }
 
 .groupHeader {
-  padding: 22px;
+  padding: 20px 24px;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 18px;
-  border-bottom: 1px solid var(--line);
-  background: var(--surface-2);
+  border-bottom: var(--rule);
 }
 
 .groupHeader h2 {
-  margin: 12px 0 0;
-  font-size: 20px;
+  margin: 10px 0 0;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
 }
 
 .groupActions {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 9px;
+  gap: 12px;
   flex-wrap: wrap;
 }
 
@@ -184,31 +191,31 @@
 }
 
 .groupActions > strong {
-  min-height: 34px;
-  padding: 0 12px;
-  display: inline-flex;
-  align-items: center;
-  border-radius: 10px;
-  background: var(--primary-soft);
-  color: var(--primary-strong);
+  color: var(--muted);
+  font-family: var(--font-mono);
   font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
 }
 
 .tags {
   display: flex;
-  gap: 7px;
+  gap: 6px;
   flex-wrap: wrap;
 }
 
+/* Attempts: rule-separated rows inside the card. */
 .attemptList {
-  padding: 16px;
+  display: grid;
 }
 
 .attempt {
-  padding: 18px;
-  border: 1px solid var(--line);
-  border-radius: 15px;
-  background: var(--surface);
+  padding: 20px 24px;
+}
+
+.attempt + .attempt {
+  border-top: var(--rule);
 }
 
 .attempt > header {
@@ -219,14 +226,17 @@
 }
 
 .attempt h3 {
-  margin: 0 0 5px;
-  color: var(--primary-strong);
-  font-size: 17px;
+  margin: 0 0 4px;
+  color: var(--text);
+  font-size: 16px;
+  font-weight: 600;
 }
 
 .attempt time {
   color: var(--muted);
-  font-size: 11px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.04em;
 }
 
 .score {
@@ -237,117 +247,201 @@
 }
 
 .score strong {
-  color: var(--primary-strong);
-  font-size: 22px;
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
 }
 
 .score span {
   color: var(--muted);
-  font-size: 10px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
 }
 
 .attemptResultActions {
-  margin: 15px 0 16px;
+  margin: 14px 0 0;
   display: flex;
-  gap: 8px;
+  gap: 16px;
   flex-wrap: wrap;
 }
 
+/* Text links that open the result below the row. */
 .attemptReviewTrigger,
 .wrongAnalysisTrigger {
   padding: 0;
   border: 0;
   background: transparent;
   font: inherit;
-  font-size: 12px;
-  font-weight: 800;
+  font-size: 13px;
+  font-weight: 500;
   text-decoration: underline;
+  text-decoration-thickness: 1px;
   text-underline-offset: 3px;
   cursor: pointer;
 }
 
-.attemptReviewTrigger {
+.attemptReviewTrigger,
+.wrongAnalysisTrigger {
+  color: var(--primary);
+}
+
+.attemptReviewTrigger:hover,
+.wrongAnalysisTrigger:hover {
   color: var(--primary-strong);
 }
 
-.wrongAnalysisTrigger {
-  color: var(--danger);
-}
-
-.attemptReviewTrigger:hover {
-  color: color-mix(in srgb, var(--primary-strong) 75%, var(--text));
-}
-
-.wrongAnalysisTrigger:hover {
-  color: color-mix(in srgb, var(--danger) 75%, var(--text));
+.attemptReviewTrigger[aria-expanded='true'],
+.wrongAnalysisTrigger[aria-expanded='true'] {
+  text-decoration: none;
 }
 
 .attemptReviewTrigger:focus-visible,
 .wrongAnalysisTrigger:focus-visible {
-  border-radius: 4px;
-  outline: 3px solid color-mix(in srgb, var(--primary) 24%, transparent);
+  border-radius: var(--radius-frame);
+  outline: 2px solid var(--primary);
   outline-offset: 3px;
 }
 
+/* The expanded result: a rule-separated part of the row, not a box.
+   The segmented control and the collapse link share the first line; the content follows. */
 .attemptResultPanel {
-  margin-bottom: 16px;
-  padding: 12px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: var(--surface-2);
+  margin-top: 16px;
+  padding-top: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+  flex-wrap: wrap;
+  border-top: var(--rule);
 }
 
-.collapseResult { margin: 0 0 0 auto; padding: 5px 7px; display: flex; align-items: center; gap: 5px; border: 0; border-radius: 7px; background: transparent; color: var(--muted); font: inherit; font-size: 11px; font-weight: 800; cursor: pointer; }
-.collapseResult:hover { background: var(--surface); color: var(--primary-strong); }
+.collapseResult {
+  margin: 0 0 0 auto;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
 
-.continueCard { padding: 22px; display: flex; align-items: center; justify-content: space-between; gap: 18px; border: 1px solid color-mix(in srgb, var(--primary) 35%, var(--line)); border-radius: 18px; background: linear-gradient(135deg, var(--primary-soft), var(--surface)); }
-.continueCard span { color: var(--primary-strong); font-size: 10px; font-weight: 850; letter-spacing: .12em; }
-.continueCard h2 { margin: 5px 0 0; font-size: 19px; }
-.continueCard p { margin: 6px 0 0; color: var(--muted); font-size: 12px; }
+.collapseResult:hover {
+  color: var(--primary-strong);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.collapseResult:focus-visible {
+  border-radius: var(--radius-frame);
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+}
 
 .attemptResultContent {
-  margin-top: 12px;
+  flex: 1 1 100%;
+  min-width: 0;
+  margin-top: 6px;
 }
 
 .attemptResultContent > section:first-child {
   margin-top: 0;
 }
 
-.attemptReview {
-  margin-bottom: 16px;
-  padding: 12px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: var(--surface-2);
-}
-
-.attemptReview > summary {
-  color: var(--primary-strong);
-  cursor: pointer;
+.practiceNote {
+  margin: 0 0 12px;
+  color: var(--muted);
   font-size: 12px;
-  font-weight: 800;
+  line-height: 1.6;
 }
 
-.attemptReview[open] > summary {
-  margin-bottom: 16px;
+/* Missing-question notice: a status line with a warning-coloured rule, no box. */
+.attemptReview {
+  margin-top: 16px;
+  padding: 2px 0 2px 12px;
+  display: grid;
+  gap: 6px;
+  justify-items: start;
+  border-left: 2px solid var(--warning);
+}
+
+.attemptReview > strong {
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.attemptReview > p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
 }
 
 .actions {
+  margin-top: 16px;
   display: flex;
   justify-content: flex-end;
   gap: 8px;
   flex-wrap: wrap;
 }
 
+/* 繼續作答: one framed cream panel with text and a button. */
+.continueCard {
+  margin-top: 24px;
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  border: var(--frame);
+  border-radius: var(--radius-frame);
+  background: var(--surface);
+}
+
+.continueCard span {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.continueCard h2 {
+  margin: 6px 0 0;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.continueCard p {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
 @media (max-width: 560px) {
   .yearGroup > summary {
-    min-height: 68px;
-    padding-inline: 16px;
+    min-height: 56px;
+    padding: 14px 0;
   }
 
   .groupHeader,
   .attempt > header {
     flex-direction: column;
+  }
+
+  .groupHeader {
+    padding: 16px;
   }
 
   .groupActions {
@@ -356,6 +450,7 @@
   }
 
   .score {
+    min-width: 0;
     justify-items: start;
   }
 
@@ -363,30 +458,17 @@
     flex: 1;
   }
 
-  .continueCard { align-items: stretch; flex-direction: column; }
-
-  .yearGroupContent {
-    padding: 8px;
+  .continueCard {
+    padding: 16px;
+    align-items: stretch;
+    flex-direction: column;
   }
 
-  .attemptList {
-    padding: 8px;
+  .yearGroupContent {
+    padding-bottom: 16px;
   }
 
   .attempt {
-    padding: 12px 8px;
+    padding: 16px;
   }
-
-  .attemptResultPanel {
-    padding: 8px 0;
-    border-inline: 0;
-    border-radius: 0;
-  }
-}
-
-.practiceNote {
-  margin: 0 0 12px;
-  color: var(--muted);
-  font-size: 12px;
-  line-height: 1.6;
 }

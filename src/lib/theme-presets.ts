@@ -17,7 +17,7 @@ export interface OfficialThemePreset {
  * by mature editor and product theme systems: canvas, raised surface, content,
  * supporting content, a single action accent, and separators. The names and
  * final values are original to ShaneWeb rather than copies of third-party
- * themes.
+ * themes. The first palette of each mode is the site default: warm graph paper.
  */
 export const OFFICIAL_THEME_PRESETS: Record<
   ThemeMode,
@@ -25,9 +25,9 @@ export const OFFICIAL_THEME_PRESETS: Record<
 > = {
   light: [
     {
-      id: 'blueprint-dawn',
-      name: '藍圖晨光',
-      description: '清爽冷藍，適合長時間閱讀與日常作答。',
+      id: 'paper-grid-light',
+      name: '米紙方格',
+      description: '米色方格紙底、奶油色面板與墨線，像在圖紙上作答。',
       palette: { ...DEFAULT_THEME_PALETTES.light },
     },
     {
@@ -44,16 +44,16 @@ export const OFFICIAL_THEME_PRESETS: Record<
       },
     },
     {
-      id: 'warm-parchment',
-      name: '暖砂紙',
-      description: '低刺激的暖白與琥珀，像紙本般柔和。',
+      id: 'blueprint-dawn',
+      name: '藍圖晨光',
+      description: '清爽冷藍，適合長時間閱讀與日常作答。',
       palette: {
-        background: '#F7F1E8',
-        surface: '#FFFCF7',
-        text: '#2A241D',
-        muted: '#6C6257',
-        accent: '#95520B',
-        border: '#DED2C1',
+        background: '#F3F7FC',
+        surface: '#FFFFFF',
+        text: '#14213D',
+        muted: '#6C7890',
+        accent: '#2563EB',
+        border: '#DDE6F1',
       },
     },
     {
@@ -85,9 +85,9 @@ export const OFFICIAL_THEME_PRESETS: Record<
   ],
   dark: [
     {
-      id: 'blueprint-midnight',
-      name: '藍圖深夜',
-      description: '深藍分層搭配明亮焦點，適合低光環境。',
+      id: 'paper-grid-dark',
+      name: '墨紙方格',
+      description: '暖黑紙底與淡米色文字，方格線退到背景裡。',
       palette: { ...DEFAULT_THEME_PALETTES.dark },
     },
     {
@@ -101,6 +101,19 @@ export const OFFICIAL_THEME_PRESETS: Record<
         muted: '#A6A6A6',
         accent: '#4DAAFC',
         border: '#3C3C3C',
+      },
+    },
+    {
+      id: 'blueprint-midnight',
+      name: '藍圖深夜',
+      description: '深藍分層搭配明亮焦點，適合低光環境。',
+      palette: {
+        background: '#0B1120',
+        surface: '#111A2E',
+        text: '#E8EEF8',
+        muted: '#93A4BB',
+        accent: '#6EA8FE',
+        border: '#263650',
       },
     },
     {
@@ -127,19 +140,6 @@ export const OFFICIAL_THEME_PRESETS: Record<
         muted: '#B8ABC5',
         accent: '#D0A5FF',
         border: '#453754',
-      },
-    },
-    {
-      id: 'amber-evening',
-      name: '琥珀暮夜',
-      description: '暖黑與琥珀光感，帶來接近紙燈的舒適氛圍。',
-      palette: {
-        background: '#1D1814',
-        surface: '#29211B',
-        text: '#F4EDE6',
-        muted: '#BAAA9C',
-        accent: '#F0B35F',
-        border: '#4A3A2E',
       },
     },
   ],

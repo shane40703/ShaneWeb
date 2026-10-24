@@ -1,27 +1,9 @@
-.button.button {
-  min-height: 38px;
-  padding: 0 12px;
-  border-color: var(--control-line);
-  border-radius: 8px;
-  background: var(--neutral-fill);
-  color: var(--neutral-text);
-  box-shadow: none;
-  font-size: 13px;
-  font-weight: 600;
-}
-
-.button.button:hover:not([data-disabled]) {
-  border-color: var(--primary);
-  background: var(--neutral-fill);
-  color: var(--primary);
-  transform: none;
-}
-
+/* Difficult toggle: the standard framed Button (40px / 14px, no size override so it lines up
+   with the Buttons beside it); pressed = amber tint fill. */
 .button.button[aria-pressed='true'] {
-  border-color: color-mix(in srgb, var(--warning) 55%, var(--line));
+  border-color: var(--warning);
   background: var(--warning-soft);
   color: var(--warning);
-  box-shadow: inset 0 -3px 0 var(--warning);
 }
 
 .button.button[aria-pressed='true']:hover:not([data-disabled]) {

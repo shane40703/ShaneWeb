@@ -35,6 +35,7 @@ type WrongCategoryAnalysisProps = {
   title?: string;
   eyebrow?: string;
   ariaLabel?: string;
+  embedded?: boolean;
 } & (
   | { attempt: QuizAttempt; attempts?: never }
   | { attempt?: never; attempts: readonly QuizAttempt[] }
@@ -60,6 +61,7 @@ export function WrongCategoryAnalysis({
   title = '錯題類型統計',
   eyebrow = 'WRONG ANSWER ANALYSIS',
   ariaLabel = '錯題類型統計',
+  embedded = false,
 }: WrongCategoryAnalysisProps) {
   const sourceAttempts = attempts ?? (attempt ? [attempt] : []);
   const aggregate = attempts !== undefined;
@@ -117,7 +119,11 @@ export function WrongCategoryAnalysis({
   if (!categories.length) return null;
 
   return (
-    <section className={styles.summary} aria-label={ariaLabel}>
+    <section
+      className={styles.summary}
+      data-embedded={embedded || undefined}
+      aria-label={ariaLabel}
+    >
       <header>
         <div>
           <span>{eyebrow}</span>

@@ -163,14 +163,14 @@ describe('AppearancePage', () => {
     renderPage();
 
     expect(
-      screen.getByRole('radio', { name: /藍圖晨光.*使用中/ }),
+      screen.getByRole('radio', { name: /米紙方格.*使用中/ }),
     ).toBeChecked();
     await user.click(screen.getByRole('radio', { name: /現代紙白/ }));
     expect(
       screen.getByRole('radio', { name: /現代紙白.*預覽中/ }),
     ).toBeChecked();
     expect(
-      screen.getByRole('radio', { name: /藍圖晨光.*使用中/ }),
+      screen.getByRole('radio', { name: /米紙方格.*使用中/ }),
     ).not.toBeChecked();
 
     fireEvent.change(screen.getByLabelText('頁面背景十六進位色碼'), {
@@ -197,7 +197,7 @@ describe('AppearancePage', () => {
     });
     renderPage(context);
 
-    await user.click(screen.getByRole('radio', { name: /藍圖晨光/ }));
+    await user.click(screen.getByRole('radio', { name: /米紙方格/ }));
     expect(context.resetPalette).not.toHaveBeenCalled();
     expect(context.savePalette).not.toHaveBeenCalled();
 
@@ -213,7 +213,7 @@ describe('AppearancePage', () => {
     renderPage(context);
 
     expect(screen.getByRole('radio', { name: '深色模式' })).toBeDisabled();
-    expect(screen.getByRole('radio', { name: /藍圖晨光/ })).toBeDisabled();
+    expect(screen.getByRole('radio', { name: /米紙方格/ })).toBeDisabled();
     expect(screen.getByLabelText('頁面背景十六進位色碼')).toBeDisabled();
     expect(screen.getByRole('button', { name: '載入預設色' })).toBeDisabled();
     expect(screen.getByRole('button', { name: '套用此模式' })).toBeDisabled();

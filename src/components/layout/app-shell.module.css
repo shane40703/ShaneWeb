@@ -1,8 +1,8 @@
+/* The shell: a cream sidebar and topbar framed with one ink line; the main area is the paper. */
 .shell {
   min-height: 100vh;
   display: grid;
   grid-template-columns: 260px minmax(0, 1fr);
-  background: var(--bg);
 }
 
 .desktopSidebar {
@@ -10,28 +10,29 @@
   top: 0;
   z-index: 30;
   height: 100vh;
-  border-right: 1px solid var(--line);
+  border-right: var(--frame);
   background: var(--sidebar-surface);
 }
 
 .sidebarInner {
   height: 100%;
-  padding: 19px 25px 22px;
+  padding: 18px 20px 20px;
   display: flex;
   flex-direction: column;
   overflow-y: auto;
   background: var(--sidebar-surface);
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans TC',
-    sans-serif;
+  font-family: var(--font-sans);
   scrollbar-gutter: stable;
 }
 
 .brand {
-  min-height: 51px;
-  padding: 0 0 14px;
+  min-height: 48px;
+  margin-bottom: 10px;
+  padding: 0 4px 12px;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+  border-bottom: var(--rule-dashed);
   color: var(--sidebar-text);
   text-decoration: none;
 }
@@ -42,7 +43,7 @@
   flex: 0 0 auto;
   display: grid;
   place-items: center;
-  color: currentColor;
+  color: var(--primary);
 }
 
 .brandMark svg {
@@ -53,20 +54,21 @@
 .brandCopy {
   min-width: 0;
   display: grid;
-  gap: 1px;
+  gap: 2px;
   white-space: nowrap;
-  transition: opacity 150ms ease;
 }
 
 .brandCopy strong {
-  font-size: 17px;
-  font-weight: 650;
+  font-size: 16px;
+  font-weight: 600;
   line-height: 1.15;
 }
 
 .brandCopy small {
   color: var(--sidebar-muted);
+  font-family: var(--font-mono);
   font-size: 11px;
+  letter-spacing: 0.03em;
   line-height: 1.2;
 }
 
@@ -83,18 +85,18 @@
   padding-top: 12px;
   display: grid;
   gap: 2px;
-  border-top: 1px solid var(--sidebar-line);
+  border-top: var(--rule-dashed);
 }
 
 .navItem {
   width: 100%;
   min-height: 40px;
-  padding: 3px 4px;
+  padding: 3px 6px;
   display: flex;
   align-items: center;
   gap: 8px;
   border: 0;
-  border-radius: 6px;
+  border-radius: var(--radius-frame);
   color: var(--sidebar-text);
   background: transparent;
   font-family: inherit;
@@ -105,7 +107,6 @@
   font-size: 15px;
   font-weight: 400;
   white-space: nowrap;
-  transition: background-color 120ms ease;
 }
 
 .navItem:hover {
@@ -113,13 +114,14 @@
 }
 
 .navItem:focus-visible {
-  outline: 2px solid var(--focus);
+  outline: 2px solid var(--primary);
   outline-offset: 1px;
 }
 
 .navItem[aria-current='page'],
 .navItem[data-active] {
   background: var(--sidebar-active);
+  color: var(--primary-strong);
   font-weight: 600;
 }
 
@@ -143,20 +145,19 @@
   text-overflow: ellipsis;
   white-space: normal;
   line-height: 1.35;
-  transition: opacity 150ms ease;
 }
 
 .navSectionTrigger { justify-content: flex-start; }
 .navSectionTrigger[data-popup-open] { background: var(--sidebar-hover); }
-.navChevron { margin-left: auto; flex: 0 0 auto; color: var(--sidebar-muted); transition: transform 120ms ease; }
+.navChevron { margin-left: auto; flex: 0 0 auto; color: var(--sidebar-muted); }
 .navSectionTrigger[aria-expanded='true'] .navChevron { transform: rotate(90deg); }
 .navPositioner { z-index: 160; outline: none; }
-.navPopup { width: 260px; max-width: calc(100vw - 24px); max-height: min(450px, var(--available-height)); overflow-y: auto; padding: 8px; border: 1px solid var(--sidebar-line); border-radius: 12px; background: var(--sidebar-surface); color: var(--sidebar-text); box-shadow: var(--shadow-lg); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans TC', sans-serif; outline: none; }
-.navPopupHeading { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 5px; padding: 0 2px 6px 8px; border-bottom: 1px solid var(--sidebar-line); }
-.navPopupHeading strong { font-size: 12px; font-weight: 650; color: var(--sidebar-muted); }
-.navPopupClose { width: 32px; height: 32px; padding: 0; display: grid; place-items: center; border: 0; border-radius: 7px; background: transparent; color: var(--sidebar-muted); cursor: pointer; }
+.navPopup { width: 260px; max-width: calc(100vw - 24px); max-height: min(450px, var(--available-height)); overflow-y: auto; padding: 8px; border: 1px solid var(--line-strong); border-radius: var(--radius-popup); background: var(--surface-elevated); color: var(--sidebar-text); box-shadow: var(--shadow-lg); font-family: var(--font-sans); outline: none; }
+.navPopupHeading { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 5px; padding: 0 2px 6px 8px; border-bottom: var(--rule); }
+.navPopupHeading strong { font-family: var(--font-mono); font-size: 11px; font-weight: 500; letter-spacing: 0.04em; color: var(--sidebar-muted); }
+.navPopupClose { width: 32px; height: 32px; padding: 0; display: grid; place-items: center; border: 0; border-radius: var(--radius-control); background: transparent; color: var(--sidebar-muted); cursor: pointer; }
 .navPopupClose:hover { background: var(--sidebar-hover); color: var(--sidebar-text); }
-.navPopupClose:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+.navPopupClose:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
 
 .workspace {
   min-width: 0;
@@ -166,22 +167,21 @@
   position: sticky;
   top: 0;
   z-index: 25;
-  height: 72px;
+  height: 64px;
   padding: 0 28px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 20px;
-  border-bottom: 1px solid var(--line);
-  background: color-mix(in srgb, var(--surface) 88%, transparent);
-  backdrop-filter: blur(14px);
+  border-bottom: var(--frame);
+  background: var(--surface);
 }
 
 .topbarLeft,
 .topbarActions {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 /* A long page title wraps instead of squeezing the menu button. */
@@ -193,21 +193,24 @@
   min-width: 0;
   margin: 0;
   font-size: inherit;
-  font-weight: 800;
+  font-weight: 600;
+  letter-spacing: -0.01em;
 }
 
 .anonymousBadge {
   min-height: 32px;
-  padding: 0 11px;
+  padding: 0 10px;
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  border: 1px solid color-mix(in srgb, var(--primary) 20%, var(--line));
-  border-radius: 999px;
-  background: var(--primary-soft);
-  color: var(--primary-strong);
+  border: var(--frame-dashed);
+  border-radius: var(--radius-frame);
+  background: transparent;
+  color: var(--muted);
+  font-family: var(--font-mono);
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 500;
+  letter-spacing: 0.02em;
 }
 
 .cloudAccountButton {
@@ -216,24 +219,25 @@
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  border: 1px solid color-mix(in srgb, var(--primary) 26%, var(--line));
-  border-radius: 999px;
-  background: var(--primary-soft);
+  border: 1px solid color-mix(in srgb, var(--primary) 50%, var(--control-line));
+  border-radius: var(--radius-control);
+  background: var(--surface);
   color: var(--primary-strong);
   font: inherit;
-  font-size: 12px;
-  font-weight: 800;
+  font-size: 13px;
+  font-weight: 500;
   cursor: pointer;
 }
 .cloudSignIn { position: relative; }
-.cloudError { width: min(330px, calc(100vw - 32px)); padding: 9px 11px; position: absolute; z-index: 20; top: calc(100% + 8px); right: 0; border: 1px solid var(--danger); border-radius: 9px; background: var(--danger-soft); color: var(--danger); box-shadow: var(--shadow-md); font-size: 11px; font-weight: 700; line-height: 1.5; }
+.cloudError { width: min(330px, calc(100vw - 32px)); padding: 9px 11px; position: absolute; z-index: 20; top: calc(100% + 8px); right: 0; border: 1px solid var(--danger); border-radius: var(--radius-frame); background: var(--danger-soft); color: var(--danger); font-size: 12px; font-weight: 500; line-height: 1.5; }
 
 .cloudAccountButton:hover:not(:disabled) {
   border-color: var(--primary);
+  background: var(--primary-soft);
 }
 
 .cloudAccountButton:focus-visible {
-  outline: 3px solid var(--focus);
+  outline: 2px solid var(--primary);
   outline-offset: 2px;
 }
 
@@ -243,32 +247,30 @@
 }
 
 .themeToggle {
-  min-height: 36px;
+  min-height: 34px;
   padding: 0 11px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 7px;
-  border: 1px solid var(--control-line);
-  border-radius: 10px;
-  background: var(--surface-2);
+  border: var(--frame);
+  border-radius: var(--radius-control);
+  background: var(--surface);
   color: var(--text-soft);
   font: inherit;
-  font-size: 12px;
-  font-weight: 750;
+  font-size: 13px;
+  font-weight: 500;
   cursor: pointer;
-  transition: border-color 150ms ease, background-color 150ms ease,
-    color 150ms ease;
 }
 
 .themeToggle:hover {
   border-color: var(--line-strong);
-  background: var(--surface-3);
+  background: var(--surface-elevated);
   color: var(--text);
 }
 
 .themeToggle:focus-visible {
-  outline: 3px solid var(--focus);
+  outline: 2px solid var(--primary);
   outline-offset: 2px;
 }
 
@@ -278,6 +280,7 @@
   padding: 24px 28px 48px;
 }
 
+/* Settings opens as a paper sheet over the page. */
 .settingsDialog {
   position: fixed;
   inset: 0;
@@ -291,8 +294,8 @@
   position: absolute;
   inset: 0;
   border: 0;
-  background: rgb(5 12 24 / 68%);
-  backdrop-filter: blur(6px);
+  background: var(--backdrop);
+  backdrop-filter: blur(2px);
 }
 
 .settingsPopup {
@@ -302,19 +305,19 @@
   z-index: 1;
   overflow: hidden;
   border: 1px solid var(--line-strong);
-  border-radius: 22px;
-  background: var(--bg);
+  border-radius: var(--radius-popup);
+  background: var(--surface);
   box-shadow: var(--shadow-lg);
 }
 
 .settingsPopup > header {
-  min-height: 70px;
-  padding: 14px 20px;
+  min-height: 64px;
+  padding: 12px 20px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  border-bottom: 1px solid var(--line);
+  border-bottom: var(--rule);
   background: var(--surface);
 }
 
@@ -324,31 +327,37 @@
 }
 
 .settingsPopup > header span {
-  color: var(--primary-strong);
-  font-size: 10px;
-  font-weight: 850;
-  letter-spacing: .12em;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
 }
 
 .settingsPopup > header h2 {
   margin: 0;
+  font-size: 20px;
 }
 
 .settingsPopup > header button {
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   padding: 0;
   display: grid;
   place-items: center;
-  border: 1px solid var(--control-line);
-  border-radius: 11px;
-  background: var(--surface-2);
+  border: var(--frame);
+  border-radius: var(--radius-control);
+  background: var(--surface);
   color: var(--text);
   cursor: pointer;
 }
 
+.settingsPopup > header button:hover {
+  border-color: var(--line-strong);
+}
+
 .settingsBody {
-  max-height: calc(92vh - 70px);
+  max-height: calc(92vh - 64px);
   padding: 20px;
   overflow-y: auto;
 }
@@ -363,7 +372,7 @@
   }
 
   .topbar {
-    height: 66px;
+    height: 60px;
     padding: 0 16px;
   }
 
@@ -381,7 +390,7 @@
   }
 
   .cloudAccountButton {
-    width: 38px;
+    width: 36px;
     padding: 0;
     justify-content: center;
   }
@@ -391,12 +400,12 @@
   }
 
   .themeToggle {
-    width: 38px;
+    width: 36px;
     padding: 0;
   }
 
   .sidebarInner {
-    padding: 18px 20px 24px;
+    padding: 18px 16px 24px;
   }
 
   .navItem {
@@ -417,31 +426,23 @@
   }
 
   .settingsBody {
-    max-height: calc(96vh - 70px);
+    max-height: calc(96vh - 64px);
     padding: 12px;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .brandCopy,
-  .navItem,
-  .navLabel {
-    transition-duration: 0.01ms;
   }
 }
 
 .persistenceWarning {
   margin: 0 0 18px;
-  padding: 12px 15px;
+  padding: 12px 14px;
   display: flex;
   align-items: flex-start;
   gap: 9px;
   border: 1px solid var(--warning);
-  border-radius: 11px;
+  border-radius: var(--radius-frame);
   background: var(--warning-soft);
   color: var(--warning);
   font-size: 13px;
-  font-weight: 650;
+  font-weight: 500;
   line-height: 1.6;
 }
 

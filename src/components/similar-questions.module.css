@@ -1,11 +1,90 @@
-.panel { padding: 17px; display: grid; gap: 13px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface-2); }
-.panel > header { display: flex; align-items: center; gap: 9px; color: var(--primary-strong); }
-.panel > header div { display: grid; gap: 2px; }
-.panel > header span { color: var(--muted); font-size: 10px; font-weight: 800; letter-spacing: .08em; }
-.panel > header strong { font-size: 14px; }
-.links { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-.links a { min-width: 0; padding: 11px 12px; display: grid; gap: 4px; border: 1px solid var(--control-line); border-radius: 10px; background: var(--surface); color: var(--text); text-decoration: none; }
-.links a:hover { border-color: var(--primary); background: var(--primary-soft); }
-.links a span { color: var(--primary-strong); font-size: 10px; font-weight: 800; }
-.links a strong { overflow: hidden; font-size: 12px; font-weight: 650; line-height: 1.45; text-overflow: ellipsis; white-space: nowrap; }
-@media (max-width: 620px) { .links { grid-template-columns: 1fr; } }
+/* Similar questions: an open section under a dashed rule; every question is a plain
+   linked row (year + number in mono, the prompt in link blue, clamped to two lines),
+   rows divided by dashed rules. */
+.panel {
+  margin-top: 8px;
+  padding-top: 20px;
+  display: grid;
+  gap: 12px;
+  border-top: var(--rule-dashed);
+}
+
+.panel > header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--primary-strong);
+}
+
+.panel > header div {
+  display: grid;
+  gap: 3px;
+}
+
+.panel > header span {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+}
+
+.panel > header strong {
+  color: var(--text);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.links {
+  display: grid;
+}
+
+.links a {
+  min-width: 0;
+  padding: 12px 0;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: baseline;
+  gap: 12px;
+  border-top: var(--rule-dashed);
+  color: var(--text);
+  text-decoration: none;
+}
+
+.links a:hover strong {
+  color: var(--primary-strong);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.links a:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.links a span {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+/* Two-line clamp: the full-width row has room for most of the prompt, even at 390px. */
+.links a strong {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  color: var(--primary);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 620px) {
+  .links a {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+}

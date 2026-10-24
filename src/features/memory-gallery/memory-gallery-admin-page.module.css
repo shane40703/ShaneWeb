@@ -1,34 +1,253 @@
-.page { display: grid; gap: 18px; min-width: 0; }
-.heading, .form, .items { padding: 24px; border: 1px solid var(--line); border-radius: 18px; background: var(--surface); }
-.heading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
-.heading span { color: var(--primary-strong); font-size: 10px; font-weight: 800; letter-spacing: .1em; }
-.heading h2 { display: flex; align-items: center; gap: 9px; margin: 7px 0 10px; font-size: 24px; }
-.heading p, .instructions p { margin: 7px 0 0; color: var(--muted); font-size: 13px; line-height: 1.8; }
-.instructions { padding: 20px 24px; border: 1px solid var(--line); border-radius: 14px; background: var(--primary-soft); }
-.instructions strong { font-size: 14px; }
-.form { display: grid; gap: 13px; }
-.form h3 { margin: 0 0 5px; font-size: 19px; }
-.form fieldset { min-width: 0; display: grid; gap: 12px; padding: 0; margin: 0; border: 0; }
-.form label { font-size: 13px; font-weight: 750; }
-.form input, .form select, .form textarea { min-width: 0; width: 100%; min-height: 44px; padding: 10px 12px; border: 1px solid var(--control-line); border-radius: 9px; background: var(--surface); color: var(--text); font: inherit; }
-.form textarea { resize: vertical; }
-.form small { color: var(--muted); font-size: 12px; line-height: 1.7; }
-.form > button { justify-self: start; }
-.preview { width: 100%; max-height: 350px; object-fit: contain; background: var(--surface-2); border-radius: 12px; }
-.notice { margin: 0; padding: 14px 18px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); font-size: 13px; line-height: 1.8; }
-.notice[data-error] { color: var(--danger); }
-.toolbar, .items > header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.toolbar strong, .items > header span { color: var(--muted); font-size: 13px; }
-.actions { display: flex; flex-wrap: wrap; gap: 9px; }
-.items { display: grid; gap: 14px; }
-.items h3 { margin: 0; font-size: 19px; }
-.items article { display: grid; grid-template-columns: 110px minmax(0, 1fr) auto; align-items: center; gap: 16px; padding: 15px; border: 1px solid var(--line); border-radius: 12px; overflow-wrap: anywhere; }
-.items img { width: 110px; height: 90px; object-fit: contain; border-radius: 8px; background: var(--surface-2); }
-.items p { color: var(--muted); font-size: 13px; line-height: 1.7; }
+/*
+ * Gallery admin: the title and the instructions are plain sections on the paper, closed by
+ * dashed rules; the form is the one cream panel; the uploaded pictures are rule-separated
+ * rows under a ruled heading.
+ */
+.page {
+  display: grid;
+  gap: 24px;
+  min-width: 0;
+}
+
+.heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding-bottom: 20px;
+  border-bottom: var(--rule-dashed);
+}
+
+.heading span {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.heading h2 {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 6px 0 8px;
+  font-size: 20px;
+}
+
+.heading h2 svg {
+  color: var(--primary);
+}
+
+.heading p,
+.instructions p {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.instructions {
+  padding-bottom: 20px;
+  border-bottom: var(--rule-dashed);
+}
+
+.instructions strong {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.form {
+  padding: 24px;
+  display: grid;
+  gap: 14px;
+  border: var(--frame);
+  border-radius: var(--radius-frame);
+  background: var(--surface);
+}
+
+.form h3 {
+  margin: 0;
+  padding-bottom: 12px;
+  border-bottom: var(--rule);
+  font-size: 16px;
+}
+
+.form fieldset {
+  min-width: 0;
+  display: grid;
+  gap: 12px;
+  padding: 0;
+  margin: 0;
+  border: 0;
+}
+
+.form label {
+  color: var(--text-soft);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.form input,
+.form select,
+.form textarea {
+  min-width: 0;
+  width: 100%;
+  min-height: 40px;
+  padding: 0 12px;
+  border: var(--frame);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+}
+
+.form textarea {
+  padding: 10px 12px;
+  resize: vertical;
+}
+
+.form input[type='file'] {
+  padding: 7px 12px;
+}
+
+.form :is(input, select, textarea):focus-visible {
+  border-color: var(--primary);
+  outline: 2px solid var(--focus);
+  outline-offset: 1px;
+}
+
+.form small {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.form > button {
+  justify-self: start;
+}
+
+.preview {
+  width: 100%;
+  max-height: 350px;
+  padding: 8px;
+  object-fit: contain;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-frame);
+  background: var(--image-surface);
+}
+
+/* Status line: a short left rule, blue for news and red for errors. */
+.notice {
+  margin: 0;
+  padding: 2px 0 2px 12px;
+  border-left: 2px solid var(--primary);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.notice[data-error] {
+  border-left-color: var(--danger);
+  color: var(--danger);
+}
+
+.toolbar,
+.items > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.toolbar strong,
+.items > header span {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.items {
+  display: grid;
+}
+
+.items > header {
+  padding-bottom: 12px;
+  border-bottom: var(--rule);
+}
+
+.items h3 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.items article {
+  display: grid;
+  grid-template-columns: 110px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 0;
+  border-bottom: var(--rule);
+  overflow-wrap: anywhere;
+}
+
+.items img {
+  width: 110px;
+  height: 90px;
+  object-fit: contain;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-frame);
+  background: var(--image-surface);
+}
+
+.items article strong {
+  font-size: 15px;
+}
+
+.items article p {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  line-height: 1.6;
+}
+
+.items > p {
+  margin: 0;
+  padding-top: 14px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
 @media (max-width: 650px) {
-  .heading, .form, .items, .instructions { padding: 17px; }
-  .items article { grid-template-columns: 85px minmax(0, 1fr); gap: 12px; }
-  .items img { width: 85px; height: 75px; }
-  .items article > .actions { grid-column: 1 / -1; }
-  .actions > button { flex: 1; }
+  .form {
+    padding: 16px;
+  }
+
+  .items article {
+    grid-template-columns: 85px minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .items img {
+    width: 85px;
+    height: 75px;
+  }
+
+  .items article > .actions {
+    grid-column: 1 / -1;
+  }
+
+  .actions > button {
+    flex: 1;
+  }
 }

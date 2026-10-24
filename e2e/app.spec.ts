@@ -248,7 +248,7 @@ test('official theme presets preview, apply, and survive a reload', async ({
   await page.goto('/appearance');
   await page.getByRole('radio', { name: '深色模式' }).locator('..').click();
 
-  const defaultPreset = page.getByRole('radio', { name: /藍圖深夜/ });
+  const defaultPreset = page.getByRole('radio', { name: /墨紙方格/ });
   const carbonPreset = page.getByRole('radio', { name: /現代炭黑/ });
   await defaultPreset.focus();
   await page.keyboard.press('ArrowRight');

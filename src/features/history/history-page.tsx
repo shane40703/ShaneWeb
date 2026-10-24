@@ -628,6 +628,7 @@ export function HistoryPage({
                                   <WrongCategoryAnalysis
                                     attempt={attempt}
                                     questions={attemptQuestions}
+                                    embedded
                                   />
                                 ) : (
                                   <AttemptReview

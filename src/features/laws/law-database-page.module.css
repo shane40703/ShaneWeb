@@ -1,27 +1,32 @@
+/*
+ * Law database: the laws are rows straight on the paper, separated by rules (the changelog
+ * pattern), opened by a dashed rule under the page header. Each row: name and count, a thin
+ * share bar with its mono percentage, and the outbound link mark.
+ */
 .page {
   display: grid;
   gap: 20px;
 }
 
+/* Stand-alone hero (the hub supplies its own header instead): one cream panel. */
 .hero {
   padding: 24px;
   display: flex;
   align-items: flex-start;
   gap: 16px;
-  border: 1px solid var(--line);
-  border-radius: 18px;
+  border: var(--frame);
+  border-radius: var(--radius-frame);
   background: var(--surface);
-  box-shadow: var(--shadow-sm);
 }
 
 .icon {
-  width: 48px;
-  height: 48px;
+  width: 40px;
+  height: 40px;
   flex: none;
   display: grid;
   place-items: center;
-  border-radius: 14px;
-  background: var(--primary-soft);
+  border: var(--frame-dashed);
+  border-radius: var(--radius-frame);
   color: var(--primary);
 }
 
@@ -32,98 +37,100 @@
 
 .hero p {
   margin: 0;
-  color: var(--primary-strong);
+  color: var(--muted);
+  font-family: var(--font-mono);
   font-size: 11px;
-  font-weight: 850;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.04em;
 }
 
 .hero h2 {
   margin: 0;
-  font-size: 24px;
+  font-size: 20px;
 }
 
 .hero span {
   color: var(--muted);
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1.65;
 }
 
 .list {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 8px;
+  border-top: var(--rule-dashed);
   container-type: inline-size;
 }
 
 .law {
-  min-height: 68px;
-  padding: 13px 16px;
+  min-height: 64px;
+  padding: 14px 4px;
   display: grid;
   grid-template-columns: minmax(220px, 1fr) minmax(220px, 0.9fr) 108px;
   align-items: center;
   gap: 20px;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  background: var(--surface);
+  border-bottom: var(--rule);
   color: var(--text);
   text-decoration: none;
-  transition: border-color 150ms ease, background 150ms ease, transform 150ms ease;
 }
 
-a.law:hover {
-  border-color: color-mix(in srgb, var(--primary) 42%, var(--line));
-  background: var(--primary-soft);
-  transform: translateY(-1px);
+a.law:hover strong {
+  color: var(--primary-strong);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
 }
 
 a.law:focus-visible {
-  outline: 3px solid var(--focus);
-  outline-offset: 2px;
+  outline: 2px solid var(--primary);
+  outline-offset: -2px;
 }
 
 .lawName {
   min-width: 0;
   display: grid;
-  gap: 5px;
+  gap: 4px;
 }
 
-.law strong {
-  overflow: hidden;
-  font-size: 14px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+/* Long names (e.g. 行政院公共工程委員會所訂頒之契約要項) wrap rather than lose their ending. */
+.lawName strong {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
 }
 
 .law small {
   color: var(--muted);
-  font-size: 12px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.03em;
 }
 
 .ratio {
   display: grid;
-  grid-template-columns: minmax(100px, 1fr) 48px;
+  grid-template-columns: minmax(100px, 1fr) 52px;
   align-items: center;
   gap: 10px;
 }
 
 .ratio > span {
-  height: 9px;
+  height: 6px;
   overflow: hidden;
-  border-radius: 999px;
-  background: var(--surface-3);
+  border-radius: var(--radius-frame);
+  background: var(--line);
 }
 
 .ratio i {
   height: 100%;
   display: block;
-  border-radius: inherit;
-  background: linear-gradient(90deg, var(--primary), var(--primary-bright));
+  background: var(--primary);
 }
 
 .ratio strong {
-  color: var(--primary-strong);
+  color: var(--text-soft);
+  font-family: var(--font-mono);
   font-size: 12px;
+  font-weight: 600;
   text-align: right;
 }
 
@@ -138,8 +145,17 @@ a.law:focus-visible {
   color: var(--primary);
 }
 
+.unavailable {
+  color: var(--disabled-text);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+}
+
 @media (max-width: 560px) {
-  .hero { padding: 20px; }
+  .hero {
+    padding: 16px;
+  }
 }
 
 /* A three-column row needs about 620px, so narrower lists (phones, or tablets beside the
@@ -149,17 +165,14 @@ a.law:focus-visible {
     grid-template-columns: minmax(0, 1fr) auto;
     gap: 10px 14px;
   }
+
   .ratio {
     grid-column: 1 / -1;
     grid-row: 2;
   }
+
   .destination {
     grid-column: 2;
     grid-row: 1;
   }
-}
-.unavailable {
-  color: var(--disabled-text);
-  font-size: 12px;
-  font-weight: 600;
 }

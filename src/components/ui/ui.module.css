@@ -1,8 +1,9 @@
+/* Buttons: one thin frame, 4px corners, no lift. `primary` is the single solid deep blue. */
 .button {
-  min-height: 42px;
-  border: 1px solid var(--control-line);
-  border-radius: 12px;
-  padding: 0 16px;
+  min-height: 40px;
+  border: var(--frame);
+  border-radius: var(--radius-control);
+  padding: 0 14px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -10,39 +11,34 @@
   color: var(--text);
   background: var(--surface);
   font: inherit;
-  font-weight: 750;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.3;
   text-decoration: none;
   cursor: pointer;
-  transition: border-color 150ms ease, background 150ms ease, color 150ms ease,
-    transform 150ms ease;
 }
 
 .button:hover:not([data-disabled]) {
   border-color: var(--line-strong);
-  transform: translateY(-1px);
+  background: var(--surface-elevated);
 }
 
 .button:focus-visible,
 .selectTrigger:focus-visible,
 .option:has(.radio:focus-visible) {
-  outline: 3px solid var(--focus);
+  outline: 2px solid var(--primary);
   outline-offset: 2px;
 }
 
 .button[data-disabled] {
-  opacity: 0.48;
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
 .primary {
   color: var(--on-primary);
   border-color: var(--primary-solid);
-  background: linear-gradient(
-    135deg,
-    var(--primary-solid),
-    var(--primary-solid-gradient)
-  );
-  box-shadow: 0 8px 20px color-mix(in srgb, var(--primary) 24%, transparent);
+  background: var(--primary-solid);
 }
 
 .primary:hover:not([data-disabled]) {
@@ -60,14 +56,28 @@
   color: var(--primary);
 }
 
+.ghost:hover:not([data-disabled]) {
+  border-color: transparent;
+  background: transparent;
+  color: var(--primary-strong);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
 .danger {
   color: var(--danger);
+  background: var(--surface);
+  border-color: color-mix(in srgb, var(--danger) 55%, var(--control-line));
+}
+
+.danger:hover:not([data-disabled]) {
+  border-color: var(--danger);
   background: var(--danger-soft);
-  border-color: color-mix(in srgb, var(--danger) 35%, var(--line));
 }
 
 .icon {
-  width: 42px;
+  width: 40px;
   padding: 0;
   font-size: 20px;
 }
@@ -78,31 +88,37 @@
 
 .fieldStack {
   display: grid;
-  gap: 8px;
+  gap: 6px;
   min-width: 0;
 }
 
 .label {
   color: var(--muted);
   font-size: 13px;
-  font-weight: 750;
+  font-weight: 500;
 }
 
+/* Select: a framed control; its popup is a floating paper sheet with a hard offset shadow. */
 .selectTrigger {
   width: 100%;
   min-width: 170px;
-  height: 44px;
+  height: 40px;
   padding: 0 12px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  border: 1px solid var(--control-line);
-  border-radius: 11px;
+  border: var(--frame);
+  border-radius: var(--radius-control);
   background: var(--surface);
   color: var(--text);
   font: inherit;
+  font-size: 14px;
   cursor: pointer;
+}
+
+.selectTrigger:hover {
+  border-color: var(--line-strong);
 }
 
 .selectTrigger[data-popup-open] {
@@ -123,31 +139,23 @@
   min-width: var(--anchor-width);
   width: max(var(--anchor-width), 220px);
   max-height: min(360px, var(--available-height));
-  border: 1px solid var(--line);
-  border-radius: 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-popup);
   background: var(--surface-elevated);
   color: var(--text);
   box-shadow: var(--shadow-lg);
   overflow: hidden;
-  transform-origin: var(--transform-origin);
-  transition: opacity 120ms ease, transform 120ms ease;
-}
-
-.selectPopup[data-starting-style],
-.selectPopup[data-ending-style] {
-  opacity: 0;
-  transform: scale(0.98);
 }
 
 .selectList {
-  padding: 6px;
+  padding: 4px;
   overflow-y: auto;
 }
 
 .selectItem {
-  min-height: 38px;
+  min-height: 36px;
   padding: 8px 10px;
-  border-radius: 8px;
+  border-radius: var(--radius-frame);
   display: grid;
   grid-template-columns: 18px 1fr;
   gap: 8px;
@@ -168,43 +176,44 @@
   color: var(--primary);
 }
 
+/* Answer choices: rows separated by rules, not boxes. The chosen row is tinted. */
 .optionField {
   min-width: 0;
 }
 
 .options {
   display: grid;
-  gap: 10px;
+  border-top: var(--rule);
 }
 
 .optionRow {
   min-width: 0;
   position: relative;
+  border-bottom: var(--rule);
 }
 
 .option {
   width: 100%;
-  min-height: 58px;
-  padding: 13px 52px 13px 14px;
+  min-height: 52px;
+  padding: 12px 52px 12px 10px;
   display: grid;
-  grid-template-columns: 20px 28px 1fr;
+  grid-template-columns: 18px 24px 1fr;
   gap: 10px;
   align-items: center;
-  border: 1px solid var(--control-line);
-  border-radius: 13px;
-  background: var(--surface-2);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
   cursor: pointer;
   line-height: 1.55;
-  transition: border-color 150ms ease, background 150ms ease;
 }
 
 .option:hover {
-  border-color: var(--line-strong);
+  background: var(--surface-2);
 }
 
 .option:has(.radio[data-checked]) {
-  border-color: var(--primary);
   background: var(--primary-soft);
+  box-shadow: inset 2px 0 0 var(--primary);
 }
 
 .option:has(.radio[data-disabled]) {
@@ -212,10 +221,8 @@
 }
 
 .option[data-eliminated] {
-  border-color: var(--line);
-  background: var(--surface-3);
-  color: var(--muted);
-  opacity: 0.58;
+  background: transparent;
+  color: var(--disabled-text);
 }
 
 .option[data-eliminated] > :last-child {
@@ -224,32 +231,31 @@
 }
 
 .eliminateOption {
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
   padding: 0;
   position: absolute;
   top: 50%;
-  right: 11px;
+  right: 8px;
   display: grid;
   place-items: center;
   border: 1px solid transparent;
-  border-radius: 9px;
+  border-radius: var(--radius-control);
   background: transparent;
   color: var(--muted);
   cursor: pointer;
   transform: translateY(-50%);
-  transition: border-color 150ms ease, background 150ms ease, color 150ms ease;
 }
 
 .eliminateOption:hover:not(:disabled),
 .eliminateOption[aria-pressed='true'] {
-  border-color: var(--line-strong);
+  border-color: var(--control-line);
   background: var(--surface);
   color: var(--primary-strong);
 }
 
 .eliminateOption:focus-visible {
-  outline: 3px solid var(--focus);
+  outline: 2px solid var(--primary);
   outline-offset: 2px;
 }
 
@@ -259,10 +265,10 @@
 }
 
 .radio {
-  width: 19px;
-  height: 19px;
+  width: 18px;
+  height: 18px;
   padding: 3px;
-  border: 2px solid var(--line-strong);
+  border: 1px solid var(--control-line);
   border-radius: 50%;
   background: var(--surface);
 }
@@ -273,24 +279,24 @@
 
 .radioIndicator {
   display: block;
-  width: 9px;
-  height: 9px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
   background: var(--primary);
 }
 
 .optionLetter {
-  width: 26px;
-  height: 26px;
+  width: 24px;
+  height: 24px;
   display: grid;
   place-items: center;
-  border-radius: 8px;
-  background: var(--surface);
   color: var(--muted);
+  font-family: var(--font-mono);
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 600;
 }
 
+/* Toasts: paper notes stacked bottom-right. The stack transform is functional, so it stays. */
 .toastViewport {
   position: fixed;
   right: 24px;
@@ -316,7 +322,7 @@
   width: 100%;
   height: var(--height);
   border: 1px solid var(--line-strong);
-  border-radius: 14px;
+  border-radius: var(--radius-popup);
   background: var(--surface-elevated);
   color: var(--text);
   box-shadow: var(--shadow-lg);
@@ -329,7 +335,7 @@
       )
     )
     scale(var(--scale));
-  transition: transform 350ms cubic-bezier(0.22, 1, 0.36, 1), opacity 200ms ease,
+  transition: transform 300ms cubic-bezier(0.22, 1, 0.36, 1), opacity 180ms ease,
     height 150ms ease;
   overflow: hidden;
   user-select: none;
@@ -351,22 +357,23 @@
 }
 
 .toastContent {
-  min-height: 68px;
-  padding: 13px;
+  min-height: 64px;
+  padding: 12px 12px 12px 14px;
   display: flex;
   align-items: center;
   gap: 11px;
 }
 
 .toastMark {
-  width: 30px;
-  height: 30px;
+  width: 28px;
+  height: 28px;
+  flex: none;
   display: grid;
   place-items: center;
-  border-radius: 10px;
+  border: 1px solid currentColor;
+  border-radius: var(--radius-frame);
   background: var(--success-soft);
   color: var(--success);
-  font-weight: 900;
 }
 
 .toastMark[data-tone='error'] {
@@ -389,19 +396,21 @@
 .toastTitle {
   margin: 0;
   font-size: 14px;
+  font-weight: 600;
 }
 
 .toastDescription {
   margin: 0;
   color: var(--muted);
   font-size: 12px;
+  line-height: 1.5;
 }
 
 .toastClose {
   width: 32px;
   height: 32px;
   border: 0;
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   background: transparent;
   color: var(--muted);
   display: grid;
@@ -409,18 +418,18 @@
   cursor: pointer;
 }
 
+.toastClose:hover {
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+/* Dialogs and the mobile drawer: paper sheets over a dimmed page. */
 .backdrop {
   position: fixed;
   inset: 0;
   z-index: 150;
-  background: rgb(10 22 42 / 48%);
-  backdrop-filter: blur(3px);
-  transition: opacity 180ms ease;
-}
-
-.backdrop[data-starting-style],
-.backdrop[data-ending-style] {
-  opacity: 0;
+  background: var(--backdrop);
+  backdrop-filter: blur(2px);
 }
 
 .dialogViewport {
@@ -434,42 +443,35 @@
 
 .dialogPopup {
   width: min(440px, 100%);
-  padding: 26px;
-  border: 1px solid var(--line);
-  border-radius: 18px;
+  padding: 24px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-popup);
   background: var(--surface-elevated);
   color: var(--text);
   box-shadow: var(--shadow-lg);
   text-align: center;
-  transition: opacity 160ms ease, transform 160ms ease;
-}
-
-.dialogPopup[data-starting-style],
-.dialogPopup[data-ending-style] {
-  opacity: 0;
-  transform: scale(0.96);
 }
 
 .dialogIcon {
-  width: 46px;
-  height: 46px;
-  margin: 0 auto 15px;
+  width: 40px;
+  height: 40px;
+  margin: 0 auto 14px;
   display: grid;
   place-items: center;
-  border-radius: 14px;
+  border: 1px solid var(--danger);
+  border-radius: var(--radius-frame);
   background: var(--danger-soft);
   color: var(--danger);
-  font-size: 22px;
-  font-weight: 900;
 }
 
 .dialogTitle {
   margin: 0;
-  font-size: 21px;
+  font-size: 19px;
+  font-weight: 600;
 }
 
 .dialogDescription {
-  margin: 10px 0 22px;
+  margin: 8px 0 20px;
   color: var(--muted);
   line-height: 1.7;
 }
@@ -494,10 +496,10 @@
   width: min(310px, calc(100vw - 44px));
   height: 100%;
   pointer-events: auto;
+  border-right: 1px solid var(--line-strong);
   background: var(--surface-elevated);
   color: var(--text);
-  box-shadow: var(--shadow-lg);
-  transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition: transform 240ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .drawerPopup[data-starting-style],
@@ -537,11 +539,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .button,
-  .selectPopup,
   .toastRoot,
-  .backdrop,
-  .dialogPopup,
   .drawerPopup {
     transition-duration: 0.01ms;
   }

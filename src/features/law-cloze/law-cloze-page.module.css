@@ -1,55 +1,385 @@
-.page { display: grid; gap: 20px; max-width: 1100px; margin: 0 auto; }
-.intro, .card, .summary { padding: 24px; border: 1px solid var(--line); border-radius: 18px; background: var(--surface); min-width: 0; }
-.heading, .card header, .card footer, .lawHeading { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-.heading { color: var(--primary-strong); }
-.heading h2 { color: var(--text); margin: 0; font-size: 24px; }
-.heading > span, .tags span { padding: 4px 9px; background: var(--primary-soft); border-radius: 8px; font-size: 12px; }
-.intro p { margin: 12px 0 8px; }
-.instruction, .storageNote, .sources { color: var(--muted); line-height: 1.7; font-size: 13px; }
-.sources summary { cursor: pointer; }
-.sources a { color: var(--primary-strong); }
-.controls { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, .65fr) auto; align-items: end; gap: 12px; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--line); }
-.controls label { display: grid; gap: 6px; font-size: 13px; font-weight: 700; min-width: 0; }
-.controls select { width: 100%; min-width: 0; border: 1px solid var(--control-line); border-radius: 9px; background: var(--surface-2); color: var(--text); padding: 10px 8px; }
-.score { font-size: 14px; color: var(--primary-strong); margin-top: 15px; }
-.card header, .card footer, .lawHeading { justify-content: space-between; }
-.tags { display: flex; gap: 8px; flex-wrap: wrap; overflow-wrap: anywhere; }
-.card h3 { margin: 18px 0 12px; font-size: 21px; }
-.lawName { font-size: 12px; color: var(--muted); margin: 15px 0 0; }
-.passage { margin: 20px 0; padding: 20px; border-radius: 12px; background: var(--surface-2); white-space: pre-wrap; overflow-wrap: anywhere; font-size: var(--question-font-size, 18px); line-height: 2.7; }
-.inlineBlank { display: inline-flex; align-items: baseline; gap: 2px; vertical-align: baseline; white-space: nowrap; margin: 0 4px; max-width: 100%; }
-.inlineBlank sup { font-size: 11px; color: var(--primary-strong); }
-.inlineBlank input { box-sizing: content-box; max-width: 10ch; min-height: 32px; border: 1px solid var(--control-line); border-bottom: 2px solid var(--primary); border-radius: 6px; padding: 4px 7px; background: var(--surface); color: var(--text); font: inherit; line-height: 1.4; text-align: center; }
-.inlineBlank input:focus-visible, .controls select:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
-.inlineBlank input:disabled { opacity: 1; }
-.inlineBlank input[aria-invalid='true'] { border-color: var(--danger); }
-.inlineBlank input[data-correct='true'] { border-color: var(--success); }
-.results { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding: 0; list-style: none; font-size: 13px; }
-.results li { display: flex; align-items: flex-start; gap: 6px; line-height: 1.8; color: var(--danger); overflow-wrap: anywhere; }
-.results li svg { flex-shrink: 0; margin-top: 4px; }
-.results li[data-correct='true'] { color: var(--success); }
-.results strong { font-weight: 500; color: var(--text); }
-.card footer { margin-top: 24px; border-top: 1px solid var(--line); padding-top: 18px; }
-.card footer > span { color: var(--muted); font-size: 13px; }
-.answerActions { display: flex; flex-wrap: wrap; gap: 10px; }
-.lawHeading h3 { margin: 0; overflow-wrap: anywhere; }
-.lawHeading a, .evidence a { color: var(--primary-strong); font-size: 13px; }
-.fullText { font: inherit; font-size: var(--question-font-size, 18px); line-height: 1.85; margin: 16px 0; white-space: pre-wrap; overflow-wrap: anywhere; overflow-x: auto; max-width: 100%; }
-.answerText { color: var(--danger); font-weight: 700; }
-.lawImage { display: block; max-width: 100%; height: auto; border-radius: 8px; background: white; margin: 14px 0; }
-.evidence { border-top: 1px solid var(--line); padding-top: 16px; color: var(--muted); font-size: 13px; }
-.evidence summary { cursor: pointer; color: var(--primary-strong); font-weight: 700; }
-.evidence div { display: flex; flex-wrap: wrap; gap: 10px 15px; }
-.summary { border-color: var(--primary); background: var(--primary-soft); }
-.summary h3 { margin: 0; }
-.summary ol { padding-left: 24px; font-size: 14px; }
-.summary li { padding: 4px; }
-.summary li span { float: right; margin-left: 8px; font-variant-numeric: tabular-nums; }
-.storageNote { font-size: 12px; margin: 0; }
-@media (max-width: 850px) { .controls { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.page {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: grid;
+  gap: 20px;
+}
+
+/* Each block is one framed panel on the paper; inside, sections are separated by rules. */
+.intro,
+.card,
+.summary {
+  min-width: 0;
+  padding: 20px 24px;
+  border: var(--frame);
+  border-radius: var(--radius-frame);
+  background: var(--surface);
+}
+
+.heading,
+.card header,
+.card footer,
+.lawHeading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.heading {
+  color: var(--primary);
+}
+
+.heading h2 {
+  margin: 0;
+  color: var(--text);
+  font-size: 20px;
+}
+
+/* Labels: small monospace tags with a thin frame. */
+.heading > span,
+.tags span {
+  min-height: 22px;
+  padding: 0 7px;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid color-mix(in srgb, currentColor 45%, transparent);
+  border-radius: var(--radius-frame);
+  background: color-mix(in srgb, currentColor 8%, transparent);
+  color: var(--primary-strong);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.intro p {
+  margin: 12px 0 8px;
+}
+
+.instruction,
+.storageNote,
+.sources {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.sources summary {
+  color: var(--primary);
+  cursor: pointer;
+}
+
+.sources a {
+  color: var(--primary);
+}
+
+.controls {
+  margin-top: 16px;
+  padding-top: 16px;
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 0.65fr) auto;
+  align-items: end;
+  gap: 12px;
+  border-top: var(--rule);
+}
+
+.controls label {
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.controls select {
+  width: 100%;
+  min-width: 0;
+  min-height: 40px;
+  padding: 0 12px;
+  border: var(--frame);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+}
+
+.controls select:focus-visible,
+.inlineBlank input:focus-visible {
+  border-color: var(--primary);
+  outline: 2px solid var(--focus);
+  outline-offset: 1px;
+}
+
+.score {
+  margin-top: 14px;
+  color: var(--primary-strong);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.card header,
+.card footer,
+.lawHeading {
+  justify-content: space-between;
+}
+
+.card header {
+  padding-bottom: 12px;
+  border-bottom: var(--rule);
+}
+
+.card header > strong {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  overflow-wrap: anywhere;
+}
+
+.card h3 {
+  margin: 6px 0 12px;
+  font-size: 20px;
+}
+
+.lawName {
+  margin: 14px 0 0;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.02em;
+}
+
+/* The passage reads straight on the panel between two rules; the blanks are the controls. */
+.passage {
+  margin: 16px 0;
+  padding: 16px 0;
+  border-top: var(--rule);
+  border-bottom: var(--rule);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: var(--question-font-size, 18px);
+  line-height: 2.7;
+}
+
+.inlineBlank {
+  max-width: 100%;
+  margin: 0 4px;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 2px;
+  vertical-align: baseline;
+  white-space: nowrap;
+}
+
+.inlineBlank sup {
+  color: var(--primary);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.inlineBlank input {
+  box-sizing: content-box;
+  max-width: 10ch;
+  min-height: 32px;
+  padding: 4px 7px;
+  border: var(--frame);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.inlineBlank input:disabled {
+  opacity: 1;
+}
+
+.inlineBlank input[aria-invalid='true'] {
+  border-color: var(--danger);
+}
+
+.inlineBlank input[data-correct='true'] {
+  border-color: var(--success);
+}
+
+.results {
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 16px;
+  list-style: none;
+  font-size: 13px;
+}
+
+.results li {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  color: var(--danger);
+  line-height: 1.8;
+  overflow-wrap: anywhere;
+}
+
+.results li svg {
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+
+.results li[data-correct='true'] {
+  color: var(--success);
+}
+
+.results strong {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.card footer {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: var(--rule);
+}
+
+.card footer > span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.answerActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.lawHeading h3 {
+  margin: 0;
+  font-size: 18px;
+  overflow-wrap: anywhere;
+}
+
+.lawHeading a,
+.evidence a {
+  color: var(--primary);
+  font-size: 13px;
+}
+
+.fullText {
+  max-width: 100%;
+  margin: 16px 0;
+  font: inherit;
+  font-size: var(--question-font-size, 18px);
+  line-height: 1.85;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  overflow-x: auto;
+}
+
+.answerText {
+  color: var(--danger);
+  font-weight: 600;
+}
+
+/* Official figures stay on white, framed like a question's picture. */
+.lawImage {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 14px 0;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-frame);
+  background: var(--image-surface);
+}
+
+.evidence {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: var(--rule);
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.evidence summary {
+  color: var(--primary);
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.evidence div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 15px;
+}
+
+.summary h3 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.summary > p {
+  margin: 8px 0 0;
+  color: var(--text-soft);
+  line-height: 1.7;
+}
+
+.summary ol {
+  margin: 14px 0 0;
+  padding-left: 24px;
+  font-size: 14px;
+}
+
+.summary li {
+  padding: 6px 0;
+  border-top: var(--rule);
+}
+
+.summary li span {
+  float: right;
+  margin-left: 8px;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.storageNote {
+  margin: 0;
+  font-size: 12px;
+}
+
+@media (max-width: 850px) {
+  .controls {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 600px) {
-  .intro, .card, .summary { padding: 16px; }
-  .controls, .results { grid-template-columns: minmax(0, 1fr); }
-  .passage { padding: 14px; }
-  .card footer { gap: 16px; }
+  .intro,
+  .card,
+  .summary {
+    padding: 16px;
+  }
+
+  .controls,
+  .results {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .card footer {
+    gap: 16px;
+  }
 }

@@ -1,9 +1,88 @@
-.page { display: grid; gap: 20px; }
-.page form, .notice { border: 1px solid var(--line); border-radius: 18px; background: var(--surface); box-shadow: var(--shadow-sm); }
-.page form { padding: 24px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
-.page label { display: grid; gap: 7px; color: var(--muted); font-size: 12px; font-weight: 800; }
-.page input, .page select, .page textarea { width: 100%; padding: 11px 12px; border: 1px solid var(--control-line); border-radius: 10px; background: var(--surface); color: var(--text); font: inherit; }
-.description, .page form > button { grid-column: 1 / -1; }
-.description textarea { resize: vertical; line-height: 1.6; }
-.notice { margin: 0; padding: 15px 18px; color: var(--muted); font-size: 12px; line-height: 1.6; }
-@media (max-width: 650px) { .page form { grid-template-columns: 1fr; } .page label, .page form > button { grid-column: 1; } }
+/* 問題回報: one framed form panel with plain fields; the storage notice is plain text under it. */
+.page {
+  display: grid;
+  gap: 16px;
+}
+
+.page form {
+  padding: 24px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  border: var(--frame);
+  border-radius: var(--radius-frame);
+  background: var(--surface);
+}
+
+.page label {
+  display: grid;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.page input,
+.page select,
+.page textarea {
+  width: 100%;
+  min-height: 40px;
+  padding: 0 12px;
+  border: var(--frame);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+}
+
+.page textarea {
+  padding: 10px 12px;
+}
+
+.page input:focus,
+.page select:focus,
+.page textarea:focus {
+  border-color: var(--primary);
+  outline: 2px solid var(--focus);
+  outline-offset: 1px;
+}
+
+.description,
+.page form > button {
+  grid-column: 1 / -1;
+}
+
+.page form > button {
+  justify-self: end;
+  min-width: 180px;
+}
+
+.description textarea {
+  resize: vertical;
+  line-height: 1.6;
+}
+
+.notice {
+  margin: 0;
+  padding: 0 4px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+@media (max-width: 650px) {
+  .page form {
+    padding: 16px;
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .page label,
+  .page form > button {
+    grid-column: 1;
+  }
+
+  .page form > button {
+    justify-self: stretch;
+  }
+}

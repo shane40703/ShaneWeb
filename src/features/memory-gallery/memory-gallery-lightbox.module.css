@@ -1,32 +1,252 @@
-.trigger { border: 0; cursor: zoom-in; }
-.trigger:focus-visible { outline: 3px solid var(--focus); outline-offset: -4px; }
-.backdrop { position: fixed; inset: 0; z-index: 300; background: rgb(8 19 38 / 85%); backdrop-filter: blur(6px); }
-.popup { position: fixed; inset: 0; z-index: 301; width: min(1400px, calc(100vw - 32px)); height: min(1000px, calc(100dvh - 32px)); margin: auto; padding: 16px; display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto; gap: 12px; border: 1px solid rgb(255 255 255 / 24%); border-radius: 18px; background: #0f1b31; color: #fff; box-shadow: var(--shadow-lg); outline: none; }
-.heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-width: 0; }
-.title { min-width: 0; margin: 0; font-size: 17px; line-height: 1.5; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.iconButton, .fitButton { flex-shrink: 0; display: inline-flex; justify-content: center; align-items: center; gap: 7px; min-height: 44px; border: 1px solid rgb(255 255 255 / 25%); border-radius: 10px; background: #1c2b44; color: #fff; font: inherit; font-size: 13px; cursor: pointer; }
-.iconButton { width: 44px; padding: 0; }
-.fitButton { padding: 0 12px; }
-.iconButton:disabled { opacity: .4; cursor: default; }
-.iconButton:focus-visible, .fitButton:focus-visible, .toolbar input:focus-visible, .viewport:focus-visible { outline: 3px solid #8bbcff; outline-offset: 2px; }
-.toolbar { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 10px; }
-.toolbar input { flex: 1 1 90px; max-width: 300px; min-width: 60px; min-height: 44px; accent-color: #85b7ff; cursor: pointer; }
-.toolbar output { min-width: 45px; font-variant-numeric: tabular-nums; font-size: 13px; text-align: center; }
-.viewport { position: relative; min-width: 0; min-height: 0; overflow: hidden; border-radius: 12px; background: #070f1d; touch-action: none; overscroll-behavior: contain; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
-.viewport[data-zoomed] { cursor: grab; }
-.viewport[data-zoomed]:active { cursor: grabbing; }
-.image { position: absolute; inset: 0; pointer-events: none; transform-origin: center; will-change: transform; }
-.image img { object-fit: contain; pointer-events: none; -webkit-user-drag: none; }
-.imageStatus { position: absolute; inset: 0; display: grid; place-items: center; margin: 0; padding: 20px; background: #070f1d; color: #bacce6; font-size: 14px; text-align: center; pointer-events: none; }
-.footer { display: grid; gap: 5px; color: #bacce6; font-size: 12px; line-height: 1.6; }
-.footer p { margin: 0; }
-@media (max-width: 600px) {
-  .popup { width: calc(100vw - 12px); height: calc(100dvh - 12px); padding: 10px; gap: 8px; border-radius: 14px; }
-  .title { font-size: 15px; }
-  .toolbar { gap: 6px; }
-  .toolbar input { max-width: none; }
-  .fitButton { padding-inline: 9px; }
-  .fitButton svg { display: none; }
-  .footer { font-size: 11px; }
+/*
+ * The gallery viewer: a floating paper sheet over the dimmed page (the one place a shadow is
+ * allowed). Title row, a toolbar of framed controls, the picture on white, a rule-separated
+ * footer. The zoom and drag behaviour lives in the viewport rules below.
+ */
+.trigger {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: zoom-in;
 }
-@media print { .popup, .backdrop { display: none; } }
+
+/* The zoom mark is a small framed tile; the gallery page only moves it into a corner. */
+.trigger > span {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border: var(--frame);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--primary);
+}
+
+.trigger:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: -4px;
+}
+
+/* Dims the page with the same ink as every other dialog (the --backdrop token). */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  background: var(--backdrop);
+  backdrop-filter: blur(2px);
+}
+
+.popup {
+  position: fixed;
+  inset: 0;
+  z-index: 301;
+  width: min(1400px, calc(100vw - 32px));
+  height: min(1000px, calc(100dvh - 32px));
+  margin: auto;
+  padding: 16px;
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  gap: 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-popup);
+  background: var(--surface-elevated);
+  color: var(--text);
+  box-shadow: var(--shadow-lg);
+  outline: none;
+}
+
+.heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+}
+
+.title {
+  min-width: 0;
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.5;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.iconButton,
+.fitButton {
+  flex-shrink: 0;
+  min-height: 40px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  border: var(--frame);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.iconButton {
+  width: 40px;
+  padding: 0;
+}
+
+.fitButton {
+  padding: 0 12px;
+}
+
+.iconButton:hover:not(:disabled),
+.fitButton:hover {
+  border-color: var(--line-strong);
+  background: var(--surface-elevated);
+}
+
+.iconButton:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.iconButton:focus-visible,
+.fitButton:focus-visible,
+.toolbar input:focus-visible,
+.viewport:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.toolbar input {
+  flex: 1 1 90px;
+  max-width: 300px;
+  min-width: 60px;
+  min-height: 40px;
+  accent-color: var(--primary);
+  cursor: pointer;
+}
+
+.toolbar output {
+  min-width: 48px;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.viewport {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  border-radius: var(--radius-frame);
+  background: var(--image-surface);
+  touch-action: none;
+  overscroll-behavior: contain;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.viewport[data-zoomed] {
+  cursor: grab;
+}
+
+.viewport[data-zoomed]:active {
+  cursor: grabbing;
+}
+
+/* The picture moves by the inline transform the zoom logic writes; its origin stays centred. */
+.image {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  transform-origin: center;
+  will-change: transform;
+}
+
+.image img {
+  object-fit: contain;
+  pointer-events: none;
+  -webkit-user-drag: none;
+}
+
+.imageStatus {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  padding: 20px;
+  background: var(--surface-2);
+  color: var(--muted);
+  font-size: 14px;
+  text-align: center;
+  pointer-events: none;
+}
+
+.footer {
+  padding-top: 10px;
+  display: grid;
+  gap: 4px;
+  border-top: var(--rule);
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.footer p {
+  margin: 0;
+}
+
+@media (max-width: 600px) {
+  .popup {
+    width: calc(100vw - 12px);
+    height: calc(100dvh - 12px);
+    padding: 10px;
+    gap: 8px;
+  }
+
+  .title {
+    font-size: 15px;
+  }
+
+  .toolbar {
+    gap: 6px;
+  }
+
+  .toolbar input {
+    max-width: none;
+  }
+
+  .fitButton {
+    padding-inline: 9px;
+  }
+
+  .fitButton svg {
+    display: none;
+  }
+
+  .footer {
+    font-size: 11px;
+  }
+}
+
+@media print {
+  .popup,
+  .backdrop {
+    display: none;
+  }
+}

@@ -1,82 +1,383 @@
-.interactionGuard { display: contents; }
-.selectorHint {
-  color: var(--disabled-text);
-  font-size: 12px;
+/* Exams page: the question, the discussion, the compose form and the navigator are each
+   ONE framed cream panel; inside them only rules separate the groups (no inner boxes). */
+.interactionGuard {
+  display: contents;
 }
 
 .questionCard,
 .questionNavigator,
 .postsCard,
 .composeCard {
-  border: 1px solid var(--line);
-  border-radius: 20px;
+  border: var(--frame);
+  border-radius: var(--radius-frame);
   background: var(--surface);
-  box-shadow: var(--shadow-sm);
 }
 
-.examsLayout { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 20px; align-items: start; }
-.contentColumn { min-width: 0; display: grid; gap: 20px; }
-.questionCard { min-width: 0; padding: 24px; display: grid; gap: 16px; }
-.questionCard > header { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
-.tags { display: flex; gap: 7px; flex-wrap: wrap; }
-.questionCard > h2 { max-width: 1000px; margin: 25px 0; font-size: clamp(20px, 2.2vw, 29px); line-height: 1.6; }
-.questionCard > .questionNumber { margin: 0; color: var(--primary-strong); font-size: 17px; line-height: 1.3; }
+.examsLayout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 24px;
+  align-items: start;
+}
 
-.questionNavigation { margin-top: 6px; padding-top: 18px; display: flex; align-items: center; justify-content: space-between; gap: 10px; border-top: 1px solid var(--line); }
-.questionNavigator { max-height: calc(100vh - 112px); padding: 20px; position: sticky; top: 92px; overflow-y: auto; }
-.questionNavigator > header { margin-bottom: 16px; padding-bottom: 14px; display: flex; align-items: center; justify-content: space-between; gap: 12px; border-bottom: 1px solid var(--line); }
-.questionNavigator > header div { display: grid; gap: 3px; }
-.questionNavigator > header span { color: var(--primary-strong); font-size: 10px; font-weight: 850; letter-spacing: .12em; }
-.questionNavigator > header h2 { margin: 0; font-size: 18px; }
-.questionNavigator > header strong { padding: 7px 9px; border-radius: 9px; background: var(--primary-soft); color: var(--primary-strong); font-size: 12px; }
+.contentColumn {
+  min-width: 0;
+  display: grid;
+  gap: 24px;
+}
 
-.postsCard { padding: 22px; }
-.sectionHeader { display: flex; align-items: center; justify-content: space-between; }
-.sectionHeader div { display: grid; gap: 3px; }
+/* Question panel: tags row | source + number + prompt + answer rows | previous / next. */
+.questionCard {
+  min-width: 0;
+  padding: 24px;
+  display: grid;
+  gap: 16px;
+}
+
+.questionCard > header {
+  padding-bottom: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border-bottom: var(--rule);
+}
+
+.tags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.questionCard > .questionNumber {
+  margin: -6px 0 0;
+  color: var(--primary-strong);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  line-height: 1.3;
+}
+
+.questionNavigation {
+  margin-top: 4px;
+  padding-top: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border-top: var(--rule);
+}
+
+/* Navigator panel: kicker + title + position, then the number tiles. */
+.questionNavigator {
+  max-height: calc(100vh - 112px);
+  padding: 20px;
+  position: sticky;
+  top: 92px;
+  overflow-y: auto;
+}
+
+.questionNavigator > header {
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: var(--rule);
+}
+
+.questionNavigator > header div,
+.sectionHeader div {
+  display: grid;
+  gap: 4px;
+}
+
+.questionNavigator > header span,
 .sectionHeader span,
-.composeEyebrow { color: var(--primary-strong); font-size: 10px; font-weight: 850; letter-spacing: .12em; }
+.composeEyebrow {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+}
+
+/* Panel titles: one size (16px/600) for the navigator, the discussion and the compose panel. */
+.questionNavigator > header h2,
 .sectionHeader h2,
-.composeCard h2 { margin: 0; }
-.sectionHeader > strong { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 11px; background: var(--primary-soft); color: var(--primary-strong); }
+.composeCard h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
 
-.postList { margin-top: 18px; display: grid; gap: 14px; }
-.post { padding: 18px; border: 1px solid var(--line); border-radius: 15px; background: var(--surface-2); }
-.post > header { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-.post time { color: var(--muted); font-size: 10px; }
-.post > p { margin: 15px 0; line-height: 1.75; white-space: pre-wrap; }
-.postActions { display: flex; flex-wrap: wrap; gap: 6px; }
-.postActions button { min-height: 34px; padding-inline: 8px; font-size: 12px; white-space: nowrap; }
-.postActions button[aria-pressed='true'] { color: var(--danger); }
+.questionNavigator > header strong,
+.sectionHeader > strong {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
 
-.replies { margin: 12px 0; padding-left: 13px; display: grid; gap: 8px; border-left: 2px solid var(--line-strong); }
-.replies > div { padding: 10px; border-radius: 10px; background: var(--surface); }
-.replies > div > span { color: var(--muted); font-size: 10px; }
-.replies p { margin: 5px 0 0; font-size: 13px; line-height: 1.6; }
+/* Discussion panel: header, then one rule-separated row per post. */
+.postsCard {
+  padding: 24px;
+}
 
-.replyForm { margin-top: 8px; display: grid; gap: 6px; }
+.sectionHeader {
+  padding-bottom: 14px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: var(--rule);
+}
+
+.postsCard > p {
+  margin: 16px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.postsCard > p[role='alert'] {
+  color: var(--danger);
+}
+
+.postList {
+  display: grid;
+}
+
+.post {
+  padding: 20px 0;
+  border-bottom: var(--rule);
+}
+
+.post:last-child {
+  padding-bottom: 4px;
+  border-bottom: 0;
+}
+
+.post > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.post time {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.post > p {
+  margin: 14px 0;
+  font-size: 15px;
+  line-height: 1.75;
+  white-space: pre-wrap;
+}
+
+.postActions {
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 6px;
+}
+
+.postActions button {
+  min-height: 32px;
+  padding-inline: 8px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.postActions button[aria-pressed='true'] {
+  color: var(--danger);
+}
+
+/* Replies hang off a 2px left rule; each reply is plain text. */
+.replies {
+  margin: 14px 0;
+  padding-left: 14px;
+  display: grid;
+  gap: 12px;
+  border-left: 2px solid var(--line-strong);
+}
+
+.replies > div {
+  display: grid;
+  gap: 4px;
+}
+
+.replies > div > span {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+}
+
+.replies p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.replies button {
+  min-height: 28px;
+  padding-inline: 0;
+  justify-self: start;
+  font-size: 12px;
+}
+
+.replyForm {
+  margin-top: 14px;
+  display: grid;
+  gap: 6px;
+}
+
 .replyForm label,
-.composeCard > label { color: var(--muted); font-size: 11px; font-weight: 750; }
-.replyForm > div { display: flex; gap: 7px; }
-.replyForm input,
-.composeCard textarea { width: 100%; min-width: 0; border: 1px solid var(--control-line); border-radius: 11px; background: var(--surface); color: var(--text); }
-.replyForm input { padding: 0 12px; }
-.replyForm button { flex: 0 0 auto; white-space: nowrap; }
+.composeCard > label {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 500;
+}
 
-.composeCard { padding: 22px; display: grid; gap: 16px; }
-.composeCard textarea { padding: 12px; resize: vertical; line-height: 1.6; }
-.editPost { margin: 15px 0; display: grid; gap: 8px; }
-.editPost textarea { width: 100%; min-height: 150px; padding: 12px; border: 1px solid var(--control-line); border-radius: 11px; background: var(--surface); color: var(--text); line-height: 1.7; resize: vertical; }
-.editPost > div { display: flex; gap: 8px; justify-content: flex-end; }
-.post p a, .replies p a { color: var(--primary-strong); overflow-wrap: anywhere; text-decoration: underline; text-underline-offset: 2px; }
-.composeCard > p { margin: -4px 0 0; color: var(--muted); font-size: 10px; line-height: 1.6; }
+.replyForm > div {
+  display: flex;
+  gap: 8px;
+}
+
+.replyForm input,
+.composeCard textarea,
+.editPost textarea {
+  width: 100%;
+  min-width: 0;
+  min-height: 40px;
+  border: var(--frame);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 14px;
+}
+
+.replyForm input {
+  padding: 0 12px;
+}
+
+.replyForm input:focus-visible,
+.composeCard textarea:focus-visible,
+.editPost textarea:focus-visible {
+  border-color: var(--primary);
+  outline: 2px solid var(--focus);
+  outline-offset: 1px;
+}
+
+.replyForm input:disabled,
+.composeCard textarea:disabled {
+  background: var(--surface-3);
+  color: var(--disabled-text);
+  cursor: not-allowed;
+}
+
+.replyForm button {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+/* Compose panel: kicker + title over a rule, then plain fields. */
+.composeCard {
+  padding: 24px;
+  display: grid;
+  gap: 14px;
+}
+
+.composeCard h2 {
+  margin: -8px 0 0;
+  padding-bottom: 14px;
+  border-bottom: var(--rule);
+}
+
+.composeCard textarea {
+  padding: 10px 12px;
+  resize: vertical;
+  line-height: 1.6;
+}
+
+.editPost {
+  margin: 14px 0;
+  display: grid;
+  gap: 8px;
+}
+
+.editPost textarea {
+  min-height: 150px;
+  padding: 10px 12px;
+  line-height: 1.7;
+  resize: vertical;
+}
+
+.editPost > div {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.post p a,
+.replies p a {
+  color: var(--primary);
+  overflow-wrap: anywhere;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.composeCard > p {
+  margin: -4px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
 
 @media (max-width: 950px) {
-  .examsLayout { grid-template-columns: 1fr; }
-  .questionNavigator { position: static; }
-  .questionNavigator { max-height: none; }
+  .examsLayout {
+    grid-template-columns: 1fr;
+  }
+
+  .questionNavigator {
+    position: static;
+  }
+
+  .questionNavigator {
+    max-height: none;
+  }
 }
 
 @media (max-width: 680px) {
-  .questionCard > header { align-items: flex-start; flex-direction: column; }
-  .questionNavigation { flex-wrap: wrap; }
+  .questionCard > header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .questionNavigation {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 600px) {
+  .examsLayout,
+  .contentColumn {
+    gap: 16px;
+  }
+
+  .questionCard,
+  .questionNavigator,
+  .postsCard,
+  .composeCard {
+    padding: 16px;
+  }
 }
