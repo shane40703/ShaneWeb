@@ -1,11 +1,19 @@
 import { AppearanceSettings } from '@/pages/appearance';
+import { QuestionAnswerPanel } from '@/components/question-answer-panel';
 import { ReadingFontControls } from '@/components/reading-font-controls';
 import { useAppState } from '@/state/app-state';
 import styles from './settings-page.module.css';
 
+// The preview shows the real answer rows (the same component as 歷屆試題 and 已作答紀錄), so any
+// change to that component shows up here too.
+const PREVIEW_QUESTION = {
+  options: ['選項文字可單獨調整大小', '設定會自動套用到作答與複習頁面'],
+  answerKey: { kind: 'accepted', options: [] },
+} as const;
+
 export function SettingsPanel() {
   const { state } = useAppState();
-  const { questionFontSize, optionFontSize } = state.readingPreferences;
+  const { questionFontSize } = state.readingPreferences;
 
   return (
     <section className={styles.page}>
@@ -21,10 +29,11 @@ export function SettingsPanel() {
             <p style={{ fontSize: questionFontSize }}>
               建築師考試題目文字會以這個大小顯示。
             </p>
-            <ol style={{ fontSize: optionFontSize }}>
-              <li>A　選項文字可單獨調整大小</li>
-              <li>B　設定會自動套用到作答與複習頁面</li>
-            </ol>
+            <QuestionAnswerPanel
+              question={PREVIEW_QUESTION}
+              heading={null}
+              ariaLabel="預覽選項"
+            />
           </div>
         </div>
       </details>

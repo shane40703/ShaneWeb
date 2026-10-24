@@ -103,7 +103,8 @@
   border-radius: var(--radius-control);
 }
 
-/* Preview: a mono kicker, the sample sentence, then the sample options as rule-separated rows. */
+/* Preview: a mono kicker, the sample sentence, then the real answer rows (QuestionAnswerPanel,
+   styled by its own module). */
 .preview {
   padding: 20px 0 0;
   display: grid;
@@ -122,20 +123,6 @@
   margin: 0;
   line-height: 1.65;
   text-wrap: pretty;
-}
-
-.preview ol {
-  margin: 0;
-  padding: 0;
-  display: grid;
-  list-style: none;
-  border-top: var(--rule);
-}
-
-.preview li {
-  padding: 10px 2px;
-  border-bottom: var(--rule);
-  line-height: 1.55;
 }
 
 .appearanceContent {
