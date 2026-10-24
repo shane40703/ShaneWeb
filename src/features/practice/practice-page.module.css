@@ -1216,9 +1216,8 @@
     margin-inline: 12px;
   }
 
-  /* As in /daily: a pinned two-row bar would cover the verdict on a phone. */
+  /* Keep the same pinned actions in phone previews; the page, not the question, scrolls. */
   .challenge > footer {
-    position: static;
     padding-inline: 12px;
   }
 
@@ -1227,6 +1226,7 @@
   }
 
   .navButtons > button {
+    min-height: 44px;
     min-width: 0;
     flex: 1 1 auto;
     padding-inline: 10px;
@@ -1317,9 +1317,9 @@
   }
 }
 
-/* The footer is static on panels of 640px or less (about this window width). */
+/* Leave enough room for the phone's two-row actions and its bottom safe area. */
 @media (max-width: 672px) {
   :global(html):has(.challenge) {
-    scroll-padding-bottom: 0;
+    scroll-padding-bottom: calc(128px + env(safe-area-inset-bottom));
   }
 }
