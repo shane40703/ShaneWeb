@@ -25,7 +25,7 @@ import { pageParameters, withPageFrame } from '../../support/story-environment';
 import {
   practicePageParameters,
   stayInStoryOnRewind,
-  withPracticeSectionFrame,
+  withPracticeQuestionFrame,
 } from './practice-frame';
 
 /**
@@ -111,6 +111,7 @@ function UnavailableQuestion({
 /**
  * 選擇題練習的作答畫面：整個 /practice/quiz 頁面，練習進度從瀏覽器的存檔讀出，網址的
  * `?q=` 決定顯示第幾題，跟網站一樣操作。
+ * 作答區使用整個頁面寬度，桌機題號欄維持右側，手機改成上下排列。
  *
  * 畫面上可以操作看到：
  * - 選選項、按選項右邊的刪去鈕劃掉選項、「確認答案」後的答對／答錯、詳解與使用者筆記
@@ -174,7 +175,7 @@ export const 五十題題組: Story = {
  */
 export const 題目無法顯示: StoryObj<typeof UnavailableQuestion> = {
   render: (args) => <UnavailableQuestion {...args} />,
-  decorators: [withPracticeSectionFrame],
+  decorators: [withPracticeQuestionFrame],
   parameters: { ...pageParameters('/practice/quiz', { q: '1' }) },
   args: { status: 'loading', onRetry: fn(), onSubmit: fn(), onAbandon: fn() },
   argTypes: {

@@ -1,6 +1,45 @@
 import { expect, test } from '@playwright/test';
 
 for (const theme of ['light', 'dark'] as const) {
+  test(`daily practice uses the full page width while answering in ${theme} mode`, async ({ page, isMobile }, testInfo) => {
+    if (!isMobile) await page.setViewportSize({ width: 1920, height: 1080 });
+    await page.addInitScript(mode => localStorage.setItem('shane-web-theme', mode), theme);
+    await page.goto('/practice/quiz');
+    const setup = page.getByRole('region', { name: '選擇題練習設定', exact: true });
+    await expect(setup.getByText(/已選 法規・從 \d+ 題中抽 50 題/)).toBeVisible({ timeout: 20_000 });
+    const available = await page.locator('main').evaluate(element => {
+      const style = getComputedStyle(element);
+      return element.getBoundingClientRect().width - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+    });
+    expect((await setup.boundingBox())!.width).toBeCloseTo(Math.min(available, 1180), 0);
+
+    await setup.getByRole('button', { name: '線上作答', exact: true }).click();
+    const quiz = page.getByRole('region', { name: '選擇題練習作答', exact: true });
+    await expect(quiz.getByRole('radio').first()).toBeVisible();
+    const quizBox = (await quiz.boundingBox())!;
+    expect(quizBox.width).toBeCloseTo(available, 0);
+    const questionBox = (await quiz.getByRole('article').boundingBox())!;
+    const sidebarBox = (await quiz.getByRole('complementary', { name: '題組資訊', exact: true }).boundingBox())!;
+    if (isMobile) {
+      expect(sidebarBox.y).toBeGreaterThanOrEqual(questionBox.y + questionBox.height);
+      expect(sidebarBox.width).toBeCloseTo(quizBox.width, 0);
+    } else {
+      expect(sidebarBox.width).toBeCloseTo(264, 0);
+      expect(sidebarBox.x + sidebarBox.width).toBeCloseTo(quizBox.x + quizBox.width, 0);
+    }
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(page.viewportSize()!.width);
+    await page.screenshot({ path: testInfo.outputPath(`daily-practice-${theme}.png`), fullPage: true });
+
+    page.once('dialog', dialog => dialog.accept());
+    await quiz.getByRole('complementary', { name: '題組資訊', exact: true }).getByRole('button', { name: /交卷/ }).click();
+    const result = page.getByRole('region', { name: '法規練習結果', exact: true });
+    await expect(result).toBeVisible();
+    expect((await result.boundingBox())!.width).toBeCloseTo(Math.min(available, 1180), 0);
+    await page.getByRole('button', { name: '重做這組題目', exact: true }).click();
+    await expect(quiz).toBeVisible();
+    expect((await quiz.boundingBox())!.width).toBeCloseTo(available, 0);
+  });
+
   test(`paper refinements preserve borders, full-width quizzes and cancellable answers in ${theme} mode`, async ({ page, isMobile }, testInfo) => {
     if (!isMobile) await page.setViewportSize({ width: 1920, height: 1080 });
     await page.addInitScript((mode) => {
