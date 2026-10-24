@@ -1,5 +1,5 @@
-/* Answer rows: rule-separated rows, not boxes. The fill and a 2px left rule mark
-   the correct answer (green) and a wrong chosen answer (red). */
+/* Answer rows: plain rows under one rule, no lines between them. The fill and a 2px
+   left rule mark the correct answer (green) and a wrong chosen answer (red). */
 .panel {
   display: grid;
   gap: 8px;
@@ -37,10 +37,6 @@
   font-weight: 400;
   line-height: 1.6;
   letter-spacing: 0;
-}
-
-.panel li + li {
-  border-top: var(--rule);
 }
 
 .panel li[data-selected='true'] {

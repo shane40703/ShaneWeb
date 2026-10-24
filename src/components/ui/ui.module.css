@@ -176,7 +176,8 @@
   color: var(--primary);
 }
 
-/* Answer choices: rows separated by rules, not boxes. The chosen row is tinted. */
+/* Answer choices: plain rows between one rule above and one below, no lines between
+   them. The chosen row is tinted; a locked-in choice no longer reacts to hover. */
 .optionField {
   min-width: 0;
 }
@@ -184,12 +185,12 @@
 .options {
   display: grid;
   border-top: var(--rule);
+  border-bottom: var(--rule);
 }
 
 .optionRow {
   min-width: 0;
   position: relative;
-  border-bottom: var(--rule);
 }
 
 .option {
@@ -207,7 +208,7 @@
   line-height: 1.55;
 }
 
-.option:hover {
+.option:not(:has(.radio[data-disabled])):hover {
   background: var(--surface-2);
 }
 
