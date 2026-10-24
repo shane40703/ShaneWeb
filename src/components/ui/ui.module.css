@@ -176,16 +176,14 @@
   color: var(--primary);
 }
 
-/* Answer choices: plain rows between one rule above and one below, no lines between
-   them. The chosen row is tinted; a locked-in choice no longer reacts to hover. */
+/* Answer choices: plain rows with no rules around or between them. The chosen row is
+   tinted; a locked-in choice no longer reacts to hover. */
 .optionField {
   min-width: 0;
 }
 
 .options {
   display: grid;
-  border-top: var(--rule);
-  border-bottom: var(--rule);
 }
 
 .optionRow {

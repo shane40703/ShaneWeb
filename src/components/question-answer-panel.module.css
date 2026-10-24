@@ -1,4 +1,4 @@
-/* Answer rows: plain rows under one rule, no lines between them. The fill and a 2px
+/* Answer rows: plain rows with no rules around or between them. The fill and a 2px
    left rule mark the correct answer (green) and a wrong chosen answer (red). */
 .panel {
   display: grid;
@@ -18,7 +18,6 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   list-style: none;
-  border-top: var(--rule);
 }
 
 /* Every row reserves the 2px left rule (transparent) so text does not shift when a

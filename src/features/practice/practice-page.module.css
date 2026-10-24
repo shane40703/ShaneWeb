@@ -563,7 +563,7 @@
   padding: 8px 20px 16px;
 }
 
-/* The choices are rule-separated rows (ui.module.css); no gaps between the rules. */
+/* The choices are plain rows (ui.module.css); no gaps between them. */
 .optionsArea [role='radiogroup'] {
   gap: 0;
 }

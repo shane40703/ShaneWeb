@@ -59,14 +59,14 @@
   line-height: 1.3;
 }
 
+/* No rule above the buttons: the answer rows end without a line. */
 .questionNavigation {
   margin-top: 4px;
-  padding-top: 16px;
+  padding-top: 8px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  border-top: var(--rule);
 }
 
 /* Navigator panel: kicker + title + position, then the number tiles. */
