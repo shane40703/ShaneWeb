@@ -1,6 +1,6 @@
 /*
  * Resources hub: an open section on the paper. A line of intro text with the figures beside
- * it, then three dashed-frame cards (the whole card is one link). Inside a card nothing is a
+ * it, then three solid-frame cards (the whole card is one link). Inside a card nothing is a
  * box: a plain title, text, a non-clickable preview, and a rule-separated footer.
  */
 .hub {
@@ -78,7 +78,7 @@
   display: grid;
   grid-template-rows: auto 1fr auto;
   gap: 18px;
-  border: var(--frame-dashed);
+  border: var(--frame);
   border-radius: var(--radius-frame);
   background: var(--surface);
 }
