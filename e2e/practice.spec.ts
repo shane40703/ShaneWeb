@@ -21,7 +21,7 @@ async function openNavigation(page: Page) {
 
 async function openSetup(page: Page) {
   await page.goto('/practice/quiz');
-  const setup = page.getByRole('region', { name: '選擇題練習設定' });
+  const setup = page.getByRole('region', { name: '每日抽題練習設定' });
   await expect(setup).toBeVisible();
   await expect(setup.getByText(/已選 法規・從 \d+ 題中抽 50 題/)).toBeVisible({
     timeout: 60_000,
@@ -94,7 +94,8 @@ test('new daily practice keeps the daily defaults, hides the random options, and
   await expect(sidebar.getByRole('region', { name: '題號導覽' })).toContainText('1/5');
 
   page.once('dialog', (dialog) => dialog.accept());
-  await sidebar.getByRole('button', { name: /交卷/ }).click();
+  await sidebar.getByRole('link', { name: '前往第 5 題', exact: true }).click();
+  await page.getByRole('button', { name: '完成練習', exact: true }).click();
   await expect(page).toHaveURL(/\?view=result$/);
   await expect(
     page.getByText('共 5 題，作答 1 題，未作答 4 題不計入正確率。'),
@@ -105,7 +106,7 @@ test('new daily practice keeps the daily defaults, hides the random options, and
 
   // Back shows the blank set; Forward brings the in-memory result back.
   await page.goBack();
-  await expect(page).toHaveURL(/\?q=3$/);
+  await expect(page).toHaveURL(/\?q=5$/);
   await expect(page.getByRole('button', { name: '確認答案' })).toBeDisabled();
   await page.goForward();
   await expect(page).toHaveURL(/\?view=result$/);
@@ -145,7 +146,7 @@ test('paper download from the setup draws its own set without starting online pr
   ).toBeNull();
 });
 
-test('the hub links the three practices in one column, and 選擇題練習 picks its set up again', async ({
+test('the hub links the three practices in one column, and 每日抽題練習 picks its set up again', async ({
   page,
   isMobile,
 }, testInfo) => {
@@ -154,13 +155,13 @@ test('the hub links the three practices in one column, and 選擇題練習 picks
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('每日練習');
   const practices = page.getByRole('article');
   await expect(practices.locator('h2')).toHaveText([
-    '選擇題練習',
-    '法規克漏字',
+    '每日抽題練習',
     '歷屆試題模擬考',
+    '法規克漏字',
   ]);
   await expect(practices.nth(0).getByText(/^4 科・[\d,]+ 題$/)).toBeVisible();
-  await expect(practices.nth(1).getByText(/^\d+ 部法規・[\d,]+ 題$/)).toBeVisible();
-  await expect(practices.nth(2).getByText(/^\d 科・\d+ 份試卷$/)).toBeVisible();
+  await expect(practices.nth(2).getByText(/^\d+ 部法規・[\d,]+ 題$/)).toBeVisible();
+  await expect(practices.nth(1).getByText(/^\d 科・\d+ 份試卷$/)).toBeVisible();
   // Words and one link each, stacked in a single column: no shortcuts into the pages.
   const list = page.getByRole('list').filter({ has: page.getByRole('article') });
   await expect(list.getByRole('link')).toHaveCount(3);
@@ -180,8 +181,8 @@ test('the hub links the three practices in one column, and 選擇題練習 picks
 
   await practices.nth(0).getByRole('link').click();
   await expect(page).toHaveURL(/\/practice\/quiz$/);
-  await expect(page).toHaveTitle('選擇題練習｜建築師考試');
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('選擇題練習');
+  await expect(page).toHaveTitle('每日抽題練習｜建築師考試');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('每日抽題練習');
   const nav = await openNavigation(page);
   await expect(nav.getByRole('link', { name: '每日練習', exact: true })).toHaveAttribute(
     'aria-current',
@@ -216,10 +217,8 @@ test('the hub links the three practices in one column, and 選擇題練習 picks
   await expect(page.getByLabel('第 2 題，共 5 題')).toBeVisible();
 
   page.once('dialog', (dialog) => dialog.accept());
-  await page
-    .getByRole('complementary', { name: '題組資訊' })
-    .getByRole('button', { name: /交卷/ })
-    .click();
+  await page.getByRole('link', { name: '前往第 5 題', exact: true }).click();
+  await page.getByRole('button', { name: '完成練習', exact: true }).click();
   await expect(page).toHaveURL(/\?view=result$/);
   await expect(page.getByText(/^(0|100)% 正確率$/)).toBeVisible();
   await expectNoHorizontalOverflow(page);
@@ -278,7 +277,7 @@ test('the mock exam answers a whole paper, keeps it when leaving, and scores it 
   await setup.getByRole('radio', { name: /113 年/ }).click();
   await expect(page).toHaveURL(/\?subject=env&year=113$/);
   await expect(setup).toContainText('選擇題 40 題，每題 1.5 分，滿分 60 分');
-  await expect(setup.getByRole('link', { name: /到歷屆試題閱讀/ })).toHaveAttribute(
+  await expect(setup.getByRole('link', { name: /到考古題討論版閱讀/ })).toHaveAttribute(
     'href',
     '/exams?question=env-113-written-01',
   );
@@ -356,14 +355,14 @@ test('the mock exam answers a whole paper, keeps it when leaving, and scores it 
   await setup.getByRole('link', { name: /查看結果/ }).click();
   await expect(result).toContainText(/分／滿分 60 分/);
   await page.goto('/history');
-  // Saved to 已作答紀錄 like the original 歷屆試題.
+  // Saved to 已作答紀錄 like the original 考古題討論版.
   const year = page.getByRole('group', { name: '113 年作答紀錄' });
   await expect(year.locator('summary')).toContainText('共作答 1 次');
   await year.locator('summary').click();
   await expect(year.getByRole('heading', { name: '建築環境控制・113 年' })).toBeVisible();
 });
 
-test('選擇題練習 submissions go to 已作答紀錄, and 再做一次 starts the same questions', async ({
+test('每日抽題練習 submissions go to 已作答紀錄, and 再做一次 starts the same questions', async ({
   page,
 }) => {
   const setup = await openSetup(page);
@@ -375,18 +374,16 @@ test('選擇題練習 submissions go to 已作答紀錄, and 再做一次 starts
   await question.getByRole('radio').first().click();
   await page.getByRole('button', { name: '確認答案' }).click();
   page.once('dialog', (dialog) => void dialog.accept());
-  await page
-    .getByRole('complementary', { name: '題組資訊' })
-    .getByRole('button', { name: /交卷/ })
-    .click();
+  await page.getByRole('link', { name: '前往第 5 題', exact: true }).click();
+  await page.getByRole('button', { name: '完成練習', exact: true }).click();
   await expect(page.getByText(/^(0|100)% 正確率$/)).toBeVisible();
 
   await page.goto('/history');
-  const group = page.getByRole('group', { name: '選擇題練習作答紀錄' });
+  const group = page.getByRole('group', { name: '每日抽題練習作答紀錄' });
   await group.locator('summary').click();
   const card = group.getByRole('article').first();
   await expect(card.getByRole('heading', { level: 2 })).toHaveText(
-    '建築法規與實務・選擇題練習 5 題',
+    '建築法規與實務・每日抽題練習 5 題',
   );
   await expect(card.getByText(/^正確率 (0|100)%$/)).toBeVisible();
   await expect(card.getByText(/^答對 [01]／1 題$/)).toBeVisible();
@@ -432,10 +429,10 @@ test('the home subject cards, 考題分析 and question cards lead to the new pa
   ).toBeChecked();
 
   await page.goto('/resources/analysis?subject=law&year=114');
-  // Each listed question opens in 歷屆試題; nothing leads to the old 作答頁.
+  // Each listed question opens in 考古題討論版; nothing leads to the old 作答頁.
   await expect(page.locator('a[href^="/exams?question=law-114-"]').first()).toBeVisible();
   expect(await page.locator('a[href*="/questions/"], a[href*="mode="]').count()).toBe(0);
-  await page.getByRole('button', { name: '到選擇題練習抽題' }).click();
+  await page.getByRole('button', { name: '到每日抽題練習抽題' }).click();
   await expect(page).toHaveURL(/\/practice\/quiz$/);
   await expect(page.getByRole('radio', { name: /建築法規與實務/ })).toBeChecked();
   await expect(page.getByRole('button', { name: /進階選項/ })).toContainText(

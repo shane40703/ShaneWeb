@@ -241,20 +241,6 @@ export function MockExamResult({
                     })}
                   </QuestionNumberGrid>
                 </div>
-                <footer className={styles.navigatorLegend}>
-                  <span>
-                    <i data-tone="answered" />
-                    答對
-                  </span>
-                  <span>
-                    <i data-tone="wrong" />
-                    答錯
-                  </span>
-                  <span>
-                    <i data-tone="difficult" />
-                    難題
-                  </span>
-                </footer>
               </aside>
             </div>
           )}

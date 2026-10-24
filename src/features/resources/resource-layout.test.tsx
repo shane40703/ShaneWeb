@@ -18,7 +18,7 @@ describe('ResourceLayout', () => {
         </ResourceLayout>,
       );
 
-      const sections = screen.getByRole('navigation', { name: '統計分析頁面' });
+      const sections = screen.getByRole('navigation', { name: '歷屆試題資料集成頁面' });
       const links = within(sections).getAllByRole('link');
       expect(links.map((link) => link.textContent)).toEqual([
         '總覽',
@@ -71,7 +71,7 @@ describe('ResourceLayout', () => {
     );
 
     expect(
-      within(screen.getByRole('navigation', { name: '統計分析頁面' })).getByRole('link', {
+      within(screen.getByRole('navigation', { name: '歷屆試題資料集成頁面' })).getByRole('link', {
         name: '總覽',
       }),
     ).toHaveAttribute('aria-current', 'page');

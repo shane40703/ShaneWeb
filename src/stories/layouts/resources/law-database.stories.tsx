@@ -7,7 +7,7 @@ import { ResourceLayout } from '@/features/resources/resource-layout';
 import { lawDatabaseEntries } from '../../fixtures/resources';
 import { pageParameters, withPageFrame } from '../../support/story-environment';
 
-/** 跟 src/pages/resources/laws.tsx 一樣：統計分析的頁首加上法規數量，下面是法規清單。 */
+/** 跟 src/pages/resources/laws.tsx 一樣：歷屆試題資料集成的頁首加上法規數量，下面是法規清單。 */
 function LawDatabaseRoute({ laws }: { laws: LawDatabaseEntry[] }) {
   return (
     <ResourceLayout current="laws" facts={`收錄考題曾出現的 ${laws.length} 項法規；`}>

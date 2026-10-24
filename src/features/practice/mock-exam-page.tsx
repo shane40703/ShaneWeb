@@ -202,7 +202,7 @@ export function MockExamPage({ papers }: { papers: MockExamPaper[] }) {
     }
   }, [save, timer]);
 
-  // Two windows counting the same question count it once, as on 選擇題練習; seconds of a
+  // Two windows counting the same question count it once, as on 每日抽題練習; seconds of a
   // paper submitted or restarted in another window are dropped.
   useEffect(() => {
     function discountOtherWindows(event: StorageEvent) {

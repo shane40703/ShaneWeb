@@ -8,7 +8,7 @@ import {
 import { pageParameters } from '../../support/story-environment';
 
 /**
- * 選擇題練習的故事大多畫整個 /practice/quiz 頁面（PracticeQuizRoute），只有頁面操作不到的
+ * 每日抽題練習的故事大多畫整個 /practice/quiz 頁面（PracticeQuizRoute），只有頁面操作不到的
  * 載入狀態才畫其中一段（設定、作答、結果）。只畫一段時用這個外層，跟網站一樣：外面是
  * 「返回每日練習」的 PracticeLayout，裡面是 PracticePage 的根元素（practice-page.module.css
  * 的 `.root`）。作答畫面加上 `.fullWidth`，設定與結果維持原本寬度。根元素是版面的

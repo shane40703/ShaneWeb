@@ -15,7 +15,7 @@ function at(questionId: string) {
 }
 
 /**
- * 歷屆試題（/exams）：題目、共享內容、投稿表單、類似考題與題號導覽。
+ * 考古題討論版（/exams）：題目、共享內容、投稿表單、類似考題與題號導覽。
  *
  * 畫面上可以操作看到：
  * - 換題：點題號導覽、上一題／下一題、類似考題，或切換科目、年度（換到那一份的第 1 題）。
@@ -34,7 +34,7 @@ function at(questionId: string) {
  * 停用；Storybook 不會連到 Firebase，共享內容一直停在載入中。
  */
 const meta = {
-  title: 'Layouts/歷屆試題/題目與討論',
+  title: 'Layouts/考古題討論版/題目與討論',
   component: ExamsRoute,
   decorators: [withStatefulRouter, withPageFrame],
   parameters: { ...pageParameters('/exams') },

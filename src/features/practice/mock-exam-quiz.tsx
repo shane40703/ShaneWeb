@@ -239,20 +239,6 @@ export function MockExamQuiz({
               ))}
             </QuestionNumberGrid>
           </div>
-          <footer className={styles.navigatorLegend}>
-            <span>
-              <i data-tone="current" />
-              目前題目
-            </span>
-            <span>
-              <i data-tone="answered" />
-              已作答
-            </span>
-            <span>
-              <i data-tone="difficult" />
-              難題
-            </span>
-          </footer>
         </section>
       </aside>
     </section>

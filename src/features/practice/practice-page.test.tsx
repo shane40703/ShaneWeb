@@ -303,14 +303,14 @@ function questionRegion() {
   return screen.getByRole('region', { name: '題目與選項' });
 }
 
-function submitFromSidebar() {
-  const sidebar = screen.getByRole('complementary', { name: '題組資訊' });
-  fireEvent.click(within(sidebar).getByRole('button', { name: /交卷/ }));
+async function finishPractice() {
+  act(() => router.link(`/practice/quiz?q=${stored()!.questionIds.length}`));
+  fireEvent.click(await screen.findByRole('button', { name: '完成練習' }));
 }
 
 function submitFromFooter() {
   fireEvent.click(
-    within(screen.getByRole('article')).getByRole('button', { name: /交卷/ }),
+    within(screen.getByRole('article')).getByRole('button', { name: /完成練習/ }),
   );
 }
 
@@ -329,7 +329,7 @@ function writeFromOtherTab(value: PracticeSession | null) {
 describe('PracticePage setup', () => {
   it('starts from the daily defaults and keeps everything but the subject in the advanced options', async () => {
     renderAt();
-    const setup = await screen.findByRole('region', { name: '選擇題練習設定' });
+    const setup = await screen.findByRole('region', { name: '每日抽題練習設定' });
     expect(within(setup).queryByText(/闖關/)).not.toBeInTheDocument();
     expect(within(setup).getAllByRole('radio')).toHaveLength(4);
     expect(screen.getByRole('radio', { name: /建築法規與實務/ })).toBeChecked();
@@ -436,7 +436,7 @@ describe('PracticePage setup', () => {
     expect(stored()).toBeNull();
     expect(router.push).not.toHaveBeenCalled();
     expect(router.replace).not.toHaveBeenCalled();
-    expect(screen.getByRole('region', { name: '選擇題練習設定' })).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: '每日抽題練習設定' })).toBeInTheDocument();
   });
 });
 
@@ -635,7 +635,7 @@ describe('PracticePage answering', () => {
       'aria-pressed',
       'true',
     );
-    submitFromSidebar();
+    await finishPractice();
     expect(confirm).toHaveBeenCalled();
     await screen.findByText('100% 正確率');
     // Answering itself records nothing; the submission is one 已作答紀錄 entry.
@@ -656,7 +656,7 @@ describe('PracticePage answering', () => {
     });
     renderAt('/practice/quiz?q=1');
     await screen.findByLabelText('第 1 題，共 5 題');
-    submitFromSidebar();
+    await finishPractice();
     await screen.findByText('50% 正確率');
 
     const saved = appState.dispatch.mock.calls.find(
@@ -683,7 +683,7 @@ describe('PracticePage answering', () => {
     seed({});
     renderAt('/practice/quiz?q=1');
     await screen.findByLabelText('第 1 題，共 5 題');
-    submitFromSidebar();
+    await finishPractice();
     await screen.findByText('這次沒有作答任何題目');
 
     expect(
@@ -771,7 +771,7 @@ describe('PracticePage answering', () => {
     expect(stored()).not.toBeNull();
     confirm.mockReturnValue(true);
     fireEvent.click(screen.getByRole('button', { name: /重新選科／設定/ }));
-    await screen.findByRole('region', { name: '選擇題練習設定' });
+    await screen.findByRole('region', { name: '每日抽題練習設定' });
     expect(stored()).toBeNull();
     await waitFor(() => expect(router.snapshot.asPath).toBe('/practice/quiz'));
   });
@@ -813,7 +813,7 @@ describe('PracticePage history', () => {
     await skipTo(3);
     await skipTo(4);
     fireEvent.click(screen.getByRole('button', { name: /重新選科／設定/ }));
-    await screen.findByRole('region', { name: '選擇題練習設定' });
+    await screen.findByRole('region', { name: '每日抽題練習設定' });
     await settleHistory();
     expect(window.location.search).toBe('');
 
@@ -827,10 +827,10 @@ describe('PracticePage history', () => {
     vi.spyOn(window, 'confirm').mockReturnValue(true);
     await startFiveQuestions();
     await skipTo(2);
-    submitFromSidebar();
+    await finishPractice();
     await screen.findByText('這次沒有作答任何題目');
     fireEvent.click(screen.getByRole('button', { name: /重新選科／抽題/ }));
-    await screen.findByRole('region', { name: '選擇題練習設定' });
+    await screen.findByRole('region', { name: '每日抽題練習設定' });
     await settleHistory();
     await traverse(-1);
     expect(window.location.pathname).toBe('/elsewhere');
@@ -846,7 +846,7 @@ describe('PracticePage history', () => {
     renderPage();
     await screen.findByLabelText('第 3 題，共 5 題');
     fireEvent.click(screen.getByRole('button', { name: /重新選科／設定/ }));
-    await screen.findByRole('region', { name: '選擇題練習設定' });
+    await screen.findByRole('region', { name: '每日抽題練習設定' });
     await settleHistory();
     await traverse(-1);
     expect(window.location.pathname).toBe('/elsewhere');
@@ -912,7 +912,7 @@ describe('PracticePage history across tabs', () => {
     }
     writeFromOtherTab(null);
     await settleHistory();
-    await screen.findByRole('region', { name: '選擇題練習設定' });
+    await screen.findByRole('region', { name: '每日抽題練習設定' });
     writeFromOtherTab({
       ...makeSession({ id: 'next-set', subject: 'env', currentIndex: 0 }),
       questionIds: envQuestions.slice(0, 4).map((question) => question.id),
@@ -1002,7 +1002,7 @@ describe('PracticePage with another tab', () => {
     await waitFor(() => expect(router.snapshot.query).toEqual({ q: '2' }));
 
     writeFromOtherTab(null);
-    await screen.findByRole('region', { name: '選擇題練習設定' });
+    await screen.findByRole('region', { name: '每日抽題練習設定' });
     expect(screen.getByRole('radio', { name: /建築環境控制/ })).toBeChecked();
     await waitFor(() => expect(router.snapshot.asPath).toBe('/practice/quiz'));
   });
@@ -1022,14 +1022,14 @@ describe('PracticePage result', () => {
     });
     const view = renderAt('/practice/quiz?q=4');
     await screen.findByLabelText('第 4 題，共 5 題');
-    submitFromSidebar();
+    await finishPractice();
     expect(confirm).toHaveBeenCalledWith(
-      '還有 3 題尚未確認答案，這些題目不會計入正確率。確定要交卷嗎？',
+      '還有 3 題尚未確認答案，這些題目不會計入正確率。確定要完成練習嗎？',
     );
     expect(screen.queryByText('50% 正確率')).not.toBeInTheDocument();
 
     confirm.mockReturnValue(true);
-    submitFromSidebar();
+    await finishPractice();
     expect(await screen.findByText('50% 正確率')).toBeInTheDocument();
     expect(
       screen.getByText(/共 5 題，作答 2 題，未作答 3 題不計入正確率/),

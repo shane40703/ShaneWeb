@@ -20,10 +20,10 @@ async function routeImages(page: Page) {
   }
   return image;
 }
-/** Opens the gallery from the 統計分析 switcher, so its page data arrives as a fetch. */
+/** Opens the gallery from the 歷屆試題資料集成 switcher, so its page data arrives as a fetch. */
 async function enterGallery(page: Page) {
   await page.goto('/resources');
-  await page.getByRole('navigation', { name: '統計分析頁面' }).getByRole('link', { name: '速記圖庫', exact: true }).click();
+  await page.getByRole('navigation', { name: '歷屆試題資料集成頁面' }).getByRole('link', { name: '速記圖庫', exact: true }).click();
   await expect(page).toHaveURL(/\/resources\/memory-gallery$/);
 }
 async function enterPopulatedGallery(page: Page) {
@@ -37,7 +37,7 @@ async function enterPopulatedGallery(page: Page) {
   return page.getByRole('region', { name: '速記圖庫', exact: true });
 }
 
-test('gallery is publicly accessible from 統計分析 without exposing an upload form', async ({ page }, testInfo) => {
+test('gallery is publicly accessible from 歷屆試題資料集成 without exposing an upload form', async ({ page }, testInfo) => {
   await enterGallery(page);
   const gallery = page.getByRole('region', { name: '速記圖庫', exact: true });
   await expect(gallery.getByRole('group', { name: '圖片分類' })).toBeVisible();

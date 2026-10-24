@@ -40,8 +40,8 @@ describe('grouped app navigation', () => {
     render(<SidebarContent pathname="/" />);
     const nav = screen.getByRole('navigation', { name: '主要功能' });
     expect(nav.children[0]).toHaveTextContent(/^每日練習$/);
-    expect(nav.children[1]).toHaveTextContent(/^歷屆試題$/);
-    expect(nav.children[2]).toHaveTextContent(/^統計分析$/);
+    expect(nav.children[1]).toHaveTextContent(/^考古題討論版$/);
+    expect(nav.children[2]).toHaveTextContent(/^歷屆試題資料集成$/);
     expect(nav.children[3]).toHaveTextContent(/^我的作答存摺$/);
     expect(screen.queryByRole('link', { name: '首頁' })).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: '建築師考試首頁' })).toHaveAttribute(
@@ -123,7 +123,7 @@ describe('grouped app navigation', () => {
 
   it('keeps the resources hub current on its pages', () => {
     render(<SidebarContent pathname="/resources/laws" />);
-    const hub = screen.getByRole('link', { name: '統計分析' });
+    const hub = screen.getByRole('link', { name: '歷屆試題資料集成' });
     expect(hub).toHaveAttribute('href', '/resources');
     expect(hub).toHaveAttribute('aria-current', 'page');
     expect(screen.getByRole('button', { name: personal.label })).not.toHaveAttribute(
@@ -159,7 +159,7 @@ describe('grouped app navigation', () => {
         'aria-current',
         'page',
       );
-      expect(screen.getByRole('link', { name: '歷屆試題' })).not.toHaveAttribute(
+      expect(screen.getByRole('link', { name: '考古題討論版' })).not.toHaveAttribute(
         'aria-current',
       );
     },
@@ -168,11 +168,11 @@ describe('grouped app navigation', () => {
   it.each([
     ['/', '首頁'],
     ['/practice', '每日練習'],
-    ['/practice/quiz', '選擇題練習'],
+    ['/practice/quiz', '每日抽題練習'],
     ['/practice/law-cloze', '法規克漏字'],
     ['/practice/mock-exam', '歷屆試題模擬考'],
-    ['/exams', '歷屆試題'],
-    ['/resources', '統計分析'],
+    ['/exams', '考古題討論版'],
+    ['/resources', '歷屆試題資料集成'],
     ['/resources/analysis', '考題分析'],
     ['/resources/memory-gallery', '速記圖庫'],
     ['/resources/memory-gallery/[[...category]]', '速記圖庫'],

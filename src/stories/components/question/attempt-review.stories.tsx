@@ -14,10 +14,10 @@ import { getFixtureQuestion, screenshotQuestion } from '../../fixtures/questions
 
 const attemptOptions = fixtureOptions(
   {
-    '選擇題練習（8 題）': practiceReviewAttempt,
+    '每日抽題練習（8 題）': practiceReviewAttempt,
     '101 年法規模擬考（80 題）': law101MockExamAttempt,
   },
-  '選擇題練習（8 題）',
+  '每日抽題練習（8 題）',
 );
 
 /** 跟作答紀錄、模擬考結果一樣，照作答紀錄的題目順序列出題目。 */
@@ -37,8 +37,8 @@ function attemptQuestions(attempt: QuizAttempt) {
  * - 工具列「雲端同步」切到雲端狀態再展開詳解與討論：一直停在「正在載入詳解與討論…」
  *   （Storybook 不會連到 Firebase）。
  * - Controls 的 attempt 換作答紀錄：
- *   - 選擇題練習（8 題）：答錯 3 題、答對 3 題、未作答 2 題。一律給分的第 17 題沒作答，
- *     在選擇題練習算未作答。第 27 題連同之前共答錯 3 次、第 15 題 2 次。
+ *   - 每日抽題練習（8 題）：答錯 3 題、答對 3 題、未作答 2 題。一律給分的第 17 題沒作答，
+ *     在每日抽題練習算未作答。第 27 題連同之前共答錯 3 次、第 15 題 2 次。
  *   - 101 年法規模擬考（80 題）：答錯 10 題、空白 3 題。一律給分的第 17 題沒作答也算答對。
  * - Controls 的 embedded：作答紀錄裡內嵌（沒有外框）；模擬考結果頁是有外框的版本。
  */

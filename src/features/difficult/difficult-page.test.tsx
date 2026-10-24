@@ -12,6 +12,10 @@ import { ToastProvider } from '@/components/ui/ui';
 import { createDefaultState, STORAGE_KEY } from '@/lib/study';
 import type { Question, SubjectId } from '@/lib/types';
 import { AppStateProvider } from '@/state/app-state';
+import { PRACTICE_SESSION_STORAGE_KEY } from '@/features/practice/practice-session';
+
+const router = vi.hoisted(() => ({ push: vi.fn(async () => true) }));
+vi.mock('next/router', () => ({ useRouter: () => router }));
 
 function question({
   id,
@@ -101,6 +105,18 @@ afterEach(cleanup);
 describe('DifficultPage', () => {
   beforeEach(() => {
     window.localStorage.clear();
+    router.push.mockClear();
+  });
+
+  it('starts every marked choice question of the selected subject across years', async () => {
+    renderPage(questions.map(item => item.id));
+    fireEvent.click(await screen.findByRole('button', { name: '作答本科目所有難題標記' }));
+    const saved = JSON.parse(localStorage.getItem(PRACTICE_SESSION_STORAGE_KEY)!);
+    expect(saved.questionIds).toEqual(['law-114-01', 'law-114-02', 'law-113-01']);
+    expect(saved.reviewSource).toBe('difficult');
+    expect(saved.answers).toEqual({});
+    expect(router.push).toHaveBeenCalledWith('/practice/quiz?q=1');
+    expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).difficultQuestionIds).toEqual(questions.map(item => item.id));
   });
 
   it('filters difficult questions by subject and year above the question list', async () => {

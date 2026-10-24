@@ -125,7 +125,7 @@ export function PracticeQuiz({
   }
 
   return (
-    <section className={styles.practice} aria-label="選擇題練習作答">
+    <section className={styles.practice} aria-label="每日抽題練習作答">
       <div className={styles.questionArea}>
         {status === 'loading' ? (
           <div className={styles.loading}>
@@ -137,12 +137,13 @@ export function PracticeQuiz({
             <IconAlertTriangle size={26} aria-hidden="true" />
             <span>題目載入失敗，作答進度已保存。</span>
             <Button onClick={onRetry}>重新載入</Button>
+            {isLast ? <Button onClick={onSubmit}>完成練習</Button> : null}
           </div>
         ) : status === 'missing' || !question ? (
           <div className={styles.loading} role="alert">
             <IconAlertTriangle size={26} aria-hidden="true" />
-            <span>找不到這一題的資料，可以跳到其他題目或直接交卷。</span>
-            {!isLast ? <Button onClick={() => onGoTo(index + 1)}>下一題</Button> : null}
+            <span>找不到這一題的資料，可以跳到其他題目；最後一題可完成練習。</span>
+            {!isLast ? <Button onClick={() => onGoTo(index + 1)}>下一題</Button> : <Button onClick={onSubmit}>完成練習</Button>}
           </div>
         ) : (
           <article
@@ -230,15 +231,11 @@ export function PracticeQuiz({
                   <IconArrowLeft size={17} aria-hidden="true" /> 上一題
                 </Button>
                 {answer ? (
-                  isLast ? (
-                    <Button variant="primary" onClick={onSubmit}>
-                      <IconFlag size={17} aria-hidden="true" /> 交卷
-                    </Button>
-                  ) : (
-                    <Button variant="primary" onClick={() => onGoTo(index + 1)}>
+                  !isLast ? (
+                    <Button key="next" variant="primary" onClick={() => onGoTo(index + 1)}>
                       下一題 <IconArrowRight size={17} aria-hidden="true" />
                     </Button>
-                  )
+                  ) : null
                 ) : (
                   <>
                     {!isLast ? (
@@ -259,6 +256,11 @@ export function PracticeQuiz({
                     </Button>
                   </>
                 )}
+                {isLast ? (
+                  <Button key="finish" variant={answer ? 'primary' : 'ghost'} onClick={onSubmit}>
+                    <IconFlag size={17} aria-hidden="true" /> 完成練習
+                  </Button>
+                ) : null}
               </div>
             </footer>
           </article>
@@ -268,7 +270,7 @@ export function PracticeQuiz({
       <aside className={styles.sidebar} aria-label="題組資訊">
         <section className={styles.progressCard} aria-label="作答進度">
           <header>
-            <span>本次題組</span>
+            <span>{session.reviewSource === 'difficult' ? '本科目難題重練' : session.reviewSource === 'wrong' ? '本科目錯題重練' : '本次題組'}</span>
             <strong>{scope}</strong>
           </header>
           <div className={styles.scoreboard}>
@@ -286,9 +288,6 @@ export function PracticeQuiz({
             </span>
           </div>
           <div className={styles.sideActions}>
-            <Button variant="primary" onClick={onSubmit}>
-              <IconFlag size={17} aria-hidden="true" /> 交卷
-            </Button>
             <Button onClick={onAbandon}>
               <IconRefresh size={16} aria-hidden="true" /> 重新選科／設定
             </Button>
@@ -319,24 +318,6 @@ export function PracticeQuiz({
               ))}
             </QuestionNumberGrid>
           </div>
-          <footer className={styles.navigatorLegend}>
-            <span>
-              <i data-tone="current" />
-              目前題目
-            </span>
-            <span>
-              <i data-tone="answered" />
-              答對
-            </span>
-            <span>
-              <i data-tone="wrong" />
-              答錯
-            </span>
-            <span>
-              <i data-tone="difficult" />
-              難題
-            </span>
-          </footer>
         </section>
       </aside>
     </section>

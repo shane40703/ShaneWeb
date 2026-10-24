@@ -53,7 +53,7 @@ describe('appReducer', () => {
     expect(duplicate.answers['law-114-01']?.correct).toBe(true);
   });
 
-  it('records 選擇題練習 attempts and their answers like mock exams', () => {
+  it('records 每日抽題練習 attempts and their answers like mock exams', () => {
     const paperAttempt = attempt();
     const practiceAttempt = { ...paperAttempt, mode: 'practice' as const, year: null };
     const state = appReducer(createDefaultState(), {

@@ -81,7 +81,7 @@ export interface AnswerRecord {
 
 export interface QuizAttempt {
   id: string;
-  /** paper: 歷屆試題模擬考 (and the original 歷屆試題); practice: 選擇題練習. */
+  /** paper: 歷屆試題模擬考 (and the original 考古題討論版); practice: 每日抽題練習. */
   mode: 'paper' | 'practice';
   subject: SubjectId | 'mixed';
   year: number | null;

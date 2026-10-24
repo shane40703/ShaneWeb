@@ -3,7 +3,7 @@ import { fixtureImages } from './app-state';
 import { getFixtureQuestion, withExplanation } from './questions';
 
 /**
- * 歷屆試題（/exams）故事用的範例資料。沒有設定雲端時，網站把共享投稿存在本機
+ * 考古題討論版（/exams）故事用的範例資料。沒有設定雲端時，網站把共享投稿存在本機
  * （`appState.discussionPosts`），所以這些投稿都算「自己的投稿」，會出現編輯、刪除按鈕；
  * 按讚紀錄在 `likedDiscussionPostIds`。工具列「雲端同步」切到雲端狀態時，網站改讀雲端的
  * 投稿（Storybook 不會連到 Firebase，會一直顯示載入中），這些本機投稿就不會出現。

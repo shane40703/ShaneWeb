@@ -579,7 +579,7 @@ export function AppearanceSettings({ embedded = false }: { embedded?: boolean })
                   </div>
                 </div>
                 <nav aria-label="預覽側欄">
-                  <span className={styles.previewNavActive}>歷屆試題</span>
+                  <span className={styles.previewNavActive}>考古題討論版</span>
                   <span>考題分析</span>
                   <span>閱讀設定</span>
                 </nav>

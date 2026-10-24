@@ -126,7 +126,7 @@ function paperAttempt({
 }
 
 /**
- * 選擇題練習的交卷紀錄，欄位照 createPracticeAttempt：年度一律是 null，
+ * 每日抽題練習的交卷紀錄，欄位照 createPracticeAttempt：年度一律是 null，
  * 只算有作答的題目。`wrong`／`unanswered` 是答錯／沒作答的題目編號。
  */
 function practiceAttempt({
@@ -206,7 +206,7 @@ const law101Attempt = paperAttempt({
   elapsedSeconds: 6580,
 });
 
-/** 法規選擇題練習 20 題（101、113 年混合），錯 5 題、1 題沒作答。 */
+/** 法規每日抽題練習 20 題（101、113 年混合），錯 5 題、1 題沒作答。 */
 const lawPracticeAttempt = practiceAttempt({
   id: 'story-attempt-law-practice-1',
   questionIds: [
@@ -257,7 +257,7 @@ const env113Attempt = paperAttempt({
   elapsedSeconds: 3900,
 });
 
-/** 結構選擇題練習 10 題。 */
+/** 結構每日抽題練習 10 題。 */
 const structurePracticeAttempt = practiceAttempt({
   id: 'story-attempt-structure-practice-1',
   questionIds: [

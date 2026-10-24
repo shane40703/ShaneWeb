@@ -35,7 +35,7 @@ export default function ExamsRoute({
   return (
     <>
       <Head>
-        <title>歷屆試題｜建築師考試</title>
+        <title>考古題討論版｜建築師考試</title>
       </Head>
       <ExamsPage
         questions={questions}

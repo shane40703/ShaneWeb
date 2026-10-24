@@ -23,6 +23,7 @@ import { pageParameters, withPageFrame } from '../../support/story-environment';
  *
  * 畫面上可以操作看到：
  * - 上方切換科目與年度（沒有錯題的科目、年度不能點）。
+ * - 「作答本科目所有常錯題目」將目前科目跨所有年度的錯題去重後組成完整題組，不受 50 題限制。
  * - 「查看選項、重新作答與詳解」展開選項、詳解與這題的使用者筆記；選答案後按「檢查答案」
  *   看答對或答錯，「重新作答」再選一次。
  * - 展開後的筆記可以編輯、上傳圖片；題目上的難題按鈕可以標記或取消難題。
@@ -37,7 +38,7 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-/** 四科都有的交卷紀錄（法規 113 年做了兩次、還有選擇題練習），幾題標成難題、寫了筆記。 */
+/** 四科都有的交卷紀錄（法規 113 年做了兩次、還有每日抽題練習），幾題標成難題、寫了筆記。 */
 const wrongAppState = {
   ...attemptsAppState(personalAttempts),
   difficultQuestionIds: personalDifficultIds,
@@ -50,7 +51,7 @@ const wrongAttempts = wrongAppState.attempts ?? [];
 const answeredIds = personalAttempts.flatMap((attempt) => Object.keys(attempt.answers));
 
 /**
- * 四科都有交卷紀錄，一開始是法規 113 年：兩次模擬考加上選擇題練習，依答錯次數排列
+ * 四科都有交卷紀錄，一開始是法規 113 年：兩次模擬考加上每日抽題練習，依答錯次數排列
  * （三次都錯的排最前面）。法規 101 年有截圖的第 15 題與題幹含圖片的第 8 題；
  * 環控、構造、結構只做過一次，每題都只錯 1 次。
  */

@@ -23,6 +23,7 @@ import { subjectsOfQuestionIds } from '@/lib/question-path';
 import { formatCorrectAnswer, isQuestionCorrect } from '@/lib/study';
 import type { Question, SubjectId } from '@/lib/types';
 import { subjects, years } from '@/question-bank/catalog';
+import { SubjectPracticeButton } from '@/features/practice/subject-practice-button';
 import { useAppState } from '@/state/app-state';
 import styles from './difficult-page.module.css';
 
@@ -212,6 +213,14 @@ export function DifficultPage({
                 ariaLabel="難題科目與年度分類"
               />
             </div>
+          ) : null}
+          {activeSubject ? (
+            <SubjectPracticeButton
+              questions={subjectQuestions}
+              subject={activeSubject.id}
+              source="difficult"
+              loading={questionBankStatuses[activeSubject.id] === 'loading' || questionBankStatuses[activeSubject.id] === 'error'}
+            />
           ) : null}
           {activeSubject && activeYearFilter ? (
             <div className={styles.subjectList}>

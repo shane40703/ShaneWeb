@@ -44,7 +44,7 @@ export function countWrongAttemptsThrough(
   const candidates = attempts.some((candidate) => candidate.id === currentAttempt.id)
     ? attempts
     : [...attempts, currentAttempt];
-  // Every record up to this one counts, mock exams and 選擇題練習 alike, as on 常錯題目.
+  // Every record up to this one counts, mock exams and 每日抽題練習 alike, as on 常錯題目.
   return candidates.filter((candidate) => {
     if (candidate.submittedAt > currentAttempt.submittedAt) return false;
     const selected = candidate.answers[question.id];
@@ -88,7 +88,7 @@ export function AttemptReview({
               ? '未作答'
               : String.fromCharCode(65 + selected);
           const questionCorrect = isQuestionCorrect(question, selected);
-          // A blank 一律給分 question scores in a mock exam; 選擇題練習 counts only answers.
+          // A blank 一律給分 question scores in a mock exam; 每日抽題練習 counts only answers.
           const result =
             selected === undefined &&
             (attempt.mode === 'practice' || question.answerKey.kind !== 'all-credit')
@@ -271,7 +271,7 @@ export function ReviewNoteEditor({ question }: { question: ReviewQuestion }) {
     try {
       const result = await discussion.publish('explanation', content, images);
       notify(
-        '筆記已分享到歷屆試題',
+        '筆記已分享到考古題討論版',
         discussion.enabled && images.length
           ? result.imagesShared
             ? '文字與圖片已同步共享。'
@@ -337,7 +337,7 @@ export function ReviewNoteEditor({ question }: { question: ReviewQuestion }) {
       <footer>
         <Button disabled={sharing} onClick={() => void shareNote()}>
           <IconMessages size={16} stroke={2} aria-hidden="true" />
-          {sharing ? '正在分享…' : '分享到歷屆試題'}
+          {sharing ? '正在分享…' : '分享到考古題討論版'}
         </Button>
         <Button variant="primary" onClick={saveNote}>儲存筆記</Button>
       </footer>

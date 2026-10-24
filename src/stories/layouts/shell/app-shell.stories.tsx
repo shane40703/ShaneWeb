@@ -39,9 +39,9 @@ const pages = {
     label: '每日練習',
     content: <PracticeHubPage overview={practiceOverview} />,
   },
-  '/exams': { label: '歷屆試題', content: <ExamsRoute /> },
+  '/exams': { label: '考古題討論版', content: <ExamsRoute /> },
   '/resources': {
-    label: '統計分析',
+    label: '歷屆試題資料集成',
     content: <ResourcesPage overview={resourcesOverview} />,
   },
   '/notes': { label: '使用者筆記', content: <NotesRoute /> },
@@ -68,7 +68,7 @@ function otherPage(pathname: string, page: PagePath): pathname is PagePath {
 /**
  * 換頁：Storybook 的 next/router 是固定的假路由，這裡換掉側欄與頂部列讀到的網址，
  * 並跟網站一樣讓外框保持掛載（設定視窗、抽屜照常開關）、只換主內容。
- * 頁面裡用網址參數換畫面（例如歷屆試題換題）交給 StatefulRouter。
+ * 頁面裡用網址參數換畫面（例如考古題討論版換題）交給 StatefulRouter。
  */
 function SitePages({
   page,
@@ -141,8 +141,8 @@ function SitePages({
  *
  * 畫面上可以操作看到：
  * - 點側欄的頁面或左上角的網站名稱（首頁）換頁，側欄標示與頂部列的頁面名稱跟著換
- *   （Controls 的 page 也跟著更新）；滑過或點「我的作答存摺」彈出子選單，子頁面時
- *   「我的作答存摺」標示為目前位置。頁面裡的操作照常，例如歷屆試題、使用者筆記點題號換題。
+ *   （Controls 的 page 也跟著更新）；滑過或點「我的作答存摺」在同一個外框內向下展開子選單，子頁面時
+ *   「我的作答存摺」標示為目前位置。頁面裡的操作照常，例如考古題討論版、使用者筆記點題號換題。
  * - 點側欄的「設定」在原頁面上開啟設定視窗，可以展開閱讀設定、介面配色設定；
  *   按右上角的關閉、背景或 Esc 關閉。設定頁（/settings）本身從 Controls 的 page 選。
  * - 頂部列的深淺色切換。

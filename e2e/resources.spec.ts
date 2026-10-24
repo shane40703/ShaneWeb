@@ -69,7 +69,7 @@ async function enterHubWithFixture(page: Page, isMobile: boolean) {
   await (
     await openNavigation(page)
   )
-    .getByRole('link', { name: '統計分析', exact: true })
+    .getByRole('link', { name: '歷屆試題資料集成', exact: true })
     .click();
   await expect(page).toHaveURL(/\/resources$/);
   await closeNavigation(page, isMobile);
@@ -83,16 +83,16 @@ test('the resources hub opens from the sidebar and reaches every resource page',
   await (
     await openNavigation(page)
   )
-    .getByRole('link', { name: '統計分析', exact: true })
+    .getByRole('link', { name: '歷屆試題資料集成', exact: true })
     .click();
   await expect(page).toHaveURL(/\/resources$/);
-  await expect(page).toHaveTitle('統計分析｜建築師考試');
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('統計分析');
+  await expect(page).toHaveTitle('歷屆試題資料集成｜建築師考試');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('歷屆試題資料集成');
   await expect(page.getByRole('dialog', { name: '主要功能', exact: true })).toHaveCount(
     0,
   );
 
-  const sections = page.getByRole('navigation', { name: '統計分析頁面' });
+  const sections = page.getByRole('navigation', { name: '歷屆試題資料集成頁面' });
   await expect(sections.getByRole('link', { name: '總覽' })).toHaveAttribute(
     'aria-current',
     'page',
@@ -118,7 +118,7 @@ test('the resources hub opens from the sidebar and reaches every resource page',
   );
   await expect(
     (await openNavigation(page)).getByRole('link', {
-      name: '統計分析',
+      name: '歷屆試題資料集成',
       exact: true,
     }),
   ).toHaveAttribute('aria-current', 'page');
@@ -250,7 +250,7 @@ test('the whole card opens its resource page and its title shows a focus ring', 
 
   // The switcher's current link has a solid fill, so its ring must be another colour.
   const current = page
-    .getByRole('navigation', { name: '統計分析頁面' })
+    .getByRole('navigation', { name: '歷屆試題資料集成頁面' })
     .getByRole('link', { name: '總覽' });
   await current.focus();
   await page.keyboard.press('Shift+Tab');
@@ -274,12 +274,12 @@ test('on a 320px phone the title, menu button and switcher stay in the page', as
   await page.setViewportSize({ width: 320, height: 640 });
   await page.goto('/resources');
   const title = page.getByRole('heading', { level: 1 });
-  await expect(title).toHaveText('統計分析');
+  await expect(title).toHaveText('歷屆試題資料集成');
   expect(
     (await page.getByRole('button', { name: '開啟選單' }).boundingBox())!.width,
   ).toBeGreaterThanOrEqual(40);
   const switcher = (await page
-    .getByRole('navigation', { name: '統計分析頁面' })
+    .getByRole('navigation', { name: '歷屆試題資料集成頁面' })
     .boundingBox())!;
   expect(switcher.x + switcher.width).toBeLessThanOrEqual(320 - 16 + 0.5);
   await expectNoHorizontalScroll(page);
@@ -300,7 +300,7 @@ test('the sidebar shows the full hub name', async ({ page, isMobile }) => {
   await page.goto('/resources');
   const label = page
     .getByRole('navigation', { name: '主要功能', exact: true })
-    .getByRole('link', { name: '統計分析', exact: true })
+    .getByRole('link', { name: '歷屆試題資料集成', exact: true })
     .locator(':scope > span')
     .last();
   const size = await label.evaluate((node) => ({

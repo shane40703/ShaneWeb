@@ -37,7 +37,7 @@ const questionIds = [
   'law-101-03',
 ];
 
-// 作答八題（答錯三題），最後兩題沒確認答案就交卷。
+// 作答八題（答錯三題），最後兩題沒確認答案就完成練習。
 const mixedSession = answerPractice(
   practiceSessionOf('story-practice-result', questionIds),
   {
@@ -58,7 +58,7 @@ const perfectSession = answerPractice(
 );
 
 /**
- * 交卷後的畫面。網站把成績留在分頁的記憶體裡、題組清成重新作答的狀態，網址是
+ * 完成練習後的畫面。網站把成績留在分頁的記憶體裡、題組清成重新作答的狀態，網址是
  * `?view=result`；故事照這樣準備，整頁打開就停在練習結果。
  */
 function submitted(session: PracticeSession, appState?: Partial<AppState>): Story {
@@ -76,17 +76,17 @@ function submitted(session: PracticeSession, appState?: Partial<AppState>): Stor
 }
 
 /**
- * 選擇題練習交卷後的練習結果：整個 /practice/quiz 頁面，成績照網站的 createPracticeResult
+ * 每日抽題練習完成練習後的練習結果：整個 /practice/quiz 頁面，成績照網站的 createPracticeResult
  * 計算，錯題整理從這科的題庫找題目。
  *
  * 畫面上可以操作看到：
  * - 「本次考題預覽」展開／收合整份題組（題目與選項順序跟這次練習相同）
  * - 錯題的使用者筆記：輸入文字、貼上圖片；筆記圖片點開放大
- * - 「重做這組題目」回到作答畫面第 1 題；什麼都不答直接「交卷」，就是沒有作答任何題目的結果
+ * - 「重做這組題目」回到作答畫面第 1 題；什麼都不答直接「完成練習」，就是沒有作答任何題目的結果
  * - 「重新選科／抽題」回到設定畫面
  */
 const meta = {
-  title: 'Layouts/選擇題練習/練習結果',
+  title: 'Layouts/每日抽題練習/練習結果',
   component: PracticeQuizRoute,
   decorators: [withStatefulRouter, withPageFrame],
   parameters: { ...pageParameters('/practice/quiz') },

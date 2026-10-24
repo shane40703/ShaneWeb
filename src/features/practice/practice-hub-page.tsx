@@ -66,17 +66,17 @@ export function PracticeHubPage({ overview }: { overview: PracticeOverview }) {
           />
         </li>
         <li>
+          <PracticeLink
+            page={practiceMockExamPage}
+            stat={`${mockExam.subjects} 科・${mockExam.papers} 份試卷`}
+          />
+        </li>
+        <li>
           {/* The cloze page carries the whole statute bank: fetch it on intent only. */}
           <PracticeLink
             page={practiceClozePage}
             prefetch={false}
             stat={`${cloze.laws} 部法規・${numberFormat.format(cloze.questions)} 題`}
-          />
-        </li>
-        <li>
-          <PracticeLink
-            page={practiceMockExamPage}
-            stat={`${mockExam.subjects} 科・${mockExam.papers} 份試卷`}
           />
         </li>
       </ul>

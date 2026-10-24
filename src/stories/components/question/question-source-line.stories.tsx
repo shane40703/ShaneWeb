@@ -9,7 +9,7 @@ const questionOptions = fixtureOptions(
 );
 
 /**
- * 歷屆試題題目下方的資料來源：官方試題連到試題 PDF 的頁數；示範題沒有官方來源，
+ * 考古題討論版題目下方的資料來源：官方試題連到試題 PDF 的頁數；示範題沒有官方來源，
  * 只顯示說明文字。用 Controls 的 question 切換。
  */
 const meta = {

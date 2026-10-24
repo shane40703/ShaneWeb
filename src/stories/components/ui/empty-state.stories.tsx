@@ -23,11 +23,11 @@ const meta = {
   args: {
     icon: IconHistory,
     title: '還沒有作答紀錄',
-    description: '完成選擇題練習或歷屆試題模擬考並交卷後，結果會保存在這裡。',
+    description: '完成每日抽題練習或歷屆試題模擬考並交卷後，結果會保存在這裡。',
     action: (
       <>
         <Button role="link" render={<Link href={practiceQuizPage.href} />}>
-          選擇題練習
+          每日抽題練習
         </Button>
         <Button
           role="link"

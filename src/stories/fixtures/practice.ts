@@ -40,7 +40,7 @@ function seededRandom(seed: number) {
 }
 
 /**
- * 選擇題練習頁載入一科後的題庫（範例題庫只有法規 101、113、114 年等幾份試卷）。
+ * 每日抽題練習頁載入一科後的題庫（範例題庫只有法規 101、113、114 年等幾份試卷）。
  * 網站從新到舊逐年載入，順序跟伺服器端題庫一樣，同一組亂數才會抽到同樣的題目。
  */
 export function practiceBank(subject: SubjectId = 'law'): Question[] {

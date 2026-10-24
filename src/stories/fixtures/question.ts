@@ -17,7 +17,7 @@ function startedBefore(submittedAt: string, elapsedSeconds: number) {
   return new Date(Date.parse(submittedAt) - elapsedSeconds * 1000).toISOString();
 }
 
-/** 建立一筆作答紀錄：模擬考用網站的 createAttempt；選擇題練習只算有作答的題目。 */
+/** 建立一筆作答紀錄：模擬考用網站的 createAttempt；每日抽題練習只算有作答的題目。 */
 function storyAttempt({
   id,
   mode,
@@ -81,7 +81,7 @@ function paperAnswers(
   return answers;
 }
 
-/** 選擇題練習的 8 題：答錯 3 題、答對 3 題、未作答 2 題（含一題一律給分）。 */
+/** 每日抽題練習的 8 題：答錯 3 題、答對 3 題、未作答 2 題（含一題一律給分）。 */
 const practiceReviewQuestions = [
   'law-101-15',
   'law-101-08',

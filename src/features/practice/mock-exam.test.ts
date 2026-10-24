@@ -113,7 +113,7 @@ describe('mock exam papers', () => {
     );
   });
 
-  it('keeps the draft key the original 歷屆試題 used for the paper', () => {
+  it('keeps the draft key the original 考古題討論版 used for the paper', () => {
     expect(mockExamScope('law', 114)).toBe('paper:law:114');
   });
 });
@@ -262,7 +262,7 @@ describe('mock exam results', () => {
     question('law', 114, 4, { allCredit: true }),
   ];
 
-  it('records the paper like the original 歷屆試題, 一律給分 included', () => {
+  it('records the paper like the original 考古題討論版, 一律給分 included', () => {
     const attempt = createMockExamAttempt(questions, {
       'law-114-01': {
         selected: 0,

@@ -18,7 +18,7 @@ export interface MockExamPaper {
   /** Multiple-choice questions, the only ones answered and scored. */
   questionCount: number;
   writtenCount: number;
-  /** Opens the paper's essay questions in 歷屆試題. */
+  /** Opens the paper's essay questions in 考古題討論版. */
   firstWrittenId: string | null;
 }
 
@@ -95,7 +95,7 @@ export function mockExamHref({ subject, year, q, result }: MockExamLocation) {
   return `${MOCK_EXAM_PATH}?${query.toString()}`;
 }
 
-/** The draft key the original 歷屆試題 used, so a paper keeps one draft whichever page opens it. */
+/** The draft key the original 考古題討論版 used, so a paper keeps one draft whichever page opens it. */
 export function mockExamScope(subject: SubjectId, year: number) {
   return paperProgressScope(subject, year);
 }
@@ -128,7 +128,7 @@ export function hasMockExamDraft(progress: QuizProgressByQuestion) {
 
 /**
  * A draft someone has worked on: an answer or a struck-out option. The original
- * 歷屆試題 opened a draft just by showing a question, so merely reading a paper there
+ * 考古題討論版 opened a draft just by showing a question, so merely reading a paper there
  * does not make it a paper in progress.
  */
 export function isMockExamStarted(progress: QuizProgressByQuestion) {
@@ -240,7 +240,7 @@ export function touchMockExamQuestion(
   return current ? { ...progress, [questionId]: { ...current, updatedAt } } : progress;
 }
 
-/** The same record the original 歷屆試題 saved: answers, time and the official scoring rules. */
+/** The same record the original 考古題討論版 saved: answers, time and the official scoring rules. */
 export function createMockExamAttempt(
   questions: readonly Question[],
   progress: QuizProgressByQuestion,

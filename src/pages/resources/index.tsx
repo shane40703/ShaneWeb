@@ -25,7 +25,7 @@ export default function ResourcesRoute({
   return (
     <>
       <Head>
-        <title>統計分析｜建築師考試</title>
+        <title>歷屆試題資料集成｜建築師考試</title>
       </Head>
       <ResourcesPage overview={overview} />
     </>

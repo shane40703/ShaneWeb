@@ -1,7 +1,7 @@
 import { readStoredValue, writeStoredValue } from '@/lib/storage';
 import type { QuestionId, SubjectId } from '@/lib/types';
 
-/** Paper drafts, under the key and format the original 歷屆試題 used, so they carry over. */
+/** Paper drafts, under the key and format the original 考古題討論版 used, so they carry over. */
 export const QUIZ_PROGRESS_STORAGE_KEY = 'shaneweb:quiz-progress';
 const QUIZ_PROGRESS_STORAGE_VERSION = 2;
 const PAPER_SCOPE_PREFIX = 'paper:';

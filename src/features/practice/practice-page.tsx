@@ -19,7 +19,7 @@ import { PracticeResultView } from './practice-result';
 import {
   addPracticeTime,
   confirmPracticeAnswer,
-  createPracticeAttempt,
+  createPracticeAttempts,
   createPracticePaper,
   createPracticeResult,
   createPracticeSession,
@@ -522,14 +522,15 @@ export function PracticePage() {
     if (
       unanswered &&
       !window.confirm(
-        `還有 ${unanswered} 題尚未確認答案，這些題目不會計入正確率。確定要交卷嗎？`,
+        `還有 ${unanswered} 題尚未確認答案，這些題目不會計入正確率。確定要完成練習嗎？`,
       )
     ) {
       return;
     }
     // Saved once, here: 已作答紀錄 and 常錯題目 keep every submission with an answer.
-    const record = createPracticeAttempt(timed, questionById);
-    if (record) dispatch({ type: 'save-attempt', ...record });
+    for (const record of createPracticeAttempts(timed, questionById)) {
+      dispatch({ type: 'save-attempt', ...record });
+    }
     setResult(createPracticeResult(timed));
     setResultShown(true);
     commitSession(resetPracticeAnswers(timed));

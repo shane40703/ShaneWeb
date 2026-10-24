@@ -26,6 +26,7 @@ import {
 import type { Question, QuizAttempt, SubjectId } from '@/lib/types';
 import { getWrongQuestionStats } from '@/lib/wrong-questions';
 import { subjects, years } from '@/question-bank/catalog';
+import { SubjectPracticeButton } from '@/features/practice/subject-practice-button';
 import { useAppState } from '@/state/app-state';
 import styles from './wrong-page.module.css';
 
@@ -178,11 +179,11 @@ export function WrongPage({
         <EmptyState
           icon={IconRepeat}
           title="還沒有作答紀錄"
-          description="完成選擇題練習或歷屆試題模擬考並交卷後，答錯的題目與累計次數會整理在這裡。"
+          description="完成每日抽題練習或歷屆試題模擬考並交卷後，答錯的題目與累計次數會整理在這裡。"
           action={
             <>
               <Button role="link" render={<Link href="/practice/quiz" />}>
-                選擇題練習
+                每日抽題練習
               </Button>
               <Button role="link" variant="primary" render={<Link href="/practice/mock-exam" />}>
                 歷屆試題模擬考
@@ -270,7 +271,7 @@ export function WrongPage({
                 <span>累計答錯</span>
                 <strong>{stats.reduce((total, item) => total + item.wrongCount, 0)}</strong>
               </div>
-              <p>依選擇題練習與歷屆試題模擬考的交卷紀錄統計；重新答對不會刪除過去的錯題次數。</p>
+              <p>依每日抽題練習與歷屆試題模擬考的交卷紀錄統計；重新答對不會刪除過去的錯題次數。</p>
             </section>
             <div className={styles.selector}>
               <QuestionSelector
@@ -286,6 +287,14 @@ export function WrongPage({
                 ariaLabel="常錯題目科目與年度分類"
               />
             </div>
+            {activeSubject ? (
+              <SubjectPracticeButton
+                questions={subjectStats.map(({ question }) => question)}
+                subject={activeSubject.id}
+                source="wrong"
+                loading={questionBankStatuses[activeSubject.id] === 'loading' || questionBankStatuses[activeSubject.id] === 'error'}
+              />
+            ) : null}
             <div className={styles.subjectList}>
               {activeSubject && activeYearFilter ? (
                 <section

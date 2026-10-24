@@ -76,7 +76,7 @@ export function PracticeSetup({
   }
 
   return (
-    <section className={styles.setup} aria-label="選擇題練習設定">
+    <section className={styles.setup} aria-label="每日抽題練習設定">
       <fieldset className={styles.subjectChoices} disabled={paperDownload.downloading}>
         <legend>選擇科目</legend>
         {subjects.map((item) => {

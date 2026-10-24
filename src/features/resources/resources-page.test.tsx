@@ -66,7 +66,7 @@ describe('ResourcesPage', () => {
   it('marks the overview as the current page of the section switcher', () => {
     render(<ResourcesPage overview={overview} />);
 
-    const sections = screen.getByRole('navigation', { name: '統計分析頁面' });
+    const sections = screen.getByRole('navigation', { name: '歷屆試題資料集成頁面' });
     expect(within(sections).getByRole('link', { name: '總覽' })).toHaveAttribute(
       'aria-current',
       'page',

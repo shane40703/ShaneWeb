@@ -17,13 +17,13 @@ test('past exams opens from the navigation and keeps browsing on /exams', async 
 }) => {
   await page.goto('/');
   const nav = await openNavigation(page);
-  await nav.getByRole('link', { name: '歷屆試題', exact: true }).click();
+  await nav.getByRole('link', { name: '考古題討論版', exact: true }).click();
   await expect(page).toHaveURL(/\/exams$/);
-  await expect(page).toHaveTitle('歷屆試題｜建築師考試');
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('歷屆試題');
+  await expect(page).toHaveTitle('考古題討論版｜建築師考試');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('考古題討論版');
   await expect(
     (await openNavigation(page)).getByRole('link', {
-      name: '歷屆試題',
+      name: '考古題討論版',
       exact: true,
     }),
   ).toHaveAttribute('aria-current', 'page');
@@ -71,7 +71,7 @@ test('past exams opens from the navigation and keeps browsing on /exams', async 
 });
 
 test('posts on past exams stay with the question', async ({ page }) => {
-  const content = `歷屆試題頁的共享投稿 ${test.info().project.name}`;
+  const content = `考古題討論版頁的共享投稿 ${test.info().project.name}`;
   await page.goto('/exams?question=law-114-03');
   await page.getByLabel('內容').fill(content);
   await page.getByRole('button', { name: '送出共享投稿' }).click();

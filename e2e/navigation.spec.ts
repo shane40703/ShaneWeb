@@ -27,12 +27,12 @@ test('navigation lists only the new pages and 我的作答存摺, and returns ho
   await page.goto('/');
   const nav = await openNavigation(page);
   const links = nav.locator(':scope > a');
-  await expect(links).toHaveText(['每日練習', '歷屆試題', '統計分析']);
+  await expect(links).toHaveText(['每日練習', '考古題討論版', '歷屆試題資料集成']);
   await expect(links.nth(0)).toHaveAttribute('href', '/practice');
   await expect(links.nth(1)).toHaveAttribute('href', '/exams');
   await expect(links.nth(2)).toHaveAttribute('href', '/resources');
   await expect(nav.getByRole('button')).toHaveText([personal.label]);
-  for (const removed of ['詳解與討論', '歷屆試題題練習', '歷屆試題資料集成'])
+  for (const removed of ['詳解與討論', '歷屆試題', '統計分析'])
     await expect(nav.getByText(removed, { exact: true })).toHaveCount(0);
   await expect(nav.getByRole('link', { name: '設定', exact: true })).toBeVisible();
   await expect(nav.getByRole('link', { name: '問題回報', exact: true })).toBeVisible();
@@ -84,9 +84,7 @@ test('我的作答存摺 contains its pages and supports click, navigation, and 
       'aria-current',
       'page',
     );
-    await page
-      .getByRole('button', { name: `關閉${personal.label}子選單`, exact: true })
-      .click();
+    await trigger.click();
     const drawer = page.getByRole('dialog', { name: '主要功能', exact: true });
     if (await drawer.isVisible()) {
       await page.keyboard.press('Escape');
@@ -106,6 +104,12 @@ test('desktop hover opens a usable submenu without stealing focus and closes aft
   await trigger.hover();
   const popup = page.getByRole('group', { name: `${personal.label}子選單` });
   await expect(popup).toBeVisible();
+  const groupBox = (await popup.boundingBox())!;
+  const triggerBox = (await trigger.boundingBox())!;
+  expect(groupBox.y).toBeGreaterThanOrEqual(triggerBox.y + triggerBox.height);
+  const sidebarBox = (await trigger.locator('..').boundingBox())!;
+  expect(groupBox.x).toBeGreaterThanOrEqual(sidebarBox.x);
+  expect(groupBox.x + groupBox.width).toBeLessThanOrEqual(sidebarBox.x + sidebarBox.width);
   await expect(page.getByRole('link', { name: '建築師考試首頁' })).toBeFocused();
   await popup.getByRole('link', { name: '常錯題目', exact: true }).hover();
   await expect(popup).toBeVisible();
@@ -125,6 +129,8 @@ test('keyboard Enter and Escape work without viewport overflow', async ({
   await expect(
     popup.getByRole('link', { name: '使用者筆記', exact: true }),
   ).toBeFocused();
+  // The inline submenu moves with the phone drawer until its entrance animation ends.
+  await expect.poll(async () => (await popup.boundingBox())!.x).toBeGreaterThanOrEqual(0);
   const rect = (await popup.boundingBox())!;
   expect(rect.x).toBeGreaterThanOrEqual(0);
   expect(rect.x + rect.width).toBeLessThanOrEqual(page.viewportSize()!.width);

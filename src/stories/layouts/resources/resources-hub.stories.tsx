@@ -21,7 +21,7 @@ function overviewChoice(name: keyof typeof overviews) {
 }
 
 /**
- * 統計分析總覽（/resources）：考題分析、速記圖庫、法規資料庫三張卡片。
+ * 歷屆試題資料集成總覽（/resources）：考題分析、速記圖庫、法規資料庫三張卡片。
  * 統計數字照 getStaticProps 用範例題庫計算，所以比實際網站少；
  * 速記圖庫的縮圖是網站實際的整理圖。卡片會換到其他頁，在故事裡只記錄在 Actions 面板。
  *
@@ -30,7 +30,7 @@ function overviewChoice(name: keyof typeof overviews) {
  * - 「尚無資料」：題庫、整理圖、法規都還沒有資料，卡片改顯示「準備中」的說明。
  */
 const meta = {
-  title: 'Layouts/統計分析/總覽',
+  title: 'Layouts/歷屆試題資料集成/總覽',
   component: ResourcesPage,
   decorators: [withPageFrame],
   parameters: { ...pageParameters('/resources') },

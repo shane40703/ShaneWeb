@@ -41,7 +41,7 @@ function ResourceLayoutPages({ current: initialCurrent }: ResourceLayoutProps) {
 }
 
 /**
- * 統計分析各頁共用的頁首：切換總覽與三個子頁的分頁列、右側動作按鈕、頁面說明。
+ * 歷屆試題資料集成各頁共用的頁首：切換總覽與三個子頁的分頁列、右側動作按鈕、頁面說明。
  * 這裡只看頁首本身，頁面內容（children）留空。
  *
  * 畫面上可以操作看到：點分頁列切換各頁的頁首。總覽只有分頁列；速記圖庫右側有
@@ -49,7 +49,7 @@ function ResourceLayoutPages({ current: initialCurrent }: ResourceLayoutProps) {
  * 法規資料庫的說明前面多了法規數量（facts）。
  */
 const meta = {
-  title: 'Components/統計分析/ResourceLayout',
+  title: 'Components/歷屆試題資料集成/ResourceLayout',
   component: ResourceLayout,
   // Controls 換掉一開始的頁面時重新開始。
   render: (args) => <ResourceLayoutPages key={args.current} {...args} />,

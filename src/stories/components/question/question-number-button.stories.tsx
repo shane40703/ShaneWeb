@@ -9,7 +9,7 @@ type SampleProps = Omit<
 
 /**
  * 網站上會出現的題號狀態：綠色答對（模擬考結果是得分）、紅色答錯（蓋過綠色）、橘色底線
- * 難題、紫點是有筆記（筆記頁）或有詳解或討論（歷屆試題）。
+ * 難題、紫點是有筆記（筆記頁）或有詳解或討論（考古題討論版）。
  */
 const samples: SampleProps[] = [
   { label: '未作答', active: false },
@@ -46,7 +46,7 @@ function Sample({ label, number = '12', active: initialActive, ...props }: Sampl
 }
 
 /**
- * 選擇題練習、模擬考、歷屆試題、筆記頁共用的題號按鈕，所有狀態並排比較。
+ * 每日抽題練習、模擬考、考古題討論版、筆記頁共用的題號按鈕，所有狀態並排比較。
  * 實際的題號排列見 QuestionNumberGrid、QuestionNumberPicker。
  *
  * 畫面上可以操作看到：點任一個題號切換成「目前題目」或取消。

@@ -66,7 +66,7 @@ function ExpandedTrendAnalysis({
  * 依命題分類比較，沒有分析層級選單，折線圖只有一個點。
  */
 const meta = {
-  title: 'Components/統計分析/DetailedTrendAnalysis',
+  title: 'Components/歷屆試題資料集成/DetailedTrendAnalysis',
   component: DetailedTrendAnalysis,
   // 跟考題分析頁一樣，換科目時重新開始，勾選與分析層級回到預設。
   render: (args) => <ExpandedTrendAnalysis key={args.subjectId} {...args} />,

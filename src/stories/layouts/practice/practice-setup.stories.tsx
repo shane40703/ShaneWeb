@@ -99,18 +99,18 @@ function useHeldPaperFonts(hold: boolean) {
 }
 
 /**
- * 選擇題練習的設定畫面：整個 /practice/quiz 頁面，瀏覽器裡沒有進行中的題組時顯示。
+ * 每日抽題練習的設定畫面：整個 /practice/quiz 頁面，瀏覽器裡沒有進行中的題組時顯示。
  *
  * 畫面上可以操作看到：
  * - 選科目（環控等題庫不到 50 題的科目，題數多一個「全部」選項）
  * - 展開「進階選項」調整年度、類別、題數、打亂選項、一律給分題：摘要旁出現「已調整」，
  *   可以「恢復預設」
- * - 「線上作答」抽題後進入作答畫面，之後可以一路作答、交卷、看練習結果
+ * - 「線上作答」抽題後進入作答畫面，之後可以一路作答、完成練習、看練習結果
  * - 「製作紙本檔案」：按鈕變成「正在製作 PDF…」，再下載 PDF。要停在製作中，先打開
  *   Controls 的 holdPaper 再按
  */
 const meta = {
-  title: 'Layouts/選擇題練習/設定畫面',
+  title: 'Layouts/每日抽題練習/設定畫面',
   component: PracticeQuizRoute,
   decorators: [withStatefulRouter, withPageFrame],
   parameters: { ...pageParameters('/practice/quiz') },

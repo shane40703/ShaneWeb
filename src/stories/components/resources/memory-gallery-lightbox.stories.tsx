@@ -32,7 +32,7 @@ function itemChoice(name: keyof typeof galleryItems) {
  * - 「圖檔損毀」：圖檔讀不到，開啟後顯示圖片載入失敗。
  */
 const meta = {
-  title: 'Components/統計分析/MemoryGalleryLightbox',
+  title: 'Components/歷屆試題資料集成/MemoryGalleryLightbox',
   component: MemoryGalleryLightbox,
   args: { item: itemChoice('樓梯設置規定') },
   argTypes: {

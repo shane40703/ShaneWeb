@@ -893,46 +893,6 @@
   width: 100%;
 }
 
-.navigatorLegend {
-  flex: 0 0 auto;
-  padding: 10px 16px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 12px;
-  border-top: var(--rule);
-  color: var(--muted);
-  font-size: 11px;
-}
-
-.navigatorLegend span {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-}
-
-.navigatorLegend i {
-  width: 8px;
-  height: 8px;
-  display: block;
-  border-radius: var(--radius-frame);
-}
-
-.navigatorLegend i[data-tone='current'] {
-  background: var(--primary-solid);
-}
-
-.navigatorLegend i[data-tone='answered'] {
-  background: var(--success);
-}
-
-.navigatorLegend i[data-tone='wrong'] {
-  background: var(--danger);
-}
-
-.navigatorLegend i[data-tone='difficult'] {
-  background: var(--warning);
-}
-
 /* ---- Result: framed panels stacked on the paper ---- */
 
 .resultArea {

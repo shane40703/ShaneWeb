@@ -16,7 +16,7 @@ const questions: Question[] = Array.from({ length: 74 }, (_, index) => ({
   explanation: '不可出現在試卷的私人詳解', source: { kind: 'sample' },
 }));
 const bank = new Map(questions.map(question => [question.id, question]));
-/** 選擇題練習's paper, the only one left: `count` questions of law 114. */
+/** 每日抽題練習's paper, the only one left: `count` questions of law 114. */
 function practicePaper(count = 50, date = '2026-10-15') {
   const session = createPracticeSession({ candidates: questions, count, rangeStart: 114, rangeEnd: 114, category: 'all' }, 'law', false, () => .5);
   return { session, paper: createPracticePaper(session, bank, date) };

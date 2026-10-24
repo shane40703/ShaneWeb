@@ -231,12 +231,12 @@ describe('MockExamPage setup', () => {
     expect(screen.getByRole('radio', { name: /114 年/ })).toBeChecked();
   });
 
-  it('points papers with essays to 歷屆試題, which keeps them out of the score', async () => {
+  it('points papers with essays to 考古題討論版, which keeps them out of the score', async () => {
     renderAt('/practice/mock-exam?subject=env&year=114');
 
     const setup = await screen.findByRole('region', { name: '歷屆試題模擬考設定' });
     expect(setup).toHaveTextContent('另有申論題 3 題，不列入模擬考計分');
-    expect(within(setup).getByRole('link', { name: /到歷屆試題閱讀/ })).toHaveAttribute(
+    expect(within(setup).getByRole('link', { name: /到考古題討論版閱讀/ })).toHaveAttribute(
       'href',
       '/exams?question=env-114-written-01',
     );
@@ -667,7 +667,7 @@ describe('MockExamPage submitting', () => {
       year: 114,
       answers: { 'law-114-01': 0, 'law-114-02': 2 },
       elapsedSeconds: 55,
-      // 一律給分 counts even unanswered, as on the original 歷屆試題.
+      // 一律給分 counts even unanswered, as on the original 考古題討論版.
       correctCount: 2,
       wrongCount: 1,
       unansweredCount: 2,

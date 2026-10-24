@@ -7,7 +7,7 @@ import { MemoryGalleryAdminLink } from '@/features/memory-gallery/memory-gallery
  * Storybook 跟本機開發伺服器一樣是開發模式，所以看得到。
  */
 const meta = {
-  title: 'Components/統計分析/MemoryGalleryAdminLink',
+  title: 'Components/歷屆試題資料集成/MemoryGalleryAdminLink',
   component: MemoryGalleryAdminLink,
 } satisfies Meta<typeof MemoryGalleryAdminLink>;
 

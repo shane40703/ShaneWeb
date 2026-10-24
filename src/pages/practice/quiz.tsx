@@ -6,7 +6,7 @@ export default function PracticeQuizRoute() {
   return (
     <>
       <Head>
-        <title>選擇題練習｜建築師考試</title>
+        <title>每日抽題練習｜建築師考試</title>
       </Head>
       <PracticeLayout>
         <PracticePage />

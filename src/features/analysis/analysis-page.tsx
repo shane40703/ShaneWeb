@@ -197,7 +197,7 @@ export function AnalysisPage({ questions }: { questions: QuestionSummary[] }) {
   }
 
   /**
-   * Opens 選擇題練習's setup with this subject, year range and category. A set in
+   * Opens 每日抽題練習's setup with this subject, year range and category. A set in
    * progress would keep the setup from showing, so it goes first, after asking.
    */
   function practiceSelectedCategory() {
@@ -206,7 +206,7 @@ export function AnalysisPage({ questions }: { questions: QuestionSummary[] }) {
     if (
       current &&
       hasPracticeProgress(current) &&
-      !window.confirm('目前的選擇題練習還沒交卷，要放棄並改用這個類別抽題嗎？作答進度會清除。')
+      !window.confirm('目前的每日抽題練習還沒完成，要放棄並改用這個類別抽題嗎？作答進度會清除。')
     ) {
       return;
     }
@@ -329,7 +329,7 @@ export function AnalysisPage({ questions }: { questions: QuestionSummary[] }) {
                   <span>對應考古題</span>
                   <strong>{selectedCategory}</strong>
                   <p>
-                    目前範圍共 {selectedCategoryQuestions.length} 題，點題目可查看詳解；也可以到選擇題練習用這個類別抽題。
+                    目前範圍共 {selectedCategoryQuestions.length} 題，點題目可查看詳解；也可以到每日抽題練習用這個類別抽題。
                   </p>
                   <Button
                     variant="primary"
@@ -337,7 +337,7 @@ export function AnalysisPage({ questions }: { questions: QuestionSummary[] }) {
                     disabled={!selectedCategoryQuestions.length}
                   >
                     <IconListCheck size={16} stroke={2} aria-hidden="true" />
-                    到選擇題練習抽題
+                    到每日抽題練習抽題
                   </Button>
                 </header>
                 <div>

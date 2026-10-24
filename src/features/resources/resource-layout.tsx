@@ -31,7 +31,7 @@ export function ResourceLayout({
     <>
       <div className={styles.header}>
         <div className={styles.bar}>
-          <nav className={styles.sectionNav} aria-label="統計分析頁面">
+          <nav className={styles.sectionNav} aria-label="歷屆試題資料集成頁面">
             {sectionLinks.map((item) => (
               <Link
                 key={item.id}

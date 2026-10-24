@@ -29,7 +29,7 @@ interface Scenario {
   activeId: string;
 }
 
-/** 選擇題練習 20 題：前 8 題有對有錯，部分標記難題，第 9 題作答中。 */
+/** 每日抽題練習 20 題：前 8 題有對有錯，部分標記難題，第 9 題作答中。 */
 const practiceResults: Record<number, 'correct' | 'wrong'> = {
   0: 'wrong',
   1: 'correct',
@@ -67,7 +67,7 @@ const notesDifficultIds = new Set([
 ]);
 
 const scenarios = {
-  '選擇題練習（20 題）': {
+  '每日抽題練習（20 題）': {
     activeId: 'practice-8',
     items: Array.from({ length: 20 }, (_, position) => ({
       id: `practice-${position}`,
@@ -120,7 +120,7 @@ const scenarios = {
 type ScenarioName = keyof typeof scenarios;
 
 /**
- * 選擇題練習與模擬考的題號在網站上是換題的連結（aria-current），外觀跟按鈕一樣；
+ * 每日抽題練習與模擬考的題號在網站上是換題的連結（aria-current），外觀跟按鈕一樣；
  * 故事裡用按鈕，點了才會在同一個畫面換目前題目。
  */
 function ScenarioGrid({ scenario }: { scenario: Scenario }) {
@@ -142,7 +142,7 @@ function ScenarioGrid({ scenario }: { scenario: Scenario }) {
 }
 
 /**
- * 題號按鈕的排列：選擇題練習、模擬考的題號導覽，筆記頁的題號。綠色答對（模擬考作答中是
+ * 題號按鈕的排列：每日抽題練習、模擬考的題號導覽，筆記頁的題號。綠色答對（模擬考作答中是
  * 已作答）、紅色答錯、橘色底線難題、紫點有筆記。
  *
  * 畫面上可以操作看到：點題號換目前題目。用 Controls 的「情境」換成其他頁的題號。
@@ -150,7 +150,7 @@ function ScenarioGrid({ scenario }: { scenario: Scenario }) {
 const meta = {
   title: 'Components/題目/QuestionNumberGrid',
   component: QuestionNumberGrid,
-  args: { children: null, scenario: '選擇題練習（20 題）' },
+  args: { children: null, scenario: '每日抽題練習（20 題）' },
   argTypes: {
     children: { control: false, table: { disable: true } },
     scenario: {

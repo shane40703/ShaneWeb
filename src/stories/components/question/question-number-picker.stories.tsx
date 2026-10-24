@@ -7,7 +7,7 @@ import type { Question } from '@/lib/types';
 import { fixtureOptions, law101Questions } from '../../fixtures/question';
 import { fixtureQuestionsFor } from '../../fixtures/questions';
 
-/** 跟歷屆試題頁一樣，把題目轉成題號選項。 */
+/** 跟考古題討論版頁一樣，把題目轉成題號選項。 */
 function pickerQuestions(
   questions: readonly Question[],
   difficultIds: readonly string[],
@@ -41,7 +41,7 @@ const questionOptions = fixtureOptions(
 );
 
 /**
- * 歷屆試題右側的題號導覽：紫點是有詳解或討論、橘色是我的難題，下方是標記說明。
+ * 考古題討論版右側的題號導覽：紫點是有詳解或討論、橘色是我的難題，下方是標記說明。
  *
  * 畫面上可以操作看到：點題號換目前題目（Controls 的 value 跟著變）。
  * 用 Controls 換試卷（含申論題的「申1」「申2」、沒有任何標記）、隱藏標記說明。
@@ -58,7 +58,7 @@ const meta = {
   argTypes: { questions: questionOptions.argType },
   render: function Render(args) {
     const [, updateArgs] = useArgs<typeof args>();
-    // 換試卷後原本的題號不在新試卷裡時，跟歷屆試題一樣停在第一題。
+    // 換試卷後原本的題號不在新試卷裡時，跟考古題討論版一樣停在第一題。
     const value = args.questions.some((question) => question.id === args.value)
       ? args.value
       : (args.questions[0]?.id ?? '');
@@ -78,4 +78,4 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const 歷屆試題題號導覽: Story = {};
+export const 考古題討論版題號導覽: Story = {};

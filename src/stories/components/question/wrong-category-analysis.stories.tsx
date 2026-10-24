@@ -36,7 +36,7 @@ type ScenarioName = keyof typeof scenarios;
  * - 點其他類別，下方換成該類別的錯題（題目、你的答案、正確答案）。
  * - Controls 的「情境」：
  *   - 單次作答（101 年法規模擬考）：答錯 10 題，分成 6 類。
- *   - 跨年度錯題分析：101、113 年模擬考加一次選擇題練習合併，每題列出答錯的時間。
+ *   - 跨年度錯題分析：101、113 年模擬考加一次每日抽題練習合併，每題列出答錯的時間。
  */
 const meta = {
   title: 'Components/題目/WrongCategoryAnalysis',

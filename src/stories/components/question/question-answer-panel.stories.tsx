@@ -23,7 +23,7 @@ const questionOptions = fixtureOptions(
 const answerOptions = fixtureOptions({ 未作答: undefined, A: 0, B: 1, C: 2, D: 3 }, 'D');
 
 /**
- * 標出正確答案與你的答案的完整選項：選擇題練習結果（有「題目選項」標題）、歷屆試題、
+ * 標出正確答案與你的答案的完整選項：每日抽題練習結果（有「題目選項」標題）、考古題討論版、
  * 筆記頁、作答紀錄與錯題統計（沒有標題）。
  * 選項之間共用淺色分隔線，第一個上方與最後一個下方不加線。
  *
@@ -56,5 +56,5 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-/** 一開始是選擇題練習結果的錯題：截圖題選了 D（答錯），正解 A。 */
+/** 一開始是每日抽題練習結果的錯題：截圖題選了 D（答錯），正解 A。 */
 export const 選項與答案: Story = {};

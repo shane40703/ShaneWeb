@@ -76,7 +76,7 @@ function groupAttemptsByYear(attempts: QuizAttempt[]) {
     }));
 }
 
-/** The years a 選擇題練習 set drew from, e.g. 「104–114 年」. */
+/** The years a 每日抽題練習 set drew from, e.g. 「104–114 年」. */
 function practiceYearRange(attempt: QuizAttempt) {
   const attemptYears = attempt.questionIds.flatMap((questionId) => {
     const parsed = parseQuestionId(questionId);
@@ -88,7 +88,7 @@ function practiceYearRange(attempt: QuizAttempt) {
   return from === to ? `${from} 年` : `${from}–${to} 年`;
 }
 
-/** 選擇題練習 scores like its result page: answered questions only. */
+/** 每日抽題練習 scores like its result page: answered questions only. */
 function practiceAccuracy(attempt: QuizAttempt) {
   const answered = attempt.correctCount + attempt.wrongCount;
   return {
@@ -191,7 +191,7 @@ export function HistoryPage({
     ),
   ];
 
-  /** 再做一次 for 選擇題練習: the same questions in the same order, options reshuffled. */
+  /** 再做一次 for 每日抽題練習: the same questions in the same order, options reshuffled. */
   function retryPractice(attempt: QuizAttempt) {
     if (attempt.subject === 'mixed') return;
     const setQuestions = attempt.questionIds.flatMap((questionId) => {
@@ -203,7 +203,7 @@ export function HistoryPage({
     if (
       current &&
       hasPracticeProgress(current) &&
-      !window.confirm('目前的選擇題練習還沒交卷，要放棄並改練這組題目嗎？作答進度會清除。')
+      !window.confirm('目前的每日抽題練習還沒完成，要放棄並改練這組題目嗎？作答進度會清除。')
     ) {
       return;
     }
@@ -334,7 +334,7 @@ export function HistoryPage({
             <EmptyState
               icon={IconHistory}
               title="目前沒有跨年度錯題"
-              description="完成選擇題練習或歷屆試題模擬考後，這裡會彙整每次答錯的分類與題目。"
+              description="完成每日抽題練習或歷屆試題模擬考後，這裡會彙整每次答錯的分類與題目。"
             />
           )}
         </section>
@@ -361,11 +361,11 @@ export function HistoryPage({
                 <details
                   className={styles.yearGroup}
                   key={yearGroup.key}
-                  aria-label={`${yearGroup.year ? `${yearGroup.year} 年` : '選擇題練習'}作答紀錄`}
+                  aria-label={`${yearGroup.year ? `${yearGroup.year} 年` : '每日抽題練習'}作答紀錄`}
                 >
                   <summary>
                     <strong>
-                      {yearGroup.year ? `${yearGroup.year} 年` : '選擇題練習'}
+                      {yearGroup.year ? `${yearGroup.year} 年` : '每日抽題練習'}
                     </strong>
                     <span>共作答 {yearGroup.entries.length} 次</span>
                     <IconChevronDown size={20} stroke={2} aria-hidden="true" />
@@ -385,7 +385,7 @@ export function HistoryPage({
                     <div>
                       <div className={styles.tags}>
                         <Tag tone={isPractice ? 'purple' : 'blue'}>
-                          {isPractice ? '選擇題練習' : '歷屆試題模擬考'}
+                          {isPractice ? '每日抽題練習' : '歷屆試題模擬考'}
                         </Tag>
                         {subject ? (
                           <Tag tone="green">{subject.name}</Tag>
@@ -400,7 +400,7 @@ export function HistoryPage({
                       <h2>
                         {subject?.name ?? '跨科目練習'}
                         {first.year ? `・${first.year} 年` : ''}
-                        {isPractice ? `・選擇題練習 ${first.questionIds.length} 題` : ''}
+                        {isPractice ? `・每日抽題練習 ${first.questionIds.length} 題` : ''}
                       </h2>
                     </div>
                     <div className={styles.groupActions}>
@@ -734,11 +734,11 @@ export function HistoryPage({
             <EmptyState
               icon={IconHistory}
               title="還沒有作答紀錄"
-              description="完成選擇題練習或歷屆試題模擬考並交卷後，結果會保存在這裡。"
+              description="完成每日抽題練習或歷屆試題模擬考並交卷後，結果會保存在這裡。"
               action={
                 <>
                   <Button role="link" render={<Link href={practiceQuizPage.href} />}>
-                    選擇題練習
+                    每日抽題練習
                   </Button>
                   <Button
                     role="link"

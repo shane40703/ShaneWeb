@@ -5,7 +5,7 @@ for (const theme of ['light', 'dark'] as const) {
     if (!isMobile) await page.setViewportSize({ width: 1920, height: 1080 });
     await page.addInitScript(mode => localStorage.setItem('shane-web-theme', mode), theme);
     await page.goto('/practice/quiz');
-    const setup = page.getByRole('region', { name: '選擇題練習設定', exact: true });
+    const setup = page.getByRole('region', { name: '每日抽題練習設定', exact: true });
     await expect(setup.getByText(/已選 法規・從 \d+ 題中抽 50 題/)).toBeVisible({ timeout: 20_000 });
     const available = await page.locator('main').evaluate(element => {
       const style = getComputedStyle(element);
@@ -14,10 +14,12 @@ for (const theme of ['light', 'dark'] as const) {
     expect((await setup.boundingBox())!.width).toBeCloseTo(Math.min(available, 1180), 0);
 
     await setup.getByRole('button', { name: '線上作答', exact: true }).click();
-    const quiz = page.getByRole('region', { name: '選擇題練習作答', exact: true });
+    const quiz = page.getByRole('region', { name: '每日抽題練習作答', exact: true });
     await expect(quiz.getByRole('radio').first()).toBeVisible();
     const quizBox = (await quiz.boundingBox())!;
     expect(quizBox.width).toBeCloseTo(available, 0);
+    await expect(quiz.getByRole('button', { name: '交卷', exact: true })).toHaveCount(0);
+    await expect(quiz.getByText('目前題目', { exact: true })).toHaveCount(0);
     const questionBox = (await quiz.getByRole('article').boundingBox())!;
     const sidebarBox = (await quiz.getByRole('complementary', { name: '題組資訊', exact: true }).boundingBox())!;
     if (isMobile) {
@@ -31,7 +33,8 @@ for (const theme of ['light', 'dark'] as const) {
     await page.screenshot({ path: testInfo.outputPath(`daily-practice-${theme}.png`), fullPage: true });
 
     page.once('dialog', dialog => dialog.accept());
-    await quiz.getByRole('complementary', { name: '題組資訊', exact: true }).getByRole('button', { name: /交卷/ }).click();
+    await quiz.getByRole('link', { name: '前往第 50 題', exact: true }).click();
+    await quiz.getByRole('button', { name: '完成練習', exact: true }).click();
     const result = page.getByRole('region', { name: '法規練習結果', exact: true });
     await expect(result).toBeVisible();
     expect((await result.boundingBox())!.width).toBeCloseTo(Math.min(available, 1180), 0);

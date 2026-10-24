@@ -95,7 +95,7 @@ export function getPracticeCategories(
 }
 
 /**
- * The 選擇題練習 category that covers most of these questions, for links from pages that
+ * The 每日抽題練習 category that covers most of these questions, for links from pages that
  * group questions their own way (考題分析). Ties go to the name the page showed.
  */
 export function practiceCategoryFor(
@@ -259,6 +259,16 @@ export interface PracticeSession {
   eliminated: Record<string, number[]>;
   elapsedSeconds: Record<string, number>;
   currentIndex: number;
+  /** A whole-subject review uses the same quiz, without the random draw's count cap. */
+  reviewSource?: 'difficult' | 'wrong';
+}
+
+/** All playable questions of this subject, once each and across every year. */
+export function subjectReviewQuestions(questions: readonly Question[], subject: SubjectId) {
+  return [...new Map(questions
+    .filter(question => question.subject === subject && isPracticeQuestion(question))
+    .map(question => [question.id, question])).values()]
+    .sort((left, right) => right.year - left.year || left.questionNumber - right.questionNumber);
 }
 
 function createSessionId(random: () => number) {
@@ -624,6 +634,25 @@ export function createPracticeAttempt(
   };
 }
 
+/** Keep large review sets compatible with the existing 200-question Firestore limit. */
+export function createPracticeAttempts(
+  session: PracticeSession,
+  questionById: ReadonlyMap<string, Pick<Question, 'options'>>,
+  submittedAt = new Date().toISOString(),
+) {
+  const records: NonNullable<ReturnType<typeof createPracticeAttempt>>[] = [];
+  for (let offset = 0; offset < session.questionIds.length; offset += 200) {
+    const record = createPracticeAttempt({
+      ...session,
+      questionIds: session.questionIds.slice(offset, offset + 200),
+    }, questionById, submittedAt);
+    if (!record) continue;
+    if (session.questionIds.length > 200) record.attempt.id += `-part-${offset / 200 + 1}`;
+    records.push(record);
+  }
+  return records;
+}
+
 /** Kept only in memory: a reload after submitting returns to the blank set. */
 export interface PracticeResult {
   session: PracticeSession;
@@ -767,5 +796,8 @@ export function parsePracticeSession(raw: string | null): PracticeSession | null
     currentIndex: Number.isInteger(value.currentIndex)
       ? Math.max(0, Math.min(value.currentIndex as number, questionIds.length - 1))
       : 0,
+    ...(value.reviewSource === 'difficult' || value.reviewSource === 'wrong'
+      ? { reviewSource: value.reviewSource }
+      : {}),
   };
 }

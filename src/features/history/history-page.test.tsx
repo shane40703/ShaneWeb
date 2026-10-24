@@ -515,7 +515,7 @@ describe('HistoryPage', () => {
   });
 
   describe('records of the new practices', () => {
-    // A 選擇題練習 set across years, two answered (one right, one wrong) and one blank.
+    // A 每日抽題練習 set across years, two answered (one right, one wrong) and one blank.
     const practiceQuestions = [
       ...questions.filter(
         (question) =>
@@ -570,15 +570,15 @@ describe('HistoryPage', () => {
       router.push.mockReset();
     });
 
-    it('shows a 選擇題練習 record with the result page’s accuracy', async () => {
+    it('shows a 每日抽題練習 record with the result page’s accuracy', async () => {
       renderHistory([practiceAttempt]);
 
-      const group = await screen.findByLabelText('選擇題練習作答紀錄');
+      const group = await screen.findByLabelText('每日抽題練習作答紀錄');
       fireEvent.click(group.querySelector('summary')!);
       const card = within(group)
-        .getByRole('heading', { name: '建築法規與實務・選擇題練習 3 題' })
+        .getByRole('heading', { name: '建築法規與實務・每日抽題練習 3 題' })
         .closest('article')!;
-      expect(within(card).getByText('選擇題練習')).toBeInTheDocument();
+      expect(within(card).getByText('每日抽題練習')).toBeInTheDocument();
       expect(within(card).getByText('105–112 年')).toBeInTheDocument();
       expect(within(card).getByText('正確率 50%')).toBeInTheDocument();
       expect(within(card).getByText('答對 1／2 題')).toBeInTheDocument();
@@ -593,7 +593,7 @@ describe('HistoryPage', () => {
       expect(review.querySelectorAll('[data-result="unanswered"]')).toHaveLength(1);
     });
 
-    it('starts the same 選擇題練習 questions again, asking before replacing a set in progress', async () => {
+    it('starts the same 每日抽題練習 questions again, asking before replacing a set in progress', async () => {
       const inProgress: PracticeSession = {
         version: 1,
         id: 'current',
@@ -612,13 +612,13 @@ describe('HistoryPage', () => {
       window.localStorage.setItem(PRACTICE_SESSION_STORAGE_KEY, JSON.stringify(inProgress));
       const confirm = vi.spyOn(window, 'confirm').mockReturnValueOnce(false);
       renderHistory([practiceAttempt]);
-      const group = await screen.findByLabelText('選擇題練習作答紀錄');
+      const group = await screen.findByLabelText('每日抽題練習作答紀錄');
       fireEvent.click(group.querySelector('summary')!);
       const retry = within(group).getByRole('button', { name: '再做一次' });
 
       fireEvent.click(retry);
       expect(confirm).toHaveBeenCalledWith(
-        '目前的選擇題練習還沒交卷，要放棄並改練這組題目嗎？作答進度會清除。',
+        '目前的每日抽題練習還沒完成，要放棄並改練這組題目嗎？作答進度會清除。',
       );
       expect(router.push).not.toHaveBeenCalled();
       expect(
@@ -654,7 +654,7 @@ describe('HistoryPage', () => {
           return setItem.call(this, key, value);
         });
       renderHistory([practiceAttempt]);
-      const group = await screen.findByLabelText('選擇題練習作答紀錄');
+      const group = await screen.findByLabelText('每日抽題練習作答紀錄');
       fireEvent.click(group.querySelector('summary')!);
       fireEvent.click(within(group).getByRole('button', { name: '再做一次' }));
 
@@ -667,7 +667,7 @@ describe('HistoryPage', () => {
 
     it('waits for the set’s questions before starting it again', async () => {
       renderHistory([practiceAttempt], []);
-      const group = await screen.findByLabelText('選擇題練習作答紀錄');
+      const group = await screen.findByLabelText('每日抽題練習作答紀錄');
       fireEvent.click(group.querySelector('summary')!);
 
       const retry = within(group).getByRole('button', { name: '再做一次' });
@@ -699,7 +699,7 @@ describe('HistoryPage', () => {
       renderHistory([]);
 
       expect(await screen.findByRole('heading', { name: '還沒有作答紀錄' })).toBeInTheDocument();
-      expect(screen.getByRole('link', { name: '選擇題練習' })).toHaveAttribute(
+      expect(screen.getByRole('link', { name: '每日抽題練習' })).toHaveAttribute(
         'href',
         '/practice/quiz',
       );

@@ -1,10 +1,14 @@
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ToastProvider } from '@/components/ui/ui';
 import { WrongPage } from '@/features/wrong/wrong-page';
 import { createDefaultState, STORAGE_KEY } from '@/lib/study';
 import type { Question, QuizAttempt, SubjectId } from '@/lib/types';
 import { AppStateProvider } from '@/state/app-state';
+import { PRACTICE_SESSION_STORAGE_KEY } from '@/features/practice/practice-session';
+
+const router = vi.hoisted(() => ({ push: vi.fn(async () => true) }));
+vi.mock('next/router', () => ({ useRouter: () => router }));
 
 function question(
   id: string,
@@ -91,7 +95,20 @@ function renderPage(sourceAttempts = attempts) {
 afterEach(cleanup);
 
 describe('WrongPage', () => {
-  beforeEach(() => window.localStorage.clear());
+  beforeEach(() => {
+    window.localStorage.clear();
+    router.push.mockClear();
+  });
+
+  it('starts all distinct wrong questions of the active subject, including other years', async () => {
+    renderPage();
+    fireEvent.click(await screen.findByRole('button', { name: '作答本科目所有常錯題目' }));
+    const saved = JSON.parse(localStorage.getItem(PRACTICE_SESSION_STORAGE_KEY)!);
+    expect(saved.questionIds).toEqual(['law-114-01', 'law-113-03']);
+    expect(saved.reviewSource).toBe('wrong');
+    expect(router.push).toHaveBeenCalledWith('/practice/quiz?q=1');
+    expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).attempts).toHaveLength(attempts.length);
+  });
 
   it('groups saved mistakes and shows every repeated-wrong count', async () => {
     renderPage();

@@ -166,7 +166,7 @@ describe('paper draft storage', () => {
     );
   });
 
-  it('keeps one draft per paper, the original 歷屆試題 scope', () => {
+  it('keeps one draft per paper, the original 考古題討論版 scope', () => {
     expect(paperProgressScope('law', 114)).toBe('paper:law:114');
     writeQuizProgress(paperProgressScope('law', 114), progress);
     writeQuizProgress(paperProgressScope('env', 113), progress);

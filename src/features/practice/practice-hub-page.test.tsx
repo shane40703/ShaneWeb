@@ -32,16 +32,16 @@ describe('PracticeHubPage', () => {
         ];
       }),
     ).toEqual([
-      ['選擇題練習', '/practice/quiz'],
-      ['法規克漏字', '/practice/law-cloze'],
+      ['每日抽題練習', '/practice/quiz'],
       ['歷屆試題模擬考', '/practice/mock-exam'],
+      ['法規克漏字', '/practice/law-cloze'],
     ]);
   });
 
   it('describes each practice in words, with its size', () => {
     render(<PracticeHubPage overview={overview} />);
 
-    const quiz = screen.getByRole('article', { name: '選擇題練習' });
+    const quiz = screen.getByRole('article', { name: '每日抽題練習' });
     expect(within(quiz).getByText('從歷屆考古題抽題，逐題對答案')).toBeInTheDocument();
     expect(within(quiz).getByText('4 科・2,963 題')).toBeInTheDocument();
     const cloze = screen.getByRole('article', { name: '法規克漏字' });

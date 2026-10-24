@@ -4,7 +4,7 @@ import { practiceOverview } from '../../fixtures/practice';
 import { pageParameters, withPageFrame } from '../../support/story-environment';
 
 /**
- * 每日練習總覽（/practice）：選擇題練習、法規克漏字、歷屆試題模擬考三張卡片。統計數字照
+ * 每日練習總覽（/practice）：每日抽題練習、法規克漏字、歷屆試題模擬考三張卡片。統計數字照
  * getStaticProps 用範例題庫計算，所以比實際網站少。卡片會換到其他頁，在故事裡只記錄在
  * Actions 面板。
  */

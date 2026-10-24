@@ -109,20 +109,20 @@ function UnavailableQuestion({
 }
 
 /**
- * 選擇題練習的作答畫面：整個 /practice/quiz 頁面，練習進度從瀏覽器的存檔讀出，網址的
+ * 每日抽題練習的作答畫面：整個 /practice/quiz 頁面，練習進度從瀏覽器的存檔讀出，網址的
  * `?q=` 決定顯示第幾題，跟網站一樣操作。
  * 作答區使用整個頁面寬度，桌機題號欄維持右側，手機改成上下排列。
  *
  * 畫面上可以操作看到：
  * - 選選項、按選項右邊的刪去鈕劃掉選項、「確認答案」後的答對／答錯、詳解與使用者筆記
- * - 「下一題」「跳過」「上一題」與題號導覽換題；最後一題沒有「跳過」，答完後變成「交卷」
- * - 「交卷」進入練習結果（還有未作答的題目時，瀏覽器會先詢問）；結果的「重做這組題目」
+ * - 「下一題」「跳過」「上一題」與題號導覽換題；最後一題沒有「跳過」，以「完成練習」結束。
+ * - 右側不顯示交卷或下方標記說明；最後一題的「完成練習」進入結果（尚未作答會先詢問）；結果的「重做這組題目」
  *   回到第 1 題，「重新選科／抽題」回到設定畫面
  * - 「重新選科／設定」放棄題組回到設定畫面（有作答進度時瀏覽器會先詢問）
  * - 標記為難題、在使用者筆記輸入文字或貼上圖片
  */
 const meta = {
-  title: 'Layouts/選擇題練習/作答畫面',
+  title: 'Layouts/每日抽題練習/作答畫面',
   component: PracticeQuizRoute,
   decorators: [withStatefulRouter, withPageFrame],
   parameters: { ...pageParameters('/practice/quiz') },
@@ -135,7 +135,7 @@ type Story = StoryObj<typeof meta>;
 /**
  * 從使用者截圖的畫面開始：第 1 題答錯（選 D 市場）、作答時間 00:00:01、還沒有詳解與筆記。
  * 按「下一題」是還沒作答、題幹有圖的第 2 題；第 3 題題目很長、有兩個正確答案；第 4 題
- * 一律給分（選什麼都算答對）；第 5 題是最後一題，答完就能交卷。
+ * 一律給分（選什麼都算答對）；第 5 題是最後一題，可按「完成練習」查看結果。
  */
 export const 五題題組: Story = {
   parameters: { ...practicePageParameters(screenshotSession) },
@@ -166,6 +166,14 @@ export const 五十題題組: Story = {
         (index) => fiftyQuestions.questionIds[index],
       ),
     },
+  },
+};
+
+/** 從難題標記開啟的完整題組，跨所有年度；作答、筆記、完成後重做都沿用同一個練習頁。 */
+export const 本科目難題整組: Story = {
+  parameters: {
+    ...practicePageParameters({ ...blankSession, reviewSource: 'difficult' }),
+    appState: { difficultQuestionIds: blankSession.questionIds },
   },
 };
 

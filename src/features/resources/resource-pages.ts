@@ -10,7 +10,7 @@ import {
  */
 export const resourcesHub = {
   href: '/resources',
-  label: '統計分析',
+  label: '歷屆試題資料集成',
   shortLabel: '總覽',
   icon: IconStack2,
 } as const;

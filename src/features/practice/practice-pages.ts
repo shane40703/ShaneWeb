@@ -18,7 +18,7 @@ export const practiceHub = {
 export const practiceQuizPage = {
   id: 'quiz',
   href: '/practice/quiz',
-  label: '選擇題練習',
+  label: '每日抽題練習',
   icon: IconListCheck,
   summary: '從歷屆考古題抽題，逐題對答案',
 } as const;
@@ -41,8 +41,8 @@ export const practiceMockExamPage = {
 
 export const practicePages = [
   practiceQuizPage,
-  practiceClozePage,
   practiceMockExamPage,
+  practiceClozePage,
 ] as const;
 
 export type PracticeHubPageLink = (typeof practicePages)[number];

@@ -10,7 +10,7 @@ const allSubjectIds = subjects.map((subject) => subject.id);
 const prerenderedQuestions = fixtureSubjectQuestions(allSubjectIds[0]);
 
 /**
- * 照 src/pages/exams.tsx 組出歷屆試題頁：預先產生的法規題目，加上 useSubjectQuestions
+ * 照 src/pages/exams.tsx 組出考古題討論版頁：預先產生的法規題目，加上 useSubjectQuestions
  * 下載的所有科目（Storybook 由範例題庫回應），用題目 id 合併後交給 ExamsPage。
  * 不給 props 時跟網站一樣；`bank` 用來看題庫下載中、下載失敗、完全沒有題目的畫面。
  * 頁面用網址的 ?question= 換題，故事的 decorators 要加 withStatefulRouter。

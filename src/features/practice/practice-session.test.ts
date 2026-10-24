@@ -4,6 +4,7 @@ import {
   addPracticeTime,
   confirmPracticeAnswer,
   createPracticeAttempt,
+  createPracticeAttempts,
   createPracticePaper,
   createPracticeSession,
   createPracticeSessionFromQuestions,
@@ -20,6 +21,7 @@ import {
   resolvePracticePool,
   selectPracticeOption,
   summarizePractice,
+  subjectReviewQuestions,
   tickPracticeTimer,
   togglePracticeElimination,
   toOriginalOption,
@@ -94,6 +96,46 @@ function sessionWith(
     ...overrides,
   };
 }
+
+describe('whole-subject review sets', () => {
+  it('includes every unique playable question, with no daily 50-question cap or year filter', () => {
+    const marked = range(65, index => makeQuestion(`law-113-${index + 1}`, { year: 113 }));
+    const recent = makeQuestion('law-114-01');
+    const result = subjectReviewQuestions([
+      ...marked, marked[0], recent,
+      makeQuestion('env-114-01', { subject: 'env' }),
+      makeQuestion('law-114-02', { format: 'written', answerKey: { kind: 'written' } }),
+      makeQuestion('law-114-03', { answerKey: { kind: 'accepted', options: [] } }),
+    ], 'law');
+    expect(result).toHaveLength(66);
+    expect(result[0].id).toBe(recent.id);
+    const set = createPracticeSessionFromQuestions(result, 'law', true, seeded(1));
+    set.reviewSource = 'difficult';
+    const restored = parsePracticeSession(JSON.stringify(set))!;
+    expect(restored.questionIds).toEqual(result.map(question => question.id));
+    expect(restored.reviewSource).toBe('difficult');
+    expect(resetPracticeAnswers(restored).reviewSource).toBe('difficult');
+    expect(parsePracticeSession(JSON.stringify({ ...set, reviewSource: 'unknown' }))?.reviewSource).toBeUndefined();
+  });
+
+  it('saves a large review in cloud-compatible chunks without dropping or double-counting answers', () => {
+    const questions = range(405, index => makeQuestion(`law-114-${index + 1}`));
+    const set = sessionWith(questions, {
+      answers: Object.fromEntries(questions.map((question, index) => [question.id, { selected: index % 2, correct: index % 2 === 0 }])),
+      elapsedSeconds: Object.fromEntries(questions.map(question => [question.id, 2])),
+    });
+    const byId = new Map(questions.map(question => [question.id, question]));
+    const records = createPracticeAttempts(set, byId, '2026-10-24T00:00:00.000Z');
+    expect(records.map(record => record.attempt.questionIds.length)).toEqual([200, 200, 5]);
+    expect(new Set(records.map(record => record.attempt.id)).size).toBe(3);
+    expect(records.flatMap(record => record.attempt.questionIds)).toEqual(set.questionIds);
+    expect(records.reduce((sum, { attempt }) => sum + attempt.correctCount, 0)).toBe(203);
+    expect(records.reduce((sum, { attempt }) => sum + attempt.wrongCount, 0)).toBe(202);
+    expect(records.reduce((sum, { attempt }) => sum + attempt.elapsedSeconds, 0)).toBe(810);
+    expect(Object.assign({}, ...records.map(record => record.results))).toHaveProperty(questions[404].id, true);
+    expect(createPracticeAttempts(sessionWith(questions), byId)).toEqual([]);
+  });
+});
 
 describe('resolvePracticePool', () => {
   const bank = [

@@ -5,7 +5,7 @@ import type { QuestionSummary } from '@/lib/types';
 import { fixtureSubjectQuestions } from './questions';
 
 /**
- * 統計分析（/resources）各頁的範例資料。算法照各頁的 getStaticProps，只是題庫換成
+ * 歷屆試題資料集成（/resources）各頁的範例資料。算法照各頁的 getStaticProps，只是題庫換成
  * 範例題庫（法規 101、113、114 年；環控、構造、結構 113 年），速記圖庫用網站圖庫清單的複本
  * （data/memory-gallery.json，2026-10-22 的內容；圖片在 public/memory-gallery，
  * Storybook 直接讀得到）。用複本而不是直接讀清單，管理者上傳或下架圖片時故事畫面才不會跟著變。
@@ -182,7 +182,7 @@ export const summariesWithoutFineTopic: QuestionSummary[] = resourceQuestionSumm
   (question) => ({ ...question, fineTopic: undefined }),
 );
 
-/** 統計分析總覽的統計，算法跟 src/pages/resources/index.tsx 的 getStaticProps 一樣。 */
+/** 歷屆試題資料集成總覽的統計，算法跟 src/pages/resources/index.tsx 的 getStaticProps 一樣。 */
 export const resourcesOverview = buildResourcesOverview(
   resourceQuestionSummaries,
   memoryGalleryItems,

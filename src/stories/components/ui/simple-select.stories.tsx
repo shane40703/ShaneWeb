@@ -3,7 +3,7 @@ import { useArgs } from 'storybook/preview-api';
 import { fn } from 'storybook/test';
 import { SimpleSelect } from '@/components/ui/ui';
 
-/** 跟歷屆試題「共享投稿」的投稿類型選單一樣（exams-page 的 postTypeLabels）。 */
+/** 跟考古題討論版「共享投稿」的投稿類型選單一樣（exams-page 的 postTypeLabels）。 */
 const postTypeOptions = [
   { value: 'explanation', label: '題目詳解' },
   { value: 'supplement', label: '觀念補充' },
@@ -12,7 +12,7 @@ const postTypeOptions = [
 ];
 
 /**
- * 下拉選單，放在歷屆試題右側的投稿欄（寬度大約是這樣）。
+ * 下拉選單，放在考古題討論版右側的投稿欄（寬度大約是這樣）。
  *
  * 畫面上可以操作看到：點選單展開所有選項（目前的選項前面有勾勾），選了之後畫面跟著換，
  * Controls 也跟著更新；也可以用鍵盤（Tab、方向鍵、Enter）操作。

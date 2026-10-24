@@ -138,7 +138,7 @@ describe('local state validation', () => {
     expect(parseStoredState(JSON.stringify(state))).toEqual(state);
   });
 
-  it('keeps 模擬考 and 選擇題練習 records but drops the retired 隨機出題 ones', () => {
+  it('keeps 模擬考 and 每日抽題練習 records but drops the retired 隨機出題 ones', () => {
     const question = questions.find((item) => item.id === 'law-114-01');
     expect(question).toBeDefined();
     const paperAttempt = createAttempt({

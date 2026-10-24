@@ -3,8 +3,8 @@ import { SimilarQuestions } from '@/components/similar-questions';
 import { fixtureQuestions, getFixtureQuestion } from '../../fixtures/questions';
 
 /**
- * 歷屆試題與筆記頁下方的類似考題：同主題的其他年度題目，依年度遠近排序。
- * 用 Controls 的 basePath 切換連到歷屆試題（/exams）或筆記頁（/notes），外觀相同。
+ * 考古題討論版與筆記頁下方的類似考題：同主題的其他年度題目，依年度遠近排序。
+ * 用 Controls 的 basePath 切換連到考古題討論版（/exams）或筆記頁（/notes），外觀相同。
  */
 const meta = {
   title: 'Components/題目/SimilarQuestions',

@@ -18,7 +18,7 @@ vi.mock('@/state/app-state', () => ({
         { subject: 'law', year: 114, answers: { 'law-114-01': 0 } },
         { subject: 'law', year: 112, answers: { 'law-112-03': 1 } },
         { subject: 'env', year: 113, answers: { 'env-113-02': 0 } },
-        // 選擇題練習 spans years; only its answered questions count.
+        // 每日抽題練習 spans years; only its answered questions count.
         {
           mode: 'practice',
           subject: 'law',

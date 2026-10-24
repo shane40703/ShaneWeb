@@ -58,7 +58,7 @@ describe('AnalysisPage category quiz', () => {
     expect(screen.getByLabelText('分析結束年度')).toHaveValue('114');
   });
 
-  it('opens 選擇題練習 with the category and year, and each question in 歷屆試題', () => {
+  it('opens 每日抽題練習 with the category and year, and each question in 考古題討論版', () => {
     const questions = [
       question('law-114-01', 1),
       question('law-114-02', 2),
@@ -69,7 +69,7 @@ describe('AnalysisPage category quiz', () => {
       'href',
       '/exams?question=law-114-02',
     );
-    fireEvent.click(screen.getByRole('button', { name: '到選擇題練習抽題' }));
+    fireEvent.click(screen.getByRole('button', { name: '到每日抽題練習抽題' }));
 
     expect(router.push).toHaveBeenCalledWith({
       pathname: '/practice/quiz',
@@ -77,7 +77,7 @@ describe('AnalysisPage category quiz', () => {
     });
   });
 
-  it('asks before replacing a 選擇題練習 set in progress', () => {
+  it('asks before replacing a 每日抽題練習 set in progress', () => {
     window.localStorage.setItem(
       'shaneweb:practice-session',
       JSON.stringify({
@@ -91,15 +91,15 @@ describe('AnalysisPage category quiz', () => {
     const confirm = vi.spyOn(window, 'confirm').mockReturnValueOnce(false);
     render(<AnalysisPage questions={[question('law-114-01', 1)]} />);
 
-    fireEvent.click(screen.getByRole('button', { name: '到選擇題練習抽題' }));
+    fireEvent.click(screen.getByRole('button', { name: '到每日抽題練習抽題' }));
     expect(confirm).toHaveBeenCalledWith(
-      '目前的選擇題練習還沒交卷，要放棄並改用這個類別抽題嗎？作答進度會清除。',
+      '目前的每日抽題練習還沒完成，要放棄並改用這個類別抽題嗎？作答進度會清除。',
     );
     expect(router.push).not.toHaveBeenCalled();
     expect(window.localStorage.getItem('shaneweb:practice-session')).not.toBeNull();
 
     confirm.mockReturnValueOnce(true);
-    fireEvent.click(screen.getByRole('button', { name: '到選擇題練習抽題' }));
+    fireEvent.click(screen.getByRole('button', { name: '到每日抽題練習抽題' }));
     expect(window.localStorage.getItem('shaneweb:practice-session')).toBeNull();
     expect(router.push).toHaveBeenCalledTimes(1);
     confirm.mockRestore();
@@ -125,7 +125,7 @@ describe('AnalysisPage category quiz', () => {
       screen.getByRole('button', { name: /建築技術規則1 題/ }),
     );
     fireEvent.click(
-      screen.getByRole('button', { name: '到選擇題練習抽題' }),
+      screen.getByRole('button', { name: '到每日抽題練習抽題' }),
     );
 
     expect(router.push).toHaveBeenCalledWith({

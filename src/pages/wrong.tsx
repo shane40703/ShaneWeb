@@ -7,7 +7,7 @@ import { useAppState } from '@/state/app-state';
 
 export default function WrongRoute() {
   const { state, hydrated } = useAppState();
-  // Only answered questions can be wrong. 選擇題練習 records span many years, so the
+  // Only answered questions can be wrong. 每日抽題練習 records span many years, so the
   // years come from the questions themselves rather than from the record.
   const answeredIds = state.attempts.flatMap((attempt) => Object.keys(attempt.answers));
   const yearsFor = (subject: SubjectId) => [
