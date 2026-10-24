@@ -575,7 +575,27 @@ describe('PracticePage answering', () => {
     expect(stored()!.answers['law-113-02']).toEqual({ selected: 1, correct: false });
   });
 
-  it('ignores the second click of a double-click anywhere on the page', async () => {
+  it('clears a selected draft on a second click, persists it and still locks confirmed answers', async () => {
+    seed({});
+    const view = renderAt('/practice/quiz?q=1');
+    await screen.findByRole('region', { name: '題目與選項' });
+    chooseOption('選項 B');
+    fireEvent.click(screen.getByText('選項 B').closest('label')!, { detail: 2 });
+    expect(optionRadio('選項 B')).toHaveAttribute('aria-checked', 'false');
+    expect(stored()!.drafts).toEqual({});
+    expect(screen.getByRole('button', { name: '確認答案' })).toBeDisabled();
+    view.unmount();
+    renderAt('/practice/quiz?q=1');
+    await screen.findByRole('region', { name: '題目與選項' });
+    expect(optionRadio('選項 B')).toHaveAttribute('aria-checked', 'false');
+    chooseOption('選項 A');
+    fireEvent.click(screen.getByRole('button', { name: '確認答案' }));
+    chooseOption('選項 A');
+    expect(optionRadio('選項 A')).toHaveAttribute('aria-checked', 'true');
+    expect(stored()!.answers['law-114-01']?.selected).toBe(0);
+  });
+
+  it('ignores repeated navigation clicks while allowing deliberate answer cancellation', async () => {
     seed({ answers: { 'law-114-01': { selected: 0, correct: true } } });
     renderAt('/practice/quiz?q=1');
     await screen.findByLabelText('第 1 題，共 5 題');

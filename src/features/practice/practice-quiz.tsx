@@ -72,7 +72,7 @@ export function PracticeQuiz({
   status: PracticeQuestionStatus;
   timer: PracticeTimer;
   onRetry: () => void;
-  onSelect: (selected: number) => void;
+  onSelect: (selected: number | undefined) => void;
   onToggleEliminated: (option: number) => void;
   onConfirm: () => void;
   onGoTo: (index: number) => void;

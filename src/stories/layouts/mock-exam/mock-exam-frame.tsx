@@ -18,6 +18,6 @@ export const withMockExamFrame: Decorator = (Story) => (
  * 「載入中」「載入失敗」這類 props 才看得到的狀態）需要它：手機版排版靠這層的
  * container query 切換。
  */
-export function MockExamPageRoot({ children }: { children: ReactNode }) {
-  return <div className={pageStyles.root}>{children}</div>;
+export function MockExamPageRoot({ children, answering = false }: { children: ReactNode; answering?: boolean }) {
+  return <div className={answering ? `${pageStyles.root} ${pageStyles.fullWidth}` : pageStyles.root}>{children}</div>;
 }

@@ -22,7 +22,8 @@ import { MockExamPageRoot, withMockExamFrame } from './mock-exam-frame';
  * 刪去 B、C；第 8、11 題跳過；第 3、12、15、41 題標為難題。
  *
  * 畫面上可以操作看到：
- * - 選答案、刪去或恢復選項（選項右邊的眼睛）、標為難題。
+ * - 作答區填滿可用頁寬；選答案後再點一次取消，選項之間有淺色分隔線。
+ * - 刪去或恢復選項（選項右邊的眼睛）、標為難題。
  * - 上一題／下一題（第 16 題起都沒作答）、點題號導覽換題（8：題幹有圖片；80：最後一題，
  *   「下一題」換成「交卷」）。
  * - 交卷：確認有未作答後到作答結果。
@@ -68,7 +69,7 @@ function QuizWithoutQuestion({ status }: { status: 'loading' | 'error' }) {
     });
   }
   return (
-    <MockExamPageRoot>
+    <MockExamPageRoot answering>
       <MockExamQuiz
         paper={law101}
         question={undefined}

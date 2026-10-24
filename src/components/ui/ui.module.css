@@ -176,8 +176,8 @@
   color: var(--primary);
 }
 
-/* Answer choices: plain rows with no rules around or between them. The chosen row is
-   tinted; a locked-in choice no longer reacts to hover. */
+/* Only adjacent choices get a subtle rule; no extra frame above or below the list.
+   A locked-in choice no longer reacts to hover. */
 .optionField {
   min-width: 0;
 }
@@ -189,6 +189,10 @@
 .optionRow {
   min-width: 0;
   position: relative;
+}
+
+.optionRow + .optionRow {
+  border-top: var(--rule);
 }
 
 .option {

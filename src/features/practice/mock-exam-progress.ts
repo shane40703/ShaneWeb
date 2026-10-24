@@ -23,7 +23,7 @@ export type QuizProgressAction =
   | {
       type: 'select-answer';
       questionId: QuestionId;
-      selected: number;
+      selected: number | undefined;
       startedAt: string;
     }
   | {
@@ -47,9 +47,13 @@ export function quizProgressReducer(
       return state[action.questionId]
         ? state
         : { ...state, [action.questionId]: current };
-    case 'select-answer':
+    case 'select-answer': {
       if (current.selected === action.selected) return state;
-      return { ...state, [action.questionId]: { ...current, selected: action.selected } };
+      const progress = { ...current };
+      if (action.selected === undefined) delete progress.selected;
+      else progress.selected = action.selected;
+      return { ...state, [action.questionId]: progress };
+    }
     case 'toggle-eliminated-option': {
       // The chosen answer cannot be struck out.
       if (current.selected === action.option) return state;

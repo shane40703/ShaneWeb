@@ -345,6 +345,18 @@ describe('summarizePractice and resetPracticeAnswers', () => {
 });
 
 describe('createPracticePaper', () => {
+  it('clears unconfirmed choices but preserves the question and never clears confirmed answers', () => {
+    const question = makeQuestion('law-114-01');
+    const session = sessionWith([question], {
+      drafts: { [question.id]: 1 }, eliminated: { [question.id]: [2] }, elapsedSeconds: { [question.id]: 8 },
+    });
+    const cleared = selectPracticeOption(session, question.id, undefined);
+    expect(cleared).toEqual({ ...session, drafts: {} });
+    expect(parsePracticeSession(JSON.stringify(cleared))?.drafts).toEqual({});
+    const locked = confirmPracticeAnswer(selectPracticeOption(cleared, question.id, 0), question);
+    expect(selectPracticeOption(locked, question.id, undefined)).toBe(locked);
+  });
+
   it('prints the displayed option order with a matching answer key', () => {
     const first = makeQuestion('law-114-01');
     const second = makeQuestion('law-113-02', {

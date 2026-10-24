@@ -325,6 +325,22 @@ describe('MockExamPage setup', () => {
 });
 
 describe('MockExamPage answering', () => {
+  it('clears a selected answer on a quick second click and restores it as unanswered', async () => {
+    seedDraft({ 'law-114-01': { ...answered(1, 14), eliminatedOptions: [2] } });
+    const view = renderAt('/practice/mock-exam?subject=law&year=114&q=1');
+    await screen.findByRole('region', { name: '題目與選項' });
+    fireEvent.click(option('1-乙'), { detail: 2 });
+    expect(optionRadio('1-乙')).toHaveAttribute('aria-checked', 'false');
+    expect(storedDraft()['law-114-01']).toMatchObject({ elapsedSeconds: 14, eliminatedOptions: [2] });
+    expect(storedDraft()['law-114-01']?.selected).toBeUndefined();
+    expect(screen.getByRole('link', { name: '前往第 1 題（未作答）' })).toHaveAttribute('aria-current', 'step');
+    view.unmount();
+    renderAt('/practice/mock-exam?subject=law&year=114&q=1');
+    await screen.findByRole('region', { name: '題目與選項' });
+    expect(optionRadio('1-乙')).toHaveAttribute('aria-checked', 'false');
+    expect(option('1-丙')).toHaveAttribute('data-eliminated', 'true');
+  });
+
   it('starts at question 1 and keeps answers, strike-outs and the place through a reload', async () => {
     const { unmount } = renderAt('/practice/mock-exam?subject=law&year=114');
     fireEvent.click(await screen.findByRole('button', { name: '開始作答' }));

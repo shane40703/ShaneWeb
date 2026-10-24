@@ -1,6 +1,5 @@
-/* 已作答紀錄: filters are controls on the paper, year groups are dashed-rule sections with a
-   mono label (changelog style), and each exam scope is the one framed card, holding
-   rule-separated attempt rows. Expanded results inside a row are frameless. */
+/* Each year owns one paper frame; exam scopes and attempts inside it are separated
+   by rules, so expanding a year does not introduce nested frames. */
 
 .panel {
   min-height: 430px;
@@ -89,20 +88,20 @@
 
 .list {
   display: grid;
+  gap: 12px;
 }
 
-/* Year groups: open sections separated by dashed rules, each with a mono year label. */
+/* Keep the year frame visible both collapsed and expanded. */
 .yearGroup {
-  border-top: var(--rule-dashed);
-}
-
-.yearGroup:last-of-type {
-  border-bottom: var(--rule-dashed);
+  min-width: 0;
+  border: var(--frame);
+  border-radius: var(--radius-frame);
+  background: var(--surface);
 }
 
 .yearGroup > summary {
   min-height: 60px;
-  padding: 16px 0;
+  padding: 16px 24px;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto auto;
   align-items: center;
@@ -143,22 +142,26 @@
   transform: rotate(180deg);
 }
 
+.yearGroup[open] > summary {
+  border-bottom: var(--rule);
+}
+
 .yearGroup > summary:focus-visible {
   outline: 2px solid var(--primary);
   outline-offset: 2px;
 }
 
 .yearGroupContent {
-  padding: 0 0 24px;
   display: grid;
-  gap: 16px;
 }
 
-/* One framed cream card per exam scope (subject + year + mode). Inside: text, rules, controls. */
+/* Scopes share the outer year frame instead of adding another box. */
 .attemptGroup {
-  border: var(--frame);
-  border-radius: var(--radius-frame);
-  background: var(--surface);
+  min-width: 0;
+}
+
+.attemptGroup + .attemptGroup {
+  border-top: var(--rule-dashed);
 }
 
 .groupHeader {
@@ -432,7 +435,7 @@
 @media (max-width: 560px) {
   .yearGroup > summary {
     min-height: 56px;
-    padding: 14px 0;
+    padding: 14px 16px;
   }
 
   .groupHeader,
@@ -462,10 +465,6 @@
     padding: 16px;
     align-items: stretch;
     flex-direction: column;
-  }
-
-  .yearGroupContent {
-    padding-bottom: 16px;
   }
 
   .attempt {

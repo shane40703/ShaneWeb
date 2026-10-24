@@ -366,11 +366,14 @@ function isOpenQuestion(session: PracticeSession, questionId: string) {
 export function selectPracticeOption(
   session: PracticeSession,
   questionId: string,
-  selected: number,
+  selected: number | undefined,
 ) {
   if (!isOpenQuestion(session, questionId) || session.drafts[questionId] === selected)
     return session;
-  return { ...session, drafts: { ...session.drafts, [questionId]: selected } };
+  const drafts = { ...session.drafts };
+  if (selected === undefined) delete drafts[questionId];
+  else drafts[questionId] = selected;
+  return { ...session, drafts };
 }
 
 export function togglePracticeElimination(

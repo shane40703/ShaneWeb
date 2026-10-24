@@ -78,8 +78,8 @@
     'PingFang TC', 'Microsoft JhengHei', sans-serif;
   --font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
   --paper-grid: linear-gradient(90deg, var(--grid-line) 1px, transparent 0),
-    linear-gradient(var(--grid-line-soft) 1px, transparent 0);
-  --paper-grid-size: 16px 16px;
+    linear-gradient(var(--grid-line) 1px, transparent 0);
+  --paper-grid-size: 24px 24px;
 }
 
 :root[data-theme='dark'] {

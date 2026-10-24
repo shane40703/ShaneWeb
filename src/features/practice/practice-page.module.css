@@ -4,6 +4,11 @@
   container-type: inline-size;
 }
 
+/* The whole-paper quiz uses the same available page width as past-exam browsing. */
+.fullWidth {
+  width: 100%;
+}
+
 /* Focus and scrolling keep controls clear of the sticky topbar and question footer. */
 :global(html):has(.challenge) {
   scroll-padding: 88px 0 96px;

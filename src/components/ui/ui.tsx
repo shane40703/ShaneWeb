@@ -126,7 +126,7 @@ export function OptionGroup({
   value?: number;
   disabled?: boolean;
   eliminatedValues?: readonly number[];
-  onValueChange: (value: number) => void;
+  onValueChange: (value: number | undefined) => void;
   onToggleEliminated?: (value: number) => void;
 }) {
   const eliminated = new Set(eliminatedValues);
@@ -154,6 +154,12 @@ export function OptionGroup({
               <label
                 className={styles.option}
                 data-eliminated={optionEliminated || undefined}
+                onClickCapture={(event) => {
+                  if (disabled || optionEliminated || value !== index) return;
+                  // Cover the whole label, including text and Base UI's hidden input.
+                  event.preventDefault();
+                  onValueChange(undefined);
+                }}
               >
                 <Radio.Root
                   value={String(index)}

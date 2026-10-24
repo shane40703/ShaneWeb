@@ -55,7 +55,7 @@ export function MockExamQuiz({
   /** Grading needs every question of the paper loaded. */
   canSubmit: boolean;
   onRetry: () => void;
-  onSelect: (selected: number) => void;
+  onSelect: (selected: number | undefined) => void;
   onToggleEliminated: (option: number) => void;
   onGoTo: (index: number) => void;
   onSubmit: () => void;

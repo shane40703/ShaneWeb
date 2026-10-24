@@ -15,6 +15,16 @@ afterEach(() => {
 });
 
 describe('quizProgressReducer', () => {
+  it('clears a draft answer without losing its time or eliminated options, including after reload', () => {
+    const progress = { q: { selected: 1, elapsedSeconds: 14, startedAt: 'a', eliminatedOptions: [2] } };
+    const cleared = quizProgressReducer(progress, {
+      type: 'select-answer', questionId: 'q', selected: undefined, startedAt: 'b',
+    });
+    expect(cleared.q).toEqual({ elapsedSeconds: 14, startedAt: 'a', eliminatedOptions: [2] });
+    const restored = parseStoredQuizProgress(composeQuizProgress(null, 'paper:law:114', cleared));
+    expect(restored['paper:law:114']).toEqual(cleared);
+  });
+
   it('records a visit once and keeps each answer by question id', () => {
     let state: QuizProgressByQuestion = {};
     state = quizProgressReducer(state, {

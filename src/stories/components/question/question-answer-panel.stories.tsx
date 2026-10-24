@@ -25,6 +25,7 @@ const answerOptions = fixtureOptions({ 未作答: undefined, A: 0, B: 1, C: 2, D
 /**
  * 標出正確答案與你的答案的完整選項：選擇題練習結果（有「題目選項」標題）、歷屆試題、
  * 筆記頁、作答紀錄與錯題統計（沒有標題）。
+ * 選項之間共用淺色分隔線，第一個上方與最後一個下方不加線。
  *
  * 用 Controls 調整：題目（一般、多個正確答案、一律給分、長選項）、你的答案
  * （selectedIndex，未作答時只標出正確答案）、右側註明（showStatusLabels）、

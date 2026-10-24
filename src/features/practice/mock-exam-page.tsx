@@ -63,6 +63,9 @@ function scrollToTop() {
 /** As on the multiple-choice practice: a double-click must not act on what appears next. */
 function ignoreRepeatClick(event: MouseEvent) {
   if (event.detail <= 1) return;
+  // A second click on the selected answer deliberately clears it, not a navigation.
+  const target = event.target instanceof Element ? event.target : null;
+  if (target?.closest('label')?.querySelector('[role="radio"][aria-checked="true"]')) return;
   event.preventDefault();
   event.stopPropagation();
 }
@@ -511,7 +514,7 @@ export function MockExamPage({ papers }: { papers: MockExamPaper[] }) {
   }
 
   return (
-    <div className={styles.root} onClickCapture={ignoreRepeatClick}>
+    <div className={view === 'question' ? `${styles.root} ${styles.fullWidth}` : styles.root} onClickCapture={ignoreRepeatClick}>
       {content}
     </div>
   );
