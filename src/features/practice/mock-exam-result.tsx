@@ -1,11 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
-import {
-  IconAlertTriangle,
-  IconListSearch,
-  IconLoader2,
-  IconRotateClockwise,
-  IconTrophy,
-} from '@tabler/icons-react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { IconAlertTriangle, IconLoader2 } from '@tabler/icons-react';
 import { AttemptReview } from '@/components/attempt-review';
 import {
   QuestionNumberButton,
@@ -37,16 +31,12 @@ export function MockExamResult({
   questions,
   status,
   onRetry,
-  onRetake,
-  onChooseAnother,
 }: {
   paper: MockExamPaper;
   attempt: QuizAttempt;
   questions: readonly Question[];
   status: PracticeQuestionStatus;
   onRetry: () => void;
-  onRetake: () => void;
-  onChooseAnother: () => void;
 }) {
   const { state } = useAppState();
   const [view, setView] = useState<ResultView>('review');
@@ -54,8 +44,11 @@ export function MockExamResult({
   const numbersRef = useRef<HTMLDivElement>(null);
   const subjectName = getSubject(paper.subject)?.shortName ?? '';
   const { score, maximumScore } = getMockExamScore(attempt, paper.subject);
+  const scorePercentage = maximumScore > 0
+    ? Math.min(100, Math.max(0, (score / maximumScore) * 100))
+    : 0;
   const total = attempt.questionIds.length;
-  const { blank, free } = countMockExamBlanks(attempt);
+  const { blank } = countMockExamBlanks(attempt);
   const reviewed = attempt.questionIds.flatMap((id) => {
     const question = questions.find((item) => item.id === id);
     return question ? [question] : [];
@@ -101,51 +94,38 @@ export function MockExamResult({
 
   return (
     <div className={styles.resultArea}>
-      <section className={styles.completed} aria-labelledby="mock-exam-result-title">
-        <IconTrophy size={49} stroke={1.7} aria-hidden="true" />
-        <span className={styles.eyebrow}>MOCK EXAM RESULT</span>
-        <h2 id="mock-exam-result-title" className={examStyles.resultTitle}>
-          {subjectName} {paper.year} 年模擬考結果
-        </h2>
-        <p>
-          {!blank
-            ? `共 ${total} 題，全部作答。`
-            : `共 ${total} 題，作答 ${total - blank} 題，未作答 ${blank} 題${
-                !free
-                  ? '不給分'
-                  : free === blank
-                    ? '，一律給分，計入答對'
-                    : `；其中 ${free} 題一律給分，計入答對，其餘不給分`
-              }。`}
-        </p>
-        <strong className={styles.accuracy}>
-          {formatMockExamScore(score)} 分／滿分 {maximumScore} 分
-        </strong>
-        <dl className={`${styles.resultStats} ${examStyles.resultStats}`}>
-          <div>
-            <dt>答對</dt>
-            <dd>{attempt.correctCount}</dd>
-          </div>
-          <div data-tone="danger">
-            <dt>答錯</dt>
-            <dd>{attempt.wrongCount}</dd>
-          </div>
-          <div>
-            <dt>未作答</dt>
-            <dd>{blank}</dd>
-          </div>
-          <div>
-            <dt>作答時間</dt>
-            <dd>{formatDuration(attempt.elapsedSeconds)}</dd>
-          </div>
-        </dl>
-        <div className={`${styles.completionActions} ${examStyles.resultActions}`}>
-          <Button onClick={onRetake}>
-            <IconRotateClockwise size={17} aria-hidden="true" /> 再考一次
-          </Button>
-          <Button variant="primary" onClick={onChooseAnother}>
-            <IconListSearch size={17} aria-hidden="true" /> 選擇其他試卷
-          </Button>
+      <section className={examStyles.resultSummary} aria-labelledby="mock-exam-result-title">
+        <div
+          className={examStyles.scoreRing}
+          style={{ '--score-percentage': `${scorePercentage}%` } as CSSProperties}
+          role="meter"
+          aria-label="模擬考分數"
+          aria-valuemin={0}
+          aria-valuemax={maximumScore}
+          aria-valuenow={score}
+          aria-valuetext={`${formatMockExamScore(score)} 分，滿分 ${maximumScore} 分`}
+        >
+          <strong>{formatMockExamScore(score)}</strong>
+          <span>滿分 {maximumScore} 分</span>
+        </div>
+        <div className={examStyles.resultDetails}>
+          <h2 id="mock-exam-result-title" className={examStyles.resultTitle}>
+            {subjectName} {paper.year} 年模擬考結果
+          </h2>
+          <dl className={examStyles.resultStats}>
+            <div data-tone="danger">
+              <dt>答錯題數</dt>
+              <dd>{attempt.wrongCount}</dd>
+            </div>
+            <div>
+              <dt>未作答</dt>
+              <dd>{blank}</dd>
+            </div>
+            <div>
+              <dt>作答時間</dt>
+              <dd>{formatDuration(attempt.elapsedSeconds)}</dd>
+            </div>
+          </dl>
         </div>
       </section>
 

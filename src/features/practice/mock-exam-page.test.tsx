@@ -580,7 +580,7 @@ describe('MockExamPage submitting', () => {
     expect(appState.dispatch.mock.calls[0][0].attempt.elapsedSeconds).toBe(14);
   });
 
-  it('keeps answers in progress when 再考一次 is pressed on an old result', async () => {
+  it('keeps a paper in progress untouched when an old result is viewed, without retake or paper-picker actions', async () => {
     seedDraft({ 'law-114-01': answered(0), 'law-114-02': answered(1) });
     appState.state.attempts = [
       {
@@ -605,13 +605,11 @@ describe('MockExamPage submitting', () => {
       },
     ];
     renderAt('/practice/mock-exam?subject=law&year=114&result=attempt-old');
-    fireEvent.click(await screen.findByRole('button', { name: /再考一次/ }));
-    await flush();
+    const result = await screen.findByRole('region', { name: '法規 114 年模擬考結果' });
 
-    expect(router.snapshot.asPath).toBe('/practice/mock-exam?subject=law&year=114');
-    expect(
-      screen.getByRole('button', { name: '繼續作答（第 3 題）' }),
-    ).toBeInTheDocument();
+    expect(within(result).queryByRole('button')).not.toBeInTheDocument();
+    expect(router.snapshot.asPath).toBe('/practice/mock-exam?subject=law&year=114&result=attempt-old');
+    expect(router.push).not.toHaveBeenCalled();
     expect(storedDraft()['law-114-02']?.selected).toBe(1);
   });
 
@@ -688,12 +686,12 @@ describe('MockExamPage submitting', () => {
 
     const result = screen.getByRole('region', { name: /法規 114 年模擬考結果/ });
     expect(result.parentElement?.parentElement).toHaveClass(styles.fullWidth);
-    expect(result).toHaveTextContent('2.50 分／滿分 100 分');
-    expect(result).toHaveTextContent(
-      '共 5 題，作答 2 題，未作答 3 題；其中 1 題一律給分，計入答對，其餘不給分。',
+    expect(within(result).getByRole('meter', { name: '模擬考分數' })).toHaveAttribute(
+      'aria-valuetext', '2.50 分，滿分 100 分',
     );
-    // 一律給分 is in 答對, blanks are all the questions without an answer.
-    expect(within(result).getByText('答對').nextElementSibling).toHaveTextContent('2');
+    expect(within(result).queryByText('答對')).not.toBeInTheDocument();
+    expect(within(result).getByText('答錯題數').nextElementSibling).toHaveTextContent('1');
+    // Blank 一律給分 questions still score, but remain blank in this statistic.
     expect(within(result).getByText('未作答').nextElementSibling).toHaveTextContent('3');
     expect(screen.getByRole('tab', { name: '錯題統計結果' })).toBeInTheDocument();
     const map = screen.getByRole('complementary', { name: '作答結果題號導覽' });
@@ -721,7 +719,7 @@ describe('MockExamPage submitting', () => {
     expect(screen.getByRole('button', { name: '開始作答' })).toBeInTheDocument();
   });
 
-  it('retakes a submitted paper from question 1', async () => {
+  it('reads the saved score and only the three requested statistics on a result URL', async () => {
     appState.state.attempts = [
       {
         id: 'attempt-1',
@@ -740,12 +738,14 @@ describe('MockExamPage submitting', () => {
     ];
     renderAt('/practice/mock-exam?subject=law&year=113&result=attempt-1');
 
-    expect(await screen.findByText('2.50 分／滿分 100 分')).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: /再考一次/ }));
-    await flush();
-
-    expect(router.snapshot.asPath).toBe('/practice/mock-exam?subject=law&year=113&q=1');
-    expect(Object.keys(storedDraft('law', 113))).toEqual(['law-113-01']);
+    const result = await screen.findByRole('region', { name: '法規 113 年模擬考結果' });
+    const score = within(result).getByRole('meter', { name: '模擬考分數' });
+    expect(score).toHaveAttribute('aria-valuenow', '2.5');
+    expect(score).toHaveTextContent('2.50');
+    expect([...result.querySelectorAll('dt')].map(element => element.textContent))
+      .toEqual(['答錯題數', '未作答', '作答時間']);
+    expect(within(result).queryByRole('button')).not.toBeInTheDocument();
+    expect(storedDraft('law', 113)).toEqual({});
   });
 
   it('says so when the result is no longer saved', async () => {

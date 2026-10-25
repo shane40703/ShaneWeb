@@ -46,7 +46,14 @@ for (const paper of [
       const summary = page.getByRole('region', { name: `${paper.name} ${paper.year} 年模擬考結果`, exact: true });
       const review = page.getByRole('region', { name: '完整作答紀錄', exact: true });
       const navigator = page.getByRole('complementary', { name: '作答結果題號導覽', exact: true });
+      const meter = summary.getByRole('meter', { name: '模擬考分數', exact: true });
+      const maximum = paper.subject === 'construction' ? 100 : 60;
+      const score = attempt.correctCount * (maximum / paper.count);
       await expect(summary).toContainText('01:04:00');
+      await expect(meter).toHaveAttribute('aria-valuenow', String(score));
+      await expect(meter).toHaveAttribute('aria-valuemax', String(maximum));
+      await expect(summary.getByRole('button')).toHaveCount(0);
+      expect(await summary.locator('dt').allTextContents()).toEqual(['答錯題數', '未作答', '作答時間']);
       await expect(navigator.getByRole('link')).toHaveCount(paper.count);
 
       for (const width of isMobile ? [320, 390, 430, 768] : [1920, 1280, 1100]) {
@@ -57,6 +64,13 @@ for (const paper of [
           return element.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
         });
         expect((await summary.boundingBox())!.width).toBeCloseTo(availableWidth, 0);
+        const ringBox = (await meter.boundingBox())!;
+        const scoreBox = (await meter.locator('strong').boundingBox())!;
+        expect(ringBox.width).toBeCloseTo(ringBox.height, 0);
+        expect(ringBox.width).toBeGreaterThanOrEqual(192);
+        expect(Math.abs(scoreBox.x + scoreBox.width / 2 - (ringBox.x + ringBox.width / 2))).toBeLessThan(1);
+        expect(await meter.locator('strong').evaluate(element => parseFloat(getComputedStyle(element).fontSize)))
+          .toBeGreaterThanOrEqual(44);
         await expectNoHorizontalOverflow(page);
         for (const value of await summary.locator('dd').all()) {
           expect(await value.evaluate(element => element.scrollWidth <= element.clientWidth)).toBe(true);
@@ -71,18 +85,12 @@ for (const paper of [
           expect((await summary.boundingBox())!.width).toBeGreaterThan(900);
           expect((await navigator.boundingBox())!.x).toBeGreaterThan((await review.boundingBox())!.x);
         }
-        if (availableWidth <= 640) {
-          for (const button of await summary.getByRole('button').all()) {
-            expect((await button.boundingBox())!.height).toBeGreaterThanOrEqual(44);
-          }
-        }
         if (availableWidth <= 400) {
           const stats = await summary.locator('dl > div').all();
           const boxes = await Promise.all(stats.map(stat => stat.boundingBox()));
           expect(boxes[0]!.y).toBeCloseTo(boxes[1]!.y, 0);
-          expect(boxes[0]!.y).toBeCloseTo(boxes[2]!.y, 0);
-          expect(boxes[3]!.y).toBeGreaterThan(boxes[0]!.y);
-          await expect(stats[3]).toHaveCSS('border-left-width', '0px');
+          expect(boxes[2]!.y).toBeGreaterThan(boxes[0]!.y);
+          await expect(stats[2]).toHaveCSS('border-left-width', '0px');
         }
         await page.screenshot({ path: testInfo.outputPath(`result-${width}.png`) });
       }
@@ -101,15 +109,11 @@ for (const paper of [
       await expectNoHorizontalOverflow(page);
       await page.getByRole('tab', { name: '逐題作答結果', exact: true }).click();
       await expect(navigator.getByRole('link')).toHaveCount(paper.count);
-      await page.setViewportSize({ width: isMobile ? 320 : 1920, height: 900 });
-      if (theme === 'light') {
-        await summary.getByRole('button', { name: '選擇其他試卷', exact: true }).click();
-        await expect(page.getByRole('region', { name: '歷屆試題模擬考設定', exact: true })).toBeVisible();
-      } else {
-        await summary.getByRole('button', { name: '再考一次', exact: true }).click();
-        await expect(page).toHaveURL(/&q=1$/);
-        await expect(page.getByRole('region', { name: '題目與選項', exact: true })).toBeVisible();
-      }
+      await page.reload();
+      await expect(meter).toHaveAttribute('aria-valuenow', String(score));
+      await expect(summary.getByRole('button')).toHaveCount(0);
+      await page.getByRole('link', { name: '返回每日練習', exact: true }).click();
+      await expect(page).toHaveURL(/\/practice$/);
     });
   }
 }

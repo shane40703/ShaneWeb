@@ -1,5 +1,5 @@
 /* The mock exam reuses the multiple-choice practice layout (practice-page.module.css);
-   these rules cover only what a whole paper adds: the year choice and the result map. */
+   these rules cover what a whole paper adds: the year choice, score and result map. */
 
 /* Focus and scrolling keep the year choices clear of the sticky topbar. */
 :global(html):has(.years) {
@@ -163,15 +163,131 @@
   max-height: calc(100dvh - 120px);
 }
 
+.resultSummary {
+  min-width: 0;
+  padding: 32px;
+  display: grid;
+  grid-template-columns: 220px minmax(0, 420px);
+  align-items: center;
+  justify-content: center;
+  gap: 48px;
+  border: var(--frame);
+  border-radius: var(--radius-frame);
+  background: var(--surface);
+}
+
+/* The former result ring, with a larger score and the current site's colour tokens. */
+.scoreRing {
+  width: 220px;
+  aspect-ratio: 1;
+  position: relative;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 4px;
+  border-radius: 50%;
+  background: conic-gradient(
+    var(--primary) var(--score-percentage),
+    var(--primary-soft) 0
+  );
+}
+
+.scoreRing::before {
+  content: '';
+  position: absolute;
+  inset: 16px;
+  border-radius: 50%;
+  background: var(--surface);
+}
+
+.scoreRing strong,
+.scoreRing span {
+  position: relative;
+}
+
+.scoreRing strong {
+  color: var(--primary-strong);
+  font-family: var(--font-mono);
+  font-size: 52px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.04em;
+  line-height: 1.1;
+}
+
+.scoreRing span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.resultDetails {
+  min-width: 0;
+  display: grid;
+  gap: 24px;
+}
+
 .resultTitle {
   margin: 0;
   color: var(--text);
   font-size: 20px;
 }
 
+.resultStats {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) minmax(132px, 1.5fr);
+}
+
+.resultStats > div {
+  min-width: 0;
+  padding: 4px 20px;
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  border-left: var(--rule);
+}
+
+.resultStats > div:first-child {
+  padding-left: 0;
+  border-left: 0;
+}
+
+.resultStats > div:last-child {
+  padding-right: 0;
+}
+
+.resultStats dt {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.resultStats dd {
+  margin: 0;
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 28px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+
+.resultStats > div[data-tone='danger'] dd {
+  color: var(--danger);
+}
+
+.resultStats > div:last-child dd {
+  font-size: 22px;
+  white-space: nowrap;
+}
+
 @media (forced-colors: active) {
   .yearGrid label[data-checked] {
     outline: 2px solid SelectedItem;
+    outline-offset: -2px;
+  }
+
+  .scoreRing {
+    outline: 2px solid CanvasText;
     outline-offset: -2px;
   }
 }
@@ -216,23 +332,42 @@
     font-size: 18px;
   }
 
-  .resultActions {
-    width: min(100%, 400px);
+  .resultSummary {
+    padding: 24px 16px;
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+    gap: 20px;
   }
 
-  .resultActions > button {
-    min-height: 44px;
-    flex: 1 1 140px;
-    justify-content: center;
+  .scoreRing {
+    width: 192px;
+  }
+
+  .scoreRing::before {
+    inset: 14px;
+  }
+
+  .scoreRing strong {
+    font-size: 44px;
+  }
+
+  .resultDetails {
+    width: min(100%, 420px);
+    gap: 20px;
+    text-align: center;
+  }
+
+  .resultStats > div,
+  .resultStats > div:first-child,
+  .resultStats > div:last-child {
+    padding-inline: 12px;
   }
 }
 
 @container (max-width: 400px) {
-  /* Three counts above a full-width clock, never a wrapped row with a stray divider. */
+  /* Two counts above a full-width clock; the time stays readable even at 320px. */
   .resultStats {
-    width: min(100%, 360px);
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .resultStats > div:last-child {

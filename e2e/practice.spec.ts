@@ -334,8 +334,10 @@ test('the mock exam answers a whole paper, keeps it when leaving, and scores it 
     .click();
   await expect(page).toHaveURL(/\?subject=env&year=113&result=attempt-/);
   const result = page.getByRole('region', { name: /環控 113 年模擬考結果/ });
-  await expect(result).toContainText(/\d+\.\d{2} 分／滿分 60 分/);
-  await expect(result).toContainText('共 40 題，作答 2 題');
+  const score = result.getByRole('meter', { name: '模擬考分數' });
+  await expect(score).toHaveAttribute('aria-valuetext', /\d+\.\d{2} 分，滿分 60 分/);
+  await expect(result.locator('dt')).toHaveText(['答錯題數', '未作答', '作答時間']);
+  await expect(result.getByText('未作答', { exact: true }).locator('..')).toContainText('38');
   await expect(page.getByRole('heading', { name: '逐題作答結果' })).toBeVisible();
   await expectNoHorizontalOverflow(page);
   await page.screenshot({ path: testInfo.outputPath('mock-result.png'), fullPage: true });
@@ -343,17 +345,17 @@ test('the mock exam answers a whole paper, keeps it when leaving, and scores it 
   // The result survives a reload and took the exam's place in history: Back returns
   // to the setup the paper was resumed from, which now offers the result.
   await page.reload();
-  await expect(result).toContainText(/分／滿分 60 分/);
+  await expect(score).toHaveAttribute('aria-valuemax', '60');
   await page.goBack();
   await expect(page).toHaveURL(/\?subject=env&year=113$/);
   await expect(setup.getByRole('link', { name: /查看結果/ })).toBeVisible();
   await page.goForward();
-  await expect(result).toContainText(/分／滿分 60 分/);
+  await expect(score).toHaveAttribute('aria-valuemax', '60');
 
   await page.goto('/practice/mock-exam?subject=env&year=113');
   await expect(setup.getByRole('button', { name: '開始作答' })).toBeVisible();
   await setup.getByRole('link', { name: /查看結果/ }).click();
-  await expect(result).toContainText(/分／滿分 60 分/);
+  await expect(score).toHaveAttribute('aria-valuemax', '60');
   await page.goto('/history');
   // Saved to 已作答紀錄 like the original 考古題討論版.
   const year = page.getByRole('group', { name: '113 年作答紀錄' });
@@ -410,10 +412,10 @@ test('the mock exam scores a blank 一律給分 question, as the real exam does'
     .getByRole('button', { name: /交卷/ })
     .click();
   const result = page.getByRole('region', { name: /構造 114 年模擬考結果/ });
-  await expect(result).toContainText('2.50 分／滿分 100 分');
-  await expect(result).toContainText(
-    '共 80 題，作答 0 題，未作答 80 題；其中 2 題一律給分，計入答對，其餘不給分。',
-  );
+  await expect(result.getByRole('meter', { name: '模擬考分數' }))
+    .toHaveAttribute('aria-valuetext', '2.50 分，滿分 100 分');
+  await expect(result.getByText('未作答', { exact: true }).locator('..')).toContainText('80');
+  await expect(result.getByText('答錯題數', { exact: true }).locator('..')).toContainText('0');
 });
 
 test('the home subject cards, 考題分析 and question cards lead to the new pages', async ({

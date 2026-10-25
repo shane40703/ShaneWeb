@@ -27,7 +27,6 @@ import {
   createMockExamAttempt,
   getMockExamQuestions,
   hasMockExamDraft,
-  isMockExamStarted,
   listMockExamDrafts,
   mockExamHref,
   mockExamQuestionId,
@@ -455,13 +454,6 @@ export function MockExamPage({ papers }: { papers: MockExamPaper[] }) {
               : 'ready'
         }
         onRetry={bank.retry}
-        onRetake={() =>
-          // Answers in progress are never replaced from here: the setup offers both.
-          isMockExamStarted(readMockExamDraft(scope))
-            ? void navigate('push', setupHref)
-            : start()
-        }
-        onChooseAnother={() => void navigate('push', setupHref)}
       />
     ) : (
       <div className={styles.loading} role="alert">
