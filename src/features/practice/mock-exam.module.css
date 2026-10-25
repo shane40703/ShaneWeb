@@ -215,4 +215,31 @@
   .resultTitle {
     font-size: 18px;
   }
+
+  .resultActions {
+    width: min(100%, 400px);
+  }
+
+  .resultActions > button {
+    min-height: 44px;
+    flex: 1 1 140px;
+    justify-content: center;
+  }
+}
+
+@container (max-width: 400px) {
+  /* Three counts above a full-width clock, never a wrapped row with a stray divider. */
+  .resultStats {
+    width: min(100%, 360px);
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .resultStats > div:last-child {
+    grid-column: 1 / -1;
+    margin-top: 8px;
+    padding-top: 10px;
+    border-left: 0;
+    border-top: var(--rule);
+  }
 }

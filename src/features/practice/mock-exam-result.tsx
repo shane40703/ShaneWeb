@@ -121,7 +121,7 @@ export function MockExamResult({
         <strong className={styles.accuracy}>
           {formatMockExamScore(score)} 分／滿分 {maximumScore} 分
         </strong>
-        <dl className={styles.resultStats}>
+        <dl className={`${styles.resultStats} ${examStyles.resultStats}`}>
           <div>
             <dt>答對</dt>
             <dd>{attempt.correctCount}</dd>
@@ -139,7 +139,7 @@ export function MockExamResult({
             <dd>{formatDuration(attempt.elapsedSeconds)}</dd>
           </div>
         </dl>
-        <div className={styles.completionActions}>
+        <div className={`${styles.completionActions} ${examStyles.resultActions}`}>
           <Button onClick={onRetake}>
             <IconRotateClockwise size={17} aria-hidden="true" /> 再考一次
           </Button>

@@ -10,6 +10,7 @@ import {
 import type { Question, QuizAttempt, SubjectId } from '@/lib/types';
 import { mockExamScope, type MockExamPaper } from './mock-exam';
 import { MockExamPage } from './mock-exam-page';
+import styles from './practice-page.module.css';
 
 // Next's shallow routing over jsdom's real history, so Back and Forward work.
 const router = vi.hoisted(() => {
@@ -212,6 +213,7 @@ describe('MockExamPage setup', () => {
     renderAt('/practice/mock-exam?subject=law');
 
     const setup = await screen.findByRole('region', { name: '歷屆試題模擬考設定' });
+    expect(setup.parentElement).not.toHaveClass(styles.fullWidth);
     expect(within(setup).getByRole('radio', { name: /建築法規與實務/ })).toBeChecked();
     expect(within(setup).getByRole('radio', { name: /114 年/ })).toBeChecked();
     expect(setup).toHaveTextContent('選擇題 5 題，每題 1.25 分，滿分 100 分');
@@ -685,6 +687,7 @@ describe('MockExamPage submitting', () => {
     );
 
     const result = screen.getByRole('region', { name: /法規 114 年模擬考結果/ });
+    expect(result.parentElement?.parentElement).toHaveClass(styles.fullWidth);
     expect(result).toHaveTextContent('2.50 分／滿分 100 分');
     expect(result).toHaveTextContent(
       '共 5 題，作答 2 題，未作答 3 題；其中 1 題一律給分，計入答對，其餘不給分。',

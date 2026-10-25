@@ -70,7 +70,7 @@ function QuizWithoutQuestion({ status }: { status: 'loading' | 'error' }) {
     });
   }
   return (
-    <MockExamPageRoot answering>
+    <MockExamPageRoot>
       <MockExamQuiz
         paper={law101}
         question={undefined}

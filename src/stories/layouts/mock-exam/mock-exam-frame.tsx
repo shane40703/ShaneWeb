@@ -15,9 +15,9 @@ export const withMockExamFrame: Decorator = (Story) => (
 
 /**
  * MockExamPage 最外層的容器。只有直接用 MockExamQuiz／MockExamResult 的故事（看題庫
- * 「載入中」「載入失敗」這類 props 才看得到的狀態）需要它：手機版排版靠這層的
- * container query 切換。
+ * 「載入中」「載入失敗」這類 props 才看得到的狀態）需要它：作答與結果都使用完整內容
+ * 寬度，手機版排版靠這層的 container query 切換。
  */
-export function MockExamPageRoot({ children, answering = false }: { children: ReactNode; answering?: boolean }) {
-  return <div className={answering ? `${pageStyles.root} ${pageStyles.fullWidth}` : pageStyles.root}>{children}</div>;
+export function MockExamPageRoot({ children }: { children: ReactNode }) {
+  return <div className={`${pageStyles.root} ${pageStyles.fullWidth}`}>{children}</div>;
 }
