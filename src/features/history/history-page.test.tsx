@@ -20,6 +20,15 @@ import {
   PRACTICE_SESSION_STORAGE_KEY,
   type PracticeSession,
 } from '@/features/practice/practice-session';
+import {
+  parseStoredQuizProgress,
+  QUIZ_PROGRESS_STORAGE_KEY,
+  writeQuizProgress,
+} from '@/features/practice/mock-exam-progress';
+import {
+  readMockExamDraft,
+  subscribeToMockExamDrafts,
+} from '@/features/practice/mock-exam-store';
 
 const router = vi.hoisted(() => ({ push: vi.fn() }));
 vi.mock('next/router', () => ({ useRouter: () => router }));
@@ -568,6 +577,9 @@ describe('HistoryPage', () => {
 
     beforeEach(() => {
       router.push.mockReset();
+      const unsubscribe = subscribeToMockExamDrafts(() => {});
+      window.dispatchEvent(new StorageEvent('storage', { key: QUIZ_PROGRESS_STORAGE_KEY }));
+      unsubscribe();
     });
 
     it('shows a 每日抽題練習 record with the result page’s accuracy', async () => {
@@ -675,24 +687,101 @@ describe('HistoryPage', () => {
       expect(retry).toHaveAccessibleDescription('題目載入完成後才能再做一次');
     });
 
-    it('opens the same paper in the mock exam for a 模擬考 record', async () => {
+    it.each([
+      { subject: 'law', year: 114 },
+      { subject: 'env', year: 113 },
+    ] as const)('starts $subject $year at question 1 without waiting for history’s question bank', async ({ subject, year }) => {
+      const source = questions.filter((question) =>
+        question.subject === subject && question.year === year && question.format !== 'written',
+      ).slice(0, 2);
       const paperAttempt = createAttempt({
         mode: 'paper',
-        source: paperQuestions,
+        source,
         answers: {},
         startedAt: '2026-07-25T00:00:00.000Z',
         elapsedSeconds: 60,
       });
-      renderHistory([paperAttempt]);
-      const group = await screen.findByLabelText('114 年作答紀錄');
+      const confirm = vi.spyOn(window, 'confirm');
+      renderHistory([paperAttempt], []);
+      const group = await screen.findByLabelText(`${year} 年作答紀錄`);
       fireEvent.click(group.querySelector('summary')!);
 
       expect(within(group).getByText('歷屆試題模擬考')).toBeInTheDocument();
-      // Buttons rendered as links keep the button role.
-      expect(within(group).getByRole('button', { name: '再做一次' })).toHaveAttribute(
-        'href',
-        '/practice/mock-exam?subject=law&year=114',
+      fireEvent.click(within(group).getByRole('button', { name: '再做一次' }));
+      expect(router.push).toHaveBeenCalledWith(
+        `/practice/mock-exam?subject=${subject}&year=${year}&q=1`,
       );
+      expect(confirm).not.toHaveBeenCalled();
+      expect(readMockExamDraft(`paper:${subject}:${year}`)).toEqual({
+        [`${subject}-${year}-01`]: { elapsedSeconds: 0, startedAt: expect.any(String) },
+      });
+      expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).attempts).toEqual([paperAttempt]);
+      confirm.mockRestore();
+    });
+
+    it.each(['selected', 'eliminatedOptions'] as const)('confirms before replacing a draft with %s, preserving other papers and completed records', async (field) => {
+      const paperAttempt = createAttempt({
+        mode: 'paper', source: paperQuestions, answers: {},
+        startedAt: '2026-07-25T00:00:00.000Z', elapsedSeconds: 60,
+      });
+      const oldDraft = {
+        'law-114-02': {
+          elapsedSeconds: 120,
+          startedAt: '2026-10-24T00:00:00.000Z',
+          ...(field === 'selected' ? { selected: 2 } : { eliminatedOptions: [1] }),
+        },
+      };
+      const otherDraft = {
+        'env-113-01': { selected: 0, elapsedSeconds: 60, startedAt: '2026-10-24T00:00:00.000Z' },
+      };
+      writeQuizProgress('paper:law:114', oldDraft);
+      writeQuizProgress('paper:env:113', otherDraft);
+      const confirm = vi.spyOn(window, 'confirm').mockReturnValueOnce(false);
+      renderHistory([paperAttempt]);
+      const group = await screen.findByLabelText('114 年作答紀錄');
+      fireEvent.click(group.querySelector('summary')!);
+      const retry = within(group).getByRole('button', { name: '再做一次' });
+
+      fireEvent.click(retry);
+      expect(confirm).toHaveBeenCalledWith(
+        '這份試卷還有未完成的作答，要清除進度並重新開始嗎？已完成的作答紀錄會保留。',
+      );
+      expect(router.push).not.toHaveBeenCalled();
+      expect(readMockExamDraft('paper:law:114')).toEqual(oldDraft);
+
+      confirm.mockReturnValueOnce(true);
+      fireEvent.click(retry);
+      expect(router.push).toHaveBeenCalledWith('/practice/mock-exam?subject=law&year=114&q=1');
+      const drafts = parseStoredQuizProgress(localStorage.getItem(QUIZ_PROGRESS_STORAGE_KEY));
+      expect(drafts['paper:law:114']).toEqual({
+        'law-114-01': { elapsedSeconds: 0, startedAt: expect.any(String) },
+      });
+      expect(drafts['paper:env:113']).toEqual(otherDraft);
+      expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).attempts).toEqual([paperAttempt]);
+      confirm.mockRestore();
+    });
+
+    it('still opens the paper using its in-tab draft when browser storage is full', async () => {
+      const paperAttempt = createAttempt({
+        mode: 'paper', source: paperQuestions, answers: {},
+        startedAt: '2026-07-25T00:00:00.000Z', elapsedSeconds: 60,
+      });
+      const setItem = Storage.prototype.setItem;
+      const spy = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(function (this: Storage, key, value) {
+        if (key === QUIZ_PROGRESS_STORAGE_KEY) throw new DOMException('full', 'QuotaExceededError');
+        return setItem.call(this, key, value);
+      });
+      renderHistory([paperAttempt]);
+      const group = await screen.findByLabelText('114 年作答紀錄');
+      fireEvent.click(group.querySelector('summary')!);
+      fireEvent.click(within(group).getByRole('button', { name: '再做一次' }));
+
+      expect(router.push).toHaveBeenCalledWith('/practice/mock-exam?subject=law&year=114&q=1');
+      expect(localStorage.getItem(QUIZ_PROGRESS_STORAGE_KEY)).toBeNull();
+      expect(readMockExamDraft('paper:law:114')).toEqual({
+        'law-114-01': { elapsedSeconds: 0, startedAt: expect.any(String) },
+      });
+      spy.mockRestore();
     });
 
     it('offers both practices before the first record', async () => {

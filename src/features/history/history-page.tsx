@@ -29,7 +29,17 @@ import {
   isQuestionCorrect,
 } from '@/lib/study';
 import type { Question, QuizAttempt, SubjectId } from '@/lib/types';
-import { mockExamHref } from '@/features/practice/mock-exam';
+import {
+  isMockExamStarted,
+  mockExamHref,
+  mockExamQuestionId,
+  mockExamScope,
+  startMockExamDraft,
+} from '@/features/practice/mock-exam';
+import {
+  readMockExamDraft,
+  saveMockExamDraft,
+} from '@/features/practice/mock-exam-store';
 import { practiceMockExamPage, practiceQuizPage } from '@/features/practice/practice-pages';
 import {
   createPracticeSessionFromQuestions,
@@ -190,6 +200,31 @@ export function HistoryPage({
       }),
     ),
   ];
+
+  /** Open a fresh whole paper directly, without returning to the paper picker. */
+  function retryMockExam(attempt: QuizAttempt) {
+    if (attempt.subject === 'mixed' || attempt.year === null) {
+      void router.push(practiceMockExamPage.href);
+      return;
+    }
+    const scope = mockExamScope(attempt.subject, attempt.year);
+    if (
+      isMockExamStarted(readMockExamDraft(scope)) &&
+      !window.confirm('這份試卷還有未完成的作答，要清除進度並重新開始嗎？已完成的作答紀錄會保留。')
+    ) {
+      return;
+    }
+    reportPersistence(
+      'quiz-progress',
+      saveMockExamDraft(
+        scope,
+        startMockExamDraft(mockExamQuestionId(attempt.subject, attempt.year, 1)),
+      ),
+    );
+    void router.push(
+      mockExamHref({ subject: attempt.subject, year: attempt.year, q: 1 }),
+    );
+  }
 
   /** 再做一次 for 每日抽題練習: the same questions in the same order, options reshuffled. */
   function retryPractice(attempt: QuizAttempt) {
@@ -424,15 +459,7 @@ export function HistoryPage({
                       ) : (
                         <Button
                           variant="primary"
-                          render={
-                            <Link
-                              href={
-                                first.subject !== 'mixed' && first.year !== null
-                                  ? mockExamHref({ subject: first.subject, year: first.year })
-                                  : practiceMockExamPage.href
-                              }
-                            />
-                          }
+                          onClick={() => retryMockExam(first)}
                         >
                           再做一次
                         </Button>

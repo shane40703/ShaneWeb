@@ -3,6 +3,7 @@ import { fn } from 'storybook/test';
 import { HistoryPage } from '@/features/history/history-page';
 import type { SubjectId } from '@/lib/types';
 import HistoryRoute from '@/pages/history';
+import { mockExamSavedData } from '../../fixtures/mock-exam';
 import {
   allLawYearAttempts,
   attemptsAppState,
@@ -27,6 +28,8 @@ import { pageParameters, withPageFrame } from '../../support/story-environment';
  * - 「查看完整作答紀錄」看逐題的對錯與答錯次數（每日抽題練習多一行選項順序的說明），
  *   每題的「顯示詳解與討論」打開投稿區；「錯題統計結果」看這次答錯的分類。
  * - 「清除第 N 次紀錄」跳出確認視窗。
+ * - 模擬考「再做一次」直接建立同科目、同年度的新作答進度並開啟第 1 題，不再經過選卷；
+ *   展開 101 年可測試覆蓋未完成進度前的確認。跨頁導覽只記錄到 Actions，不切換故事。
  * - 工具列「雲端同步」切到雲端狀態時，詳解與討論改從雲端讀取，會一直停在載入中
  *   （Storybook 不會連到 Firebase）。
  */
@@ -52,6 +55,7 @@ export const 作答紀錄: Story = {
       notes: personalNotes,
       noteImages: personalNoteImages,
     },
+    localStorage: mockExamSavedData.localStorage,
   },
 };
 
