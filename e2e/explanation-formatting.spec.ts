@@ -29,13 +29,15 @@ test('notes, shared explanations and replies retain whitespace and safe text for
   await expect(replyText).toHaveCSS('white-space', 'pre-wrap');
   expect(await replyText.textContent()).toBe(reply);
   await page.getByRole('button', { name: '編輯', exact: true }).click();
-  await expect(page.getByLabel('編輯投稿內容')).toHaveValue(content);
+  await expect(page.getByLabel('編輯投稿內容').locator('strong').filter({ hasText: '排版測試重點' })).toHaveText('排版測試重點');
+  await expect(page.getByLabel('編輯投稿內容')).not.toContainText('**');
   const edited = '  編輯後第一行\n\n\t下一段  仍保留空格\n';
   await page.getByLabel('編輯投稿內容').fill(edited);
   await page.getByRole('button', { name: '儲存修改' }).click();
-  await expect(page.getByText(/編輯後第一行/).first()).toHaveCSS('white-space', 'pre-wrap');
+  const updated = page.getByText(/編輯後第一行/).first().locator('xpath=ancestor::p[1]');
+  await expect(updated.locator(':scope > span')).toHaveCSS('white-space', 'pre-wrap');
   await page.reload();
-  expect(await page.getByText(/編輯後第一行/).first().textContent()).toBe(edited);
+  expect(await updated.textContent()).toBe(edited);
   const width = await page.evaluate(() => ({ scroll: document.documentElement.scrollWidth, viewport: innerWidth }));
   expect(width.scroll).toBeLessThanOrEqual(width.viewport + 1);
   await page.evaluate(() => window.scrollTo(0, 0));

@@ -81,6 +81,12 @@ for (const kind of ['daily', 'mock'] as const) {
         await confirm.click();
         await expectActionsInViewport(page, footer);
         await footer.getByRole('button', { name: '下一題', exact: true }).click();
+        await expect(footer.getByRole('button', { name: '完成練習', exact: true })).toHaveCount(0);
+        await expect(confirm).toBeInViewport({ ratio: 1 });
+        await expect(confirm).toBeDisabled();
+        await quiz.getByRole('radio').first().click();
+        await confirm.click();
+        await expect(confirm).toHaveCount(0);
         await expect(footer.getByRole('button', { name: '完成練習', exact: true })).toBeInViewport({ ratio: 1 });
       }
     });

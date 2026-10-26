@@ -638,7 +638,7 @@ export function PracticePage() {
   }
 
   return (
-    <div className={view === 'question' ? `${styles.root} ${styles.fullWidth}` : styles.root} onClickCapture={ignoreRepeatClick}>
+    <div className={view === 'question' || view === 'result' ? `${styles.root} ${styles.fullWidth}` : styles.root} onClickCapture={ignoreRepeatClick}>
       {content}
     </div>
   );

@@ -1,3 +1,5 @@
+import { parseRichDocument, richDocumentText } from './rich-document';
+
 export interface TextFormattingResult {
   value: string;
   selectionStart: number;
@@ -71,6 +73,8 @@ const formattingToken =
 
 /** The text RichText would show, without its formatting: for one-line previews. */
 export function stripTextFormatting(value: string): string {
+  const doc = parseRichDocument(value);
+  if (doc) return richDocumentText(doc);
   return value.replace(
     formattingToken,
     (_match, link: string | undefined, ...inner) =>

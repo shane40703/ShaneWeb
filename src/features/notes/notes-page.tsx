@@ -1,5 +1,5 @@
 import { useRouter } from 'next/router';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   IconAlertCircle,
   IconHelpCircle,
@@ -23,7 +23,7 @@ import {
 import { QuestionAnswerPanel } from '@/components/question-answer-panel';
 import { RichText } from '@/components/rich-text';
 import { SimilarQuestions } from '@/components/similar-questions';
-import { TextFormattingToolbar } from '@/components/text-formatting-toolbar';
+import { RichTextEditor } from '@/components/rich-text-editor';
 import {
   QuestionSelector,
   type SelectorYear,
@@ -395,7 +395,6 @@ function NoteEditor({
   const { state, dispatch } = useAppState();
   const { notify } = useToast();
   const discussion = useDiscussionPublisher(question.id);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [sharing, setSharing] = useState(false);
   const hasSavedNote = Boolean(
     state.notes[question.id]?.trim() || state.noteImages[question.id]?.length,
@@ -482,23 +481,14 @@ function NoteEditor({
         <>
           <div className={styles.noteToolbar}>
             <label htmlFor="question-note">我的筆記</label>
-            <TextFormattingToolbar
-              textareaRef={textareaRef}
-              value={content}
-              onChange={(nextContent) => onChange({ content: nextContent, images })}
-            />
           </div>
-          <textarea
-            ref={textareaRef}
+          <RichTextEditor
             id="question-note"
+            ariaLabel="我的筆記"
             value={content}
-            onChange={(event) => onChange({ content: event.target.value, images })}
-            onPaste={(event) => {
-              const files = [...event.clipboardData.files].filter((file) =>
-                file.type.startsWith('image/'),
-              );
-              if (!files.length) return;
-              event.preventDefault();
+            onChange={(nextContent) => onChange({ content: nextContent, images })}
+            minHeight={240}
+            onPasteImages={(files) => {
               void appendImageFiles(images, files).then((result) => {
                 onChange({ content, images: result.images });
                 const pasted = result.images.length > images.length;
@@ -509,7 +499,6 @@ function NoteEditor({
                 );
               });
             }}
-            rows={12}
             placeholder="記下法條、公式、易錯觀念或解題步驟，也可以直接貼上截圖…"
           />
           <ImageAttachments
@@ -525,7 +514,7 @@ function NoteEditor({
         </section>
       )}
       <div className={styles.editorFooter}>
-        <span>{content.length} 字</span>
+        <span>{stripTextFormatting(content).length} 字</span>
         <div>
           {question.format !== 'written' ? (
             <DifficultButton

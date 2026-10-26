@@ -13,6 +13,7 @@ import { createDefaultState, STORAGE_KEY } from '@/lib/study';
 import type { Question, SubjectId } from '@/lib/types';
 import { AppStateProvider } from '@/state/app-state';
 import { PRACTICE_SESSION_STORAGE_KEY } from '@/features/practice/practice-session';
+import { fillRichEditor } from '@/test/rich-editor';
 
 const router = vi.hoisted(() => ({ push: vi.fn(async () => true) }));
 vi.mock('next/router', () => ({ useRouter: () => router }));
@@ -223,7 +224,7 @@ describe('DifficultPage', () => {
     ).toHaveTextContent('目前尚無詳解。');
 
     const noteEditor = within(unexplainedQuestion!).getByRole('textbox');
-    fireEvent.change(noteEditor, { target: { value: '難題**詳解**' } });
+    fillRichEditor(noteEditor, '難題詳解');
     expect(
       within(unexplainedQuestion!).queryByRole('region', {
         name: '第 1 題筆記格式預覽',

@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import {
   IconChevronDown,
   IconCircleCheck,
@@ -16,7 +16,7 @@ import { DifficultButton } from '@/components/difficult-button';
 import { QuestionAnswerPanel } from '@/components/question-answer-panel';
 import { AttachmentGallery } from '@/components/image-attachments';
 import { RichText } from '@/components/rich-text';
-import { TextFormattingToolbar } from '@/components/text-formatting-toolbar';
+import { RichTextEditor } from '@/components/rich-text-editor';
 import { Button, useToast } from '@/components/ui/ui';
 import {
   formatCorrectAnswer,
@@ -160,25 +160,33 @@ export function AttemptReview({
                 </p>
               </div>
               <ReviewDiscussion question={question} />
-              <details className={styles.reviewOptions}>
-                <summary>
-                  <span>檢視完整選項與筆記</span>
-                  <IconChevronDown size={17} stroke={2} aria-hidden="true" />
-                </summary>
-                <QuestionAnswerPanel
-                  question={question}
-                  heading={null}
-                  ariaLabel={`第 ${question.questionNumber} 題完整選項`}
-                  selectedIndex={selected}
-                  showStatusLabels
-                />
-                <ReviewNoteEditor question={question} />
-              </details>
+              <ReviewOptions question={question} selected={selected} />
             </article>
           );
         })}
       </div>
     </section>
+  );
+}
+
+function ReviewOptions({ question, selected }: { question: ReviewQuestion; selected: number | undefined }) {
+  // An 80-question result must not initialize 80 editors. Keep an opened draft mounted
+  // when collapsed again, so toggling the disclosure cannot discard unsaved notes.
+  const [opened, setOpened] = useState(false);
+  return (
+    <details className={styles.reviewOptions} onToggle={event => {
+      if (event.currentTarget.open) setOpened(true);
+    }}>
+      <summary>
+        <span>檢視完整選項與筆記</span>
+        <IconChevronDown size={17} stroke={2} aria-hidden="true" />
+      </summary>
+      {opened ? <>
+        <QuestionAnswerPanel question={question} heading={null}
+          ariaLabel={`第 ${question.questionNumber} 題完整選項`} selectedIndex={selected} showStatusLabels />
+        <ReviewNoteEditor question={question} />
+      </> : null}
+    </details>
   );
 }
 
@@ -237,7 +245,6 @@ export function ReviewNoteEditor({ question }: { question: ReviewQuestion }) {
   const { state, dispatch } = useAppState();
   const { notify } = useToast();
   const discussion = useDiscussionPublisher(question.id);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [sharing, setSharing] = useState(false);
   const [content, setContent] = useState(state.notes[question.id] ?? '');
   const [images, setImages] = useState<ImageAttachment[]>(
@@ -299,23 +306,12 @@ export function ReviewNoteEditor({ question }: { question: ReviewQuestion }) {
         </span>
         <small>登入後同步文字筆記・圖片保存在本機</small>
       </header>
-      <TextFormattingToolbar
-        textareaRef={textareaRef}
+      <RichTextEditor
         value={content}
         onChange={setContent}
         ariaContext={`第 ${question.questionNumber} 題`}
-      />
-      <textarea
-        ref={textareaRef}
-        aria-label={`第 ${question.questionNumber} 題筆記內容`}
-        value={content}
-        onChange={(event) => setContent(event.target.value)}
-        onPaste={(event) => {
-          const files = [...event.clipboardData.files].filter((file) =>
-            file.type.startsWith('image/'),
-          );
-          if (!files.length) return;
-          event.preventDefault();
+        ariaLabel={`第 ${question.questionNumber} 題筆記內容`}
+        onPasteImages={(files) => {
           void appendImageFiles(images, files).then((result) => {
             setImages(result.images);
             const pasted = result.images.length > images.length;
@@ -326,7 +322,6 @@ export function ReviewNoteEditor({ question }: { question: ReviewQuestion }) {
             );
           });
         }}
-        rows={4}
         placeholder="在檢討答案時記下法條、公式或易錯觀念，也可以直接貼上截圖…"
       />
       <ImageAttachments

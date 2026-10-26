@@ -1,9 +1,32 @@
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { RichText } from '@/components/rich-text';
+import { RICH_DOCUMENT_PREFIX, serializeRichDocument } from '@/lib/rich-document';
 afterEach(cleanup);
 
 describe('RichText', () => {
+  it('renders stored visual formatting safely inside existing paragraph wrappers', () => {
+    const value = serializeRichDocument({ type: 'doc', content: [{ type: 'paragraph', content: [
+      { type: 'text', text: '大字', marks: [{ type: 'textStyle', attrs: { color: '#123abc', fontSize: '24px' } }, { type: 'underline' }] },
+    ] }, { type: 'paragraph' }, { type: 'paragraph', content: [
+      { type: 'text', text: '刪除', marks: [{ type: 'strike' }] },
+    ] }] });
+    const { container } = render(<p><RichText>{value}</RichText></p>);
+    expect(container.querySelector('[style]')).toHaveStyle({ color: '#123abc', fontSize: '24px' });
+    expect(container.querySelector('u')).toHaveTextContent('大字');
+    expect(container.querySelector('s')).toHaveTextContent('刪除');
+    expect(container.querySelector('p')?.textContent).toBe('大字\n\n刪除');
+    expect(container.querySelector('p p')).toBeNull();
+  });
+  it('never executes arbitrary nodes or links in a supplied rich document', () => {
+    const value = RICH_DOCUMENT_PREFIX + JSON.stringify({ type: 'doc', content: [{ type: 'paragraph', content: [
+      { type: 'text', text: '<script>alert(1)</script>', marks: [{ type: 'link', attrs: { href: 'javascript:alert(1)' } }] },
+    ] }] });
+    const { container } = render(<RichText>{value}</RichText>);
+    expect(container.querySelector('script')).toBeNull();
+    expect(container.querySelector('a')).toBeNull();
+    expect(container.textContent).toBe('<script>alert(1)</script>');
+  });
   it('preserves notes whitespace, blank lines and tabs without parsing arbitrary HTML', () => {
     const content = '  第一行  對齊\n\n\t第二行 **重點**\n<script>alert(1)</script>';
     const { container } = render(<p><RichText>{content}</RichText></p>);

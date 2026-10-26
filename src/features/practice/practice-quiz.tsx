@@ -256,8 +256,8 @@ export function PracticeQuiz({
                     </Button>
                   </>
                 )}
-                {isLast ? (
-                  <Button key="finish" variant={answer ? 'primary' : 'ghost'} onClick={onSubmit}>
+                {isLast && answer ? (
+                  <Button key="finish" variant="primary" onClick={onSubmit}>
                     <IconFlag size={17} aria-hidden="true" /> 完成練習
                   </Button>
                 ) : null}

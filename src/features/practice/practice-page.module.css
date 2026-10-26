@@ -4,7 +4,7 @@
   container-type: inline-size;
 }
 
-/* Practice quizzes and mock-exam results use the full available page width. */
+/* Daily/mock quizzes and their results use the full available page width. */
 .fullWidth {
   width: 100%;
 }

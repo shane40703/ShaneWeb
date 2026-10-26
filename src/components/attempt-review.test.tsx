@@ -1,4 +1,5 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fillRichEditor, selectRichEditor } from '@/test/rich-editor';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AttemptReview, countWrongAttemptsThrough } from '@/components/attempt-review';
 import { CloudSyncProvider } from '@/components/cloud-sync-provider';
@@ -71,7 +72,7 @@ describe('AttemptReview', () => {
       .toBe(3);
   });
 
-  it('renders every answer and its complete options', () => {
+  it('renders every answer and loads its complete options only after opening', async () => {
     render(
       <ToastProvider>
         <AppStateProvider>
@@ -94,7 +95,9 @@ describe('AttemptReview', () => {
     expect(screen.getByText('114 年・第 1 題')).toBeInTheDocument();
     expect(screen.getByText(/你的答案：B/)).toHaveTextContent('標準答案：B');
     expect(screen.getByText(/你的答案：A/)).toHaveTextContent('標準答案：C');
-    expect(screen.getAllByText('選項 D')).toHaveLength(2);
+    expect(screen.queryByText('選項 D')).not.toBeInTheDocument();
+    for (const summary of screen.getAllByText('檢視完整選項與筆記')) fireEvent.click(summary);
+    await waitFor(() => expect(screen.getAllByText('選項 D')).toHaveLength(2));
     expect(screen.queryByText('官方題目詳解')).not.toBeInTheDocument();
     expect(screen.queryByText('查看題目')).not.toBeInTheDocument();
     expect(
@@ -129,18 +132,15 @@ describe('AttemptReview', () => {
       </ToastProvider>,
     );
 
-    fireEvent.change(screen.getByLabelText('第 1 題筆記內容'), {
-      target: { value: '從對答案分享的詳解' },
-    });
+    fireEvent.click(screen.getByText('檢視完整選項與筆記'));
+    fillRichEditor(await screen.findByLabelText('第 1 題筆記內容'), '從對答案分享的詳解');
     fireEvent.click(screen.getByRole('button', { name: /分享到考古題討論版/ }));
 
     expect(await screen.findByLabelText('共享詳解狀態')).toHaveTextContent(
       '從對答案分享的詳解',
     );
 
-    fireEvent.change(screen.getByLabelText('第 1 題筆記內容'), {
-      target: { value: '修正後的詳解' },
-    });
+    fillRichEditor(screen.getByLabelText('第 1 題筆記內容'), '修正後的詳解');
     fireEvent.click(screen.getByRole('button', { name: /分享到考古題討論版/ }));
 
     const result = await screen.findByLabelText('共享詳解狀態');
@@ -149,7 +149,7 @@ describe('AttemptReview', () => {
     expect(result).toHaveAttribute('data-count', '1');
   });
 
-  it('formats review notes without a separate preview', () => {
+  it('formats review notes live without a separate preview', async () => {
     render(
       <ToastProvider>
         <AppStateProvider>
@@ -160,15 +160,17 @@ describe('AttemptReview', () => {
       </ToastProvider>,
     );
 
-    const editor = screen.getByLabelText<HTMLTextAreaElement>('第 1 題筆記內容');
-    fireEvent.change(editor, { target: { value: '建築物最大容許給水壓力' } });
-    editor.setSelectionRange(3, 7);
+    fireEvent.click(screen.getByText('檢視完整選項與筆記'));
+    const editor = await screen.findByLabelText('第 1 題筆記內容');
+    fillRichEditor(editor, '建築物最大容許給水壓力');
+    selectRichEditor(editor, 3, 7);
     fireEvent.click(
       screen.getByRole('button', { name: '切換第 1 題選取文字的粗體格式' }),
     );
 
-    expect(editor).toHaveValue('建築物**最大容許**給水壓力');
+    expect(editor.querySelector('strong')).toHaveTextContent('最大容許');
+    expect(editor).not.toHaveTextContent('**');
     expect(screen.queryByRole('region', { name: '第 1 題筆記格式預覽' })).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '切換第 1 題選取文字的紅字格式' })).toBeInTheDocument();
+    expect(screen.getByRole('combobox', { name: '第 1 題文字顏色' })).toBeInTheDocument();
   });
 });

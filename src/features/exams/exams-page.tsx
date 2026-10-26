@@ -1,4 +1,4 @@
-import { type FormEvent, useEffect, useRef, useState } from 'react';
+import { type FormEvent, useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import {
   IconArrowLeft,
@@ -24,7 +24,8 @@ import { DifficultButton } from '@/components/difficult-button';
 import { QuestionAnswerPanel } from '@/components/question-answer-panel';
 import { RichText } from '@/components/rich-text';
 import { SimilarQuestions } from '@/components/similar-questions';
-import { TextFormattingToolbar } from '@/components/text-formatting-toolbar';
+import { RichTextEditor } from '@/components/rich-text-editor';
+import { mergeRichTextValues } from '@/lib/rich-document';
 import {
   QuestionNumberPicker,
   QuestionSelector,
@@ -99,8 +100,6 @@ export function ExamsPage({
     : questions[0];
   const [postType, setPostType] = useState<DiscussionPostType>('explanation');
   const [postContent, setPostContent] = useState('');
-  const postTextareaRef = useRef<HTMLTextAreaElement>(null);
-  const editingTextareaRef = useRef<HTMLTextAreaElement>(null);
   const [replyDrafts, setReplyDrafts] = useState<Record<string, string>>({});
   const [editingPostId, setEditingPostId] = useState<string | null>(null);
   const [editingContent, setEditingContent] = useState('');
@@ -243,7 +242,7 @@ export function ExamsPage({
   function savePostToNote(post: DiscussionPost) {
     const currentContent = state.notes[activeQuestion.id] ?? '';
     const importedContent = post.content;
-    const content = [currentContent, importedContent].filter(Boolean).join('\n\n');
+    const content = mergeRichTextValues(currentContent, importedContent);
     const existingImages = state.noteImages[activeQuestion.id] ?? [];
     const imageIds = new Set(existingImages.map((image) => image.id));
     const images = [
@@ -397,18 +396,12 @@ export function ExamsPage({
                     </header>
                     {editingPostId === post.id ? (
                       <div className={styles.editPost}>
-                        <TextFormattingToolbar
-                          textareaRef={editingTextareaRef}
+                        <RichTextEditor
                           value={editingContent}
                           onChange={setEditingContent}
                           ariaContext="編輯投稿"
-                        />
-                        <textarea
-                          ref={editingTextareaRef}
-                          aria-label="編輯投稿內容"
-                          value={editingContent}
-                          onChange={(event) => setEditingContent(event.target.value)}
-                          rows={7}
+                          ariaLabel="編輯投稿內容"
+                          maxLength={5000}
                         />
                         <div>
                           <Button onClick={() => void saveEditedPost(post.id)}>
@@ -579,18 +572,14 @@ export function ExamsPage({
               onValueChange={setPostType}
             />
             <label htmlFor="post-content">內容</label>
-            <TextFormattingToolbar
-              textareaRef={postTextareaRef}
+            <RichTextEditor
+              id="post-content"
+              ariaLabel="內容"
+              ariaContext="投稿"
               value={postContent}
               onChange={setPostContent}
-              ariaContext="投稿"
-            />
-            <textarea
-              ref={postTextareaRef}
-              id="post-content"
-              value={postContent}
-              onChange={(event) => setPostContent(event.target.value)}
-              rows={12}
+              minHeight={240}
+              maxLength={5000}
               placeholder="請清楚描述你的詳解、補充、提問或勘誤…"
               disabled={shared.enabled && !shared.user}
             />

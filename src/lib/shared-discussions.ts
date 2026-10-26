@@ -214,6 +214,9 @@ export function useDiscussionPublisher(questionId: QuestionId) {
       if (!formatted && !images.length) {
         throw new Error('請先輸入要分享的內容或加入圖片。');
       }
+      if (formatted.length > 5000) {
+        throw new Error('分享內容含格式最多 5,000 字元，請刪減文字或格式後再分享；原筆記仍會保留。');
+      }
       if (!enabled) {
         const existingPost = type === 'explanation'
           ? state.discussionPosts.find(

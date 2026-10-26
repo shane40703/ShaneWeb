@@ -31,7 +31,9 @@ async function openSetup(page: Page) {
 
 test('new daily practice keeps the daily defaults, hides the random options, and answers one question per URL', async ({
   page,
+  isMobile,
 }, testInfo) => {
+  if (!isMobile) await page.setViewportSize({ width: 1920, height: 1080 });
   const setup = await openSetup(page);
   await expect(setup.getByText(/闖關/)).toHaveCount(0);
   const toggle = page.getByRole('button', { name: /進階選項/ });
@@ -95,12 +97,26 @@ test('new daily practice keeps the daily defaults, hides the random options, and
 
   page.once('dialog', (dialog) => dialog.accept());
   await sidebar.getByRole('link', { name: '前往第 5 題', exact: true }).click();
+  await expect(page.getByRole('button', { name: '完成練習', exact: true })).toHaveCount(0);
+  await expect(confirm).toBeDisabled();
+  await question.getByRole('radio').first().click();
+  await expect(page.getByRole('button', { name: '完成練習', exact: true })).toHaveCount(0);
+  await confirm.click();
+  await expect(question.getByRole('status')).toContainText(/答對了|答錯了/);
+  await expect(confirm).toHaveCount(0);
   await page.getByRole('button', { name: '完成練習', exact: true }).click();
   await expect(page).toHaveURL(/\?view=result$/);
   await expect(
-    page.getByText('共 5 題，作答 1 題，未作答 4 題不計入正確率。'),
+    page.getByText('共 5 題，作答 2 題，未作答 3 題不計入正確率。'),
   ).toBeVisible();
-  await expect(page.getByText(/^(0|100)% 正確率$/)).toBeVisible();
+  await expect(page.getByText(/^(0|50|100)% 正確率$/)).toBeVisible();
+  const result = page.getByRole('region', { name: '法規練習結果', exact: true });
+  const resultWidth = (await result.boundingBox())!.width;
+  const availableWidth = await result.evaluate(el => el.parentElement!.parentElement!.parentElement!.clientWidth);
+  expect(Math.abs(resultWidth - availableWidth)).toBeLessThanOrEqual(1);
+  if (!isMobile) expect(resultWidth).toBeGreaterThan(1180);
+  await page.getByRole('button', { name: '本次考題預覽', exact: true }).click();
+  await expect(page.getByRole('region', { name: '本次考題預覽', exact: true }).getByRole('article')).toHaveCount(5);
   await expectNoHorizontalOverflow(page);
   await page.screenshot({ path: testInfo.outputPath('result.png'), fullPage: true });
 
@@ -110,7 +126,7 @@ test('new daily practice keeps the daily defaults, hides the random options, and
   await expect(page.getByRole('button', { name: '確認答案' })).toBeDisabled();
   await page.goForward();
   await expect(page).toHaveURL(/\?view=result$/);
-  await expect(page.getByText(/^(0|100)% 正確率$/)).toBeVisible();
+  await expect(page.getByText(/^(0|50|100)% 正確率$/)).toBeVisible();
 
   await page.reload();
   await expect(page).toHaveURL(/\?q=1$/);
@@ -218,9 +234,11 @@ test('the hub links the three practices in one column, and 每日抽題練習 pi
 
   page.once('dialog', (dialog) => dialog.accept());
   await page.getByRole('link', { name: '前往第 5 題', exact: true }).click();
+  await question.getByRole('radio').first().click();
+  await page.getByRole('button', { name: '確認答案' }).click();
   await page.getByRole('button', { name: '完成練習', exact: true }).click();
   await expect(page).toHaveURL(/\?view=result$/);
-  await expect(page.getByText(/^(0|100)% 正確率$/)).toBeVisible();
+  await expect(page.getByText(/^(0|50|100)% 正確率$/)).toBeVisible();
   await expectNoHorizontalOverflow(page);
 });
 
@@ -377,8 +395,10 @@ test('每日抽題練習 submissions go to 已作答紀錄, and 再做一次 sta
   await page.getByRole('button', { name: '確認答案' }).click();
   page.once('dialog', (dialog) => void dialog.accept());
   await page.getByRole('link', { name: '前往第 5 題', exact: true }).click();
+  await question.getByRole('radio').first().click();
+  await page.getByRole('button', { name: '確認答案' }).click();
   await page.getByRole('button', { name: '完成練習', exact: true }).click();
-  await expect(page.getByText(/^(0|100)% 正確率$/)).toBeVisible();
+  await expect(page.getByText(/^(0|50|100)% 正確率$/)).toBeVisible();
 
   await page.goto('/history');
   const group = page.getByRole('group', { name: '每日抽題練習作答紀錄' });
@@ -387,8 +407,8 @@ test('每日抽題練習 submissions go to 已作答紀錄, and 再做一次 sta
   await expect(card.getByRole('heading', { level: 2 })).toHaveText(
     '建築法規與實務・每日抽題練習 5 題',
   );
-  await expect(card.getByText(/^正確率 (0|100)%$/)).toBeVisible();
-  await expect(card.getByText(/^答對 [01]／1 題$/)).toBeVisible();
+  await expect(card.getByText(/^正確率 (0|50|100)%$/)).toBeVisible();
+  await expect(card.getByText(/^答對 [012]／2 題$/)).toBeVisible();
   await card.getByRole('button', { name: '再做一次' }).click();
   await expect(page).toHaveURL(/\/practice\/quiz\?q=1$/);
   await expect(page.getByLabel('第 1 題，共 5 題')).toBeVisible();

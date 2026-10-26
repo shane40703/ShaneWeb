@@ -68,14 +68,17 @@ for (const source of ['difficult', 'wrong'] as const) {
     await page.screenshot({ path: testInfo.outputPath(`${source}-review.png`), fullPage: true });
 
     page.once('dialog', dialog => dialog.accept());
+    await expect(quiz.getByRole('button', { name: '完成練習', exact: true })).toHaveCount(0);
+    await quiz.getByRole('radio').first().click();
+    await quiz.getByRole('button', { name: '確認答案', exact: true }).click();
     await quiz.getByRole('button', { name: '完成練習', exact: true }).click();
     await expect(page.getByRole('region', { name: '法規練習結果', exact: true })).toBeVisible();
-    await expect(page.getByText('共 53 題，作答 1 題，未作答 52 題不計入正確率。', { exact: true })).toBeVisible();
+    await expect(page.getByText('共 53 題，作答 2 題，未作答 51 題不計入正確率。', { exact: true })).toBeVisible();
     await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('shaneweb:state')!).attempts.length)).toBe(2);
     const savedState = await page.evaluate(() => JSON.parse(localStorage.getItem('shaneweb:state')!));
     expect(savedState.difficultQuestionIds).toEqual(state.difficultQuestionIds);
     expect(savedState.attempts.find((attempt: { id: string }) => attempt.id === 'original-mistakes').answers).toEqual(wrongAnswers);
     expect(savedState.attempts[0].questionIds).toEqual(ids);
-    expect(Object.keys(savedState.attempts[0].answers)).toHaveLength(1);
+    expect(Object.keys(savedState.attempts[0].answers)).toHaveLength(2);
   });
 }

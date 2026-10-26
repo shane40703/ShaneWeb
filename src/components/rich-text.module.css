@@ -8,3 +8,11 @@
   color: var(--danger);
   font-weight: 600;
 }
+
+.paragraph { display: contents; }
+.list { display: block; padding-left: 1.5em; }
+.listItem { display: block; position: relative; }
+.listItem::before { content: '•'; position: absolute; right: calc(100% + 0.4em); }
+.list[data-ordered] > .listItem { counter-increment: rich-list; }
+.list[data-ordered] > .listItem::before { content: counter(rich-list) '.'; }
+.quote { display: block; padding-left: 12px; border-left: 3px solid var(--line-strong); }

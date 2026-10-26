@@ -13,6 +13,7 @@ import type { Question, SubjectId } from '@/lib/types';
 import { PRACTICE_SESSION_STORAGE_KEY, type PracticeSession } from './practice-session';
 import { PracticePage } from './practice-page';
 import { keepPracticeResult } from './practice-result-memory';
+import styles from './practice-page.module.css';
 
 type RouteInput = string | { pathname: string; query?: Record<string, string | number> };
 
@@ -303,8 +304,17 @@ function questionRegion() {
   return screen.getByRole('region', { name: '題目與選項' });
 }
 
-async function finishPractice() {
-  act(() => router.link(`/practice/quiz?q=${stored()!.questionIds.length}`));
+async function finishPractice(available = true) {
+  const total = stored()!.questionIds.length;
+  act(() => router.link(`/practice/quiz?q=${total}`));
+  if (available) {
+    await screen.findByLabelText(`第 ${total} 題，共 ${total} 題`);
+    const confirm = screen.queryByRole('button', { name: '確認答案' });
+    if (confirm) {
+      chooseOption('選項 A');
+      fireEvent.click(confirm);
+    }
+  }
   fireEvent.click(await screen.findByRole('button', { name: '完成練習' }));
 }
 
@@ -657,7 +667,7 @@ describe('PracticePage answering', () => {
     renderAt('/practice/quiz?q=1');
     await screen.findByLabelText('第 1 題，共 5 題');
     await finishPractice();
-    await screen.findByText('50% 正確率');
+    await screen.findByText('67% 正確率');
 
     const saved = appState.dispatch.mock.calls.find(
       ([action]) => action.type === 'save-attempt',
@@ -668,22 +678,22 @@ describe('PracticePage answering', () => {
       year: null,
       questionIds: lawQuestions.slice(0, 5).map((question) => question.id),
       // The shuffled second option is the paper's 選項 A; an unshuffled one stays as is.
-      answers: { 'law-114-01': 0, 'law-113-02': 0 },
-      correctCount: 1,
+      answers: { 'law-114-01': 0, 'law-113-02': 0, 'law-113-05': 0 },
+      correctCount: 2,
       wrongCount: 1,
-      unansweredCount: 3,
+      unansweredCount: 2,
       elapsedSeconds: 42,
     });
     expect(saved.attempt.id).toMatch(/^attempt-/);
-    expect(saved.results).toEqual({ 'law-114-01': true, 'law-113-02': false });
+    expect(saved.results).toEqual({ 'law-114-01': true, 'law-113-02': false, 'law-113-05': true });
   });
 
-  it('keeps no record of a set submitted without a single answer', async () => {
+  it('keeps an escape on an unavailable last question without recording a blank set', async () => {
     vi.spyOn(window, 'confirm').mockReturnValue(true);
-    seed({});
+    seed({ questionIds: [...lawQuestions.slice(0, 4).map(question => question.id), 'law-114-99'] });
     renderAt('/practice/quiz?q=1');
     await screen.findByLabelText('第 1 題，共 5 題');
-    await finishPractice();
+    await finishPractice(false);
     await screen.findByText('這次沒有作答任何題目');
 
     expect(
@@ -828,7 +838,7 @@ describe('PracticePage history', () => {
     await startFiveQuestions();
     await skipTo(2);
     await finishPractice();
-    await screen.findByText('這次沒有作答任何題目');
+    await screen.findByText('100% 正確率');
     fireEvent.click(screen.getByRole('button', { name: /重新選科／抽題/ }));
     await screen.findByRole('region', { name: '每日抽題練習設定' });
     await settleHistory();
@@ -1009,11 +1019,36 @@ describe('PracticePage with another tab', () => {
 });
 
 describe('PracticePage result', () => {
+  it('only offers completion after confirming the last question, including a one-question set and reload', async () => {
+    const confirm = vi.spyOn(window, 'confirm');
+    seed({}, 1);
+    const view = renderAt('/practice/quiz?q=1');
+    await screen.findByLabelText('第 1 題，共 1 題');
+    expect(screen.getByRole('button', { name: '確認答案' })).toBeDisabled();
+    expect(screen.queryByRole('button', { name: '完成練習' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '跳過' })).not.toBeInTheDocument();
+    chooseOption('選項 A');
+    expect(screen.queryByRole('button', { name: '完成練習' })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: '確認答案' }));
+    expect(within(questionRegion()).getByText('答對了')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '確認答案' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '完成練習' })).toBeInTheDocument();
+    expect(appState.dispatch).not.toHaveBeenCalled();
+    view.unmount();
+    reload();
+    const reloaded = renderPage();
+    fireEvent.click(await screen.findByRole('button', { name: '完成練習' }));
+    await screen.findByText('100% 正確率');
+    expect(confirm).not.toHaveBeenCalled();
+    expect(reloaded.container.firstElementChild).toHaveClass(styles.fullWidth);
+    expect(appState.dispatch).toHaveBeenCalledWith(expect.objectContaining({ type: 'save-attempt' }));
+  });
+
   it('submits with unanswered questions outside the accuracy and forgets the result on reload', async () => {
     const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
     seed({
       answers: {
-        'law-114-01': { selected: 0, correct: true },
+        'law-113-05': { selected: 0, correct: true },
         'law-113-02': { selected: 2, correct: false },
       },
       drafts: { 'law-112-03': 1 },

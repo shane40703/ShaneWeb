@@ -12,6 +12,7 @@ import { NotesPage } from '@/features/notes/notes-page';
 import { createDefaultState, STORAGE_KEY } from '@/lib/study';
 import type { Question, SubjectId } from '@/lib/types';
 import { AppStateProvider } from '@/state/app-state';
+import { fillRichEditor, selectRichEditor } from '@/test/rich-editor';
 
 const router = vi.hoisted(() => ({
   isReady: true,
@@ -170,8 +171,8 @@ describe('NotesPage question loading', () => {
 
   it('keeps an unsaved default-question draft when the full bank becomes ready', async () => {
     const view = render(page({ questionBankStatus: 'loading' }));
-    const editor = await screen.findByLabelText<HTMLTextAreaElement>('我的筆記');
-    fireEvent.change(editor, { target: { value: '尚未儲存的草稿' } });
+    const editor = await screen.findByLabelText('我的筆記');
+    fillRichEditor(editor, '尚未儲存的草稿');
 
     view.rerender(
       page({
@@ -182,7 +183,7 @@ describe('NotesPage question loading', () => {
 
     expect(screen.getByText('law-114-01 題幹')).toBeInTheDocument();
     expect(screen.queryByText('env-114-01 題幹')).not.toBeInTheDocument();
-    expect(screen.getByLabelText('我的筆記')).toHaveValue('尚未儲存的草稿');
+    expect(screen.getByLabelText('我的筆記')).toHaveTextContent('尚未儲存的草稿');
   });
 
   it('places the source above the question without a visible options heading', async () => {
@@ -228,33 +229,35 @@ describe('NotesPage question loading', () => {
 
   it('offers rich formatting without a separate preview', async () => {
     render(page());
-    const editor = await screen.findByLabelText<HTMLTextAreaElement>('我的筆記');
-    fireEvent.change(editor, { target: { value: '重要法條' } });
-    editor.scrollTop = 160;
-    editor.setSelectionRange(0, 4);
+    const editor = await screen.findByLabelText('我的筆記');
+    fillRichEditor(editor, '重要法條');
+    selectRichEditor(editor, 0, 4);
 
     fireEvent.click(
       screen.getByRole('button', { name: '切換選取文字的粗體格式' }),
     );
 
-    expect(editor).toHaveValue('**重要法條**');
-    await waitFor(() => expect(editor.scrollTop).toBe(160));
+    expect(editor.querySelector('strong')).toHaveTextContent('重要法條');
+    expect(editor).not.toHaveTextContent('**');
     expect(screen.queryByRole('region', { name: '筆記格式預覽' })).not.toBeInTheDocument();
-    for (const format of ['斜體', '上標', '下標', '紅字']) {
+    for (const format of ['斜體', '上標', '下標', '底線', '刪除線']) {
       expect(screen.getByRole('button', { name: `切換選取文字的${format}格式` })).toBeInTheDocument();
     }
 
-    editor.setSelectionRange(2, 6);
+    selectRichEditor(editor, 0, 4);
     fireEvent.click(
       screen.getByRole('button', { name: '切換選取文字的粗體格式' }),
     );
-    expect(editor).toHaveValue('重要法條');
+    expect(editor).toHaveTextContent('重要法條');
+    expect(editor.querySelector('strong')).toBeNull();
   });
 
   it('renders formatting after the note is saved and returns to editing on demand', async () => {
+    const state = createDefaultState();
+    state.notes[lawQuestion.id] = '**重點** _補充_ ^2^ ~3~ !!注意!!';
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     render(page());
-    const editor = await screen.findByLabelText<HTMLTextAreaElement>('我的筆記');
-    fireEvent.change(editor, { target: { value: '**重點** _補充_ ^2^ ~3~ !!注意!!' } });
+    fireEvent.click(await screen.findByRole('button', { name: '編輯筆記' }));
     fireEvent.click(screen.getByRole('button', { name: '儲存筆記' }));
 
     const result = await screen.findByRole('region', { name: '已儲存筆記內容' });
@@ -266,16 +269,15 @@ describe('NotesPage question loading', () => {
     expect(screen.queryByLabelText('我的筆記')).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: '編輯筆記' }));
-    expect(await screen.findByLabelText('我的筆記')).toHaveValue(
-      '**重點** _補充_ ^2^ ~3~ !!注意!!',
-    );
+    const editor = await screen.findByLabelText('我的筆記');
+    expect(editor.querySelector('strong')).toHaveTextContent('重點');
+    expect(editor.querySelector('sup')).toHaveTextContent('2');
+    expect(editor).not.toHaveTextContent('**');
   });
 
   it('keeps an unsaved draft usable through a partial bank error', async () => {
     const view = render(page({ questionBankStatus: 'loading' }));
-    fireEvent.change(await screen.findByLabelText('我的筆記'), {
-      target: { value: '等待重試的草稿' },
-    });
+    fillRichEditor(await screen.findByLabelText('我的筆記'), '等待重試的草稿');
 
     view.rerender(
       page({
@@ -285,7 +287,7 @@ describe('NotesPage question loading', () => {
 
     expect(screen.queryByRole('heading', { name: '題庫載入失敗' }))
       .not.toBeInTheDocument();
-    expect(screen.getByLabelText('我的筆記')).toHaveValue('等待重試的草稿');
+    expect(screen.getByLabelText('我的筆記')).toHaveTextContent('等待重試的草稿');
 
     view.rerender(
       page({
@@ -294,7 +296,7 @@ describe('NotesPage question loading', () => {
       }),
     );
 
-    expect(screen.getByLabelText('我的筆記')).toHaveValue('等待重試的草稿');
+    expect(screen.getByLabelText('我的筆記')).toHaveTextContent('等待重試的草稿');
   });
 
   it('deletes saved note text and images after confirmation', async () => {
@@ -319,7 +321,7 @@ describe('NotesPage question loading', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByLabelText('我的筆記')).toHaveValue('');
+      expect(screen.getByLabelText('我的筆記')).toHaveTextContent('');
       expect(
         screen.queryByRole('button', { name: '刪除筆記' }),
       ).not.toBeInTheDocument();

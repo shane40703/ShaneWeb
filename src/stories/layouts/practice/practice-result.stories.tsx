@@ -20,7 +20,7 @@ import { pageParameters, withPageFrame } from '../../support/story-environment';
 import {
   practicePageParameters,
   stayInStoryOnRewind,
-  withPracticeSectionFrame,
+  withPracticeResultFrame,
 } from './practice-frame';
 
 // 十題的法規題組：含截圖那題（101-15）、題幹有圖的 101-08、題目很長的 113-33。
@@ -37,7 +37,7 @@ const questionIds = [
   'law-101-03',
 ];
 
-// 作答八題（答錯三題），最後兩題沒確認答案就完成練習。
+// 作答八題（答錯三題），跳過第七、八題，確認最後一題後完成練習。
 const mixedSession = answerPractice(
   practiceSessionOf('story-practice-result', questionIds),
   {
@@ -47,8 +47,8 @@ const mixedSession = answerPractice(
     'law-101-08': 'wrong',
     'law-113-33': 'wrong',
     'law-101-44': 'correct',
-    'law-113-62': 'correct',
-    'law-101-71': 'correct',
+    'law-113-12': 'correct',
+    'law-101-03': 'correct',
   },
 );
 
@@ -77,12 +77,12 @@ function submitted(session: PracticeSession, appState?: Partial<AppState>): Stor
 
 /**
  * 每日抽題練習完成練習後的練習結果：整個 /practice/quiz 頁面，成績照網站的 createPracticeResult
- * 計算，錯題整理從這科的題庫找題目。
+ * 計算，錯題整理從這科的題庫找題目。結果、錯題整理與考題預覽皆使用整個頁面寬度，手機依容器寬度換行。
  *
  * 畫面上可以操作看到：
  * - 「本次考題預覽」展開／收合整份題組（題目與選項順序跟這次練習相同）
  * - 錯題的使用者筆記：輸入文字、貼上圖片；筆記圖片點開放大
- * - 「重做這組題目」回到作答畫面第 1 題；什麼都不答直接「完成練習」，就是沒有作答任何題目的結果
+ * - 「重做這組題目」回到作答畫面第 1 題；最後一題先「確認答案」，再按「完成練習」查看新結果
  * - 「重新選科／抽題」回到設定畫面
  */
 const meta = {
@@ -123,7 +123,7 @@ export const 題目尚未載入: StoryObj<{ onRetry: () => void; onNewDraw: () =
       onNewDraw={args.onNewDraw}
     />
   ),
-  decorators: [withPracticeSectionFrame],
+  decorators: [withPracticeResultFrame],
   parameters: { ...pageParameters('/practice/quiz', { view: 'result' }) },
   args: { onRetry: fn(), onNewDraw: fn() },
 };

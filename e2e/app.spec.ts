@@ -149,7 +149,7 @@ test('notes save and reload from local storage', async ({ page }, testInfo) => {
       .getByRole('button', { name: '第 1 題（有筆記）' }),
   ).toHaveAttribute('data-noted', 'true');
   await page.getByRole('button', { name: '編輯筆記', exact: true }).click();
-  await expect(page.getByLabel('我的筆記')).toHaveValue('法定空地分割辦法由中央主管建築機關定之。');
+  await expect(page.getByLabel('我的筆記')).toHaveText('法定空地分割辦法由中央主管建築機關定之。');
 });
 
 test('all retained routes support direct visits and the removed old pages return 404', async ({ page }, testInfo) => {

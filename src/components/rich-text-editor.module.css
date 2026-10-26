@@ -1,0 +1,35 @@
+.root { min-width: 0; display: grid; gap: 8px; container-type: inline-size; }
+.toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.toolbar button, .toolbar select, .colorPicker {
+  min-height: 36px; min-width: 0; padding: 0 8px; border: var(--frame);
+  border-radius: var(--radius-control); color: var(--text-soft); background: var(--surface);
+  font: inherit; font-size: 12px; cursor: pointer;
+}
+.toolbar button { display: inline-flex; align-items: center; justify-content: center; gap: 5px; }
+.toolbar button > span:first-child { min-width: 14px; }
+.toolbar button:hover:not(:disabled) { background: var(--surface-elevated); }
+.toolbar button[aria-pressed='true'] { color: var(--primary-strong); background: var(--primary-soft); border-color: var(--primary); }
+.toolbar button:disabled, .toolbar select:disabled, .colorPicker:disabled { opacity: 0.45; cursor: not-allowed; }
+.toolbar label { display: inline-flex; align-items: center; gap: 5px; color: var(--muted); font-size: 12px; }
+.colorPicker { width: 36px; padding: 3px; }
+.toolbar :is(button, select, input):focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.surface { min-width: 0; min-height: var(--editor-min-height); border: var(--frame); border-radius: var(--radius-control); background: var(--surface); }
+.surface:focus-within { border-color: var(--primary); outline: 2px solid var(--focus); outline-offset: 1px; }
+.surface[data-disabled] { opacity: 0.6; }
+.surface :global(.tiptap) {
+  min-height: var(--editor-min-height); padding: 12px; outline: none; color: var(--text);
+  font-size: 16px; line-height: 1.75; white-space: pre-wrap; overflow-wrap: anywhere; tab-size: 4;
+}
+.surface :global(.tiptap p) { margin: 0; min-height: 1em; }
+.surface :global(.tiptap ul), .surface :global(.tiptap ol) { margin: 0; padding-left: 1.5em; }
+.surface :global(.tiptap blockquote) { margin: 0; padding-left: 12px; border-left: 3px solid var(--line-strong); }
+.surface :global(.tiptap a) { color: var(--primary); text-decoration: underline; }
+.surface[data-empty] :global(.tiptap)::before {
+  content: attr(data-placeholder); float: left; height: 0; color: var(--muted);
+  pointer-events: none; font-size: 14px;
+}
+.warning { color: var(--danger); font-size: 12px; }
+@container (max-width: 640px) {
+  .toolbar button, .toolbar select, .colorPicker { min-height: 44px; }
+  .colorPicker { width: 44px; }
+}

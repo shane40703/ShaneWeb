@@ -1,10 +1,11 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ToastProvider } from '@/components/ui/ui';
 import { CloudSyncProvider } from '@/components/cloud-sync-provider';
 import { ExamsPage } from '@/features/exams/exams-page';
 import type { Question, SubjectId } from '@/lib/types';
 import { AppStateProvider } from '@/state/app-state';
+import { fillRichEditor, selectRichEditor } from '@/test/rich-editor';
 
 const router = vi.hoisted(() => ({
   isReady: true,
@@ -71,20 +72,21 @@ describe('ExamsPage question loading', () => {
   });
 
   it('preserves note-style whitespace when adding and editing explanations', async () => {
-    const content = '  第一行\n\n\t第二行 **格式重點**  對齊\n';
+    const content = '  第一行\n\n\t第二行 格式重點  對齊\n';
     renderPage();
-    fireEvent.change(screen.getByLabelText('內容'), { target: { value: content } });
+    const editor = screen.getByLabelText('內容');
+    fillRichEditor(editor, content);
     fireEvent.click(screen.getByRole('button', { name: '送出共享投稿' }));
-    const bold = await screen.findByText('格式重點');
-    expect(bold.tagName).toBe('STRONG');
-    expect(bold.closest('p')!.textContent).toBe(content.replace('**格式重點**', '格式重點'));
+    const displayed = await screen.findByText(/第二行 格式重點/);
+    expect(displayed.closest('p')!.textContent).toBe(content);
     fireEvent.click(screen.getByRole('button', { name: '編輯' }));
-    expect(screen.getByLabelText('編輯投稿內容')).toHaveValue(content);
+    expect(screen.getByLabelText('編輯投稿內容')).toHaveTextContent('格式重點');
     const changed = '  修正第一行\n\n\t下一行  留空\n';
-    fireEvent.change(screen.getByLabelText('編輯投稿內容'), { target: { value: changed } });
+    fillRichEditor(screen.getByLabelText('編輯投稿內容'), changed);
     fireEvent.click(screen.getByRole('button', { name: '儲存修改' }));
+    await waitFor(() => expect(screen.queryByLabelText('編輯投稿內容')).not.toBeInTheDocument());
     const edited = await screen.findByText(/修正第一行/);
-    expect(edited.textContent).toBe(changed);
+    expect(edited.closest('p')!.textContent).toBe(changed);
   });
 
   it('shows the current question category beside its subject and year', () => {
@@ -207,9 +209,7 @@ describe('ExamsPage question loading', () => {
     expect(contentColumn).toHaveTextContent('共享內容');
     expect(contentColumn).toHaveTextContent('分享解題觀念');
 
-    fireEvent.change(screen.getByLabelText('內容'), {
-      target: { value: '本機備援投稿' },
-    });
+    fillRichEditor(screen.getByLabelText('內容'), '本機備援投稿');
     fireEvent.click(screen.getByRole('button', { name: '送出共享投稿' }));
 
     expect(await screen.findByText('本機備援投稿')).toBeInTheDocument();
@@ -218,23 +218,21 @@ describe('ExamsPage question loading', () => {
     ).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: '編輯' }));
-    fireEvent.change(screen.getByLabelText('編輯投稿內容'), {
-      target: { value: '修改後的本機投稿' },
-    });
-    expect(screen.getByLabelText('編輯投稿內容')).toHaveValue('修改後的本機投稿');
+    fillRichEditor(screen.getByLabelText('編輯投稿內容'), '修改後的本機投稿');
+    expect(screen.getByLabelText('編輯投稿內容')).toHaveTextContent('修改後的本機投稿');
   });
 
   it('shows the question number and supports bold formatting in the composer', () => {
     renderPage();
 
     expect(screen.getByRole('heading', { name: '第 1 題' })).toBeInTheDocument();
-    const textarea = screen.getByLabelText('內容') as HTMLTextAreaElement;
-    fireEvent.change(textarea, { target: { value: '粗體內容' } });
-    textarea.setSelectionRange(0, 4);
+    const textarea = screen.getByLabelText('內容');
+    fillRichEditor(textarea, '粗體內容');
+    selectRichEditor(textarea, 0, 4);
     fireEvent.click(
       screen.getByRole('button', { name: '切換投稿選取文字的粗體格式' }),
     );
-    expect(textarea).toHaveValue('**粗體內容**');
+    expect(textarea.querySelector('strong')).toHaveTextContent('粗體內容');
   });
 
   it('allows essay discussion without answer choices or difficult marking', () => {
