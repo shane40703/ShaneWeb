@@ -6,6 +6,8 @@ for (const theme of ['light', 'dark'] as const) {
     await page.addInitScript(mode => localStorage.setItem('shane-web-theme', mode), theme);
     await page.goto('/practice/quiz');
     const setup = page.getByRole('region', { name: '每日抽題練習設定', exact: true });
+    await expect(setup.getByRole('radio', { checked: true })).toHaveCount(0);
+    await setup.getByRole('radio', { name: /建築法規與實務/ }).check();
     await expect(setup.getByText(/已選 法規・從 \d+ 題中抽 50 題/)).toBeVisible({ timeout: 20_000 });
     const available = await page.locator('main').evaluate(element => {
       const style = getComputedStyle(element);
@@ -34,10 +36,12 @@ for (const theme of ['light', 'dark'] as const) {
 
     page.once('dialog', dialog => dialog.accept());
     await quiz.getByRole('link', { name: '前往第 50 題', exact: true }).click();
+    await quiz.getByRole('radio').first().click();
+    await quiz.getByRole('button', { name: '確認答案', exact: true }).click();
     await quiz.getByRole('button', { name: '完成練習', exact: true }).click();
     const result = page.getByRole('region', { name: '法規練習結果', exact: true });
     await expect(result).toBeVisible();
-    expect((await result.boundingBox())!.width).toBeCloseTo(Math.min(available, 1180), 0);
+    expect((await result.boundingBox())!.width).toBeCloseTo(available, 0);
     await page.getByRole('button', { name: '重做這組題目', exact: true }).click();
     await expect(quiz).toBeVisible();
     expect((await quiz.boundingBox())!.width).toBeCloseTo(available, 0);

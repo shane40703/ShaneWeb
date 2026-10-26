@@ -23,6 +23,9 @@ async function openSetup(page: Page) {
   await page.goto('/practice/quiz');
   const setup = page.getByRole('region', { name: '每日抽題練習設定' });
   await expect(setup).toBeVisible();
+  await expect(setup.getByRole('radio', { checked: true })).toHaveCount(0);
+  await expect(setup.getByRole('button', { name: '線上作答', exact: true })).toBeDisabled();
+  await setup.getByRole('radio', { name: /建築法規與實務/ }).check();
   await expect(setup.getByText(/已選 法規・從 \d+ 題中抽 50 題/)).toBeVisible({
     timeout: 60_000,
   });
@@ -162,7 +165,7 @@ test('paper download from the setup draws its own set without starting online pr
   ).toBeNull();
 });
 
-test('the hub links the three practices in one column, and 每日抽題練習 picks its set up again', async ({
+test('the hub uses three desktop cards and daily practice asks for a fresh subject before optional resume', async ({
   page,
   isMobile,
 }, testInfo) => {
@@ -178,7 +181,7 @@ test('the hub links the three practices in one column, and 每日抽題練習 pi
   await expect(practices.nth(0).getByText(/^4 科・[\d,]+ 題$/)).toBeVisible();
   await expect(practices.nth(2).getByText(/^\d+ 部法規・[\d,]+ 題$/)).toBeVisible();
   await expect(practices.nth(1).getByText(/^\d 科・\d+ 份試卷$/)).toBeVisible();
-  // Words and one link each, stacked in a single column: no shortcuts into the pages.
+  // Same card order: horizontal on desktop, stacked on phones.
   const list = page.getByRole('list').filter({ has: page.getByRole('article') });
   await expect(list.getByRole('link')).toHaveCount(3);
   await expect(list.getByRole('button')).toHaveCount(0);
@@ -188,10 +191,14 @@ test('the hub links the three practices in one column, and 每日抽題練習 pi
       return { left, top, bottom };
     }),
   );
-  expect(new Set(boxes.map((box) => box.left)).size).toBe(1);
-  boxes
-    .slice(1)
-    .forEach((box, index) => expect(box.top).toBeGreaterThan(boxes[index].bottom));
+  if (isMobile) {
+    expect(new Set(boxes.map((box) => box.left)).size).toBe(1);
+    boxes.slice(1).forEach((box, index) => expect(box.top).toBeGreaterThan(boxes[index].bottom));
+  } else {
+    expect(new Set(boxes.map((box) => box.top)).size).toBe(1);
+    expect(new Set(boxes.map((box) => box.left)).size).toBe(3);
+    expect(boxes[0].bottom - boxes[0].top).toBeGreaterThanOrEqual(300);
+  }
   await expectNoHorizontalOverflow(page);
   await page.screenshot({ path: testInfo.outputPath('hub.png'), fullPage: true });
 
@@ -224,11 +231,16 @@ test('the hub links the three practices in one column, and 每日抽題練習 pi
   await expect(page).toHaveURL(/\?q=2$/);
   await page.screenshot({ path: testInfo.outputPath('quiz.png') });
 
-  // The hub stays the same; the practice itself picks the set up where it stopped.
+  // Entry does not preselect the previous subject or silently discard its answers.
   await page.getByRole('link', { name: '返回每日練習' }).click();
   await expect(page).toHaveURL(/\/practice$/);
   await expect(list.getByRole('link')).toHaveCount(3);
   await practices.nth(0).getByRole('link').click();
+  await expect(page).toHaveURL(/\/practice\/quiz$/);
+  const setup = page.getByRole('region', { name: '每日抽題練習設定', exact: true });
+  await expect(setup.getByRole('radio', { checked: true })).toHaveCount(0);
+  await expect(setup.getByRole('button', { name: '線上作答', exact: true })).toBeDisabled();
+  await setup.getByRole('button', { name: '繼續未完成練習', exact: true }).click();
   await expect(page).toHaveURL(/\/practice\/quiz\?q=2$/);
   await expect(page.getByLabel('第 2 題，共 5 題')).toBeVisible();
 

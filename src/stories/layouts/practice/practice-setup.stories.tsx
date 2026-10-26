@@ -10,10 +10,10 @@ import {
 import { PracticeSetup } from '@/features/practice/practice-setup';
 import type { Question, SubjectId } from '@/lib/types';
 import PracticeQuizRoute from '@/pages/practice/quiz';
-import { practiceBank } from '../../fixtures/practice';
+import { answerFirst, drawPracticeSession, practiceBank } from '../../fixtures/practice';
 import { withStatefulRouter } from '../../support/stateful-router';
 import { pageParameters, withPageFrame } from '../../support/story-environment';
-import { stayInStoryOnRewind, withPracticeSectionFrame } from './practice-frame';
+import { practicePageParameters, stayInStoryOnRewind, withPracticeSectionFrame } from './practice-frame';
 
 /**
  * 題庫的載入狀態，跟 PracticePage 的 useSubjectQuestions 一樣：載入中還沒有題目；
@@ -99,10 +99,12 @@ function useHeldPaperFonts(hold: boolean) {
 }
 
 /**
- * 每日抽題練習的設定畫面：整個 /practice/quiz 頁面，瀏覽器裡沒有進行中的題組時顯示。
+ * 每日抽題練習的設定畫面：每次從入口進入都重新選科，不帶入上次的選擇。
+ * 未完成題組不會自動刪除；有保存進度時可選「繼續未完成練習」，開始新題組前會先確認取代。
  *
  * 畫面上可以操作看到：
  * - 選科目（環控等題庫不到 50 題的科目，題數多一個「全部」選項）
+ * - 還沒選科時四科皆未勾選、紙本與線上作答停用；作答中的重新整理仍保留原題
  * - 展開「進階選項」調整年度、類別、題數、打亂選項、一律給分題：摘要旁出現「已調整」，
  *   可以「恢復預設」
  * - 「線上作答」抽題後進入作答畫面，之後可以一路作答、完成練習、看練習結果
@@ -118,6 +120,13 @@ const meta = {
 } satisfies Meta<typeof PracticeQuizRoute>;
 
 export default meta;
+
+/** 有已確認的作答也先停在未選科的設定；可續作，或選科後確認取代舊進度。 */
+export const 有未完成題組: StoryObj<typeof meta> = {
+  parameters: practicePageParameters({
+    ...answerFirst(drawPracticeSession({ id: 'story-practice-resume' }), 2), currentIndex: 2,
+  }, {}),
+};
 
 export const 預設: StoryObj<{ holdPaper: boolean }> = {
   render: function Render({ holdPaper }) {

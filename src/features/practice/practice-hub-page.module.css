@@ -1,8 +1,7 @@
-/* One column of links on the paper, each a solid-frame card like the reference's legal
-   page: a name, a description and a figure, nothing else. */
+/* Three spacious cards on desktop, a single column when the content gets narrow. */
 .hub {
   min-width: 0;
-  max-width: 720px;
+  width: 100%;
   display: grid;
   gap: 20px;
   container-type: inline-size;
@@ -19,18 +18,23 @@
   margin: 0;
   padding: 0;
   display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 14px;
   list-style: none;
 }
 
 .links > li {
   min-width: 0;
+  display: grid;
 }
 
 .card {
   position: relative;
   min-width: 0;
   padding: 22px 24px;
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
   border: var(--frame);
   border-radius: var(--radius-frame);
   background: var(--surface);
@@ -50,11 +54,13 @@
   min-width: 0;
   display: grid;
   gap: 6px;
+  flex: 1;
+  grid-template-rows: auto 1fr auto;
 }
 
 .cardText h2 {
   margin: 0;
-  font-size: 18px;
+  font-size: 22px;
   line-height: 1.4;
 }
 
@@ -95,8 +101,13 @@
   outline-offset: 3px;
 }
 
+@container (max-width: 900px) {
+  .links { grid-template-columns: 1fr; }
+  .card { min-height: 180px; }
+}
 @container (max-width: 479.98px) {
   .card {
     padding: 16px;
+    min-height: 160px;
   }
 }

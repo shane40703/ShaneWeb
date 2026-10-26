@@ -45,8 +45,9 @@ export function PracticeSetup({
   onSettingsChange,
   onStart,
   onMakePaper,
+  resume,
 }: {
-  subject: SubjectId;
+  subject: SubjectId | null;
   settings: PracticeSettings;
   pool: PracticePool;
   loading: boolean;
@@ -56,10 +57,11 @@ export function PracticeSetup({
   onSettingsChange: (settings: PracticeSettings) => void;
   onStart: () => void;
   onMakePaper: () => DailyPaper;
+  resume?: { subject: SubjectId; index: number; total: number; onResume: () => void };
 }) {
   const paperDownload = useDailyPaperDownload();
   const [advancedOpen, setAdvancedOpen] = useState(false);
-  const busy = loading || paperDownload.downloading;
+  const busy = !subject || loading || paperDownload.downloading;
   const canDraw = !busy && pool.count > 0;
   const customized = !isDefaultPracticeSettings(settings);
   const categoryLabel = pool.category === 'all' ? '全部類別' : pool.category;
@@ -77,6 +79,10 @@ export function PracticeSetup({
 
   return (
     <section className={styles.setup} aria-label="每日抽題練習設定">
+      {resume ? <div className={styles.resume}>
+        <span>未完成題組：{getSubject(resume.subject)?.shortName}・第 {resume.index}／{resume.total} 題</span>
+        <Button onClick={resume.onResume}>繼續未完成練習</Button>
+      </div> : null}
       <fieldset className={styles.subjectChoices} disabled={paperDownload.downloading}>
         <legend>選擇科目</legend>
         {subjects.map((item) => {
@@ -124,7 +130,7 @@ export function PracticeSetup({
               進階選項
               {customized ? <em>已調整</em> : null}
             </strong>
-            <small>{summary}</small>
+            <small>{subject ? summary : '請先選擇科目，再設定抽題條件'}</small>
           </span>
           <IconChevronDown
             className={styles.advancedChevron}
@@ -289,7 +295,7 @@ export function PracticeSetup({
 
       <footer className={styles.setupFooter}>
         <span>
-          {loading ? (
+          {!subject ? '請先選擇科目，再開始練習。' : loading ? (
             <>
               <IconLoader2 size={18} aria-hidden="true" /> 正在準備題庫…
             </>

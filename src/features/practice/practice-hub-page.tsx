@@ -47,8 +47,8 @@ function PracticeLink({
 }
 
 /**
- * Words and links only: each practice keeps its own progress and picks it up again when
- * opened, so the hub needs no shortcuts into it.
+ * Three practice entries. Daily drawing opens subject selection; existing question
+ * progress stays available only through its explicit resume action.
  */
 export function PracticeHubPage({ overview }: { overview: PracticeOverview }) {
   const { quiz, cloze, mockExam } = overview;

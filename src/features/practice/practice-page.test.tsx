@@ -288,7 +288,20 @@ const allCorrect = Object.fromEntries(
 );
 
 async function openAdvanced() {
+  await chooseDefaultSubject();
   fireEvent.click(await screen.findByRole('button', { name: /進階選項/ }));
+}
+
+async function chooseDefaultSubject() {
+  await screen.findByRole('region', { name: '每日抽題練習設定' });
+  if (!screen.getAllByRole('radio').some(radio => (radio as HTMLInputElement).checked)) {
+    fireEvent.click(screen.getByRole('radio', { name: /建築法規與實務/ }));
+  }
+}
+
+async function startOnline() {
+  await chooseDefaultSubject();
+  fireEvent.click(screen.getByRole('button', { name: '線上作答' }));
 }
 
 function chooseOption(text: string) {
@@ -342,7 +355,11 @@ describe('PracticePage setup', () => {
     const setup = await screen.findByRole('region', { name: '每日抽題練習設定' });
     expect(within(setup).queryByText(/闖關/)).not.toBeInTheDocument();
     expect(within(setup).getAllByRole('radio')).toHaveLength(4);
-    expect(screen.getByRole('radio', { name: /建築法規與實務/ })).toBeChecked();
+    expect(within(setup).getAllByRole('radio').every(radio => !(radio as HTMLInputElement).checked)).toBe(true);
+    expect(screen.getByRole('button', { name: '線上作答' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: '製作紙本檔案' })).toBeDisabled();
+    expect(screen.getByText('請先選擇科目，再開始練習。')).toBeInTheDocument();
+    await chooseDefaultSubject();
     const toggle = screen.getByRole('button', { name: /進階選項/ });
     expect(toggle).toHaveAttribute('aria-expanded', 'false');
     expect(toggle).toHaveTextContent(
@@ -425,6 +442,7 @@ describe('PracticePage setup', () => {
 
   it('makes the paper from its own draw without starting online practice', async () => {
     renderAt();
+    await chooseDefaultSubject();
     fireEvent.click(await screen.findByRole('button', { name: '製作紙本檔案' }));
     await waitFor(() => expect(paperDownload).toHaveBeenCalledTimes(1));
     fireEvent.click(screen.getByRole('button', { name: '製作紙本檔案' }));
@@ -451,6 +469,30 @@ describe('PracticePage setup', () => {
 });
 
 describe('PracticePage arriving from other pages', () => {
+  it('requires a fresh subject on every entry and confirms before replacing unfinished answers', async () => {
+    const original = seed({ subject: 'env', questionIds: envQuestions.slice(0, 5).map(question => question.id),
+      answers: { 'env-114-01': { selected: 0, correct: true } }, currentIndex: 2 });
+    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
+    const view = renderAt('/practice/quiz');
+    await screen.findByRole('region', { name: '每日抽題練習設定' });
+    expect(screen.getAllByRole('radio').every(radio => !(radio as HTMLInputElement).checked)).toBe(true);
+    expect(stored()).toEqual(original);
+    await chooseDefaultSubject();
+    fireEvent.click(screen.getByRole('button', { name: '線上作答' }));
+    expect(confirm).toHaveBeenCalledWith('開始新題組會取代未完成的練習進度，確定要繼續嗎？');
+    expect(stored()).toEqual(original);
+    confirm.mockReturnValue(true);
+    fireEvent.click(screen.getByRole('button', { name: '線上作答' }));
+    await screen.findByLabelText('第 1 題，共 50 題');
+    expect(stored()!.subject).toBe('law');
+    expect(stored()!.answers).toEqual({});
+    view.unmount();
+    renderAt('/practice/quiz');
+    await screen.findByRole('region', { name: '每日抽題練習設定' });
+    expect(screen.getAllByRole('radio').every(radio => !(radio as HTMLInputElement).checked)).toBe(true);
+    expect(appState.dispatch).not.toHaveBeenCalled();
+  });
+
   it('opens the setup with the subject a link chose, and drops it from the URL', async () => {
     renderAt('/practice/quiz?subject=env');
     await waitFor(() =>
@@ -475,12 +517,14 @@ describe('PracticePage arriving from other pages', () => {
     expect(screen.getByRole('button', { name: /進階選項/ })).toHaveTextContent('已調整');
   });
 
-  it('keeps the set in progress when a subject arrives in the URL', async () => {
-    seed({ currentIndex: 2 });
+  it('opens the requested setup without discarding a saved set or retaining its subject', async () => {
+    const original = seed({ currentIndex: 2, answers: { 'law-114-01': { selected: 0, correct: true } } });
     renderAt('/practice/quiz?subject=env');
+    await waitFor(() => expect(screen.getByRole('radio', { name: /建築環境控制/ })).toBeChecked());
+    await waitFor(() => expect(router.snapshot.query).toEqual({}));
+    expect(stored()).toEqual(original);
+    fireEvent.click(screen.getByRole('button', { name: '繼續未完成練習' }));
     await screen.findByLabelText('第 3 題，共 5 題');
-    await waitFor(() => expect(router.snapshot.query).toEqual({ q: '3' }));
-    expect(stored()!.subject).toBe('law');
   });
 
   it('keeps a submitted result for a trip to the hub, until the set is answered again', async () => {
@@ -510,7 +554,7 @@ describe('PracticePage answering', () => {
   it('draws a fresh shuffled set every time and replaces the setup URL with the first question', async () => {
     vi.spyOn(window, 'confirm').mockReturnValue(true);
     renderAt();
-    fireEvent.click(await screen.findByRole('button', { name: '線上作答' }));
+    await startOnline();
     await screen.findByRole('region', { name: '題目與選項' });
     expect(router.replace).toHaveBeenLastCalledWith(
       { pathname: '/practice/quiz', query: { q: 1 } },
@@ -526,7 +570,7 @@ describe('PracticePage answering', () => {
     expect(screen.getByLabelText('第 1 題，共 50 題')).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: /重新選科／設定/ }));
-    fireEvent.click(await screen.findByRole('button', { name: '線上作答' }));
+    await startOnline();
     await screen.findByRole('region', { name: '題目與選項' });
     expect(stored()!.questionIds).not.toEqual(first.questionIds);
   });
@@ -707,14 +751,7 @@ describe('PracticePage answering', () => {
       elapsedSeconds: { 'law-114-01': 75 },
       currentIndex: 2,
     });
-    const view = renderAt();
-    await waitFor(() =>
-      expect(router.replace).toHaveBeenCalledWith(
-        { pathname: '/practice/quiz', query: { q: 3 } },
-        undefined,
-        { shallow: true, scroll: false },
-      ),
-    );
+    const view = renderAt('/practice/quiz?q=3');
     await screen.findByLabelText('第 3 題，共 5 題');
     expect(screen.getByText('00:01:15')).toBeInTheDocument();
 
@@ -792,7 +829,7 @@ describe('PracticePage history', () => {
     renderAt();
     await openAdvanced();
     fireEvent.click(screen.getByRole('button', { name: /^5 題/ }));
-    fireEvent.click(screen.getByRole('button', { name: '線上作答' }));
+    await startOnline();
     await screen.findByLabelText('第 1 題，共 5 題');
   }
 
@@ -827,7 +864,7 @@ describe('PracticePage history', () => {
     await settleHistory();
     expect(window.location.search).toBe('');
 
-    fireEvent.click(screen.getByRole('button', { name: '線上作答' }));
+    await startOnline();
     await screen.findByLabelText('第 1 題，共 5 題');
     await traverse(-1);
     expect(window.location.pathname).toBe('/elsewhere');
@@ -891,7 +928,7 @@ describe('PracticePage history across tabs', () => {
     renderAt();
     await openAdvanced();
     fireEvent.click(screen.getByRole('button', { name: /^5 題/ }));
-    fireEvent.click(screen.getByRole('button', { name: '線上作答' }));
+    await startOnline();
     await screen.findByLabelText('第 1 題，共 5 題');
     for (const number of [2, 3]) {
       fireEvent.click(screen.getByRole('button', { name: '跳過' }));
@@ -910,11 +947,11 @@ describe('PracticePage history across tabs', () => {
     await traverse(-1);
     expect(window.location.pathname).toBe('/elsewhere');
   });
-  it('rewinds once when another tab clears the set, and not again when it then starts one', async () => {
+  it('stays in fresh subject selection when another tab starts a set after clearing', async () => {
     renderAt();
     await openAdvanced();
     fireEvent.click(screen.getByRole('button', { name: /^5 題/ }));
-    fireEvent.click(screen.getByRole('button', { name: '線上作答' }));
+    await startOnline();
     await screen.findByLabelText('第 1 題，共 5 題');
     for (const number of [2, 3]) {
       fireEvent.click(screen.getByRole('button', { name: '跳過' }));
@@ -928,7 +965,9 @@ describe('PracticePage history across tabs', () => {
       questionIds: envQuestions.slice(0, 4).map((question) => question.id),
     });
     await settleHistory();
-    await screen.findByLabelText('第 1 題，共 4 題');
+    expect(screen.getByRole('region', { name: '每日抽題練習設定' })).toBeInTheDocument();
+    expect(screen.getAllByRole('radio').every(radio => !(radio as HTMLInputElement).checked)).toBe(true);
+    expect(stored()!.id).toBe('next-set');
     expect(window.location.pathname).toBe('/practice/quiz');
     expect(router.left).toBe(false);
     await traverse(-1);
@@ -1013,7 +1052,7 @@ describe('PracticePage with another tab', () => {
 
     writeFromOtherTab(null);
     await screen.findByRole('region', { name: '每日抽題練習設定' });
-    expect(screen.getByRole('radio', { name: /建築環境控制/ })).toBeChecked();
+    expect(screen.getByRole('radio', { name: /建築環境控制/ })).not.toBeChecked();
     await waitFor(() => expect(router.snapshot.asPath).toBe('/practice/quiz'));
   });
 });

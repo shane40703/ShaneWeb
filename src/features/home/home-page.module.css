@@ -4,7 +4,50 @@
 .home {
   min-height: calc(100vh - 145px);
   display: grid;
-  align-content: center;
+  align-content: start;
+  gap: 24px;
+  min-width: 0;
+  container-type: inline-size;
+}
+
+.examCountdown {
+  min-width: 0;
+  padding: 32px 40px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 24px;
+  border: var(--frame);
+  background: var(--surface);
+}
+.examIntro { min-width: 0; display: grid; gap: 12px; }
+.eyebrow { display: flex; align-items: center; gap: 8px; color: var(--primary-strong); font: 12px var(--font-mono); letter-spacing: .08em; }
+.examIntro h2 { margin: 0; font-size: clamp(24px, 3cqi, 36px); font-weight: 600; }
+.examIntro p { margin: 0; color: var(--text-soft); line-height: 1.7; }
+.examIntro a { width: fit-content; color: var(--muted); font-size: 13px; }
+.examIntro a:focus-visible, .practiceShortcut:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+.countdownValue { display: grid; justify-items: center; gap: 4px; color: var(--primary-strong); }
+.countdownValue > span { font-size: 15px; }
+.countdownValue p { margin: 0; display: flex; align-items: baseline; gap: 12px; }
+.countdownValue p strong { font: 600 clamp(72px, 10cqi, 128px)/1.1 var(--font-mono); font-variant-numeric: tabular-nums; }
+.countdownValue p span { font-size: 22px; }
+.countdownValue small { color: var(--muted); font-size: 12px; }
+.examStatus { max-width: 240px; font-size: 26px; font-weight: 600; }
+.practiceShortcut {
+  min-width: 0; padding: 20px 24px; display: flex; flex-wrap: wrap; align-items: center;
+  justify-content: space-between; gap: 16px; border: var(--frame); background: var(--surface);
+  color: var(--text); text-decoration: none;
+}
+.practiceShortcut:hover { border-color: var(--primary); }
+.practiceShortcut > span:first-child { display: grid; gap: 6px; }
+.practiceShortcut strong { font-size: 20px; font-weight: 600; }
+.practiceShortcut small { color: var(--text-soft); font-size: 14px; }
+.practiceShortcut > span:last-child { display: flex; align-items: center; gap: 8px; color: var(--primary-strong); }
+
+@container (max-width: 640px) {
+  .examCountdown { grid-template-columns: 1fr; padding: 24px 20px; gap: 24px; }
+  .countdownValue { padding-top: 20px; border-top: var(--rule); }
+  .practiceShortcut { padding: 16px; }
 }
 
 .subjectGrid {

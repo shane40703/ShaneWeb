@@ -96,7 +96,7 @@ export function PracticePage() {
   const [result, setResult] = useState<PracticeResult | null>(null);
   // The result stays in memory through Back/Forward; only a reload drops it.
   const [resultShown, setResultShown] = useState(false);
-  const [subject, setSubject] = useState<SubjectId>('law');
+  const [subject, setSubject] = useState<SubjectId | null>(null);
   const [settings, setSettings] = useState<PracticeSettings>(DEFAULT_PRACTICE_SETTINGS);
   const [timer] = useState(createPracticeTimer);
   // Mirrors `session` synchronously, so handlers and listeners never act on a stale copy.
@@ -105,14 +105,18 @@ export function PracticePage() {
   const syncedPath = useRef<string | null>(null);
   const depth = useRef(0);
   const ownNavigations = useRef(0);
-  // Nothing loads before the stored set says which subject is needed.
-  const bank = useSubjectQuestions(restored ? [session?.subject ?? subject] : []);
+  // Entry URLs reopen subject choice; explicit question/result URLs restore progress.
+  const choosing = router.query.q === undefined && router.query.view === undefined;
+  const activeSubject = choosing ? subject : session?.subject ?? subject;
+  const choosingRef = useRef(choosing);
+  useEffect(() => { choosingRef.current = choosing; }, [choosing]);
+  const bank = useSubjectQuestions(restored && activeSubject ? [activeSubject] : []);
   const questionById = useMemo(
     () => new Map(bank.questions.map((question) => [question.id, question])),
     [bank.questions],
   );
   const pool = useMemo(
-    () => resolvePracticePool(bank.questions, subject, settings),
+    () => resolvePracticePool(subject ? bank.questions : [], subject ?? 'law', settings),
     [bank.questions, subject, settings],
   );
 
@@ -191,7 +195,6 @@ export function PracticePage() {
       const stored = parsePracticeSession(readStoredValue(PRACTICE_SESSION_STORAGE_KEY));
       if (stored) {
         commitSession(stored);
-        setSubject(stored.subject);
         // Back from the hub: the result submitted before leaving is still there.
         setResult(readKeptPracticeResult(stored));
       }
@@ -237,6 +240,7 @@ export function PracticePage() {
         timer.take();
         lastWritten.current = null;
         commitSession(null);
+        setSubject(null);
         setResult(null);
         setResultShown(false);
         leaveSetHistory(undefined);
@@ -269,9 +273,10 @@ export function PracticePage() {
       timer.take();
       lastWritten.current = JSON.stringify(incoming);
       commitSession(incoming);
-      setSubject(incoming.subject);
       setResult(null);
       setResultShown(false);
+      // Other tabs may update the saved set, but cannot select a subject in setup.
+      if (choosingRef.current) return;
       leaveSetHistory({ q: incoming.currentIndex + 1 });
     }
     window.addEventListener('storage', adopt);
@@ -328,16 +333,19 @@ export function PracticePage() {
     if (ownNavigations.current > 0) return;
     const current = sessionRef.current;
     const { q, view, subject: chosen, category, from, to } = router.query;
-    if (!current) {
+    if (!current || (q === undefined && view === undefined)) {
       // No set, nothing to rewind. Never count here: an own replace whose
       // promise settled before this effect ran also arrives untagged.
       depth.current = 0;
       // A link can open the setup with a subject chosen; 考題分析's also brings its
       // year range and category.
       const setupLink = [category, from, to].some((value) => value !== undefined);
-      if (isSubjectId(chosen) || setupLink) {
+      // The first render already has no subject. Do not enqueue a redundant reset
+      // that could overwrite a user selecting a subject immediately after hydration.
+      if (isSubjectId(chosen) || setupLink || (current && !firstVisit)) {
         void Promise.resolve().then(() => {
-          if (isSubjectId(chosen)) setSubject(chosen);
+          setSubject(isSubjectId(chosen) ? chosen : null);
+          setResultShown(false);
           if (!setupLink) return;
           setSettings((latest) => ({
             ...latest,
@@ -419,7 +427,7 @@ export function PracticePage() {
   const currentAnswered = Boolean(currentId && session?.answers[currentId]);
   const view = !restored
     ? 'loading'
-    : !session
+    : !session || choosing
       ? 'setup'
       : result && resultShown
         ? 'result'
@@ -472,7 +480,7 @@ export function PracticePage() {
   }
 
   function startPractice() {
-    if (!pool.count) return;
+    if (!subject || !pool.count || !confirmDiscard('開始新題組會取代未完成的練習進度，確定要繼續嗎？')) return;
     timer.take();
     clearResult();
     commitSession(createPracticeSession(pool, subject, settings.shuffleOptions));
@@ -481,6 +489,7 @@ export function PracticePage() {
   }
 
   function makePaper() {
+    if (!subject) throw new Error('請先選擇科目。');
     // A separate draw: the paper never becomes the online set.
     const draw = createPracticeSession(pool, subject, settings.shuffleOptions);
     return createPracticePaper(draw, questionById);
@@ -541,7 +550,7 @@ export function PracticePage() {
     const current = sessionRef.current;
     if (!current || !confirmDiscard()) return;
     timer.take();
-    setSubject(current.subject);
+    setSubject(null);
     clearResult();
     commitSession(null);
     leaveSetHistory(undefined);
@@ -567,7 +576,7 @@ export function PracticePage() {
     const current = sessionRef.current;
     if (current && hasPracticeAnswers(current) && !confirmDiscard()) return;
     timer.take();
-    if (current) setSubject(current.subject);
+    setSubject(null);
     clearResult();
     commitSession(null);
     leaveSetHistory(undefined);
@@ -595,6 +604,12 @@ export function PracticePage() {
         onSettingsChange={setSettings}
         onStart={startPractice}
         onMakePaper={makePaper}
+        resume={session && (hasPracticeProgress(session) || session.currentIndex > 0) ? {
+          subject: session.subject,
+          index: session.currentIndex + 1,
+          total: session.questionIds.length,
+          onResume: () => navigate('replace', { q: session.currentIndex + 1 }, 0),
+        } : undefined}
       />
     );
   } else if (view === 'result' && result) {

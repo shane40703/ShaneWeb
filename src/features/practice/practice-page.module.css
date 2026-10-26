@@ -9,6 +9,19 @@
   width: 100%;
 }
 
+.resume {
+  margin: 16px 24px 0;
+  padding-bottom: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border-bottom: var(--rule);
+  color: var(--text-soft);
+  font-size: 14px;
+}
+
 /* Focus and scrolling keep controls clear of the sticky topbar and question footer. */
 :global(html):has(.challenge) {
   scroll-padding: 88px 0 96px;
