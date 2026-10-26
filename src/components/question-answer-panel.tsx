@@ -1,6 +1,7 @@
 import { useId } from 'react';
 import { getAcceptedAnswerIndexes } from '@/lib/study';
 import type { Question } from '@/lib/types';
+import { OriginalOptionLabel, originalOptionText } from './original-option-label';
 import styles from './question-answer-panel.module.css';
 
 export function QuestionAnswerPanel({
@@ -9,12 +10,14 @@ export function QuestionAnswerPanel({
   ariaLabel,
   selectedIndex,
   showStatusLabels = false,
+  originalOptionIndexes,
 }: {
   question: Pick<Question, 'options' | 'answerKey'>;
   heading?: string | null;
   ariaLabel?: string;
   selectedIndex?: number;
   showStatusLabels?: boolean;
+  originalOptionIndexes?: readonly number[];
 }) {
   const headingId = useId();
   const acceptedAnswers = getAcceptedAnswerIndexes(question);
@@ -30,6 +33,9 @@ export function QuestionAnswerPanel({
         {question.options.map((option, index) => {
           const accepted = acceptedAnswers.includes(index);
           const selected = selectedIndex === index;
+          const originalIndex = originalOptionIndexes?.[index];
+          const originalLabel = originalOptionText(originalIndex);
+          const description = originalLabel ? `${option} ${originalLabel}` : option;
           const statusLabel =
             selected && accepted
               ? '你的答案・正確答案'
@@ -46,14 +52,16 @@ export function QuestionAnswerPanel({
               data-selected={selected || undefined}
               aria-label={
                 accepted
-                  ? `正確選項 ${String.fromCharCode(65 + index)}：${option}`
+                  ? `正確選項 ${String.fromCharCode(65 + index)}：${description}`
                   : selected
-                    ? `你的答案 ${String.fromCharCode(65 + index)}：${option}`
+                    ? `你的答案 ${String.fromCharCode(65 + index)}：${description}`
                     : undefined
               }
             >
               <b>{String.fromCharCode(65 + index)}</b>
-              <span>{option}</span>
+              <span>
+                {option}<OriginalOptionLabel index={originalIndex} />
+              </span>
               {showStatusLabels && statusLabel ? (
                 <small>{statusLabel}</small>
               ) : null}

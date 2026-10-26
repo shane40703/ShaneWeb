@@ -579,6 +579,7 @@ describe('PracticePage answering', () => {
     seed({ optionOrders: { 'law-114-01': [3, 2, 1, 0] } });
     renderAt('/practice/quiz?q=1');
     await screen.findByRole('region', { name: '題目與選項' });
+    expect(screen.queryByText(/原選項/)).not.toBeInTheDocument();
     const confirm = screen.getByRole('button', { name: '確認答案' });
     expect(confirm).toBeDisabled();
     chooseOption('選項 A');
@@ -599,9 +600,14 @@ describe('PracticePage answering', () => {
         ),
     ).toBe(true);
     expect(stored()!.answers).toEqual({ 'law-114-01': { selected: 3, correct: true } });
+    expect(within(questionRegion()).getAllByText(/原選項/).map(item => item.textContent)).toEqual([
+      '（原選項 D）', '（原選項 C）', '（原選項 B）', '（原選項 A）',
+    ]);
+    expect(screen.getByText('選項 A').closest('label')).toHaveTextContent('D選項 A（原選項 A）');
 
     fireEvent.click(screen.getByRole('button', { name: /下一題/ }));
     await screen.findByLabelText('第 2 題，共 5 題');
+    expect(screen.queryByText(/原選項/)).not.toBeInTheDocument();
     expect(router.push).toHaveBeenLastCalledWith(
       { pathname: '/practice/quiz', query: { q: 2 } },
       undefined,

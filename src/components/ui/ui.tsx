@@ -1,4 +1,4 @@
-import { type ComponentProps, type ReactNode, createContext, useContext } from 'react';
+import { type ComponentProps, type ReactNode, createContext, useContext, useId } from 'react';
 import { AlertDialog } from '@base-ui/react/alert-dialog';
 import { Button as BaseButton } from '@base-ui/react/button';
 import { Drawer } from '@base-ui/react/drawer';
@@ -17,6 +17,7 @@ import {
   IconMenu2,
   IconX,
 } from '@tabler/icons-react';
+import { OriginalOptionLabel, originalOptionText } from '@/components/original-option-label';
 import styles from './ui.module.css';
 
 function cx(...classes: Array<string | false | null | undefined>) {
@@ -117,6 +118,7 @@ export function OptionGroup({
   options,
   value,
   disabled,
+  originalOptionIndexes,
   eliminatedValues = [],
   onValueChange,
   onToggleEliminated,
@@ -125,10 +127,13 @@ export function OptionGroup({
   options: readonly string[];
   value?: number;
   disabled?: boolean;
+  /** Optional post-answer references, in the same order as the displayed options. */
+  originalOptionIndexes?: readonly number[];
   eliminatedValues?: readonly number[];
   onValueChange: (value: number | undefined) => void;
   onToggleEliminated?: (value: number) => void;
 }) {
+  const optionId = useId();
   const eliminated = new Set(eliminatedValues);
 
   return (
@@ -144,6 +149,7 @@ export function OptionGroup({
         {options.map((option, index) => {
           const optionLetter = String.fromCharCode(65 + index);
           const optionEliminated = eliminated.has(index);
+          const originalLabel = originalOptionText(originalOptionIndexes?.[index]);
 
           return (
             <div
@@ -163,13 +169,17 @@ export function OptionGroup({
               >
                 <Radio.Root
                   value={String(index)}
+                  aria-labelledby={originalLabel ? `${optionId}-letter-${index} ${optionId}-text-${index}` : undefined}
                   className={styles.radio}
                   disabled={optionEliminated}
                 >
                   <Radio.Indicator className={styles.radioIndicator} />
                 </Radio.Root>
-                <span className={styles.optionLetter}>{optionLetter}</span>
-                <span>{option}</span>
+                <span id={`${optionId}-letter-${index}`} className={styles.optionLetter}>{optionLetter}</span>
+                <span id={`${optionId}-text-${index}`}>
+                  <span className={styles.optionText}>{option}</span>
+                  <OriginalOptionLabel index={originalOptionIndexes?.[index]} />
+                </span>
               </label>
               {onToggleEliminated ? (
                 <button

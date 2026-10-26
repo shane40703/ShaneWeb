@@ -24,6 +24,7 @@ import { getSubject } from '@/question-bank/catalog';
 import { useAppState } from '@/state/app-state';
 import { PracticeExplanation } from './practice-explanation';
 import {
+  getOriginalOptionIndexes,
   getPracticeCategories,
   practiceQuestionHref,
   summarizePractice,
@@ -184,6 +185,7 @@ export function PracticeQuiz({
                   options={question.options}
                   value={selected}
                   disabled={Boolean(answer)}
+                  originalOptionIndexes={answer ? getOriginalOptionIndexes(question, session.optionOrders[questionId]) : undefined}
                   eliminatedValues={session.eliminated[questionId] ?? []}
                   onValueChange={onSelect}
                   onToggleEliminated={onToggleEliminated}

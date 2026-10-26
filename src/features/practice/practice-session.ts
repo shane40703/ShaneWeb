@@ -338,6 +338,14 @@ export function createPracticeSession(
   };
 }
 
+/** Only expose mappings that were actually applicable to this version of the question. */
+export function getOriginalOptionIndexes(
+  question: Pick<Question, 'options'>,
+  optionOrder: readonly number[] | undefined,
+) {
+  return optionOrder && fitsOptions(optionOrder, question.options.length) ? optionOrder : undefined;
+}
+
 /**
  * Reorders the options and remaps the answer key, so graded indexes match the screen.
  * An order that does not fit the question (the bank changed) leaves it as it is.
@@ -346,16 +354,17 @@ export function displayPracticeQuestion(
   question: Question,
   optionOrder: readonly number[] | undefined,
 ): Question {
-  if (!optionOrder || !fitsOptions(optionOrder, question.options.length)) return question;
+  const order = getOriginalOptionIndexes(question, optionOrder);
+  if (!order) return question;
   return {
     ...question,
-    options: optionOrder.map((index) => question.options[index]),
+    options: order.map((index) => question.options[index]),
     answerKey:
       question.answerKey.kind === 'accepted'
         ? {
             kind: 'accepted',
             options: question.answerKey.options.map((index) =>
-              optionOrder.indexOf(index),
+              order.indexOf(index),
             ),
           }
         : question.answerKey,

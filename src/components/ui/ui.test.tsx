@@ -13,6 +13,20 @@ function ControlledOptions({ disabled = false }: { disabled?: boolean }) {
 }
 
 describe('Base UI controls', () => {
+  it('appends original-option references without changing radio values or disabled behavior', async () => {
+    const onValueChange = vi.fn();
+    const user = userEvent.setup();
+    render(<OptionGroup label="對答案" options={['原本第三項', '原本第一項']}
+      value={0} disabled originalOptionIndexes={[2, 0]} onValueChange={onValueChange} />);
+    expect(screen.getByText('（原選項 C）')).toBeInTheDocument();
+    expect(screen.getByText('（原選項 A）')).toBeInTheDocument();
+    const radios = screen.getAllByRole('radio');
+    expect(radios[0]).toHaveAccessibleName(/原本第三項.*原選項 C/);
+    expect(radios[0]).toHaveAttribute('aria-checked', 'true');
+    await user.click(screen.getByText('（原選項 A）'));
+    expect(onValueChange).not.toHaveBeenCalled();
+  });
+
   it('clears an answer from its label or radio, including a quick second click', async () => {
     const user = userEvent.setup();
     render(<ControlledOptions />);

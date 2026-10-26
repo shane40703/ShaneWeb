@@ -5,6 +5,17 @@ import { QuestionAnswerPanel } from '@/components/question-answer-panel';
 afterEach(cleanup);
 
 describe('QuestionAnswerPanel', () => {
+  it('keeps original-letter references in each row and its accessible answer name', () => {
+    render(<QuestionAnswerPanel question={{ options: ['第三項', '第一項', '第四項', '第二項'],
+      answerKey: { kind: 'accepted', options: [1] } }}
+      selectedIndex={0} showStatusLabels originalOptionIndexes={[2, 0, 3, 1]} />);
+    expect(screen.getAllByRole('listitem').map(item => item.textContent)).toEqual([
+      'A第三項（原選項 C）你的答案', 'B第一項（原選項 A）正確答案',
+      'C第四項（原選項 D）', 'D第二項（原選項 B）',
+    ]);
+    expect(screen.getByRole('listitem', { name: '正確選項 B：第一項 （原選項 A）' })).toHaveAttribute('data-accepted', 'true');
+  });
+
   it('marks accepted options with accessible names without repeating the answer below', () => {
     const { container } = render(
       <QuestionAnswerPanel

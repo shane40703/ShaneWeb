@@ -228,7 +228,7 @@
   color: var(--disabled-text);
 }
 
-.option[data-eliminated] > :last-child {
+.option[data-eliminated] .optionText {
   text-decoration: line-through;
   text-decoration-thickness: 1.5px;
 }

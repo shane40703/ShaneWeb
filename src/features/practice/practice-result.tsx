@@ -15,6 +15,7 @@ import { getSubject } from '@/question-bank/catalog';
 import { PracticeExplanation } from './practice-explanation';
 import {
   getDisplayedQuestion,
+  getOriginalOptionIndexes,
   getPracticeCategories,
   type PracticeResult,
   type PracticeSession,
@@ -108,6 +109,7 @@ export function PracticeResultView({
                   <QuestionAnswerPanel
                     question={displayed}
                     selectedIndex={answer.selected}
+                    originalOptionIndexes={getOriginalOptionIndexes(question, session.optionOrders[questionId])}
                     showStatusLabels
                   />
                   <PracticeExplanation

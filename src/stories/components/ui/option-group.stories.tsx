@@ -28,6 +28,7 @@ const eliminateModes = {
  * Controls 可以看到：value 選「未作答」、disabled 看按下「確認答案」之後選項與刪去按鈕都鎖住、
  * options 換成長選項、onToggleEliminated 換成沒有刪去按鈕（難題標記、常錯題目的「重新作答」，
  * 跟網站一樣不會有刪去的選項）。
+ * originalOptionIndexes 開啟原選項標記示範：淡色文字接在內容後方；實際每日練習只在確認答案後傳入對照。
  */
 const meta = {
   title: 'Components/基礎 UI/OptionGroup',
@@ -39,11 +40,17 @@ const meta = {
     options: '一般選項' as unknown as readonly string[],
     value: 2,
     disabled: false,
+    originalOptionIndexes: 'none' as unknown as readonly number[],
     eliminatedValues: [0, 3],
     onValueChange: fn(),
     onToggleEliminated: '有刪去按鈕' as unknown as (value: number) => void,
   },
   argTypes: {
+    originalOptionIndexes: {
+      options: ['none', 'original'],
+      mapping: { none: undefined, original: [0, 1, 2, 3] },
+      control: { type: 'inline-radio', labels: { none: '不顯示', original: '顯示原選項標記' } },
+    },
     options: {
       control: 'inline-radio',
       options: Object.keys(optionSets),

@@ -10,6 +10,7 @@ import {
   createPracticeSessionFromQuestions,
   createPracticeTimer,
   displayPracticeQuestion,
+  getOriginalOptionIndexes,
   getPracticeCategories,
   DEFAULT_PRACTICE_SETTINGS,
   getDisplayedQuestion,
@@ -682,6 +683,15 @@ describe('practice records', () => {
 });
 
 describe('displayPracticeQuestion', () => {
+  it('only exposes original indexes for a complete valid stored permutation, including an identity shuffle', () => {
+    const question = makeQuestion('law-114-01');
+    expect(getOriginalOptionIndexes(question, [2, 0, 3, 1])).toEqual([2, 0, 3, 1]);
+    expect(getOriginalOptionIndexes(question, [0, 1, 2, 3])).toEqual([0, 1, 2, 3]);
+    for (const invalid of [undefined, [1, 0], [0, 0, 1, 2], [-1, 0, 1, 2], [0, 1, 2, 4], [0, 1, 2, 2.5]]) {
+      expect(getOriginalOptionIndexes(question, invalid)).toBeUndefined();
+    }
+  });
+
   it('shows the stored option order and remaps the key, ignoring an order that does not fit', () => {
     const question = makeQuestion('law-114-01', {
       answerKey: { kind: 'accepted', options: [0] },

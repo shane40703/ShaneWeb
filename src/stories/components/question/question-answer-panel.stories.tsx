@@ -30,6 +30,7 @@ const answerOptions = fixtureOptions({ 未作答: undefined, A: 0, B: 1, C: 2, D
  * 用 Controls 調整：題目（一般、多個正確答案、一律給分、長選項）、你的答案
  * （selectedIndex，未作答時只標出正確答案）、右側註明（showStatusLabels）、
  * 標題（heading，清空就不顯示）、字級。
+ * originalOptionIndexes 可開啟淡色原選項標記示範；每日練習結果會依當次打亂的順序自動對照。
  */
 const meta = {
   title: 'Components/題目/QuestionAnswerPanel',
@@ -38,10 +39,16 @@ const meta = {
     question: questionOptions.initial,
     selectedIndex: answerOptions.initial,
     showStatusLabels: true,
+    originalOptionIndexes: 'none' as unknown as readonly number[],
     heading: '題目選項',
     fontSize: 18,
   },
   argTypes: {
+    originalOptionIndexes: {
+      options: ['none', 'original'],
+      mapping: { none: undefined, original: [0, 1, 2, 3] },
+      control: { type: 'inline-radio', labels: { none: '不顯示', original: '顯示原選項標記' } },
+    },
     question: questionOptions.argType,
     selectedIndex: answerOptions.argType,
     heading: { control: 'text' },
