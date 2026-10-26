@@ -1,6 +1,6 @@
 import { useEffect, useId, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { EditorContent, useEditor, useEditorState } from '@tiptap/react';
-import { Extension, type JSONContent } from '@tiptap/core';
+import { Extension, isNodeEmpty, type JSONContent } from '@tiptap/core';
 import { Plugin } from '@tiptap/pm/state';
 import StarterKit from '@tiptap/starter-kit';
 import { Color, FontSize, TextStyleKit } from '@tiptap/extension-text-style';
@@ -90,11 +90,13 @@ export function RichTextEditor({
     immediatelyRender: false,
     editable: !disabled,
     editorProps: {
-      attributes: {
+      // Resolve emptiness from the actual document, including the first mount and
+      // silent external resets, before React's editor-state subscription catches up.
+      attributes: state => ({
         role: 'textbox', 'aria-multiline': 'true', 'aria-label': ariaLabel, 'aria-disabled': String(disabled),
         'aria-invalid': String(atLimit), ...(atLimit ? { 'aria-describedby': warningId } : {}),
-        'data-placeholder': placeholder, ...(id ? { id } : {}),
-      },
+        'data-placeholder': placeholder, 'data-empty': String(isNodeEmpty(state.doc)), ...(id ? { id } : {}),
+      }),
       handlePaste: (_view, event) => {
         const files = [...(event.clipboardData?.files ?? [])].filter(file => file.type.startsWith('image/'));
         if (!files.length || !callbacks.current.onPasteImages) return false;
@@ -116,7 +118,6 @@ export function RichTextEditor({
     bulletList: current?.isActive('bulletList'), orderedList: current?.isActive('orderedList'),
     color: safeRichColor(current?.getAttributes('textStyle').color) ?? '',
     size: safeRichFontSize(current?.getAttributes('textStyle').fontSize) ?? '',
-    empty: current?.isEmpty ?? true,
     undo: current?.can().undo(), redo: current?.can().redo(),
   }) });
 
@@ -181,7 +182,7 @@ export function RichTextEditor({
         <button type="button" aria-label={`${ariaContext}重做`} disabled={disabled || !selection?.redo}
           onMouseDown={event => event.preventDefault()} onClick={() => chain()?.redo().run()}>重做</button>
       </div>
-      <div className={styles.surface} data-empty={selection?.empty || undefined} data-disabled={disabled || undefined}
+      <div className={styles.surface} data-disabled={disabled || undefined}
         aria-describedby={atLimit ? warningId : undefined}>
         <EditorContent editor={editor} />
       </div>

@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { useState } from 'react';
 import { RichTextEditor } from './rich-text-editor';
 import { editorOf, fillRichEditor, selectRichEditor } from '@/test/rich-editor';
-import { parseRichDocument, richDocumentText } from '@/lib/rich-document';
+import { parseRichDocument, richDocumentText, serializeRichDocument, toRichDocument } from '@/lib/rich-document';
 
 afterEach(cleanup);
 
@@ -13,6 +13,39 @@ function Controlled({ initial = '', limit = 20000 }: { initial?: string; limit?:
 }
 
 describe('RichTextEditor', () => {
+  it.each(['**已儲存的舊筆記**', serializeRichDocument(toRichDocument('!!已儲存的格式筆記!!'))])(
+    'hides the placeholder immediately when opening saved content without focusing it: %s', initial => {
+      render(<Controlled initial={initial} />);
+      expect(screen.getByRole('textbox', { name: '即時筆記' })).toHaveAttribute('data-empty', 'false');
+    },
+  );
+
+  it('updates the placeholder from the document through typing, undo, redo and clearing', () => {
+    render(<Controlled />);
+    const editor = screen.getByRole('textbox', { name: '即時筆記' });
+    expect(editor).toHaveAttribute('data-empty', 'true');
+    fillRichEditor(editor, '已有文字');
+    expect(editor).toHaveAttribute('data-empty', 'false');
+    act(() => { editorOf(editor).commands.undo(); });
+    expect(editor).toHaveAttribute('data-empty', 'true');
+    act(() => { editorOf(editor).commands.redo(); });
+    expect(editor).toHaveAttribute('data-empty', 'false');
+    fillRichEditor(editor, '');
+    expect(editor).toHaveAttribute('data-empty', 'true');
+  });
+
+  it('updates the placeholder on silent external content replacements', () => {
+    const change = vi.fn();
+    const view = render(<RichTextEditor value="" onChange={change} ariaLabel="即時筆記" />);
+    const editor = screen.getByRole('textbox', { name: '即時筆記' });
+    expect(editor).toHaveAttribute('data-empty', 'true');
+    view.rerender(<RichTextEditor value="外部載入的筆記" onChange={change} ariaLabel="即時筆記" />);
+    expect(editor).toHaveAttribute('data-empty', 'false');
+    view.rerender(<RichTextEditor value="" onChange={change} ariaLabel="即時筆記" />);
+    expect(editor).toHaveAttribute('data-empty', 'true');
+    expect(change).not.toHaveBeenCalled();
+  });
+
   it('opens legacy notes as visible nested formatting, without changing stored content on mount', () => {
     const change = vi.fn();
     render(<RichTextEditor value="**舊筆記** !!0.75m^2^!!" onChange={change} ariaLabel="即時筆記" />);

@@ -7,6 +7,9 @@ async function selectAll(editor: Locator) {
 async function noOverflow(page: Page) {
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(page.viewportSize()!.width);
 }
+async function placeholderContent(editor: Locator) {
+  return editor.evaluate(element => getComputedStyle(element, '::before').content);
+}
 
 for (const theme of ['light', 'dark'] as const) {
   test(`visual notes keep live styles, toggles, selection, history, persistence and sharing in ${theme}`, async ({ page, isMobile }, testInfo) => {
@@ -15,7 +18,9 @@ for (const theme of ['light', 'dark'] as const) {
     const editor = page.getByRole('textbox', { name: '我的筆記', exact: true });
     const format = (label: string) => page.getByRole('button', { name: `切換選取文字的${label}格式`, exact: true });
     await expect(editor).toBeVisible();
+    await expect.poll(() => placeholderContent(editor)).toContain('記下法條');
     await editor.fill('建築物 0.75m2 即時筆記');
+    await expect.poll(() => placeholderContent(editor)).toBe('none');
     await selectAll(editor);
     await format('粗體').click();
     await expect(format('粗體')).toHaveAttribute('aria-pressed', 'true');
@@ -54,6 +59,8 @@ for (const theme of ['light', 'dark'] as const) {
     await expect(saved.locator('u')).toContainText('即時筆記');
     await page.getByRole('button', { name: '編輯筆記', exact: true }).click();
     await expect(editor.locator('strong')).toContainText('即時筆記');
+    // Opening saved content must hide the hint before any click/focus in the editor.
+    await expect.poll(() => placeholderContent(editor)).toBe('none');
     await selectAll(editor);
     await page.getByRole('button', { name: '清除格式', exact: true }).click();
     await expect(editor.locator('strong, u, [style]')).toHaveCount(0);
@@ -111,7 +118,11 @@ test('result disclosures initialize notes lazily and preserve a collapsed unsave
   const editor = row.getByRole('textbox', { name: '第 1 題筆記內容', exact: true });
   await expect(editor.locator('strong').filter({ hasText: '舊筆記' })).toHaveText('舊筆記');
   await expect(editor.locator('sup')).toHaveText('2');
+  await expect.poll(() => placeholderContent(editor)).toBe('none');
+  await editor.fill('');
+  await expect.poll(() => placeholderContent(editor)).toContain('在檢討答案時');
   await editor.fill('還沒儲存也要保留');
+  await expect.poll(() => placeholderContent(editor)).toBe('none');
   await summary.click();
   await summary.click();
   await expect(editor).toHaveText('還沒儲存也要保留');

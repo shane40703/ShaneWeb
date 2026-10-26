@@ -24,7 +24,7 @@
 .surface :global(.tiptap ul), .surface :global(.tiptap ol) { margin: 0; padding-left: 1.5em; }
 .surface :global(.tiptap blockquote) { margin: 0; padding-left: 12px; border-left: 3px solid var(--line-strong); }
 .surface :global(.tiptap a) { color: var(--primary); text-decoration: underline; }
-.surface[data-empty] :global(.tiptap)::before {
+.surface :global(.tiptap[data-empty='true'])::before {
   content: attr(data-placeholder); float: left; height: 0; color: var(--muted);
   pointer-events: none; font-size: 14px;
 }
