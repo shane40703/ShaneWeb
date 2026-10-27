@@ -18,6 +18,7 @@ const primaryNavigation: readonly (NavigationLinkItem | NavigationSectionItem)[]
     { href: '/notes', label: '使用者筆記', icon: IconNotebook },
     { href: '/difficult', label: '難題標記', icon: IconBulb },
     { href: '/wrong', label: '常錯題目', icon: IconRepeat },
+    { href: '/practice-history', label: '每日練習履歷', icon: IconHistory },
     { href: '/history', label: '已作答紀錄', icon: IconHistory },
   ] },
 ];

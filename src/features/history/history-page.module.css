@@ -5,6 +5,22 @@
   min-height: 430px;
 }
 
+.historyNotice,
+.attemptMeta {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.8;
+  overflow-wrap: anywhere;
+}
+
+.historyNotice {
+  margin: 0 0 20px;
+}
+
+.attemptMeta {
+  margin: 6px 0 0;
+}
+
 .historyViewTabs {
   margin-bottom: 20px;
 }

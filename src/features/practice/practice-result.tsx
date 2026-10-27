@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { useState } from 'react';
 import {
   IconListSearch,
@@ -13,6 +14,7 @@ import { formatDuration } from '@/lib/study';
 import type { Question } from '@/lib/types';
 import { getSubject } from '@/question-bank/catalog';
 import { PracticeExplanation } from './practice-explanation';
+import { DAILY_PRACTICE_HISTORY_PATH } from './daily-practice-recording';
 import {
   getDisplayedQuestion,
   getOriginalOptionIndexes,
@@ -27,11 +29,15 @@ export function PracticeResultView({
   questionById,
   onRetry,
   onNewDraw,
+  onSave,
+  onSkip,
 }: {
   result: PracticeResult;
   questionById: ReadonlyMap<string, Question>;
   onRetry: () => void;
   onNewDraw: () => void;
+  onSave?: () => void;
+  onSkip?: () => void;
 }) {
   const { session, summary } = result;
   const subjectName = getSubject(session.subject)?.shortName ?? '';
@@ -69,6 +75,23 @@ export function PracticeResultView({
             <dd>{formatDuration(summary.elapsedSeconds)}</dd>
           </div>
         </dl>
+        {result.recording ? <section className={styles.recordingChoice} aria-label="儲存每日練習履歷">
+          <strong>{result.recording.status === 'saved' ? '已加入每日練習履歷' : '是否記錄此次作答？'}</strong>
+          <p>{result.recording.status === 'saved'
+            ? '此次題組、作答答案、正確率與時間已記錄，可在履歷查看或刪除。'
+            : result.recording.status === 'skipped'
+              ? '此次作答未加入履歷。若改變心意，可在離開或重新整理之前選擇儲存。'
+              : '只有選擇儲存才會加入履歷及作答統計；不記錄仍可查看本次結果與詳解。離開或重新整理前未儲存，就不會加入履歷。'}</p>
+          <div className={styles.completionActions}>
+            {result.recording.status === 'saved'
+              ? <Button role="link" render={<Link href={DAILY_PRACTICE_HISTORY_PATH} />}>查看每日練習履歷</Button>
+              : <>
+                <Button variant="primary" disabled={!onSave} onClick={onSave}>儲存此次作答</Button>
+                {result.recording.status === 'pending'
+                  ? <Button disabled={!onSkip} onClick={onSkip}>不記錄此次作答</Button> : null}
+              </>}
+          </div>
+        </section> : null}
         <div className={styles.completionActions}>
           <Button onClick={onRetry}>
             <IconRotateClockwise size={17} aria-hidden="true" /> 重做這組題目

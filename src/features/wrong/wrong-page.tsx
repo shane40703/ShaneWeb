@@ -179,7 +179,7 @@ export function WrongPage({
         <EmptyState
           icon={IconRepeat}
           title="還沒有作答紀錄"
-          description="完成每日抽題練習或歷屆試題模擬考並交卷後，答錯的題目與累計次數會整理在這裡。"
+          description="完成每日抽題練習並選擇儲存，或歷屆試題模擬考交卷後，答錯的題目與累計次數會整理在這裡。"
           action={
             <>
               <Button role="link" render={<Link href="/practice/quiz" />}>
@@ -271,7 +271,7 @@ export function WrongPage({
                 <span>累計答錯</span>
                 <strong>{stats.reduce((total, item) => total + item.wrongCount, 0)}</strong>
               </div>
-              <p>依每日抽題練習與歷屆試題模擬考的交卷紀錄統計；重新答對不會刪除過去的錯題次數。</p>
+              <p>依已儲存的每日抽題練習與歷屆試題模擬考紀錄統計；重新答對不會刪除過去的錯題次數。</p>
             </section>
             <div className={styles.selector}>
               <QuestionSelector

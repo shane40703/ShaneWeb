@@ -992,6 +992,25 @@
   color: var(--danger);
 }
 
+.recordingChoice {
+  width: 100%;
+  margin: 12px 0 8px;
+  padding: 20px 0;
+  border-top: var(--rule-dashed);
+  border-bottom: var(--rule-dashed);
+}
+
+.recordingChoice > strong {
+  font-size: 18px;
+}
+
+.recordingChoice > p {
+  margin: 10px 0 16px;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
 .completionActions {
   margin-top: 16px;
   display: flex;

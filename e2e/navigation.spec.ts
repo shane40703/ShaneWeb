@@ -6,6 +6,7 @@ const personal = {
     ['使用者筆記', '/notes'],
     ['難題標記', '/difficult'],
     ['常錯題目', '/wrong'],
+    ['每日練習履歷', '/practice-history'],
     ['已作答紀錄', '/history'],
   ],
 };

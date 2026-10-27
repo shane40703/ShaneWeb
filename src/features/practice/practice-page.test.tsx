@@ -551,6 +551,50 @@ describe('PracticePage arriving from other pages', () => {
 });
 
 describe('PracticePage answering', () => {
+  it('can decline recording and later save once, keeping that decision through navigation', async () => {
+    seed({ answers: allCorrect, currentIndex: 4 });
+    const view = renderAt('/practice/quiz?q=5');
+    await screen.findByLabelText('第 5 題，共 5 題');
+    submitFromFooter();
+    await screen.findByRole('button', { name: '不記錄此次作答' });
+    expect(appState.dispatch).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: '不記錄此次作答' }));
+    expect(screen.getByText(/此次作答未加入履歷/)).toBeInTheDocument();
+    expect(appState.dispatch).not.toHaveBeenCalled();
+    const save = screen.getByRole('button', { name: '儲存此次作答' });
+    fireEvent.click(save);
+    fireEvent.click(save);
+    expect(appState.dispatch.mock.calls.filter(([action]) => action.type === 'save-attempt')).toHaveLength(1);
+    expect(screen.getByRole('link', { name: '查看每日練習履歷' })).toHaveAttribute('href', '/practice-history');
+    view.unmount();
+    renderAt('/practice/quiz?view=result');
+    expect(await screen.findByText('已加入每日練習履歷')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '儲存此次作答' })).not.toBeInTheDocument();
+    expect(appState.dispatch.mock.calls.filter(([action]) => action.type === 'save-attempt')).toHaveLength(1);
+  });
+
+  it.each(['difficult', 'wrong'] as const)('keeps the existing %s review saving behavior without a daily-history prompt', async source => {
+    seed({ answers: allCorrect, currentIndex: 4, reviewSource: source });
+    renderAt('/practice/quiz?q=5');
+    await screen.findByLabelText('第 5 題，共 5 題');
+    submitFromFooter();
+    await screen.findByText('100% 正確率');
+    expect(screen.queryByRole('region', { name: '儲存每日練習履歷' })).not.toBeInTheDocument();
+    const record = appState.dispatch.mock.calls.find(([action]) => action.type === 'save-attempt')![0];
+    expect(record.attempt.id).not.toMatch(/^daily-practice-/);
+  });
+
+  it('leaves no record when starting a new draw without choosing to save the result', async () => {
+    seed({ answers: allCorrect, currentIndex: 4 });
+    renderAt('/practice/quiz?q=5');
+    await screen.findByLabelText('第 5 題，共 5 題');
+    submitFromFooter();
+    await screen.findByRole('button', { name: '儲存此次作答' });
+    fireEvent.click(screen.getByRole('button', { name: /重新選科／抽題/ }));
+    await screen.findByRole('region', { name: '每日抽題練習設定' });
+    expect(appState.dispatch).not.toHaveBeenCalled();
+  });
+
   it('draws a fresh shuffled set every time and replaces the setup URL with the first question', async () => {
     vi.spyOn(window, 'confirm').mockReturnValue(true);
     renderAt();
@@ -698,12 +742,14 @@ describe('PracticePage answering', () => {
     await finishPractice();
     expect(confirm).toHaveBeenCalled();
     await screen.findByText('100% 正確率');
-    // Answering itself records nothing; the submission is one 已作答紀錄 entry.
+    // Finishing also records nothing until the explicit choice to save.
+    expect(appState.dispatch.mock.calls.map(([action]) => action.type)).toEqual(['toggle-difficult']);
+    fireEvent.click(screen.getByRole('button', { name: '儲存此次作答' }));
     const recordTypes = appState.dispatch.mock.calls.map(([action]) => action.type);
     expect(recordTypes).toEqual(['toggle-difficult', 'save-attempt']);
   });
 
-  it('records a submitted set in 已作答紀錄 with the original options and the result page’s numbers', async () => {
+  it('records a submitted set only on consent, with original options and the result page’s numbers', async () => {
     vi.spyOn(window, 'confirm').mockReturnValue(true);
     seed({
       // Shown shuffled: 選項 A sits second on the screen, 選項 B first.
@@ -719,6 +765,8 @@ describe('PracticePage answering', () => {
     await finishPractice();
     await screen.findByText('67% 正確率');
 
+    expect(appState.dispatch).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: '儲存此次作答' }));
     const saved = appState.dispatch.mock.calls.find(
       ([action]) => action.type === 'save-attempt',
     )![0];
@@ -734,7 +782,7 @@ describe('PracticePage answering', () => {
       unansweredCount: 2,
       elapsedSeconds: 42,
     });
-    expect(saved.attempt.id).toMatch(/^attempt-/);
+    expect(saved.attempt.id).toMatch(/^daily-practice-attempt-/);
     expect(saved.results).toEqual({ 'law-114-01': true, 'law-113-02': false, 'law-113-05': true });
   });
 
@@ -1086,6 +1134,8 @@ describe('PracticePage result', () => {
     await screen.findByText('100% 正確率');
     expect(confirm).not.toHaveBeenCalled();
     expect(reloaded.container.firstElementChild).toHaveClass(styles.fullWidth);
+    expect(appState.dispatch).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: '儲存此次作答' }));
     expect(appState.dispatch).toHaveBeenCalledWith(expect.objectContaining({ type: 'save-attempt' }));
   });
 

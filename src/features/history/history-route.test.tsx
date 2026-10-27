@@ -1,12 +1,16 @@
-import { fireEvent, render, screen } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import HistoryRoute from '@/pages/history';
+import DailyPracticeHistoryRoute from '@/pages/practice-history';
 
 const mocks = vi.hoisted(() => ({
   useSubjectQuestions: vi.fn(),
   lawRetry: vi.fn(),
   environmentRetry: vi.fn(),
+  attempts: [] as Array<{ id?: string; mode?: string; questionIds: string[] }>,
 }));
+
+afterEach(cleanup);
 
 vi.mock('@/lib/question-bank-client', () => ({
   useSubjectQuestions: mocks.useSubjectQuestions,
@@ -16,10 +20,7 @@ vi.mock('@/state/app-state', () => ({
   useAppState: () => ({
     hydrated: true,
     state: {
-      attempts: [
-        { questionIds: ['law-114-01'] },
-        { questionIds: ['env-114-01'] },
-      ],
+      attempts: mocks.attempts,
     },
   }),
 }));
@@ -29,12 +30,15 @@ vi.mock('@/features/history/history-page', () => ({
     questions,
     questionBankStatuses,
     onRetryQuestionBank,
+    dailyOnly,
   }: {
     questions: Array<{ id: string }>;
     questionBankStatuses: Record<string, string>;
     onRetryQuestionBank: (subjectId: 'law' | 'env') => void;
+    dailyOnly?: boolean;
   }) => (
     <div>
+      <span>{dailyOnly ? 'daily-only' : 'all-attempts'}</span>
       <span>{questions.map((question) => question.id).join(',')}</span>
       <span>{questionBankStatuses.law}</span>
       <span>{questionBankStatuses.env}</span>
@@ -47,6 +51,7 @@ vi.mock('@/features/history/history-page', () => ({
 
 describe('history route question loading', () => {
   beforeEach(() => {
+    mocks.attempts = [{ questionIds: ['law-114-01'] }, { questionIds: ['env-114-01'] }];
     mocks.lawRetry.mockClear();
     mocks.environmentRetry.mockClear();
     mocks.useSubjectQuestions.mockReset();
@@ -71,6 +76,20 @@ describe('history route question loading', () => {
         retry: vi.fn(),
       };
     });
+  });
+
+  it('loads only the papers used by explicitly saved daily practice records', () => {
+    mocks.attempts = [
+      { id: 'daily-practice-example', mode: 'practice', questionIds: ['law-113-01'] },
+      { id: 'legacy-practice', mode: 'practice', questionIds: ['env-114-01'] },
+      { id: 'old-paper', mode: 'paper', questionIds: ['construction-114-01'] },
+    ];
+    render(<DailyPracticeHistoryRoute />);
+    expect(screen.getByText('daily-only')).toBeInTheDocument();
+    expect(mocks.useSubjectQuestions).toHaveBeenNthCalledWith(1, ['law'], [113]);
+    expect(mocks.useSubjectQuestions).toHaveBeenNthCalledWith(2, [], []);
+    expect(mocks.useSubjectQuestions).toHaveBeenNthCalledWith(3, [], []);
+    expect(mocks.useSubjectQuestions).toHaveBeenNthCalledWith(4, [], []);
   });
 
   it('retains successful subject questions and retries only failed subjects', () => {

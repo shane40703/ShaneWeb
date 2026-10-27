@@ -1,5 +1,6 @@
 import Head from 'next/head';
 import { HistoryPage } from '@/features/history/history-page';
+import { isDailyPracticeRecord } from '@/features/practice/daily-practice-recording';
 import { useSubjectQuestions } from '@/lib/question-bank-client';
 import { parseQuestionId, subjectsOfQuestionIds } from '@/lib/question-path';
 import { useAppState } from '@/state/app-state';
@@ -9,9 +10,10 @@ import { useAppState } from '@/state/app-state';
  * the subjects the stored attempts refer to instead of shipping the whole bank
  * inside the page payload.
  */
-export default function HistoryRoute() {
+export default function HistoryRoute({ dailyOnly = false }: { dailyOnly?: boolean }) {
   const { state, hydrated } = useAppState();
-  const attemptedQuestionIds = state.attempts.flatMap((attempt) => attempt.questionIds);
+  const attempts = dailyOnly ? state.attempts.filter(isDailyPracticeRecord) : state.attempts;
+  const attemptedQuestionIds = attempts.flatMap((attempt) => attempt.questionIds);
   const attemptedSubjects = hydrated
     ? subjectsOfQuestionIds(attemptedQuestionIds)
     : [];
@@ -50,9 +52,10 @@ export default function HistoryRoute() {
   return (
     <>
       <Head>
-        <title>已作答紀錄｜建築師考試</title>
+        <title>{dailyOnly ? '每日練習履歷' : '已作答紀錄'}｜建築師考試</title>
       </Head>
       <HistoryPage
+        dailyOnly={dailyOnly}
         questions={banks.flatMap((bank) => bank.questions)}
         questionBankStatuses={{
           law: lawBank.status,

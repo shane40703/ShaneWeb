@@ -599,7 +599,8 @@ export function toOriginalOption(
 }
 
 /**
- * The 已作答紀錄 entry of a submitted set, or null when nothing was answered. Its numbers
+ * The 已作答紀錄 entry of a submitted set, or null when nothing was answered unless
+ * explicitly requested with includeUnanswered. Its numbers
  * are the result page's: blanks, 一律給分 included, never count. Answers are stored in the
  * original option order, like every other record.
  */
@@ -607,9 +608,10 @@ export function createPracticeAttempt(
   session: PracticeSession,
   questionById: ReadonlyMap<string, Pick<Question, 'options'>>,
   submittedAt = new Date().toISOString(),
+  includeUnanswered = false,
 ): { attempt: QuizAttempt; results: Record<string, boolean> } | null {
   const summary = summarizePractice(session);
-  if (!summary.answered) return null;
+  if (!summary.answered && !includeUnanswered) return null;
   const answers: Record<string, number> = {};
   const results: Record<string, boolean> = {};
   session.questionIds.forEach((questionId) => {
@@ -648,13 +650,14 @@ export function createPracticeAttempts(
   session: PracticeSession,
   questionById: ReadonlyMap<string, Pick<Question, 'options'>>,
   submittedAt = new Date().toISOString(),
+  includeUnanswered = false,
 ) {
   const records: NonNullable<ReturnType<typeof createPracticeAttempt>>[] = [];
   for (let offset = 0; offset < session.questionIds.length; offset += 200) {
     const record = createPracticeAttempt({
       ...session,
       questionIds: session.questionIds.slice(offset, offset + 200),
-    }, questionById, submittedAt);
+    }, questionById, submittedAt, includeUnanswered);
     if (!record) continue;
     if (session.questionIds.length > 200) record.attempt.id += `-part-${offset / 200 + 1}`;
     records.push(record);
@@ -666,6 +669,11 @@ export function createPracticeAttempts(
 export interface PracticeResult {
   session: PracticeSession;
   summary: PracticeSummary;
+  /** An explicit daily-history choice; never serialized before the user saves. */
+  recording?: {
+    status: 'pending' | 'saved' | 'skipped';
+    records: NonNullable<ReturnType<typeof createPracticeAttempt>>[];
+  };
 }
 
 export function createPracticeResult(session: PracticeSession): PracticeResult {

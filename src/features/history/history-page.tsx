@@ -24,6 +24,7 @@ import { readStoredValue, writeStoredValue } from '@/lib/storage';
 import {
   calculateScore,
   formatDateTime,
+  formatDuration,
   getAttemptScopeKey,
   getSubjectScoreConfig,
   isQuestionCorrect,
@@ -41,6 +42,7 @@ import {
   saveMockExamDraft,
 } from '@/features/practice/mock-exam-store';
 import { practiceMockExamPage, practiceQuizPage } from '@/features/practice/practice-pages';
+import { isDailyPracticeRecord } from '@/features/practice/daily-practice-recording';
 import {
   createPracticeSessionFromQuestions,
   DEFAULT_PRACTICE_SETTINGS,
@@ -111,14 +113,18 @@ export function HistoryPage({
   questions,
   questionBankStatuses = {},
   onRetryQuestionBank,
+  dailyOnly = false,
 }: {
   questions: Question[];
   questionBankStatuses?: Partial<Record<SubjectId, QuestionBankStatus>>;
   onRetryQuestionBank?: (subject: SubjectId) => void;
+  dailyOnly?: boolean;
 }) {
   const router = useRouter();
   const { state, dispatch, hydrated, reportPersistence } = useAppState();
   const { notify } = useToast();
+  const attempts = dailyOnly ? state.attempts.filter(isDailyPracticeRecord) : state.attempts;
+  const historyLabel = dailyOnly ? '每日練習履歷' : '已作答紀錄';
   const [subjectFilter, setSubjectFilter] = useState<'mixed' | SubjectId>();
   const [historyView, setHistoryView] = useState<ResultView>('review');
   const [attemptViews, setAttemptViews] = useState<
@@ -128,9 +134,9 @@ export function HistoryPage({
     ...subjects
       .map((subject) => subject.id)
       .filter((subjectId) =>
-        state.attempts.some((attempt) => attempt.subject === subjectId),
+        attempts.some((attempt) => attempt.subject === subjectId),
       ),
-    ...(state.attempts.some((attempt) => attempt.subject === 'mixed')
+    ...(attempts.some((attempt) => attempt.subject === 'mixed')
       ? (['mixed'] as const)
       : []),
   ];
@@ -138,7 +144,7 @@ export function HistoryPage({
     subjectFilter && availableSubjectFilters.includes(subjectFilter)
       ? subjectFilter
       : availableSubjectFilters[0];
-  const filteredAttempts = state.attempts.filter(
+  const filteredAttempts = attempts.filter(
     (attempt) => attempt.subject === activeSubjectFilter,
   );
   const yearGroups = groupAttemptsByYear(filteredAttempts);
@@ -161,7 +167,7 @@ export function HistoryPage({
     ? availablePaperYears[paperAttemptCount % availablePaperYears.length]
     : undefined;
   const continuationYear = nextPaperYear ?? repeatPaperYear;
-  const mixedCount = state.attempts.filter(
+  const mixedCount = attempts.filter(
     (attempt) => attempt.subject === 'mixed',
   ).length;
   const filteredWrongCount = filteredAttempts.reduce(
@@ -259,7 +265,7 @@ export function HistoryPage({
 
   function deleteAttempt(attemptId: string) {
     dispatch({ type: 'delete-attempt', attemptId });
-    notify('已清除這次作答紀錄');
+    notify(dailyOnly ? '已刪除這次每日練習履歷' : '已清除這次作答紀錄');
   }
 
   function selectAttemptView(attemptId: string, view: ResultView) {
@@ -277,11 +283,15 @@ export function HistoryPage({
 
   return (
     <>
-      {hydrated && state.attempts.length ? (
+      {dailyOnly ? <p className={styles.historyNotice}>
+        只收錄你選擇儲存的每日抽題練習，可查看題目、作答答案、正確率及時間。
+        既有紀錄仍可在 <Link href="/history">已作答紀錄</Link> 查看。
+      </p> : null}
+      {hydrated && attempts.length ? (
         <section
           className={styles.subjectFilters}
           role="group"
-          aria-label="已作答紀錄科目分類"
+          aria-label={`${historyLabel}科目分類`}
         >
           <div>
             {subjects.map((subject) => (
@@ -294,7 +304,7 @@ export function HistoryPage({
                 {subject.name}
                 <span>
                   {
-                    state.attempts.filter((attempt) => attempt.subject === subject.id)
+                    attempts.filter((attempt) => attempt.subject === subject.id)
                       .length
                   }
                 </span>
@@ -318,7 +328,7 @@ export function HistoryPage({
             value={historyView}
             onValueChange={setHistoryView}
             idPrefix="history"
-            ariaLabel="已作答紀錄分頁"
+            ariaLabel={`${historyLabel}分頁`}
             reviewLabel="每次作答紀錄"
             analysisLabel="跨年度錯題分析"
           />
@@ -544,6 +554,9 @@ export function HistoryPage({
                               <time dateTime={attempt.submittedAt}>
                                 {formatDateTime(attempt.submittedAt)}
                               </time>
+                              {dailyOnly ? <p className={styles.attemptMeta}>
+                                共 {attempt.questionIds.length} 題・作答 {practiceAccuracy(attempt).answered} 題・未作答 {attempt.unansweredCount} 題・作答時間 {formatDuration(attempt.elapsedSeconds)}
+                              </p> : null}
                             </div>
                             <div className={styles.score}>
                               {attempt.mode === 'practice' ? (
@@ -702,12 +715,12 @@ export function HistoryPage({
                               trigger={
                                 <Button variant="danger">
                                   <IconTrash size={16} stroke={2} aria-hidden="true" />
-                                  清除第 {ordinal} 次紀錄
+                                  {dailyOnly ? '刪除' : '清除'}第 {ordinal} 次紀錄
                                 </Button>
                               }
-                              title={`清除第 ${ordinal} 次作答紀錄？`}
+                              title={`${dailyOnly ? '刪除' : '清除'}第 ${ordinal} 次作答紀錄？`}
                               description="只會刪除這一次的作答結果，其他紀錄與筆記不受影響。"
-                              confirmLabel="確認清除"
+                              confirmLabel={dailyOnly ? '確認刪除' : '確認清除'}
                               onConfirm={() => deleteAttempt(attempt.id)}
                             />
                           </footer>
@@ -721,7 +734,7 @@ export function HistoryPage({
                   </div>
                 </details>
               ))}
-              {activeSubjectFilter &&
+              {!dailyOnly && activeSubjectFilter &&
               activeSubjectFilter !== 'mixed' &&
               continuationYear ? (
                 <section className={styles.continueCard}>
@@ -760,20 +773,21 @@ export function HistoryPage({
           ) : (
             <EmptyState
               icon={IconHistory}
-              title="還沒有作答紀錄"
-              description="完成每日抽題練習或歷屆試題模擬考並交卷後，結果會保存在這裡。"
+              title={dailyOnly ? '還沒有每日練習履歷' : '還沒有作答紀錄'}
+              description={dailyOnly ? '完成每日抽題練習後，選擇「儲存此次作答」才會加入履歷。不記錄不會新增資料。'
+                : '完成每日抽題練習後選擇儲存，或完成歷屆試題模擬考並交卷後，結果會保存在這裡。'}
               action={
                 <>
                   <Button role="link" render={<Link href={practiceQuizPage.href} />}>
                     每日抽題練習
                   </Button>
-                  <Button
+                  {!dailyOnly ? <Button
                     role="link"
                     variant="primary"
                     render={<Link href={practiceMockExamPage.href} />}
                   >
                     開始第一份試卷
-                  </Button>
+                  </Button> : null}
                 </>
               }
             />

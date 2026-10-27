@@ -169,6 +169,7 @@ test('all retained routes support direct visits and the removed old pages return
     { path: '/difficult', title: '難題標記' },
     { path: '/wrong', title: '常錯題目' },
     { path: '/history', title: '已作答紀錄' },
+    { path: '/practice-history', title: '每日練習履歷' },
     { path: '/settings', title: '設定' },
     { path: '/appearance', title: '設定' },
   ] as const;

@@ -31,6 +31,7 @@ const personal = {
     ['使用者筆記', '/notes'],
     ['難題標記', '/difficult'],
     ['常錯題目', '/wrong'],
+    ['每日練習履歷', '/practice-history'],
     ['已作答紀錄', '/history'],
   ],
 };
@@ -181,6 +182,7 @@ describe('grouped app navigation', () => {
     ['/difficult', '難題標記'],
     ['/wrong', '常錯題目'],
     ['/history', '已作答紀錄'],
+    ['/practice-history', '每日練習履歷'],
     ['/settings', '設定'],
     ['/appearance', '設定'],
     ['/report', '問題回報'],

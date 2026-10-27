@@ -69,6 +69,8 @@ for (const shuffled of [true, false]) {
       await expect(review.getByText(/原選項 [A-D]/)).toHaveCount(shuffled ? 4 : 0);
       if (shuffled) expect(await review.getByText(/原選項 [A-D]/).allTextContents()).toEqual(expected);
       await expect(review.getByText(explanation, { exact: true })).toBeVisible();
+      await page.getByRole('button', { name: '儲存此次作答', exact: true }).click();
+      await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('shaneweb:state')!).attempts.length)).toBe(1);
       const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('shaneweb:state')!));
       expect(saved.attempts[0].answers[question.id]).toBe(wrongOriginal);
       expect(saved.attempts[0].wrongCount).toBe(1);

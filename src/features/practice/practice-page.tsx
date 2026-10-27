@@ -8,6 +8,7 @@ import {
   type MouseEvent,
 } from 'react';
 import { IconLoader2 } from '@tabler/icons-react';
+import { useToast } from '@/components/ui/ui';
 import { useSubjectQuestions } from '@/lib/question-bank-client';
 import { readStoredValue, writeStoredValue } from '@/lib/storage';
 import { isSubjectId, parseYear } from '@/lib/study';
@@ -21,7 +22,6 @@ import {
   confirmPracticeAnswer,
   createPracticeAttempts,
   createPracticePaper,
-  createPracticeResult,
   createPracticeSession,
   createPracticeTimer,
   DEFAULT_PRACTICE_SETTINGS,
@@ -43,6 +43,7 @@ import {
 } from './practice-session';
 import { readEntryTag, readReloadedDepth, writeEntryTag } from './practice-history';
 import { keepPracticeResult, readKeptPracticeResult } from './practice-result-memory';
+import { createRecordablePracticeResult } from './daily-practice-recording';
 import { PracticeSetup } from './practice-setup';
 import styles from './practice-page.module.css';
 
@@ -91,6 +92,8 @@ export function PracticePage() {
   const router = useRouter();
   const ready = useClientReady();
   const { dispatch, reportPersistence } = useAppState();
+  const { notify } = useToast();
+  const savedRecordingIds = useRef(new Set<string>());
   const [restored, setRestored] = useState(false);
   const [session, setSession] = useState<PracticeSession | null>(null);
   const [result, setResult] = useState<PracticeResult | null>(null);
@@ -536,14 +539,33 @@ export function PracticePage() {
     ) {
       return;
     }
-    // Saved once, here: 已作答紀錄 and 常錯題目 keep every submission with an answer.
-    for (const record of createPracticeAttempts(timed, questionById)) {
-      dispatch({ type: 'save-attempt', ...record });
+    // The opt-in applies only to daily draws, not difficult/wrong subject reviews.
+    if (timed.reviewSource) {
+      for (const record of createPracticeAttempts(timed, questionById)) {
+        dispatch({ type: 'save-attempt', ...record });
+      }
     }
-    setResult(createPracticeResult(timed));
+    setResult(createRecordablePracticeResult(timed, questionById));
     setResultShown(true);
     commitSession(resetPracticeAnswers(timed));
     navigate('push', { view: 'result' }, depth.current + 1);
+  }
+
+  function saveDailyPractice() {
+    const recording = result?.recording;
+    if (!recording || recording.status === 'saved' || !recording.records.length) return;
+    const key = recording.records[0].attempt.id;
+    if (savedRecordingIds.current.has(key)) return;
+    savedRecordingIds.current.add(key);
+    for (const record of recording.records) dispatch({ type: 'save-attempt', ...record });
+    setResult(current => current && current.recording?.records[0]?.attempt.id === key
+      ? { ...current, recording: { ...current.recording, status: 'saved' } } : current);
+    notify('已加入每日練習履歷');
+  }
+
+  function skipDailyPractice() {
+    setResult(current => current?.recording && current.recording.status !== 'saved'
+      ? { ...current, recording: { ...current.recording, status: 'skipped' } } : current);
   }
 
   function abandon() {
@@ -619,6 +641,8 @@ export function PracticePage() {
         questionById={questionById}
         onRetry={retrySet}
         onNewDraw={newDraw}
+        onSave={saveDailyPractice}
+        onSkip={skipDailyPractice}
       />
     );
   } else if (session && currentId) {
