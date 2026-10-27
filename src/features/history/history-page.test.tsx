@@ -128,7 +128,7 @@ describe('HistoryPage', () => {
     );
 
     const subjectFilters = await screen.findByRole('group', {
-      name: '已作答紀錄科目分類',
+      name: '歷屆試題作答履歷科目分類',
     });
     const lawYearGroup = screen.getByLabelText('114 年作答紀錄');
     const lawYearAttemptCount = state.attempts.filter(

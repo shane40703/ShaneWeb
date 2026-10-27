@@ -1,8 +1,34 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 
-async function selectAll(editor: Locator) {
+async function selectText(editor: Locator, touch: boolean, lastCharacter = false) {
   await editor.click();
-  await editor.press('ControlOrMeta+a');
+  if (!touch) {
+    await editor.press(lastCharacter ? 'Shift+ArrowLeft' : 'ControlOrMeta+a');
+    return;
+  }
+  // Touch-emulated Chromium on Windows does not select text with desktop
+  // keyboard shortcuts. Establish the range a touch selection would create.
+  await editor.evaluate((element, last) => {
+    const range = document.createRange();
+    if (last) {
+      const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+      let tail: Node | null = null;
+      for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+        if (node.textContent?.length) tail = node;
+      }
+      if (!tail) throw new Error('The editor has no text to select.');
+      const length = tail.textContent!.length;
+      range.setStart(tail, length - 1);
+      range.setEnd(tail, length);
+    } else range.selectNodeContents(element);
+    const selection = window.getSelection();
+    if (!selection) throw new Error('Text selection is unavailable.');
+    selection.removeAllRanges();
+    selection.addRange(range);
+  }, lastCharacter);
+  const text = await editor.textContent();
+  await expect.poll(() => editor.evaluate(() => window.getSelection()?.toString()))
+    .toBe(lastCharacter ? text!.slice(-1) : text);
 }
 async function noOverflow(page: Page) {
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(page.viewportSize()!.width);
@@ -21,7 +47,7 @@ for (const theme of ['light', 'dark'] as const) {
     await expect.poll(() => placeholderContent(editor)).toContain('記下法條');
     await editor.fill('建築物 0.75m2 即時筆記');
     await expect.poll(() => placeholderContent(editor)).toBe('none');
-    await selectAll(editor);
+    await selectText(editor, isMobile);
     await format('粗體').click();
     await expect(format('粗體')).toHaveAttribute('aria-pressed', 'true');
     await expect(editor.locator('strong')).toHaveText('建築物 0.75m2 即時筆記');
@@ -61,7 +87,7 @@ for (const theme of ['light', 'dark'] as const) {
     await expect(editor.locator('strong')).toContainText('即時筆記');
     // Opening saved content must hide the hint before any click/focus in the editor.
     await expect.poll(() => placeholderContent(editor)).toBe('none');
-    await selectAll(editor);
+    await selectText(editor, isMobile);
     await page.getByRole('button', { name: '清除格式', exact: true }).click();
     await expect(editor.locator('strong, u, [style]')).toHaveCount(0);
     await page.getByRole('button', { name: '復原', exact: true }).click();
@@ -71,7 +97,7 @@ for (const theme of ['light', 'dark'] as const) {
 
     // Apply red plus superscript only to the exponent, without moving other text.
     await editor.fill('0.75m2');
-    await editor.press('Shift+ArrowLeft');
+    await selectText(editor, isMobile, true);
     await format('上標').click();
     await page.getByRole('combobox', { name: '文字顏色', exact: true }).selectOption('var(--danger)');
     await expect(editor.locator('sup')).toHaveText('2');

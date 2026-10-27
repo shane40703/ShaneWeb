@@ -279,7 +279,7 @@ function createSessionId(random: () => number) {
 }
 
 /**
- * A new set of exactly these questions, in this order: what 再做一次 in 已作答紀錄 starts.
+ * A new set of exactly these questions, in this order: what 再做一次 in 歷屆試題作答履歷 starts.
  * The range and category describe the questions: a category shared by all of them, else 全部.
  */
 export function createPracticeSessionFromQuestions(
@@ -599,7 +599,7 @@ export function toOriginalOption(
 }
 
 /**
- * The 已作答紀錄 entry of a submitted set, or null when nothing was answered unless
+ * The 歷屆試題作答履歷 entry of a submitted set, or null when nothing was answered unless
  * explicitly requested with includeUnanswered. Its numbers
  * are the result page's: blanks, 一律給分 included, never count. Answers are stored in the
  * original option order, like every other record.

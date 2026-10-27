@@ -52,7 +52,7 @@ export default function HistoryRoute({ dailyOnly = false }: { dailyOnly?: boolea
   return (
     <>
       <Head>
-        <title>{dailyOnly ? '每日練習履歷' : '已作答紀錄'}｜建築師考試</title>
+        <title>{dailyOnly ? '每日練習履歷' : '歷屆試題作答履歷'}｜建築師考試</title>
       </Head>
       <HistoryPage
         dailyOnly={dailyOnly}

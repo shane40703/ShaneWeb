@@ -636,7 +636,7 @@ describe('MockExamPage submitting', () => {
     expect(router.snapshot.asPath).toBe('/practice/mock-exam?subject=law&year=114&q=3');
   });
 
-  it('saves the paper to 已作答紀錄 with the official score, and shows it until deleted', async () => {
+  it('saves the paper to 歷屆試題作答履歷 with the official score, and shows it until deleted', async () => {
     seedAnswers();
     vi.spyOn(window, 'confirm').mockReturnValue(true);
     renderAt('/practice/mock-exam?subject=law&year=114');
@@ -752,7 +752,7 @@ describe('MockExamPage submitting', () => {
     renderAt('/practice/mock-exam?subject=law&year=114&result=gone');
 
     expect(
-      await screen.findByText('找不到這次的作答結果，可能已從已作答紀錄清除。'),
+      await screen.findByText('找不到這次的作答結果，可能已從歷屆試題作答履歷清除。'),
     ).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: '回到選卷' }));
     await flush();

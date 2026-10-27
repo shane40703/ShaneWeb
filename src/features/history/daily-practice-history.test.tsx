@@ -77,6 +77,6 @@ describe('Daily practice history', () => {
     renderHistory(false);
     expect(await screen.findByRole('heading', { name: '還沒有每日練習履歷' })).toBeVisible();
     expect(screen.getByText(/儲存此次作答.*才會加入履歷/)).toBeVisible();
-    expect(screen.getByRole('link', { name: '已作答紀錄' })).toHaveAttribute('href', '/history');
+    expect(screen.getByRole('link', { name: '歷屆試題作答履歷' })).toHaveAttribute('href', '/history');
   });
 });

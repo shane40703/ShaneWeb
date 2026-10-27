@@ -42,14 +42,14 @@ describe('PracticeHubPage', () => {
     render(<PracticeHubPage overview={overview} />);
 
     const quiz = screen.getByRole('article', { name: '每日抽題練習' });
-    expect(within(quiz).getByText('從歷屆考古題抽題，逐題對答案')).toBeInTheDocument();
+    expect(within(quiz).getByText('從歷屆考古題抽題，並隨機打亂選項，適合讀書已有一定實力的考生')).toBeInTheDocument();
     expect(within(quiz).getByText('4 科・2,963 題')).toBeInTheDocument();
     const cloze = screen.getByRole('article', { name: '法規克漏字' });
-    expect(within(cloze).getByText('背熟法規裡的期限、罰鍰與尺寸')).toBeInTheDocument();
+    expect(within(cloze).getByText('適合法規已經背誦到滾瓜爛熟，想挑戰自我的考生')).toBeInTheDocument();
     expect(within(cloze).getByText('10 部法規・358 題')).toBeInTheDocument();
     const exam = screen.getByRole('article', { name: '歷屆試題模擬考' });
     expect(
-      within(exam).getByText('選一份歷屆試卷，照原題號作答，交卷後按配分算分'),
+      within(exam).getByText('自選 100～114 年任一份考古題，模擬考試時的實際作答，適合全部考生'),
     ).toBeInTheDocument();
     expect(within(exam).getByText('3 科・5 份試卷')).toBeInTheDocument();
   });

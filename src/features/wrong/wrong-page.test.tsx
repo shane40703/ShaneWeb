@@ -103,7 +103,7 @@ describe('WrongPage', () => {
 
   it('starts all distinct wrong questions of the active subject, including other years', async () => {
     renderPage();
-    fireEvent.click(await screen.findByRole('button', { name: '作答本科目所有常錯題目' }));
+    fireEvent.click(await screen.findByRole('button', { name: '練習本科目常錯題目' }));
     fireEvent.click(await screen.findByRole('button', { name: '開始練習（2 題）' }));
     const saved = JSON.parse(localStorage.getItem(PRACTICE_SESSION_STORAGE_KEY)!);
     expect(saved.questionIds).toEqual(['law-114-01', 'law-113-03']);

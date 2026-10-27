@@ -10,7 +10,7 @@ import {
 
 /**
  * 沒有資料、讀取中、載入失敗時頁面中間的說明。網站上的四種樣子並排：
- * - 已作答紀錄還沒有紀錄：下面有兩個開始作答的按鈕（history-page）。
+ * - 歷屆試題作答履歷還沒有紀錄：下面有兩個開始作答的按鈕（history-page）。
  * - 題庫下載失敗：有「重新載入」按鈕（exams-page、notes-page）。
  * - 難題標記還沒有任何題目：沒有按鈕（difficult-page）。
  * - 讀取中：同一個元件換成讀取圖示（history-page、difficult-page）。

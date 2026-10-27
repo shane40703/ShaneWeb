@@ -4,7 +4,7 @@ import { ReadingFontControls } from '@/components/reading-font-controls';
 import { useAppState } from '@/state/app-state';
 import styles from './settings-page.module.css';
 
-// The preview shows the real answer rows (the same component as 考古題討論版 and 已作答紀錄), so any
+// The preview shows the real answer rows (the same component as 考古題討論版 and 歷屆試題作答履歷), so any
 // change to that component shows up here too.
 const PREVIEW_QUESTION = {
   options: ['選項文字可單獨調整大小', '設定會自動套用到作答與複習頁面'],

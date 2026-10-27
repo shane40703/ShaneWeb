@@ -20,7 +20,7 @@ export const practiceQuizPage = {
   href: '/practice/quiz',
   label: '每日抽題練習',
   icon: IconListCheck,
-  summary: '從歷屆考古題抽題，逐題對答案',
+  summary: '從歷屆考古題抽題，並隨機打亂選項，適合讀書已有一定實力的考生',
 } as const;
 
 export const practiceClozePage = {
@@ -28,7 +28,7 @@ export const practiceClozePage = {
   href: '/practice/law-cloze',
   label: '法規克漏字',
   icon: IconForms,
-  summary: '背熟法規裡的期限、罰鍰與尺寸',
+  summary: '適合法規已經背誦到滾瓜爛熟，想挑戰自我的考生',
 } as const;
 
 export const practiceMockExamPage = {
@@ -36,7 +36,7 @@ export const practiceMockExamPage = {
   href: '/practice/mock-exam',
   label: '歷屆試題模擬考',
   icon: IconClipboardText,
-  summary: '選一份歷屆試卷，照原題號作答，交卷後按配分算分',
+  summary: '自選 100～114 年任一份考古題，模擬考試時的實際作答，適合全部考生',
 } as const;
 
 export const practicePages = [

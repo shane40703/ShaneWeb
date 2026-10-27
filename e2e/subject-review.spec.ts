@@ -45,7 +45,7 @@ for (const { source, countMode } of scenarios) {
     }, { state, otherId: other.id });
 
     await page.goto(`/${source}`);
-    const label = source === 'difficult' ? '作答本科目所有難題標記' : '作答本科目所有常錯題目';
+    const label = source === 'difficult' ? '練習本科目難題標記' : '練習本科目常錯題目';
     const start = page.getByRole('button', { name: label, exact: true });
     await expect(start).toBeEnabled({ timeout: 20_000 });
     await expect(page.getByText('跨所有年度・共 53 題選擇題', { exact: true })).toBeVisible();

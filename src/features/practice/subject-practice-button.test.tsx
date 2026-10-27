@@ -21,7 +21,7 @@ function renderButton(props: Partial<React.ComponentProps<typeof SubjectPractice
 }
 
 async function openSettings(source: 'difficult' | 'wrong' = 'difficult') {
-  fireEvent.click(screen.getByRole('button', { name: source === 'difficult' ? '作答本科目所有難題標記' : '作答本科目所有常錯題目' }));
+  fireEvent.click(screen.getByRole('button', { name: source === 'difficult' ? '練習本科目難題標記' : '練習本科目常錯題目' }));
   return screen.findByRole('dialog', { name: source === 'difficult' ? '難題標記重練設定' : '常錯題目重練設定' });
 }
 
@@ -47,7 +47,7 @@ describe('SubjectPracticeButton', () => {
     expect(mocks.push).not.toHaveBeenCalled();
     await user.click(screen.getByRole('button', { name: '取消' }));
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
-    await waitFor(() => expect(screen.getByRole('button', { name: '作答本科目所有難題標記' })).toHaveFocus());
+    await waitFor(() => expect(screen.getByRole('button', { name: '練習本科目難題標記' })).toHaveFocus());
     expect(localStorage.getItem(PRACTICE_SESSION_STORAGE_KEY)).toBe('keep-current-set');
   });
 

@@ -124,7 +124,7 @@ export function HistoryPage({
   const { state, dispatch, hydrated, reportPersistence } = useAppState();
   const { notify } = useToast();
   const attempts = dailyOnly ? state.attempts.filter(isDailyPracticeRecord) : state.attempts;
-  const historyLabel = dailyOnly ? '每日練習履歷' : '已作答紀錄';
+  const historyLabel = dailyOnly ? '每日練習履歷' : '歷屆試題作答履歷';
   const [subjectFilter, setSubjectFilter] = useState<'mixed' | SubjectId>();
   const [historyView, setHistoryView] = useState<ResultView>('review');
   const [attemptViews, setAttemptViews] = useState<
@@ -285,7 +285,7 @@ export function HistoryPage({
     <>
       {dailyOnly ? <p className={styles.historyNotice}>
         只收錄你選擇儲存的每日抽題練習，可查看題目、作答答案、正確率及時間。
-        既有紀錄仍可在 <Link href="/history">已作答紀錄</Link> 查看。
+        既有紀錄仍可在 <Link href="/history">歷屆試題作答履歷</Link> 查看。
       </p> : null}
       {hydrated && attempts.length ? (
         <section

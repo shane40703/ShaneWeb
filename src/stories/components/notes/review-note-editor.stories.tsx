@@ -13,7 +13,7 @@ const questionOptions = fixtureOptions(
 );
 
 /**
- * 作答畫面、練習結果、常錯題目、我的難題、作答紀錄裡的「使用者筆記」。一開始的第 15 題
+ * 作答畫面、練習結果、常錯題目、我的難題、作答紀錄裡的「我的筆記」。一開始的第 15 題
  * 已存的筆記用到所有文字格式，附兩張圖片。
  * 已有內容時不顯示預設提示；清空文字會重新顯示，輸入後立即隱藏。
  *
@@ -44,4 +44,4 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const 使用者筆記: Story = {};
+export const 我的筆記: Story = {};

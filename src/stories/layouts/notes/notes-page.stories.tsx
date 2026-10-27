@@ -8,7 +8,7 @@ import { pageParameters, withPageFrame } from '../../support/story-environment';
 import { notesInitialQuestions, NotesRoute } from './notes-route';
 
 /**
- * 使用者筆記（/notes）：左邊是題目與筆記編輯器，右邊是題號導覽與已儲存筆記。
+ * 我的筆記（/notes）：左邊是題目與筆記編輯器，右邊是題號導覽與已儲存筆記。
  * 要看哪一題由網址的 `?question=題目編號` 決定，沒有指定就是題庫的第一題（法規最新的
  * 114 年第 1 題）。預先載入的是法規（getStaticProps），其他科目會在需要時才載入範例題庫。
  *
@@ -20,7 +20,7 @@ import { notesInitialQuestions, NotesRoute } from './notes-route';
  *   切到還沒寫筆記的年度（例如 114 年）就是全新使用者看到的「尚未儲存任何筆記」。
  */
 const meta = {
-  title: 'Layouts/使用者筆記/筆記畫面',
+  title: 'Layouts/我的筆記/筆記畫面',
   component: NotesRoute,
   decorators: [withStatefulRouter, withPageFrame],
   parameters: { ...pageParameters('/notes') },

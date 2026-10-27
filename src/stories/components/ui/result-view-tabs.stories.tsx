@@ -8,8 +8,8 @@ import { ResultViewTabs } from '@/components/result-view-tabs';
  *
  * 畫面上可以操作看到：點分頁切換選取的樣式，Controls 也跟著更新。
  *
- * Controls 可以看到網站上其他地方的文字：reviewLabel／analysisLabel 換成已作答紀錄頁頂端的
- * 「每次作答紀錄／跨年度錯題分析」，或已作答紀錄裡展開單次紀錄時的「完整作答紀錄」。
+ * Controls 可以看到網站上其他地方的文字：reviewLabel／analysisLabel 換成歷屆試題作答履歷頁頂端的
+ * 「每次作答紀錄／跨年度錯題分析」，或歷屆試題作答履歷裡展開單次紀錄時的「完整作答紀錄」。
  * 工具列切到手機寬度（560px 以下）時，分頁撐滿整列、平分寬度。
  */
 const meta = {

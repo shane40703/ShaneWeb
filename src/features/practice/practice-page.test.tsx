@@ -551,6 +551,20 @@ describe('PracticePage arriving from other pages', () => {
 });
 
 describe('PracticePage answering', () => {
+  it.each(['ready', 'loading', 'error'] as const)('shows only subject names before and after selection while the bank is %s', async status => {
+    bankState.status = status;
+    renderAt('/practice/quiz');
+    const setup = await screen.findByRole('region', { name: '每日抽題練習設定' });
+    const choices = within(setup).getByRole('group', { name: '選擇科目' });
+    const names = ['建築法規與實務', '建築環境控制', '建築構造與施工', '建築結構'];
+    for (const name of names) expect(within(choices).getByRole('radio', { name })).toBeInTheDocument();
+    expect(choices.querySelectorAll('small')).toHaveLength(0);
+    fireEvent.click(within(choices).getByRole('radio', { name: names[0] }));
+    expect(within(choices).getByRole('radio', { name: names[0] })).toBeChecked();
+    expect(choices.querySelectorAll('small')).toHaveLength(0);
+    expect(within(choices).queryByText(/題庫.*題|這次抽/)).not.toBeInTheDocument();
+  });
+
   it('can decline recording and later save once, keeping that decision through navigation', async () => {
     seed({ answers: allCorrect, currentIndex: 4 });
     const view = renderAt('/practice/quiz?q=5');
@@ -633,7 +647,7 @@ describe('PracticePage answering', () => {
     expect(verdict).toHaveTextContent('正確答案：D・你的答案：D');
     expect(verdict).toHaveFocus();
     expect(screen.getByRole('region', { name: /原題第 1 題詳解/ })).toBeInTheDocument();
-    expect(screen.getByText('使用者筆記')).toBeInTheDocument();
+    expect(screen.getByText('我的筆記')).toBeInTheDocument();
     expect(
       within(questionRegion())
         .getAllByRole('radio')

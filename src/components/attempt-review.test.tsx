@@ -111,11 +111,11 @@ describe('AttemptReview', () => {
     fireEvent.click(discussionButtons[1]);
     expect(screen.getByText('尚未有詳解或討論。')).toBeInTheDocument();
     expect(
-      screen.getByRole('region', { name: '第 1 題使用者筆記' }),
+      screen.getByRole('region', { name: '第 1 題我的筆記' }),
     ).toBeInTheDocument();
     expect(
       screen
-        .getByRole('region', { name: '第 1 題使用者筆記' })
+        .getByRole('region', { name: '第 1 題我的筆記' })
         .closest('details'),
     ).toHaveTextContent('檢視完整選項與筆記');
   });

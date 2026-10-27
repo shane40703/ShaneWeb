@@ -14,6 +14,7 @@ import { PracticeHubPage } from '@/features/practice/practice-hub-page';
 import { ResourcesPage } from '@/features/resources/resources-page';
 import DifficultRoute from '@/pages/difficult';
 import HistoryRoute from '@/pages/history';
+import DailyPracticeHistoryRoute from '@/pages/practice-history';
 import HomeRoute from '@/pages/index';
 import ReportPage from '@/pages/report';
 import SettingsPage from '@/pages/settings';
@@ -44,10 +45,11 @@ const pages = {
     label: '歷屆試題資料集成',
     content: <ResourcesPage overview={resourcesOverview} />,
   },
-  '/notes': { label: '使用者筆記', content: <NotesRoute /> },
+  '/notes': { label: '我的筆記', content: <NotesRoute /> },
   '/difficult': { label: '難題標記', content: <DifficultRoute /> },
   '/wrong': { label: '常錯題目', content: <WrongRoute /> },
-  '/history': { label: '已作答紀錄', content: <HistoryRoute /> },
+  '/practice-history': { label: '每日練習履歷', content: <DailyPracticeHistoryRoute /> },
+  '/history': { label: '歷屆試題作答履歷', content: <HistoryRoute /> },
   '/settings': { label: '設定', content: <SettingsPage /> },
   '/report': { label: '問題回報', content: <ReportPage /> },
 } satisfies Record<string, { label: string; content: ReactNode }>;
@@ -142,7 +144,7 @@ function SitePages({
  * 畫面上可以操作看到：
  * - 點側欄的頁面或左上角的網站名稱（首頁）換頁，側欄標示與頂部列的頁面名稱跟著換
  *   （Controls 的 page 也跟著更新）；滑過或點「我的作答存摺」在同一個外框內向下展開子選單，子頁面時
- *   「我的作答存摺」標示為目前位置。頁面裡的操作照常，例如考古題討論版、使用者筆記點題號換題。
+ *   「我的作答存摺」標示為目前位置。頁面裡的操作照常，例如考古題討論版、我的筆記點題號換題。
  * - 點側欄的「設定」在原頁面上開啟設定視窗，可以展開閱讀設定、介面配色設定；
  *   按右上角的關閉、背景或 Esc 關閉。設定頁（/settings）本身從 Controls 的 page 選。
  * - 頂部列的深淺色切換。

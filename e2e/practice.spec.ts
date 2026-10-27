@@ -71,7 +71,7 @@ test('new daily practice keeps the daily defaults, hides the random options, and
   await confirm.click();
   await expect(question.getByRole('status')).toContainText(/答對了|答錯了/);
   await expect(page.getByRole('region', { name: /原題第 \d+ 題詳解/ })).toBeVisible();
-  await expect(page.getByText('使用者筆記')).toBeVisible();
+  await expect(page.getByText('我的筆記')).toBeVisible();
   await expect(question.getByRole('radio').first()).toHaveAttribute(
     'aria-disabled',
     'true',
@@ -387,14 +387,14 @@ test('the mock exam answers a whole paper, keeps it when leaving, and scores it 
   await setup.getByRole('link', { name: /查看結果/ }).click();
   await expect(score).toHaveAttribute('aria-valuemax', '60');
   await page.goto('/history');
-  // Saved to 已作答紀錄 like the original 考古題討論版.
+  // Saved to 歷屆試題作答履歷 like the original 考古題討論版.
   const year = page.getByRole('group', { name: '113 年作答紀錄' });
   await expect(year.locator('summary')).toContainText('共作答 1 次');
   await year.locator('summary').click();
   await expect(year.getByRole('heading', { name: '建築環境控制・113 年' })).toBeVisible();
 });
 
-test('每日抽題練習 explicit saves remain in 已作答紀錄, and 再做一次 starts the same questions', async ({
+test('每日抽題練習 explicit saves remain in 歷屆試題作答履歷, and 再做一次 starts the same questions', async ({
   page,
 }) => {
   const setup = await openSetup(page);

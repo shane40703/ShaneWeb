@@ -3,11 +3,11 @@ import { expect, test, type Page } from '@playwright/test';
 const personal = {
   label: '我的作答存摺',
   links: [
-    ['使用者筆記', '/notes'],
+    ['我的筆記', '/notes'],
     ['難題標記', '/difficult'],
     ['常錯題目', '/wrong'],
     ['每日練習履歷', '/practice-history'],
-    ['已作答紀錄', '/history'],
+    ['歷屆試題作答履歷', '/history'],
   ],
 };
 
@@ -128,7 +128,7 @@ test('keyboard Enter and Escape work without viewport overflow', async ({
   await page.keyboard.press('Enter');
   const popup = page.getByRole('group', { name: `${personal.label}子選單` });
   await expect(
-    popup.getByRole('link', { name: '使用者筆記', exact: true }),
+    popup.getByRole('link', { name: '我的筆記', exact: true }),
   ).toBeFocused();
   // The inline submenu moves with the phone drawer until its entrance animation ends.
   await expect.poll(async () => (await popup.boundingBox())!.x).toBeGreaterThanOrEqual(0);

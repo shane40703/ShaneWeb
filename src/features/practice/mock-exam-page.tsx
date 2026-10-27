@@ -458,7 +458,7 @@ export function MockExamPage({ papers }: { papers: MockExamPaper[] }) {
     ) : (
       <div className={styles.loading} role="alert">
         <IconAlertTriangle size={26} aria-hidden="true" />
-        <span>找不到這次的作答結果，可能已從已作答紀錄清除。</span>
+        <span>找不到這次的作答結果，可能已從歷屆試題作答履歷清除。</span>
         <Button onClick={() => void navigate('replace', setupHref)}>回到選卷</Button>
       </div>
     );

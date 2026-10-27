@@ -5,7 +5,7 @@ import { ImageAttachments } from '@/components/image-attachments';
 import { fixtureImages } from '../../fixtures/app-state';
 
 /**
- * 使用者筆記的圖片上傳：每題最多 4 張、每張 2 MB 以下。
+ * 我的筆記的圖片上傳：每題最多 4 張、每張 2 MB 以下。
  *
  * 畫面上可以操作看到：
  * - 「上傳筆記圖片」選圖片加入；加到 4 張是上限，再上傳會出現紅字提示。

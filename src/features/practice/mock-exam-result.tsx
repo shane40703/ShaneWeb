@@ -24,7 +24,7 @@ import examStyles from './mock-exam.module.css';
 
 const ANCHOR_PREFIX = 'result-question';
 
-/** A submitted paper, read back from 已作答紀錄 so a reload or Back still finds it. */
+/** A submitted paper, read back from 歷屆試題作答履歷 so a reload or Back still finds it. */
 export function MockExamResult({
   paper,
   attempt,
@@ -139,7 +139,7 @@ export function MockExamResult({
           <IconAlertTriangle size={26} aria-hidden="true" />
           <span>
             {status === 'error'
-              ? '題目載入失敗，分數與作答紀錄仍保存在已作答紀錄。'
+              ? '題目載入失敗，分數與作答紀錄仍保存在歷屆試題作答履歷。'
               : `尚有 ${total - reviewed.length} 題內容無法顯示。`}
           </span>
           {status === 'error' ? <Button onClick={onRetry}>重新載入</Button> : null}

@@ -19,7 +19,7 @@ function resultUrl(subject: SubjectId, year: number, result: string) {
 }
 
 /**
- * /practice/mock-exam 交卷後的畫面：網址的 result 是已作答紀錄裡這次成績的 id，題目照常
+ * /practice/mock-exam 交卷後的畫面：網址的 result 是歷屆試題作答履歷裡這次成績的 id，題目照常
  * 從題庫載入（跟選卷、作答畫面同一份存檔）。法規 101 年答錯 8 題，5 題沒作答（其中 3 題
  * 一律給分）；第 12、15、41 題第一次考也錯（已答錯 2 次）並標為難題，第 15 題有筆記與圖片。
  *
@@ -52,7 +52,7 @@ type Story = StoryObj<typeof meta>;
 
 export const 交卷結果: Story = {};
 
-/** 網址的成績已從已作答紀錄刪除。 */
+/** 網址的成績已從歷屆試題作答履歷刪除。 */
 export const 找不到作答結果: Story = {
   parameters: {
     ...resultUrl('law', 101, 'attempt-2026-10-01T00:00:00.000Z-gone00'),

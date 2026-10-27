@@ -20,8 +20,8 @@ import { pageParameters, withPageFrame } from '../../support/story-environment';
  *
  * 畫面上可以操作看到：
  * - 上方切換科目與年度（沒有難題的科目、年度不能點）。
- * - 「作答本科目所有難題標記」先開啟題數設定，可自訂或選全部，再導向每日抽題練習。
- * - 「查看選項、作答與詳解」展開選項、詳解與這題的使用者筆記；選答案後按「檢查答案」看
+ * - 「練習本科目難題標記」先開啟題數設定，可自訂或選全部，再導向每日抽題練習。
+ * - 「查看選項、作答與詳解」展開選項、詳解與這題的我的筆記；選答案後按「檢查答案」看
  *   答對或答錯，「重新作答」再選一次。
  * - 展開後的筆記可以編輯、上傳圖片；題目上的難題按鈕可以取消標記。
  */
@@ -35,7 +35,7 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-/** 四科都有標記的難題，筆記沿用使用者筆記頁的範例資料。 */
+/** 四科都有標記的難題，筆記沿用我的筆記頁的範例資料。 */
 const markedAppState = {
   difficultQuestionIds: personalDifficultIds,
   notes: personalNotes,

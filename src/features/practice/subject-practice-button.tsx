@@ -83,7 +83,7 @@ export function SubjectPracticeButton({
       setOpen(next);
     }}>
       <Dialog.Trigger render={<Button variant="primary" disabled={unavailable} />}>
-        <IconListCheck size={18} aria-hidden="true" />作答本科目所有{label}
+        <IconListCheck size={18} aria-hidden="true" />練習本科目{label}
       </Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Backdrop className={uiStyles.backdrop} />

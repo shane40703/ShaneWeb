@@ -113,7 +113,7 @@ describe('DifficultPage', () => {
 
   it('starts every marked choice question of the selected subject across years', async () => {
     renderPage(questions.map(item => item.id));
-    fireEvent.click(await screen.findByRole('button', { name: '作答本科目所有難題標記' }));
+    fireEvent.click(await screen.findByRole('button', { name: '練習本科目難題標記' }));
     fireEvent.click(await screen.findByRole('button', { name: '開始練習（3 題）' }));
     const saved = JSON.parse(localStorage.getItem(PRACTICE_SESSION_STORAGE_KEY)!);
     expect(saved.questionIds).toEqual(['law-114-01', 'law-114-02', 'law-113-01']);

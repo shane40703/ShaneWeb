@@ -102,6 +102,14 @@
   background: var(--primary-soft);
 }
 
+.subjectChoices[data-compact] label {
+  align-items: center;
+}
+
+.subjectChoices[data-compact] input {
+  margin: 0;
+}
+
 .subjectChoices label:has(input:disabled) {
   color: var(--disabled-text);
   cursor: not-allowed;

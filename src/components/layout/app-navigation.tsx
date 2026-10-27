@@ -15,11 +15,11 @@ const primaryNavigation: readonly (NavigationLinkItem | NavigationSectionItem)[]
   { href: '/exams', label: '考古題討論版', icon: IconBooks },
   { href: resourcesHub.href, label: resourcesHub.label, icon: resourcesHub.icon },
   { id: 'personal', label: '我的作答存摺', icon: IconNotebook, items: [
-    { href: '/notes', label: '使用者筆記', icon: IconNotebook },
+    { href: '/notes', label: '我的筆記', icon: IconNotebook },
     { href: '/difficult', label: '難題標記', icon: IconBulb },
     { href: '/wrong', label: '常錯題目', icon: IconRepeat },
     { href: '/practice-history', label: '每日練習履歷', icon: IconHistory },
-    { href: '/history', label: '已作答紀錄', icon: IconHistory },
+    { href: '/history', label: '歷屆試題作答履歷', icon: IconHistory },
   ] },
 ];
 const utilityNavigation: readonly NavigationLinkItem[] = [

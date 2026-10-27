@@ -106,7 +106,7 @@ export default function NotesRoute({
   return (
     <>
       <Head>
-        <title>使用者筆記｜建築師考試</title>
+        <title>我的筆記｜建築師考試</title>
       </Head>
       <NotesPage
         questions={questions}

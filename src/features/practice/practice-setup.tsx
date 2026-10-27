@@ -83,7 +83,7 @@ export function PracticeSetup({
         <span>未完成題組：{getSubject(resume.subject)?.shortName}・第 {resume.index}／{resume.total} 題</span>
         <Button onClick={resume.onResume}>繼續未完成練習</Button>
       </div> : null}
-      <fieldset className={styles.subjectChoices} disabled={paperDownload.downloading}>
+      <fieldset className={styles.subjectChoices} data-compact disabled={paperDownload.downloading}>
         <legend>選擇科目</legend>
         {subjects.map((item) => {
           const checked = item.id === subject;
@@ -97,11 +97,6 @@ export function PracticeSetup({
               />
               <span>
                 <strong>{item.name}</strong>
-                <small>
-                  {checked && !loading
-                    ? `題庫 ${pool.eligibleCount} 題，這次抽 ${pool.count} 題`
-                    : item.description}
-                </small>
               </span>
             </label>
           );

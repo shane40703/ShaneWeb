@@ -298,11 +298,11 @@ export function ReviewNoteEditor({ question }: { question: ReviewQuestion }) {
   }
 
   return (
-    <section className={styles.reviewNote} aria-label={`第 ${question.questionNumber} 題使用者筆記`}>
+    <section className={styles.reviewNote} aria-label={`第 ${question.questionNumber} 題我的筆記`}>
       <header>
         <span>
           <IconNotebook size={16} stroke={2} aria-hidden="true" />
-          使用者筆記
+          我的筆記
         </span>
         <small>登入後同步文字筆記・圖片保存在本機</small>
       </header>

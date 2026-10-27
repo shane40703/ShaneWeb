@@ -28,11 +28,11 @@ afterEach(() => {
 const personal = {
   label: '我的作答存摺',
   links: [
-    ['使用者筆記', '/notes'],
+    ['我的筆記', '/notes'],
     ['難題標記', '/difficult'],
     ['常錯題目', '/wrong'],
     ['每日練習履歷', '/practice-history'],
-    ['已作答紀錄', '/history'],
+    ['歷屆試題作答履歷', '/history'],
   ],
 };
 
@@ -103,7 +103,7 @@ describe('grouped app navigation', () => {
     const trigger = screen.getByRole('button', { name: personal.label });
     expect(trigger).toHaveAttribute('data-active', 'true');
     await user.click(trigger);
-    const link = await screen.findByRole('link', { name: '已作答紀錄' });
+    const link = await screen.findByRole('link', { name: '歷屆試題作答履歷' });
     expect(link).toHaveAttribute('aria-current', 'page');
     link.addEventListener('click', (event) => event.preventDefault());
     await user.click(link);
@@ -117,7 +117,7 @@ describe('grouped app navigation', () => {
     const trigger = screen.getByRole('button', { name: personal.label });
     trigger.focus();
     await user.keyboard('{Enter}');
-    const notes = await screen.findByRole('link', { name: '使用者筆記' });
+    const notes = await screen.findByRole('link', { name: '我的筆記' });
     await waitFor(() => expect(notes).toHaveFocus());
     expect(notes).toHaveAttribute('aria-current', 'page');
   });
@@ -178,10 +178,10 @@ describe('grouped app navigation', () => {
     ['/resources/memory-gallery', '速記圖庫'],
     ['/resources/memory-gallery/[[...category]]', '速記圖庫'],
     ['/resources/laws', '法規資料庫'],
-    ['/notes', '使用者筆記'],
+    ['/notes', '我的筆記'],
     ['/difficult', '難題標記'],
     ['/wrong', '常錯題目'],
-    ['/history', '已作答紀錄'],
+    ['/history', '歷屆試題作答履歷'],
     ['/practice-history', '每日練習履歷'],
     ['/settings', '設定'],
     ['/appearance', '設定'],

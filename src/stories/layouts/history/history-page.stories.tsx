@@ -19,7 +19,7 @@ import {
 import { pageParameters, withPageFrame } from '../../support/story-environment';
 
 /**
- * 已作答紀錄（/history）：網站的頁面元件，只載入作答紀錄用到的科目與年度。
+ * 歷屆試題作答履歷（/history）：網站的頁面元件，只載入作答紀錄用到的科目與年度。
  *
  * 畫面上可以操作看到：
  * - 上方切換科目；「每次作答紀錄」與「跨年度錯題分析」兩個分頁。
@@ -34,7 +34,7 @@ import { pageParameters, withPageFrame } from '../../support/story-environment';
  *   （Storybook 不會連到 Firebase）。
  */
 const meta = {
-  title: 'Layouts/已作答紀錄/作答紀錄清單',
+  title: 'Layouts/歷屆試題作答履歷/作答紀錄清單',
   component: HistoryRoute,
   decorators: [withPageFrame],
   parameters: { ...pageParameters('/history') },
