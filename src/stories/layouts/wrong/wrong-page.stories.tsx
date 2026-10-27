@@ -15,6 +15,7 @@ import {
   questionBankStatusesWith,
 } from '../../fixtures/personal';
 import { withExplanation } from '../../fixtures/questions';
+import { practiceDiscussionPosts } from '../../fixtures/practice';
 import { pageParameters, withPageFrame } from '../../support/story-environment';
 
 /**
@@ -23,7 +24,7 @@ import { pageParameters, withPageFrame } from '../../support/story-environment';
  *
  * 畫面上可以操作看到：
  * - 上方切換科目與年度（沒有錯題的科目、年度不能點）。
- * - 「作答本科目所有常錯題目」將目前科目跨所有年度的錯題去重後組成完整題組，不受 50 題限制。
+ * - 「作答本科目所有常錯題目」先開啟題數設定；可隨機抽取指定題數，或選全部跨年度錯題。
  * - 「查看選項、重新作答與詳解」展開選項、詳解與這題的使用者筆記；選答案後按「檢查答案」
  *   看答對或答錯，「重新作答」再選一次。
  * - 展開後的筆記可以編輯、上傳圖片；題目上的難題按鈕可以標記或取消難題。
@@ -87,6 +88,18 @@ export const 有詳解的錯題: Story = {
       onRetryQuestionBank={fn()}
     />
   ),
+};
+
+/** 展開法規 113 年第 5 題，查看共享的文字詳解與圖片。 */
+export const 有共享詳解的錯題: Story = {
+  parameters: {
+    appState: {
+      ...wrongAppState,
+      discussionPosts: practiceDiscussionPosts('law-113-05').slice(0, 1).map(post => ({
+        ...post, content: '這題的**共享詳解**與整理圖片會直接顯示在錯題下方。',
+      })),
+    },
+  },
 };
 
 /** 各科題庫的下載狀態，沒列出的科目已下載完成。 */

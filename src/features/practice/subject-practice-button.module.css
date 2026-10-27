@@ -15,3 +15,92 @@
   font-size: 13px;
   line-height: 1.6;
 }
+
+.dialog {
+  width: min(560px, 100%);
+  max-height: calc(100dvh - 40px);
+  overflow-y: auto;
+  text-align: left;
+}
+
+.settings {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 14px;
+  border: 0;
+}
+
+.settings legend {
+  margin-bottom: 16px;
+  font-weight: 600;
+}
+
+.countField {
+  display: grid;
+  gap: 8px;
+}
+
+.countField input {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: var(--frame);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+}
+
+.countField input:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.countField input[aria-invalid='true'] {
+  border-color: var(--danger);
+}
+
+.presets,
+.dialogActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.presets button[aria-pressed='true'] {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+
+.hint {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.hint[role='alert'] {
+  color: var(--danger);
+}
+
+.shuffle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+}
+
+.shuffle input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--primary);
+}
+
+.dialogActions {
+  justify-content: flex-end;
+  margin-top: 20px;
+}

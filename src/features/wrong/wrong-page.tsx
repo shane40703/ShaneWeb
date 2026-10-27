@@ -2,14 +2,14 @@ import Link from 'next/link';
 import { useState } from 'react';
 import {
   IconAlertTriangle,
-  IconChevronDown,
   IconCircleCheck,
   IconLoader2,
   IconRepeat,
   IconX,
 } from '@tabler/icons-react';
 import { ReviewNoteEditor } from '@/components/attempt-review';
-import { RichText } from '@/components/rich-text';
+import { QuestionExplanationContent } from '@/components/question-explanation-content';
+import { QuestionReviewDetails } from '@/components/question-review-details';
 import { EmptyState, QuestionCard } from '@/components/content/content';
 import {
   QuestionSelector,
@@ -327,11 +327,7 @@ export function WrongPage({
                             })
                           }
                         />
-                        <details className={styles.fullQuestion}>
-                          <summary>
-                            <span>查看選項、重新作答與詳解</span>
-                            <IconChevronDown size={18} stroke={2} aria-hidden="true" />
-                          </summary>
+                        <QuestionReviewDetails className={styles.fullQuestion} label="查看選項、重新作答與詳解">
                           <div>
                             <WrongQuestionPractice question={question} />
                             <section
@@ -339,13 +335,13 @@ export function WrongPage({
                               aria-label={`第 ${question.questionNumber} 題詳解`}
                             >
                               <span>詳解</span>
-                              <p><RichText>{question.explanation?.trim() ? question.explanation : '目前尚無詳解。'}</RichText></p>
+                              <QuestionExplanationContent question={question} />
                             </section>
                             <div className={styles.noteEditor}>
                               <ReviewNoteEditor question={question} />
                             </div>
                           </div>
-                        </details>
+                        </QuestionReviewDetails>
                       </article>
                     ))}
                   </div>

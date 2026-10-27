@@ -12,6 +12,7 @@ import {
   questionBankStatusesWith,
 } from '../../fixtures/personal';
 import { withExplanation } from '../../fixtures/questions';
+import { practiceDiscussionPosts } from '../../fixtures/practice';
 import { pageParameters, withPageFrame } from '../../support/story-environment';
 
 /**
@@ -19,7 +20,7 @@ import { pageParameters, withPageFrame } from '../../support/story-environment';
  *
  * 畫面上可以操作看到：
  * - 上方切換科目與年度（沒有難題的科目、年度不能點）。
- * - 「作答本科目所有難題標記」將目前科目跨所有年度的選擇題存成完整題組，導向每日抽題練習。
+ * - 「作答本科目所有難題標記」先開啟題數設定，可自訂或選全部，再導向每日抽題練習。
  * - 「查看選項、作答與詳解」展開選項、詳解與這題的使用者筆記；選答案後按「檢查答案」看
  *   答對或答錯，「重新作答」再選一次。
  * - 展開後的筆記可以編輯、上傳圖片；題目上的難題按鈕可以取消標記。
@@ -71,6 +72,18 @@ export const 有詳解的難題: Story = {
       onRetryQuestionBank={fn()}
     />
   ),
+};
+
+/** 沒有內建詳解也能讀取共享文字與圖片；展開法規 113 年第 3 題查看。 */
+export const 有共享詳解的難題: Story = {
+  parameters: {
+    appState: {
+      ...markedAppState,
+      discussionPosts: practiceDiscussionPosts('law-113-03').slice(0, 1).map(post => ({
+        ...post, content: '這是使用者分享的**解題重點**，也可以一起檢視附上的整理圖片。',
+      })),
+    },
+  },
 };
 
 /** 標記的題目已從題庫移除（範例題庫沒有 112 年）。 */

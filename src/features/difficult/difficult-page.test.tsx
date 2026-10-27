@@ -10,7 +10,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DifficultPage } from '@/features/difficult/difficult-page';
 import { ToastProvider } from '@/components/ui/ui';
 import { createDefaultState, STORAGE_KEY } from '@/lib/study';
-import type { Question, SubjectId } from '@/lib/types';
+import type { DiscussionPost, Question, SubjectId } from '@/lib/types';
 import { AppStateProvider } from '@/state/app-state';
 import { PRACTICE_SESSION_STORAGE_KEY } from '@/features/practice/practice-session';
 import { fillRichEditor } from '@/test/rich-editor';
@@ -87,9 +87,11 @@ const questions = [
 function renderPage(
   difficultQuestionIds: string[],
   props: Partial<React.ComponentProps<typeof DifficultPage>> = {},
+  discussionPosts: DiscussionPost[] = [],
 ) {
   const state = createDefaultState();
   state.difficultQuestionIds = difficultQuestionIds;
+  state.discussionPosts = discussionPosts;
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 
   return render(
@@ -112,6 +114,7 @@ describe('DifficultPage', () => {
   it('starts every marked choice question of the selected subject across years', async () => {
     renderPage(questions.map(item => item.id));
     fireEvent.click(await screen.findByRole('button', { name: '作答本科目所有難題標記' }));
+    fireEvent.click(await screen.findByRole('button', { name: '開始練習（3 題）' }));
     const saved = JSON.parse(localStorage.getItem(PRACTICE_SESSION_STORAGE_KEY)!);
     expect(saved.questionIds).toEqual(['law-114-01', 'law-114-02', 'law-113-01']);
     expect(saved.reviewSource).toBe('difficult');
@@ -183,6 +186,7 @@ describe('DifficultPage', () => {
     fireEvent.click(summaries[0]);
     const explainedQuestion = summaries[0].closest('article');
     expect(explainedQuestion).not.toBeNull();
+    await within(explainedQuestion!).findByRole('region', { name: '第 1 題重新作答' });
     expect(within(explainedQuestion!).getAllByText('law-114-01 題幹')).toHaveLength(1);
     fireEvent.click(within(explainedQuestion!).getByText('law-114-01 B').closest('label')!);
     fireEvent.click(within(explainedQuestion!).getByRole('button', { name: '檢查答案' }));
@@ -217,6 +221,7 @@ describe('DifficultPage', () => {
     fireEvent.click(unexplainedSummary);
     const unexplainedQuestion = unexplainedSummary.closest('article');
     expect(unexplainedQuestion).not.toBeNull();
+    await within(unexplainedQuestion!).findByRole('region', { name: '第 1 題詳解' });
     expect(
       within(unexplainedQuestion!).getByRole('region', {
         name: '第 1 題詳解',
@@ -235,6 +240,25 @@ describe('DifficultPage', () => {
         name: '切換第 1 題選取文字的斜體格式',
       }),
     ).toBeInTheDocument();
+  });
+
+  it('loads shared explanations only after expanding and keeps unsaved notes when collapsed', async () => {
+    renderPage(['law-113-01'], {}, [{
+      id: 'shared-explanation', questionId: 'law-113-01', type: 'explanation', content: '**已分享的詳解**', images: [],
+      createdAt: '2026-10-27T00:00:00Z', likes: 0, replies: [], reported: false,
+    }]);
+    const summary = await screen.findByText('查看選項、作答與詳解');
+    expect(screen.queryByText('已分享的詳解')).not.toBeInTheDocument();
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    fireEvent.click(summary);
+    const explanation = await screen.findByRole('region', { name: '第 1 題詳解' });
+    expect(explanation).toHaveTextContent('已分享的詳解');
+    expect(within(explanation).queryByText('目前尚無詳解。')).not.toBeInTheDocument();
+    const editor = screen.getByRole('textbox');
+    fillRichEditor(editor, '尚未儲存的筆記');
+    fireEvent.click(summary);
+    fireEvent.click(summary);
+    expect(screen.getByRole('textbox')).toHaveTextContent('尚未儲存的筆記');
   });
 
   it('keeps difficult toggling and the empty state', async () => {

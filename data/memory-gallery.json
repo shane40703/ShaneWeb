@@ -96,6 +96,78 @@
       "height": 1491,
       "createdAt": "2026-10-22T02:00:34.160Z",
       "updatedAt": "2026-10-22T02:19:48.364Z"
+    },
+    {
+      "id": "3f2db576-54e7-4e60-8ae9-2728e9cfd1f2",
+      "title": "防火時效構造",
+      "description": "建築技術規則有關建築物主構造防火時效規定",
+      "category": "law",
+      "src": "/memory-gallery/assets/3f2db576-54e7-4e60-8ae9-2728e9cfd1f2.webp",
+      "thumbnailSrc": "/memory-gallery/assets/3f2db576-54e7-4e60-8ae9-2728e9cfd1f2-thumb.webp",
+      "width": 1055,
+      "height": 1491,
+      "createdAt": "2026-10-27T00:57:50.342Z",
+      "updatedAt": "2026-10-27T00:58:28.026Z"
+    },
+    {
+      "id": "a0f8d043-8dd4-4ed8-9975-9e4dbf6b3b21",
+      "title": "隔音構造",
+      "description": "建築技術規則有關空氣音隔音構造之規定",
+      "category": "law",
+      "src": "/memory-gallery/assets/a0f8d043-8dd4-4ed8-9975-9e4dbf6b3b21.webp",
+      "thumbnailSrc": "/memory-gallery/assets/a0f8d043-8dd4-4ed8-9975-9e4dbf6b3b21-thumb.webp",
+      "width": 1055,
+      "height": 1491,
+      "createdAt": "2026-10-27T00:58:16.654Z",
+      "updatedAt": "2026-10-27T00:58:16.654Z"
+    },
+    {
+      "id": "75da36e1-5550-4d7d-a428-e4464a9c70d1",
+      "title": "光環境",
+      "description": "光環境重點整理",
+      "category": "env",
+      "src": "/memory-gallery/assets/75da36e1-5550-4d7d-a428-e4464a9c70d1.webp",
+      "thumbnailSrc": "/memory-gallery/assets/75da36e1-5550-4d7d-a428-e4464a9c70d1-thumb.webp",
+      "width": 1312,
+      "height": 1199,
+      "createdAt": "2026-10-27T00:58:49.676Z",
+      "updatedAt": "2026-10-27T00:58:49.676Z"
+    },
+    {
+      "id": "c367ac58-5945-4798-af86-070abed7e94d",
+      "title": "音環境",
+      "description": "音環境重點整理",
+      "category": "env",
+      "src": "/memory-gallery/assets/c367ac58-5945-4798-af86-070abed7e94d.webp",
+      "thumbnailSrc": "/memory-gallery/assets/c367ac58-5945-4798-af86-070abed7e94d-thumb.webp",
+      "width": 1448,
+      "height": 1086,
+      "createdAt": "2026-10-27T00:59:05.774Z",
+      "updatedAt": "2026-10-27T00:59:05.774Z"
+    },
+    {
+      "id": "da89ad28-7c36-4574-a024-89e72cae5925",
+      "title": "熱環境",
+      "description": "熱環境重點整理",
+      "category": "env",
+      "src": "/memory-gallery/assets/da89ad28-7c36-4574-a024-89e72cae5925.webp",
+      "thumbnailSrc": "/memory-gallery/assets/da89ad28-7c36-4574-a024-89e72cae5925-thumb.webp",
+      "width": 1448,
+      "height": 1086,
+      "createdAt": "2026-10-27T00:59:19.387Z",
+      "updatedAt": "2026-10-27T00:59:19.387Z"
+    },
+    {
+      "id": "0113c46f-03fc-4b09-872d-a8582a84cbc1",
+      "title": "無障礙設計規範",
+      "description": "",
+      "category": "law",
+      "src": "/memory-gallery/assets/0113c46f-03fc-4b09-872d-a8582a84cbc1.webp",
+      "thumbnailSrc": "/memory-gallery/assets/0113c46f-03fc-4b09-872d-a8582a84cbc1-thumb.webp",
+      "width": 1055,
+      "height": 1491,
+      "createdAt": "2026-10-27T03:38:42.358Z",
+      "updatedAt": "2026-10-27T03:38:42.358Z"
     }
   ]
 }

@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ToastProvider } from '@/components/ui/ui';
 import { WrongPage } from '@/features/wrong/wrong-page';
 import { createDefaultState, STORAGE_KEY } from '@/lib/study';
-import type { Question, QuizAttempt, SubjectId } from '@/lib/types';
+import type { DiscussionPost, Question, QuizAttempt, SubjectId } from '@/lib/types';
 import { AppStateProvider } from '@/state/app-state';
 import { PRACTICE_SESSION_STORAGE_KEY } from '@/features/practice/practice-session';
 
@@ -75,9 +75,10 @@ const attempts = [
   }),
 ];
 
-function renderPage(sourceAttempts = attempts) {
+function renderPage(sourceAttempts = attempts, discussionPosts: DiscussionPost[] = []) {
   const state = createDefaultState();
   state.attempts = sourceAttempts;
+  state.discussionPosts = discussionPosts;
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   return render(
     <ToastProvider>
@@ -103,6 +104,7 @@ describe('WrongPage', () => {
   it('starts all distinct wrong questions of the active subject, including other years', async () => {
     renderPage();
     fireEvent.click(await screen.findByRole('button', { name: '作答本科目所有常錯題目' }));
+    fireEvent.click(await screen.findByRole('button', { name: '開始練習（2 題）' }));
     const saved = JSON.parse(localStorage.getItem(PRACTICE_SESSION_STORAGE_KEY)!);
     expect(saved.questionIds).toEqual(['law-114-01', 'law-113-03']);
     expect(saved.reviewSource).toBe('wrong');
@@ -148,10 +150,21 @@ describe('WrongPage', () => {
       .toBeInTheDocument();
 
     fireEvent.click(screen.getByText('查看選項、重新作答與詳解'));
-    expect(screen.getByRole('region', { name: '第 1 題重新作答' }))
+    expect(await screen.findByRole('region', { name: '第 1 題重新作答' }))
       .toBeInTheDocument();
     expect(screen.getByRole('region', { name: '第 1 題詳解' }))
       .toHaveTextContent('law-114-01 詳解');
+  });
+
+  it('displays shared explanations alongside the built-in explanation', async () => {
+    renderPage([attempts[0]], [{
+      id: 'wrong-shared-explanation', questionId: lawQuestion.id, type: 'explanation', content: '錯題共享詳解', images: [],
+      createdAt: '2026-10-27T00:00:00Z', likes: 0, replies: [], reported: false,
+    }]);
+    fireEvent.click(await screen.findByText('查看選項、重新作答與詳解'));
+    const explanation = await screen.findByRole('region', { name: '第 1 題詳解' });
+    expect(explanation).toHaveTextContent('law-114-01 詳解');
+    expect(explanation).toHaveTextContent('錯題共享詳解');
   });
 
   it('shows a useful empty state before the first completed paper', async () => {
