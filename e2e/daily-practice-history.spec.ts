@@ -61,7 +61,17 @@ test('daily practice is opt-in, saves complete content once, and can delete with
   expect(daily.unansweredCount).toBe(2);
   expect(daily.correctCount + daily.wrongCount).toBe(1);
 
-  await historyLink.click();
+  // Paper history must not count or show either opt-in daily saves or legacy practice records.
+  await page.goto('/history');
+  await expect(page.getByRole('heading', { name: '歷屆試題作答履歷', exact: true })).toBeVisible();
+  const paperFilters = page.getByRole('group', { name: '歷屆試題作答履歷科目分類', exact: true });
+  await expect(paperFilters.getByRole('button', { name: '建築法規與實務 1', exact: true })).toBeVisible();
+  await expect(page.getByLabel('114 年作答紀錄', { exact: true }).locator('summary')).toContainText('共作答 1 次');
+  await expect(page.getByLabel('每日抽題練習作答紀錄', { exact: true })).toHaveCount(0);
+  await page.reload();
+  await expect(paperFilters.getByRole('button', { name: '建築法規與實務 1', exact: true })).toBeVisible();
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('shaneweb:state')!).attempts)).toEqual(saved.attempts);
+  await page.goto('/practice-history');
   await expect(page).toHaveURL(/\/practice-history$/);
   await expect(page.getByRole('heading', { name: '每日練習履歷', exact: true })).toBeVisible();
   const group = page.getByLabel('每日抽題練習作答紀錄', { exact: true });

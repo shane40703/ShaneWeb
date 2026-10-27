@@ -1,6 +1,6 @@
 import Head from 'next/head';
 import { HistoryPage } from '@/features/history/history-page';
-import { isDailyPracticeRecord } from '@/features/practice/daily-practice-recording';
+import { selectHistoryAttempts } from '@/features/history/history-attempts';
 import { useSubjectQuestions } from '@/lib/question-bank-client';
 import { parseQuestionId, subjectsOfQuestionIds } from '@/lib/question-path';
 import { useAppState } from '@/state/app-state';
@@ -12,7 +12,7 @@ import { useAppState } from '@/state/app-state';
  */
 export default function HistoryRoute({ dailyOnly = false }: { dailyOnly?: boolean }) {
   const { state, hydrated } = useAppState();
-  const attempts = dailyOnly ? state.attempts.filter(isDailyPracticeRecord) : state.attempts;
+  const attempts = selectHistoryAttempts(state.attempts, dailyOnly);
   const attemptedQuestionIds = attempts.flatMap((attempt) => attempt.questionIds);
   const attemptedSubjects = hydrated
     ? subjectsOfQuestionIds(attemptedQuestionIds)

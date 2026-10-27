@@ -394,7 +394,7 @@ test('the mock exam answers a whole paper, keeps it when leaving, and scores it 
   await expect(year.getByRole('heading', { name: '建築環境控制・113 年' })).toBeVisible();
 });
 
-test('每日抽題練習 explicit saves remain in 歷屆試題作答履歷, and 再做一次 starts the same questions', async ({
+test('每日抽題練習 explicit saves appear only in 每日練習履歷, and 再做一次 starts the same questions', async ({
   page,
 }) => {
   const setup = await openSetup(page);
@@ -415,6 +415,9 @@ test('每日抽題練習 explicit saves remain in 歷屆試題作答履歷, and 
   await page.getByRole('button', { name: '儲存此次作答', exact: true }).click();
   await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('shaneweb:state')!).attempts.length)).toBe(1);
   await page.goto('/history');
+  await expect(page.getByRole('heading', { name: '還沒有作答紀錄', exact: true })).toBeVisible();
+  await expect(page.getByRole('group', { name: '每日抽題練習作答紀錄' })).toHaveCount(0);
+  await page.goto('/practice-history');
   const group = page.getByRole('group', { name: '每日抽題練習作答紀錄' });
   await group.locator('summary').click();
   const card = group.getByRole('article').first();

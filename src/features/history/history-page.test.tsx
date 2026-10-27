@@ -545,7 +545,7 @@ describe('HistoryPage', () => {
           .slice(0, 1),
       );
     const practiceAttempt = {
-      id: 'attempt-practice',
+      id: 'daily-practice-attempt-practice',
       mode: 'practice' as const,
       subject: 'law' as const,
       year: null,
@@ -562,14 +562,14 @@ describe('HistoryPage', () => {
       unansweredCount: 1,
     };
 
-    function renderHistory(attempts: unknown[], bank = questions) {
+    function renderHistory(attempts: unknown[], bank = questions, dailyOnly = false) {
       const state = createDefaultState();
       state.attempts = attempts as typeof state.attempts;
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
       return render(
         <ToastProvider>
           <AppStateProvider>
-            <HistoryPage questions={bank} />
+            <HistoryPage questions={bank} dailyOnly={dailyOnly} />
           </AppStateProvider>
         </ToastProvider>,
       );
@@ -583,7 +583,7 @@ describe('HistoryPage', () => {
     });
 
     it('shows a 每日抽題練習 record with the result page’s accuracy', async () => {
-      renderHistory([practiceAttempt]);
+      renderHistory([practiceAttempt], questions, true);
 
       const group = await screen.findByLabelText('每日抽題練習作答紀錄');
       fireEvent.click(group.querySelector('summary')!);
@@ -623,7 +623,7 @@ describe('HistoryPage', () => {
       };
       window.localStorage.setItem(PRACTICE_SESSION_STORAGE_KEY, JSON.stringify(inProgress));
       const confirm = vi.spyOn(window, 'confirm').mockReturnValueOnce(false);
-      renderHistory([practiceAttempt]);
+      renderHistory([practiceAttempt], questions, true);
       const group = await screen.findByLabelText('每日抽題練習作答紀錄');
       fireEvent.click(group.querySelector('summary')!);
       const retry = within(group).getByRole('button', { name: '再做一次' });
@@ -665,7 +665,7 @@ describe('HistoryPage', () => {
           }
           return setItem.call(this, key, value);
         });
-      renderHistory([practiceAttempt]);
+      renderHistory([practiceAttempt], questions, true);
       const group = await screen.findByLabelText('每日抽題練習作答紀錄');
       fireEvent.click(group.querySelector('summary')!);
       fireEvent.click(within(group).getByRole('button', { name: '再做一次' }));
@@ -678,7 +678,7 @@ describe('HistoryPage', () => {
     });
 
     it('waits for the set’s questions before starting it again', async () => {
-      renderHistory([practiceAttempt], []);
+      renderHistory([practiceAttempt], [], true);
       const group = await screen.findByLabelText('每日抽題練習作答紀錄');
       fireEvent.click(group.querySelector('summary')!);
 
@@ -784,14 +784,11 @@ describe('HistoryPage', () => {
       spy.mockRestore();
     });
 
-    it('offers both practices before the first record', async () => {
+    it('offers only a mock exam before the first paper record', async () => {
       renderHistory([]);
 
       expect(await screen.findByRole('heading', { name: '還沒有作答紀錄' })).toBeInTheDocument();
-      expect(screen.getByRole('link', { name: '每日抽題練習' })).toHaveAttribute(
-        'href',
-        '/practice/quiz',
-      );
+      expect(screen.queryByRole('link', { name: '每日抽題練習' })).not.toBeInTheDocument();
       expect(screen.getByRole('link', { name: '開始第一份試卷' })).toHaveAttribute(
         'href',
         '/practice/mock-exam',

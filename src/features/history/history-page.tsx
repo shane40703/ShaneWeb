@@ -42,7 +42,6 @@ import {
   saveMockExamDraft,
 } from '@/features/practice/mock-exam-store';
 import { practiceMockExamPage, practiceQuizPage } from '@/features/practice/practice-pages';
-import { isDailyPracticeRecord } from '@/features/practice/daily-practice-recording';
 import {
   createPracticeSessionFromQuestions,
   DEFAULT_PRACTICE_SETTINGS,
@@ -52,6 +51,7 @@ import {
   practiceQuestionHref,
 } from '@/features/practice/practice-session';
 import { useAppState } from '@/state/app-state';
+import { selectHistoryAttempts } from './history-attempts';
 import styles from './history-page.module.css';
 
 function groupAttempts(attempts: QuizAttempt[]) {
@@ -123,7 +123,7 @@ export function HistoryPage({
   const router = useRouter();
   const { state, dispatch, hydrated, reportPersistence } = useAppState();
   const { notify } = useToast();
-  const attempts = dailyOnly ? state.attempts.filter(isDailyPracticeRecord) : state.attempts;
+  const attempts = selectHistoryAttempts(state.attempts, dailyOnly);
   const historyLabel = dailyOnly ? '每日練習履歷' : '歷屆試題作答履歷';
   const [subjectFilter, setSubjectFilter] = useState<'mixed' | SubjectId>();
   const [historyView, setHistoryView] = useState<ResultView>('review');
@@ -285,7 +285,7 @@ export function HistoryPage({
     <>
       {dailyOnly ? <p className={styles.historyNotice}>
         只收錄你選擇儲存的每日抽題練習，可查看題目、作答答案、正確率及時間。
-        既有紀錄仍可在 <Link href="/history">歷屆試題作答履歷</Link> 查看。
+        歷屆試題模擬考的紀錄請至 <Link href="/history">歷屆試題作答履歷</Link> 查看。
       </p> : null}
       {hydrated && attempts.length ? (
         <section
@@ -379,7 +379,9 @@ export function HistoryPage({
             <EmptyState
               icon={IconHistory}
               title="目前沒有跨年度錯題"
-              description="完成每日抽題練習或歷屆試題模擬考後，這裡會彙整每次答錯的分類與題目。"
+              description={dailyOnly
+                ? '儲存每日抽題練習後，這裡會彙整每次答錯的分類與題目。'
+                : '完成歷屆試題模擬考後，這裡會彙整每次答錯的分類與題目。'}
             />
           )}
         </section>
@@ -406,11 +408,11 @@ export function HistoryPage({
                 <details
                   className={styles.yearGroup}
                   key={yearGroup.key}
-                  aria-label={`${yearGroup.year ? `${yearGroup.year} 年` : '每日抽題練習'}作答紀錄`}
+                  aria-label={`${yearGroup.year ? `${yearGroup.year} 年` : dailyOnly ? '每日抽題練習' : '跨年度試題'}作答紀錄`}
                 >
                   <summary>
                     <strong>
-                      {yearGroup.year ? `${yearGroup.year} 年` : '每日抽題練習'}
+                      {yearGroup.year ? `${yearGroup.year} 年` : dailyOnly ? '每日抽題練習' : '跨年度試題'}
                     </strong>
                     <span>共作答 {yearGroup.entries.length} 次</span>
                     <IconChevronDown size={20} stroke={2} aria-hidden="true" />
@@ -775,12 +777,12 @@ export function HistoryPage({
               icon={IconHistory}
               title={dailyOnly ? '還沒有每日練習履歷' : '還沒有作答紀錄'}
               description={dailyOnly ? '完成每日抽題練習後，選擇「儲存此次作答」才會加入履歷。不記錄不會新增資料。'
-                : '完成每日抽題練習後選擇儲存，或完成歷屆試題模擬考並交卷後，結果會保存在這裡。'}
+                : '完成歷屆試題模擬考並交卷後，結果會保存在這裡。每日抽題練習請至「每日練習履歷」查看。'}
               action={
                 <>
-                  <Button role="link" render={<Link href={practiceQuizPage.href} />}>
+                  {dailyOnly ? <Button role="link" render={<Link href={practiceQuizPage.href} />}>
                     每日抽題練習
-                  </Button>
+                  </Button> : null}
                   {!dailyOnly ? <Button
                     role="link"
                     variant="primary"

@@ -38,7 +38,7 @@ vi.mock('@/features/history/history-page', () => ({
     dailyOnly?: boolean;
   }) => (
     <div>
-      <span>{dailyOnly ? 'daily-only' : 'all-attempts'}</span>
+      <span>{dailyOnly ? 'daily-only' : 'paper-only'}</span>
       <span>{questions.map((question) => question.id).join(',')}</span>
       <span>{questionBankStatuses.law}</span>
       <span>{questionBankStatuses.env}</span>
@@ -51,7 +51,7 @@ vi.mock('@/features/history/history-page', () => ({
 
 describe('history route question loading', () => {
   beforeEach(() => {
-    mocks.attempts = [{ questionIds: ['law-114-01'] }, { questionIds: ['env-114-01'] }];
+    mocks.attempts = [{ mode: 'paper', questionIds: ['law-114-01'] }, { mode: 'paper', questionIds: ['env-114-01'] }];
     mocks.lawRetry.mockClear();
     mocks.environmentRetry.mockClear();
     mocks.useSubjectQuestions.mockReset();
@@ -108,5 +108,21 @@ describe('history route question loading', () => {
     );
     expect(mocks.environmentRetry).toHaveBeenCalledTimes(1);
     expect(mocks.lawRetry).not.toHaveBeenCalled();
+  });
+
+  it('does not load daily or legacy practice question banks for paper history', () => {
+    mocks.attempts = [
+      { id: 'daily-practice-example', mode: 'practice', questionIds: ['env-114-01'] },
+      { id: 'legacy-practice', mode: 'practice', questionIds: ['law-113-01', 'structure-112-01'] },
+      { id: 'old-paper', mode: 'paper', questionIds: ['law-114-01'] },
+    ];
+    const before = structuredClone(mocks.attempts);
+    render(<HistoryRoute />);
+    expect(screen.getByText('paper-only')).toBeInTheDocument();
+    expect(mocks.useSubjectQuestions).toHaveBeenNthCalledWith(1, ['law'], [114]);
+    expect(mocks.useSubjectQuestions).toHaveBeenNthCalledWith(2, [], []);
+    expect(mocks.useSubjectQuestions).toHaveBeenNthCalledWith(3, [], []);
+    expect(mocks.useSubjectQuestions).toHaveBeenNthCalledWith(4, [], []);
+    expect(mocks.attempts).toEqual(before);
   });
 });
