@@ -7,9 +7,7 @@ afterEach(cleanup);
 describe('LawDatabasePage', () => {
   it('links every law to the national laws and regulations database search', () => {
     render(
-      <LawDatabasePage
-        laws={[{ name: '建築法', questionCount: 12, linkable: true }]}
-      />,
+      <LawDatabasePage laws={[{ name: '建築法', questionCount: 12, linkable: true }]} />,
     );
 
     const link = screen.getByRole('link', { name: /建築法/ });
@@ -47,5 +45,29 @@ describe('LawDatabasePage', () => {
 
     expect(screen.queryAllByRole('link')).toHaveLength(0);
     expect(screen.getAllByText('無法規連結')).toHaveLength(2);
+  });
+
+  it('numbers the rows for the eye only, keeping link names as the law names', () => {
+    render(
+      <LawDatabasePage
+        laws={[
+          { name: '建築法', questionCount: 3, linkable: true },
+          { name: '建築師法', questionCount: 1, linkable: true },
+        ]}
+      />,
+    );
+
+    expect(screen.getByText('2')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /^建築法/ })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /^建築師法/ })).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /^[12] / })).not.toBeInTheDocument();
+  });
+
+  it('shows an empty state in the panel when no law has been tagged yet', () => {
+    render(<LawDatabasePage laws={[]} showHeader={false} />);
+
+    expect(screen.getByRole('heading', { name: '尚無法規資料' })).toBeInTheDocument();
+    expect(screen.queryAllByRole('link')).toHaveLength(0);
+    expect(screen.queryByText('法規')).not.toBeInTheDocument();
   });
 });

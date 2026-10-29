@@ -20,7 +20,10 @@ export default function ResourceLawsRoute({
       <Head>
         <title>法規資料庫｜建築師考試</title>
       </Head>
-      <ResourceLayout current="laws" facts={`收錄考題曾出現的 ${laws.length} 項法規；`}>
+      <ResourceLayout
+        current="laws"
+        facts={`收錄考題曾出現的 ${laws.length} 項法規，依出現題數排序；`}
+      >
         <LawDatabasePage laws={laws} showHeader={false} />
       </ResourceLayout>
     </>

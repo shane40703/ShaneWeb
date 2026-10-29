@@ -1,7 +1,8 @@
 /*
- * Law database: the laws are rows straight on the paper, separated by rules (the changelog
- * pattern), opened by a dashed rule under the page header. Each row: name and count, a thin
- * share bar with its mono percentage, and the outbound link mark.
+ * Law database: one cream panel (the 考題分析 law-distribution pattern) holding a mono column
+ * head closed by a rule, then rank / name / share / link rows separated by rules. Nothing inside
+ * the panel is boxed again, and the paper grid only shows around it, so the rules never read as
+ * grid lines.
  */
 .page {
   display: grid;
@@ -54,30 +55,61 @@
   line-height: 1.65;
 }
 
+/* The panel has no padding of its own, so the rules run edge to edge like a ledger. */
 .list {
+  min-width: 0;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  border-top: var(--rule-dashed);
+  border: var(--frame);
+  border-radius: var(--radius-frame);
+  background: var(--surface);
   container-type: inline-size;
 }
 
+/* Column head and rows share one grid: rank, name, share, link. */
+.head,
 .law {
-  min-height: 64px;
-  padding: 14px 4px;
+  padding: 0 16px;
   display: grid;
-  grid-template-columns: minmax(220px, 1fr) minmax(220px, 0.9fr) 108px;
+  grid-template-columns: 22px minmax(220px, 1fr) minmax(200px, 0.8fr) 72px;
   align-items: center;
-  gap: 20px;
+  gap: 14px;
+}
+
+.head {
+  min-height: 36px;
   border-bottom: var(--rule);
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+}
+
+.head > span:first-child,
+.head > span:last-child {
+  text-align: right;
+}
+
+.law {
+  min-height: 56px;
+  padding-block: 9px;
   color: var(--text);
   text-decoration: none;
 }
 
-a.law:hover strong {
+/* Rules only between rows: the head's rule opens the list and the frame closes it. */
+.law + .law {
+  border-top: var(--rule);
+}
+
+a.law:hover {
+  background: var(--surface-2);
+}
+
+a.law:hover .lawName strong,
+a.law:hover .destination svg {
   color: var(--primary-strong);
-  text-decoration: underline;
-  text-decoration-thickness: 1px;
-  text-underline-offset: 3px;
 }
 
 a.law:focus-visible {
@@ -85,10 +117,19 @@ a.law:focus-visible {
   outline-offset: -2px;
 }
 
+.rank {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-align: right;
+}
+
 .lawName {
   min-width: 0;
   display: grid;
-  gap: 4px;
+  gap: 2px;
 }
 
 /* Long names (e.g. 行政院公共工程委員會所訂頒之契約要項) wrap rather than lose their ending. */
@@ -106,31 +147,32 @@ a.law:focus-visible {
   letter-spacing: 0.03em;
 }
 
+/* Share bar as in 考題分析: a square track with a solid fill that never shrinks to nothing. */
 .ratio {
   display: grid;
   grid-template-columns: minmax(100px, 1fr) 52px;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
 .ratio > span {
-  height: 6px;
+  height: 8px;
   overflow: hidden;
-  border-radius: var(--radius-frame);
-  background: var(--line);
+  background: var(--surface-3);
 }
 
 .ratio i {
   height: 100%;
+  min-width: 4px;
   display: block;
-  background: var(--primary);
+  background: var(--chart-1);
 }
 
 .ratio strong {
   color: var(--text-soft);
   font-family: var(--font-mono);
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 500;
   text-align: right;
 }
 
@@ -158,21 +200,28 @@ a.law:focus-visible {
   }
 }
 
-/* A three-column row needs about 620px, so narrower lists (phones, or tablets beside the
-   sidebar) put the ratio under the name instead of pushing the link icon off the row. */
+/* A four-column row needs about 640px, so narrower panels (phones, or tablets beside the
+   sidebar) keep rank, name and link on the first line and put the share under the name. */
 @container (max-width: 640px) {
+  .head,
   .law {
-    grid-template-columns: minmax(0, 1fr) auto;
-    gap: 10px 14px;
+    padding-inline: 12px;
+    grid-template-columns: 22px minmax(0, 1fr) auto;
+    gap: 6px 10px;
+  }
+
+  .head > span:nth-child(3) {
+    display: none;
   }
 
   .ratio {
-    grid-column: 1 / -1;
+    grid-column: 2 / -1;
     grid-row: 2;
+    grid-template-columns: minmax(0, 1fr) 48px;
   }
 
   .destination {
-    grid-column: 2;
+    grid-column: 3;
     grid-row: 1;
   }
 }

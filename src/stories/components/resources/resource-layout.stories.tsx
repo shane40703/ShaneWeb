@@ -13,7 +13,9 @@ const pageExtras: Partial<
   Record<Current, Pick<ResourceLayoutProps, 'actions' | 'facts'>>
 > = {
   'memory-gallery': { actions: <MemoryGalleryAdminLink /> },
-  laws: { facts: `收錄考題曾出現的 ${lawDatabaseEntries.length} 項法規；` },
+  laws: {
+    facts: `收錄考題曾出現的 ${lawDatabaseEntries.length} 項法規，依出現題數排序；`,
+  },
 };
 
 /** 分頁列的連結會換到另一頁；這裡點分頁時直接換成那一頁的頁首。 */
