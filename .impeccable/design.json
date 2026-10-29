@@ -1,0 +1,942 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-29T20:16:16.573Z",
+  "title": "Design System: 建築師考試練習平台",
+  "extensions": {
+    "colorMeta": {
+      "rice-paper": {
+        "role": "neutral",
+        "displayName": "米紙",
+        "cssVar": "--bg",
+        "canonical": "oklch(90.7% 0.032 84.6)",
+        "darkTwin": "#1b1915",
+        "tonalRamp": [
+          "oklch(15.0% 0.005 84.6)",
+          "oklch(27.0% 0.017 84.6)",
+          "oklch(39.0% 0.026 84.6)",
+          "oklch(51.0% 0.031 84.6)",
+          "oklch(63.0% 0.030 84.6)",
+          "oklch(75.0% 0.023 84.6)",
+          "oklch(86.0% 0.014 84.6)",
+          "oklch(95.0% 0.005 84.6)"
+        ]
+      },
+      "grid-line": {
+        "role": "neutral",
+        "displayName": "方格線",
+        "cssVar": "--grid-line",
+        "canonical": "oklch(83.9% 0.029 84.6)",
+        "darkTwin": "#2e2b26",
+        "tonalRamp": [
+          "oklch(15.0% 0.005 84.6)",
+          "oklch(27.0% 0.016 84.6)",
+          "oklch(39.0% 0.024 84.6)",
+          "oklch(51.0% 0.029 84.6)",
+          "oklch(63.0% 0.028 84.6)",
+          "oklch(75.0% 0.021 84.6)",
+          "oklch(86.0% 0.013 84.6)",
+          "oklch(95.0% 0.005 84.6)"
+        ]
+      },
+      "grid-line-soft": {
+        "role": "neutral",
+        "displayName": "淡方格線",
+        "cssVar": "--grid-line-soft",
+        "canonical": "oklch(88.7% 0.031 86.5)",
+        "darkTwin": "#25221e",
+        "tonalRamp": [
+          "oklch(15.0% 0.005 86.5)",
+          "oklch(27.0% 0.017 86.5)",
+          "oklch(39.0% 0.025 86.5)",
+          "oklch(51.0% 0.031 86.5)",
+          "oklch(63.0% 0.029 86.5)",
+          "oklch(75.0% 0.023 86.5)",
+          "oklch(86.0% 0.014 86.5)",
+          "oklch(95.0% 0.005 86.5)"
+        ]
+      },
+      "cream-sheet": {
+        "role": "neutral",
+        "displayName": "奶油紙",
+        "cssVar": "--surface",
+        "canonical": "oklch(98.4% 0.012 79.8)",
+        "darkTwin": "#23201b",
+        "tonalRamp": [
+          "oklch(15.0% 0.002 79.8)",
+          "oklch(27.0% 0.006 79.8)",
+          "oklch(39.0% 0.010 79.8)",
+          "oklch(51.0% 0.012 79.8)",
+          "oklch(63.0% 0.011 79.8)",
+          "oklch(75.0% 0.009 79.8)",
+          "oklch(86.0% 0.005 79.8)",
+          "oklch(95.0% 0.002 79.8)"
+        ]
+      },
+      "cream-sheet-lifted": {
+        "role": "neutral",
+        "displayName": "提亮奶油紙",
+        "cssVar": "--surface-elevated",
+        "canonical": "oklch(98.9% 0.011 84.6)",
+        "darkTwin": "#2a2620",
+        "tonalRamp": [
+          "oklch(15.0% 0.002 84.6)",
+          "oklch(27.0% 0.006 84.6)",
+          "oklch(39.0% 0.009 84.6)",
+          "oklch(51.0% 0.011 84.6)",
+          "oklch(63.0% 0.011 84.6)",
+          "oklch(75.0% 0.008 84.6)",
+          "oklch(86.0% 0.005 84.6)",
+          "oklch(95.0% 0.002 84.6)"
+        ]
+      },
+      "cream-tint": {
+        "role": "neutral",
+        "displayName": "奶油淡底",
+        "cssVar": "--surface-2",
+        "canonical": "oklch(94.8% 0.027 85.7)",
+        "darkTwin": "#2a2620",
+        "tonalRamp": [
+          "oklch(15.0% 0.005 85.7)",
+          "oklch(27.0% 0.014 85.7)",
+          "oklch(39.0% 0.022 85.7)",
+          "oklch(51.0% 0.026 85.7)",
+          "oklch(63.0% 0.025 85.7)",
+          "oklch(75.0% 0.020 85.7)",
+          "oklch(86.0% 0.012 85.7)",
+          "oklch(95.0% 0.005 85.7)"
+        ]
+      },
+      "cream-deep": {
+        "role": "neutral",
+        "displayName": "深奶油",
+        "cssVar": "--surface-3",
+        "canonical": "oklch(87.9% 0.037 86.2)",
+        "darkTwin": "#38332b",
+        "tonalRamp": [
+          "oklch(15.0% 0.006 86.2)",
+          "oklch(27.0% 0.020 86.2)",
+          "oklch(39.0% 0.030 86.2)",
+          "oklch(51.0% 0.036 86.2)",
+          "oklch(63.0% 0.035 86.2)",
+          "oklch(75.0% 0.027 86.2)",
+          "oklch(86.0% 0.017 86.2)",
+          "oklch(95.0% 0.006 86.2)"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "墨",
+        "cssVar": "--text",
+        "canonical": "oklch(33.7% 0.000 89.9)",
+        "darkTwin": "#ede5d6",
+        "tonalRamp": [
+          "oklch(15.0% 0.000 89.9)",
+          "oklch(27.0% 0.000 89.9)",
+          "oklch(39.0% 0.000 89.9)",
+          "oklch(51.0% 0.000 89.9)",
+          "oklch(63.0% 0.000 89.9)",
+          "oklch(75.0% 0.000 89.9)",
+          "oklch(86.0% 0.000 89.9)",
+          "oklch(95.0% 0.000 89.9)"
+        ]
+      },
+      "ink-soft": {
+        "role": "neutral",
+        "displayName": "軟墨",
+        "cssVar": "--text-soft",
+        "canonical": "oklch(42.8% 0.000 89.9)",
+        "darkTwin": "#cfc6b5",
+        "tonalRamp": [
+          "oklch(15.0% 0.000 89.9)",
+          "oklch(27.0% 0.000 89.9)",
+          "oklch(39.0% 0.000 89.9)",
+          "oklch(51.0% 0.000 89.9)",
+          "oklch(63.0% 0.000 89.9)",
+          "oklch(75.0% 0.000 89.9)",
+          "oklch(86.0% 0.000 89.9)",
+          "oklch(95.0% 0.000 89.9)"
+        ]
+      },
+      "ink-muted": {
+        "role": "neutral",
+        "displayName": "淡墨",
+        "cssVar": "--muted",
+        "canonical": "oklch(50.0% 0.000 89.9)",
+        "darkTwin": "#a39b8c",
+        "tonalRamp": [
+          "oklch(15.0% 0.000 89.9)",
+          "oklch(27.0% 0.000 89.9)",
+          "oklch(39.0% 0.000 89.9)",
+          "oklch(51.0% 0.000 89.9)",
+          "oklch(63.0% 0.000 89.9)",
+          "oklch(75.0% 0.000 89.9)",
+          "oklch(86.0% 0.000 89.9)",
+          "oklch(95.0% 0.000 89.9)"
+        ]
+      },
+      "ink-disabled": {
+        "role": "neutral",
+        "displayName": "失效墨",
+        "cssVar": "--disabled-text",
+        "canonical": "oklch(61.5% 0.018 82.8)",
+        "darkTwin": "#7e776b",
+        "tonalRamp": [
+          "oklch(15.0% 0.003 82.8)",
+          "oklch(27.0% 0.009 82.8)",
+          "oklch(39.0% 0.014 82.8)",
+          "oklch(51.0% 0.017 82.8)",
+          "oklch(63.0% 0.017 82.8)",
+          "oklch(75.0% 0.013 82.8)",
+          "oklch(86.0% 0.008 82.8)",
+          "oklch(95.0% 0.003 82.8)"
+        ]
+      },
+      "pencil-line": {
+        "role": "neutral",
+        "displayName": "鉛筆線",
+        "cssVar": "--line",
+        "canonical": "oklch(82.5% 0.033 87.3)",
+        "darkTwin": "#3a352d",
+        "tonalRamp": [
+          "oklch(15.0% 0.006 87.3)",
+          "oklch(27.0% 0.018 87.3)",
+          "oklch(39.0% 0.027 87.3)",
+          "oklch(51.0% 0.033 87.3)",
+          "oklch(63.0% 0.031 87.3)",
+          "oklch(75.0% 0.024 87.3)",
+          "oklch(86.0% 0.015 87.3)",
+          "oklch(95.0% 0.006 87.3)"
+        ]
+      },
+      "ink-line": {
+        "role": "neutral",
+        "displayName": "墨線",
+        "cssVar": "--line-strong",
+        "canonical": "oklch(51.2% 0.015 82.4)",
+        "darkTwin": "#8b8375",
+        "tonalRamp": [
+          "oklch(15.0% 0.003 82.4)",
+          "oklch(27.0% 0.008 82.4)",
+          "oklch(39.0% 0.012 82.4)",
+          "oklch(51.0% 0.015 82.4)",
+          "oklch(63.0% 0.014 82.4)",
+          "oklch(75.0% 0.011 82.4)",
+          "oklch(86.0% 0.007 82.4)",
+          "oklch(95.0% 0.003 82.4)"
+        ]
+      },
+      "frame-line": {
+        "role": "neutral",
+        "displayName": "框線",
+        "cssVar": "--control-line",
+        "canonical": "oklch(69.2% 0.023 83.3)",
+        "darkTwin": "#5a5347",
+        "tonalRamp": [
+          "oklch(15.0% 0.004 83.3)",
+          "oklch(27.0% 0.012 83.3)",
+          "oklch(39.0% 0.019 83.3)",
+          "oklch(51.0% 0.023 83.3)",
+          "oklch(63.0% 0.022 83.3)",
+          "oklch(75.0% 0.017 83.3)",
+          "oklch(86.0% 0.010 83.3)",
+          "oklch(95.0% 0.004 83.3)"
+        ]
+      },
+      "ink-blue": {
+        "role": "primary",
+        "displayName": "墨線藍",
+        "cssVar": "--primary",
+        "canonical": "oklch(48.7% 0.162 265.0)",
+        "darkTwin": "#8fa9f0",
+        "tonalRamp": [
+          "oklch(15.0% 0.026 265.0)",
+          "oklch(27.0% 0.080 265.0)",
+          "oklch(39.0% 0.121 265.0)",
+          "oklch(51.0% 0.147 265.0)",
+          "oklch(63.0% 0.141 265.0)",
+          "oklch(75.0% 0.109 265.0)",
+          "oklch(86.0% 0.067 265.0)",
+          "oklch(95.0% 0.026 265.0)"
+        ]
+      },
+      "ink-blue-deep": {
+        "role": "primary",
+        "displayName": "深墨線藍",
+        "cssVar": "--primary-strong / --primary-solid",
+        "canonical": "oklch(38.5% 0.109 266.1)",
+        "darkTwin": "#afc2f5 / #3b60c5",
+        "tonalRamp": [
+          "oklch(15.0% 0.019 266.1)",
+          "oklch(27.0% 0.058 266.1)",
+          "oklch(39.0% 0.088 266.1)",
+          "oklch(51.0% 0.107 266.1)",
+          "oklch(63.0% 0.102 266.1)",
+          "oklch(75.0% 0.079 266.1)",
+          "oklch(86.0% 0.049 266.1)",
+          "oklch(95.0% 0.019 266.1)"
+        ]
+      },
+      "ink-blue-bright": {
+        "role": "primary",
+        "displayName": "亮墨線藍",
+        "cssVar": "--primary-bright",
+        "canonical": "oklch(51.8% 0.163 265.8)",
+        "darkTwin": "#8fa9f0",
+        "tonalRamp": [
+          "oklch(15.0% 0.026 265.8)",
+          "oklch(27.0% 0.080 265.8)",
+          "oklch(39.0% 0.121 265.8)",
+          "oklch(51.0% 0.147 265.8)",
+          "oklch(63.0% 0.141 265.8)",
+          "oklch(75.0% 0.109 265.8)",
+          "oklch(86.0% 0.067 265.8)",
+          "oklch(95.0% 0.026 265.8)"
+        ]
+      },
+      "ink-blue-pressed": {
+        "role": "primary",
+        "displayName": "按壓墨線藍",
+        "cssVar": "--primary-solid-hover",
+        "canonical": "oklch(35.3% 0.094 262.3)",
+        "darkTwin": "#4b70d5",
+        "tonalRamp": [
+          "oklch(15.0% 0.016 262.3)",
+          "oklch(27.0% 0.050 262.3)",
+          "oklch(39.0% 0.076 262.3)",
+          "oklch(51.0% 0.092 262.3)",
+          "oklch(63.0% 0.088 262.3)",
+          "oklch(75.0% 0.069 262.3)",
+          "oklch(86.0% 0.042 262.3)",
+          "oklch(95.0% 0.016 262.3)"
+        ]
+      },
+      "ink-blue-wash": {
+        "role": "primary",
+        "displayName": "墨線藍水洗",
+        "cssVar": "--primary-soft",
+        "canonical": "oklch(92.5% 0.017 271.2)",
+        "darkTwin": "#283352",
+        "tonalRamp": [
+          "oklch(15.0% 0.003 271.2)",
+          "oklch(27.0% 0.009 271.2)",
+          "oklch(39.0% 0.014 271.2)",
+          "oklch(51.0% 0.016 271.2)",
+          "oklch(63.0% 0.016 271.2)",
+          "oklch(75.0% 0.012 271.2)",
+          "oklch(86.0% 0.008 271.2)",
+          "oklch(95.0% 0.003 271.2)"
+        ]
+      },
+      "on-ink-blue": {
+        "role": "primary",
+        "displayName": "藍上白",
+        "cssVar": "--on-primary",
+        "canonical": "oklch(100.0% 0.000 89.9)",
+        "darkTwin": "#ffffff",
+        "tonalRamp": [
+          "oklch(15.0% 0.000 89.9)",
+          "oklch(27.0% 0.000 89.9)",
+          "oklch(39.0% 0.000 89.9)",
+          "oklch(51.0% 0.000 89.9)",
+          "oklch(63.0% 0.000 89.9)",
+          "oklch(75.0% 0.000 89.9)",
+          "oklch(86.0% 0.000 89.9)",
+          "oklch(95.0% 0.000 89.9)"
+        ]
+      },
+      "correct-green": {
+        "role": "status",
+        "displayName": "答對綠",
+        "cssVar": "--success",
+        "canonical": "oklch(45.9% 0.100 156.5)",
+        "darkTwin": "#6ccb95",
+        "tonalRamp": [
+          "oklch(15.0% 0.017 156.5)",
+          "oklch(27.0% 0.053 156.5)",
+          "oklch(39.0% 0.081 156.5)",
+          "oklch(51.0% 0.098 156.5)",
+          "oklch(63.0% 0.094 156.5)",
+          "oklch(75.0% 0.073 156.5)",
+          "oklch(86.0% 0.045 156.5)",
+          "oklch(95.0% 0.017 156.5)"
+        ]
+      },
+      "correct-wash": {
+        "role": "status",
+        "displayName": "答對水洗",
+        "cssVar": "--success-soft",
+        "canonical": "oklch(93.5% 0.026 138.3)",
+        "darkTwin": "#1f3328",
+        "tonalRamp": [
+          "oklch(15.0% 0.005 138.3)",
+          "oklch(27.0% 0.014 138.3)",
+          "oklch(39.0% 0.021 138.3)",
+          "oklch(51.0% 0.026 138.3)",
+          "oklch(63.0% 0.025 138.3)",
+          "oklch(75.0% 0.019 138.3)",
+          "oklch(86.0% 0.012 138.3)",
+          "oklch(95.0% 0.005 138.3)"
+        ]
+      },
+      "wrong-red": {
+        "role": "status",
+        "displayName": "答錯紅",
+        "cssVar": "--danger",
+        "canonical": "oklch(51.1% 0.162 30.0)",
+        "darkTwin": "#f08a7a",
+        "tonalRamp": [
+          "oklch(15.0% 0.026 30.0)",
+          "oklch(27.0% 0.080 30.0)",
+          "oklch(39.0% 0.121 30.0)",
+          "oklch(51.0% 0.147 30.0)",
+          "oklch(63.0% 0.141 30.0)",
+          "oklch(75.0% 0.109 30.0)",
+          "oklch(86.0% 0.067 30.0)",
+          "oklch(95.0% 0.026 30.0)"
+        ]
+      },
+      "wrong-wash": {
+        "role": "status",
+        "displayName": "答錯水洗",
+        "cssVar": "--danger-soft",
+        "canonical": "oklch(94.2% 0.022 38.3)",
+        "darkTwin": "#3a2420",
+        "tonalRamp": [
+          "oklch(15.0% 0.004 38.3)",
+          "oklch(27.0% 0.012 38.3)",
+          "oklch(39.0% 0.018 38.3)",
+          "oklch(51.0% 0.022 38.3)",
+          "oklch(63.0% 0.021 38.3)",
+          "oklch(75.0% 0.016 38.3)",
+          "oklch(86.0% 0.010 38.3)",
+          "oklch(95.0% 0.004 38.3)"
+        ]
+      },
+      "mark-amber": {
+        "role": "status",
+        "displayName": "標記琥珀",
+        "cssVar": "--warning",
+        "canonical": "oklch(48.4% 0.105 64.5)",
+        "darkTwin": "#e8b86a",
+        "tonalRamp": [
+          "oklch(15.0% 0.018 64.5)",
+          "oklch(27.0% 0.056 64.5)",
+          "oklch(39.0% 0.085 64.5)",
+          "oklch(51.0% 0.103 64.5)",
+          "oklch(63.0% 0.099 64.5)",
+          "oklch(75.0% 0.077 64.5)",
+          "oklch(86.0% 0.047 64.5)",
+          "oklch(95.0% 0.018 64.5)"
+        ]
+      },
+      "mark-wash": {
+        "role": "status",
+        "displayName": "標記水洗",
+        "cssVar": "--warning-soft",
+        "canonical": "oklch(93.6% 0.040 83.1)",
+        "darkTwin": "#3a2e18",
+        "tonalRamp": [
+          "oklch(15.0% 0.007 83.1)",
+          "oklch(27.0% 0.021 83.1)",
+          "oklch(39.0% 0.033 83.1)",
+          "oklch(51.0% 0.039 83.1)",
+          "oklch(63.0% 0.038 83.1)",
+          "oklch(75.0% 0.029 83.1)",
+          "oklch(86.0% 0.018 83.1)",
+          "oklch(95.0% 0.007 83.1)"
+        ]
+      },
+      "note-purple": {
+        "role": "status",
+        "displayName": "筆記紫",
+        "cssVar": "--purple",
+        "canonical": "oklch(46.7% 0.162 292.0)",
+        "darkTwin": "#c2a6f5",
+        "tonalRamp": [
+          "oklch(15.0% 0.026 292.0)",
+          "oklch(27.0% 0.080 292.0)",
+          "oklch(39.0% 0.121 292.0)",
+          "oklch(51.0% 0.147 292.0)",
+          "oklch(63.0% 0.141 292.0)",
+          "oklch(75.0% 0.109 292.0)",
+          "oklch(86.0% 0.067 292.0)",
+          "oklch(95.0% 0.026 292.0)"
+        ]
+      },
+      "note-wash": {
+        "role": "status",
+        "displayName": "筆記水洗",
+        "cssVar": "--purple-soft",
+        "canonical": "oklch(93.4% 0.020 305.3)",
+        "darkTwin": "#2e2640",
+        "tonalRamp": [
+          "oklch(15.0% 0.003 305.3)",
+          "oklch(27.0% 0.011 305.3)",
+          "oklch(39.0% 0.016 305.3)",
+          "oklch(51.0% 0.019 305.3)",
+          "oklch(63.0% 0.019 305.3)",
+          "oklch(75.0% 0.014 305.3)",
+          "oklch(86.0% 0.009 305.3)",
+          "oklch(95.0% 0.003 305.3)"
+        ]
+      },
+      "subject-orange": {
+        "role": "status",
+        "displayName": "科目橘",
+        "cssVar": "--subject-orange",
+        "canonical": "oklch(53.0% 0.116 62.4)",
+        "darkTwin": "#e8b86a",
+        "tonalRamp": [
+          "oklch(15.0% 0.020 62.4)",
+          "oklch(27.0% 0.062 62.4)",
+          "oklch(39.0% 0.094 62.4)",
+          "oklch(51.0% 0.113 62.4)",
+          "oklch(63.0% 0.109 62.4)",
+          "oklch(75.0% 0.084 62.4)",
+          "oklch(86.0% 0.052 62.4)",
+          "oklch(95.0% 0.020 62.4)"
+        ]
+      },
+      "chart-2": {
+        "role": "chart",
+        "displayName": "圖表 2",
+        "cssVar": "--chart-2",
+        "canonical": "oklch(51.5% 0.110 156.8)",
+        "darkTwin": "#6ccb95",
+        "tonalRamp": [
+          "oklch(15.0% 0.019 156.8)",
+          "oklch(27.0% 0.059 156.8)",
+          "oklch(39.0% 0.089 156.8)",
+          "oklch(51.0% 0.108 156.8)",
+          "oklch(63.0% 0.103 156.8)",
+          "oklch(75.0% 0.080 156.8)",
+          "oklch(86.0% 0.049 156.8)",
+          "oklch(95.0% 0.019 156.8)"
+        ]
+      },
+      "chart-3": {
+        "role": "chart",
+        "displayName": "圖表 3",
+        "cssVar": "--chart-3",
+        "canonical": "oklch(64.0% 0.142 60.0)",
+        "darkTwin": "#e8b86a",
+        "tonalRamp": [
+          "oklch(15.0% 0.024 60.0)",
+          "oklch(27.0% 0.075 60.0)",
+          "oklch(39.0% 0.115 60.0)",
+          "oklch(51.0% 0.139 60.0)",
+          "oklch(63.0% 0.133 60.0)",
+          "oklch(75.0% 0.103 60.0)",
+          "oklch(86.0% 0.064 60.0)",
+          "oklch(95.0% 0.024 60.0)"
+        ]
+      },
+      "chart-4": {
+        "role": "chart",
+        "displayName": "圖表 4",
+        "cssVar": "--chart-4",
+        "canonical": "oklch(50.4% 0.165 293.1)",
+        "darkTwin": "#c2a6f5",
+        "tonalRamp": [
+          "oklch(15.0% 0.026 293.1)",
+          "oklch(27.0% 0.080 293.1)",
+          "oklch(39.0% 0.121 293.1)",
+          "oklch(51.0% 0.147 293.1)",
+          "oklch(63.0% 0.141 293.1)",
+          "oklch(75.0% 0.109 293.1)",
+          "oklch(86.0% 0.067 293.1)",
+          "oklch(95.0% 0.026 293.1)"
+        ]
+      },
+      "chart-5": {
+        "role": "chart",
+        "displayName": "圖表 5",
+        "cssVar": "--chart-5",
+        "canonical": "oklch(59.6% 0.170 23.8)",
+        "darkTwin": "#f08a7a",
+        "tonalRamp": [
+          "oklch(15.0% 0.026 23.8)",
+          "oklch(27.0% 0.080 23.8)",
+          "oklch(39.0% 0.121 23.8)",
+          "oklch(51.0% 0.147 23.8)",
+          "oklch(63.0% 0.141 23.8)",
+          "oklch(75.0% 0.109 23.8)",
+          "oklch(86.0% 0.067 23.8)",
+          "oklch(95.0% 0.026 23.8)"
+        ]
+      },
+      "chart-6": {
+        "role": "chart",
+        "displayName": "圖表 6",
+        "cssVar": "--chart-6",
+        "canonical": "oklch(56.1% 0.019 84.6)",
+        "darkTwin": "#a39b8c",
+        "tonalRamp": [
+          "oklch(15.0% 0.003 84.6)",
+          "oklch(27.0% 0.010 84.6)",
+          "oklch(39.0% 0.016 84.6)",
+          "oklch(51.0% 0.019 84.6)",
+          "oklch(63.0% 0.018 84.6)",
+          "oklch(75.0% 0.014 84.6)",
+          "oklch(86.0% 0.009 84.6)",
+          "oklch(95.0% 0.003 84.6)"
+        ]
+      },
+      "image-white": {
+        "role": "neutral",
+        "displayName": "圖片白",
+        "cssVar": "--image-surface",
+        "canonical": "oklch(100.0% 0.000 89.9)",
+        "darkTwin": "#ffffff",
+        "tonalRamp": [
+          "oklch(15.0% 0.000 89.9)",
+          "oklch(27.0% 0.000 89.9)",
+          "oklch(39.0% 0.000 89.9)",
+          "oklch(51.0% 0.000 89.9)",
+          "oklch(63.0% 0.000 89.9)",
+          "oklch(75.0% 0.000 89.9)",
+          "oklch(86.0% 0.000 89.9)",
+          "oklch(95.0% 0.000 89.9)"
+        ]
+      },
+      "focus-halo": {
+        "role": "primary",
+        "displayName": "焦點暈",
+        "cssVar": "--focus",
+        "canonical": "rgb(49 87 186 / 40%)",
+        "darkTwin": "rgb(143 169 240 / 45%)",
+        "tonalRamp": [
+          "oklch(15.0% 0.026 265.0)",
+          "oklch(27.0% 0.080 265.0)",
+          "oklch(39.0% 0.121 265.0)",
+          "oklch(51.0% 0.147 265.0)",
+          "oklch(63.0% 0.141 265.0)",
+          "oklch(75.0% 0.109 265.0)",
+          "oklch(86.0% 0.067 265.0)",
+          "oklch(95.0% 0.026 265.0)"
+        ]
+      },
+      "backdrop": {
+        "role": "neutral",
+        "displayName": "遮罩",
+        "cssVar": "--backdrop",
+        "canonical": "rgb(40 36 30 / 45%)",
+        "darkTwin": "rgb(0 0 0 / 55%)",
+        "tonalRamp": [
+          "oklch(15.0% 0.002 78.1)",
+          "oklch(27.0% 0.007 78.1)",
+          "oklch(39.0% 0.010 78.1)",
+          "oklch(51.0% 0.012 78.1)",
+          "oklch(63.0% 0.012 78.1)",
+          "oklch(75.0% 0.009 78.1)",
+          "oklch(86.0% 0.006 78.1)",
+          "oklch(95.0% 0.002 78.1)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "只用在首頁考試倒數的天數。"
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "首頁倒數區的標題。"
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "區塊標題與對話框標題。"
+      },
+      "panel-title": {
+        "displayName": "Panel Title",
+        "purpose": "面板內的標題，各面板共用同一尺寸。"
+      },
+      "question": {
+        "displayName": "Question",
+        "purpose": "題幹與選項文字，由 --question-font-size / --option-font-size 控制，使用者可放大。"
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "一般段落。"
+      },
+      "control": {
+        "displayName": "Control",
+        "purpose": "按鈕、下拉選單、輸入框文字。"
+      },
+      "caption": {
+        "displayName": "Caption",
+        "purpose": "表單標籤與面板內小標，淡墨。"
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "題號、年度、數量、來源行；等寬加字距。"
+      },
+      "eyebrow": {
+        "displayName": "Eyebrow",
+        "purpose": "面板上方的大寫英文眉標，如 QUESTION MAP。"
+      }
+    },
+    "shadows": [
+      {
+        "name": "shadow-lg",
+        "value": "6px 6px 0 rgb(55 55 55 / 10%)",
+        "dark": "6px 6px 0 rgb(0 0 0 / 35%)",
+        "purpose": "浮紙：下拉選單、對話框、設定紙、通知。硬邊偏移，不是模糊光暈。"
+      },
+      {
+        "name": "shadow-sm / shadow-md",
+        "value": "none",
+        "purpose": "刻意為 none；貼在頁面上的東西沒有陰影。"
+      },
+      {
+        "name": "selected-left-rule",
+        "value": "inset 2px 0 0 var(--primary)",
+        "purpose": "已選取選項列左緣的 2px 墨線藍，是狀態不是深度。"
+      },
+      {
+        "name": "focus-ring",
+        "value": "2px solid var(--primary), outline-offset 2px",
+        "purpose": "所有可聚焦元件的鍵盤焦點。"
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-paper",
+        "value": "cubic-bezier(0.22, 1, 0.36, 1)",
+        "purpose": "通知與手機抽屜滑入的唯一曲線。"
+      },
+      {
+        "name": "toast-in",
+        "value": "transform 300ms ease-paper, opacity 180ms ease",
+        "purpose": "通知出現。"
+      },
+      {
+        "name": "drawer-in",
+        "value": "transform 240ms ease-paper",
+        "purpose": "手機側欄抽屜滑入。"
+      },
+      {
+        "name": "reduced-motion",
+        "value": "transition-duration: 0.01ms; scroll-behavior: auto",
+        "purpose": "prefers-reduced-motion 時關閉以上兩個動效與平滑捲動。其餘介面本來就沒有動畫。"
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "sidebar-collapse",
+        "value": "800px",
+        "kind": "media",
+        "purpose": "側欄收成抽屜、頂部列 60px、按鈕縮成圖示鈕。"
+      },
+      {
+        "name": "page-two-column",
+        "value": "900px",
+        "kind": "container",
+        "purpose": "作答頁與討論版的兩欄在頁面寬 900px 以下收成一欄。"
+      },
+      {
+        "name": "page-stack",
+        "value": "640px",
+        "kind": "container",
+        "purpose": "可點擊大方塊與倒數區在頁面寬 640px 以下改直排。"
+      },
+      {
+        "name": "home-two-column",
+        "value": "1050px",
+        "kind": "media",
+        "purpose": "首頁四科卡在視窗 1050px 以下變兩欄。"
+      },
+      {
+        "name": "home-single-column",
+        "value": "560px",
+        "kind": "media",
+        "purpose": "首頁四科卡在視窗 560px 以下變一欄。"
+      },
+      {
+        "name": "paper-grid",
+        "value": "24px",
+        "kind": "rhythm",
+        "purpose": "方格紙一格，也是面板之間與面板內距的基準。"
+      },
+      {
+        "name": "sidebar-width",
+        "value": "260px",
+        "kind": "fixed",
+        "purpose": "桌機側欄寬度；主內容區最寬 1600px。"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "主要按鈕",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "深墨線藍實心白字；一個畫面一顆，滑過改按壓墨線藍，沒有陰影與位移。",
+      "html": "<button class=\"ds-btn ds-btn-primary\">下一題 <svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 12h14\"/><path d=\"M13 6l6 6-6 6\"/></svg></button>",
+      "css": ".ds-btn { min-height: 40px; padding: 0 14px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid var(--control-line, #a39b8c); border-radius: 4px; background: var(--surface, #fef9f1); color: var(--text, #373737); font: 500 14px/1.3 var(--font-sans, -apple-system, BlinkMacSystemFont, \"Segoe UI\", \"Helvetica Neue\", \"Noto Sans TC\", \"PingFang TC\", \"Microsoft JhengHei\", sans-serif); cursor: pointer; } .ds-btn:hover { border-color: var(--line-strong, #6b665d); background: var(--surface-elevated, #fffbf3); } .ds-btn:focus-visible { outline: 2px solid var(--primary, #3157ba); outline-offset: 2px; } .ds-btn-primary { border-color: var(--primary-solid, #283f7d); background: var(--primary-solid, #283f7d); color: var(--on-primary, #ffffff); } .ds-btn-primary:hover { border-color: var(--primary-solid-hover, #1f396c); background: var(--primary-solid-hover, #1f396c); }"
+    },
+    {
+      "name": "預設按鈕",
+      "kind": "button",
+      "refersTo": "button",
+      "description": "奶油紙底、1px 框線色框、墨色字；滑過框線變墨線、底變提亮奶油紙。",
+      "html": "<button class=\"ds-btn\">上一題</button>",
+      "css": ".ds-btn { min-height: 40px; padding: 0 14px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid var(--control-line, #a39b8c); border-radius: 4px; background: var(--surface, #fef9f1); color: var(--text, #373737); font: 500 14px/1.3 var(--font-sans, -apple-system, BlinkMacSystemFont, \"Segoe UI\", \"Helvetica Neue\", \"Noto Sans TC\", \"PingFang TC\", \"Microsoft JhengHei\", sans-serif); cursor: pointer; } .ds-btn:hover { border-color: var(--line-strong, #6b665d); background: var(--surface-elevated, #fffbf3); } .ds-btn:focus-visible { outline: 2px solid var(--primary, #3157ba); outline-offset: 2px; } .ds-btn:disabled { opacity: .5; cursor: not-allowed; }"
+    },
+    {
+      "name": "Ghost 按鈕",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "無框無底的墨線藍文字鈕；滑過變深墨線藍並加 1px 底線。",
+      "html": "<button class=\"ds-btn-ghost\">查看詳解</button>",
+      "css": ".ds-btn-ghost { min-height: 40px; padding: 0 14px; display: inline-flex; align-items: center; gap: 8px; border: 1px solid transparent; border-radius: 4px; background: transparent; color: var(--primary, #3157ba); font: 500 14px/1.3 var(--font-sans, -apple-system, BlinkMacSystemFont, \"Segoe UI\", \"Helvetica Neue\", \"Noto Sans TC\", \"PingFang TC\", \"Microsoft JhengHei\", sans-serif); cursor: pointer; } .ds-btn-ghost:hover { color: var(--primary-strong, #283f7d); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; } .ds-btn-ghost:focus-visible { outline: 2px solid var(--primary, #3157ba); outline-offset: 2px; }"
+    },
+    {
+      "name": "難題標記切換鈕",
+      "kind": "button",
+      "refersTo": "button",
+      "description": "預設按鈕的切換態：按下後琥珀字、標記水洗底、琥珀框，文字永不換行。",
+      "html": "<button class=\"ds-btn-toggle\" aria-pressed=\"true\">已標記難題</button>",
+      "css": ".ds-btn-toggle { min-height: 40px; padding: 0 14px; display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; border: 1px solid var(--control-line, #a39b8c); border-radius: 4px; background: var(--surface, #fef9f1); color: var(--text, #373737); font: 500 14px/1.3 var(--font-sans, -apple-system, BlinkMacSystemFont, \"Segoe UI\", \"Helvetica Neue\", \"Noto Sans TC\", \"PingFang TC\", \"Microsoft JhengHei\", sans-serif); cursor: pointer; } .ds-btn-toggle[aria-pressed=\"true\"] { border-color: var(--warning, #875009); background: var(--warning-soft, #f7e8cc); color: var(--warning, #875009); } .ds-btn-toggle:focus-visible { outline: 2px solid var(--primary, #3157ba); outline-offset: 2px; }"
+    },
+    {
+      "name": "輸入框",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "奶油紙底、1px 框線色、4px 圓角、40px 高；聚焦時框線變墨線藍。",
+      "html": "<label class=\"ds-field\"><span class=\"ds-field-label\">回覆這則內容</span><input class=\"ds-input\" type=\"text\" placeholder=\"輸入匿名回覆\"></label>",
+      "css": ".ds-field { display: grid; gap: 6px; min-width: 0; font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, \"Segoe UI\", \"Helvetica Neue\", \"Noto Sans TC\", \"PingFang TC\", \"Microsoft JhengHei\", sans-serif); } .ds-field-label { color: var(--muted, #636363); font-size: 13px; font-weight: 500; } .ds-input { width: 100%; min-height: 40px; padding: 0 12px; border: 1px solid var(--control-line, #a39b8c); border-radius: 4px; background: var(--surface, #fef9f1); color: var(--text, #373737); font: 400 14px/1.3 var(--font-sans, -apple-system, BlinkMacSystemFont, \"Segoe UI\", \"Helvetica Neue\", \"Noto Sans TC\", \"PingFang TC\", \"Microsoft JhengHei\", sans-serif); } .ds-input::placeholder { color: var(--muted, #636363); opacity: .82; } .ds-input:focus-visible { outline: none; border-color: var(--primary, #3157ba); }"
+    },
+    {
+      "name": "下拉選單",
+      "kind": "input",
+      "refersTo": "select",
+      "description": "外觀同輸入框，右側淡墨箭頭；開啟時框線變墨線藍，選單是浮紙。",
+      "html": "<button class=\"ds-select\" type=\"button\" aria-haspopup=\"listbox\"><span>題目詳解</span><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M6 9l6 6 6-6\"/></svg></button>",
+      "css": ".ds-select { width: 100%; min-width: 170px; height: 40px; padding: 0 12px; display: flex; align-items: center; justify-content: space-between; gap: 12px; border: 1px solid var(--control-line, #a39b8c); border-radius: 4px; background: var(--surface, #fef9f1); color: var(--text, #373737); font: 400 14px/1.3 var(--font-sans, -apple-system, BlinkMacSystemFont, \"Segoe UI\", \"Helvetica Neue\", \"Noto Sans TC\", \"PingFang TC\", \"Microsoft JhengHei\", sans-serif); cursor: pointer; } .ds-select svg { color: var(--muted, #636363); } .ds-select:hover { border-color: var(--line-strong, #6b665d); } .ds-select:focus-visible { outline: 2px solid var(--primary, #3157ba); outline-offset: 2px; }"
+    },
+    {
+      "name": "選項列（簽名元件）",
+      "kind": "custom",
+      "refersTo": "option-row",
+      "description": "A、B、C、D 選項：無框無圓角，相鄰列一條鉛筆線；已選取為墨線藍水洗底加 2px 左線，對答案後正確綠、錯選紅。",
+      "html": "<div class=\"ds-options\" role=\"radiogroup\"><label class=\"ds-option\"><span class=\"ds-radio\"></span><b>A</b><span>5 層樓集合住宅</span><span class=\"ds-elim\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M3 3l18 18\"/><path d=\"M10.6 10.6a2 2 0 0 0 2.8 2.8\"/><path d=\"M9.4 5.3A9.8 9.8 0 0 1 12 5c4 0 7.3 2.3 9 7-.5 1.3-1.2 2.4-2 3.3M6.6 6.6C4.8 7.9 3.4 9.7 3 12c1.7 4.7 5 7 9 7 1.4 0 2.8-.3 4-.8\"/></svg></span></label><label class=\"ds-option\" data-selected><span class=\"ds-radio ds-radio-on\"><i></i></span><b>B</b><span>私人辦公大樓</span><span class=\"ds-elim\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M3 3l18 18\"/><path d=\"M10.6 10.6a2 2 0 0 0 2.8 2.8\"/><path d=\"M9.4 5.3A9.8 9.8 0 0 1 12 5c4 0 7.3 2.3 9 7-.5 1.3-1.2 2.4-2 3.3M6.6 6.6C4.8 7.9 3.4 9.7 3 12c1.7 4.7 5 7 9 7 1.4 0 2.8-.3 4-.8\"/></svg></span></label><div class=\"ds-option\" data-accepted><span class=\"ds-radio\"></span><b class=\"ds-letter-ok\">C</b><span>市場</span><small>正確答案</small></div><div class=\"ds-option\" data-wrong><span class=\"ds-radio\"></span><b class=\"ds-letter-wrong\">D</b><span>工廠</span><small>你的答案</small></div></div>",
+      "css": ".ds-options { display: grid; font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, \"Segoe UI\", \"Helvetica Neue\", \"Noto Sans TC\", \"PingFang TC\", \"Microsoft JhengHei\", sans-serif); } .ds-option { position: relative; min-height: 52px; padding: 12px 52px 12px 10px; display: grid; grid-template-columns: 18px 24px 1fr; gap: 10px; align-items: center; border-left: 2px solid transparent; color: var(--text, #373737); font-size: 18px; line-height: 1.55; cursor: pointer; } .ds-option + .ds-option { border-top: 1px solid var(--line, #cfc5ae); } .ds-option:hover { background: var(--surface-2, #f6edda); } .ds-option[data-selected] { background: var(--primary-soft, #e2e6f2); border-left-color: var(--primary, #3157ba); } .ds-option[data-accepted] { background: var(--success-soft, #e1eedd); border-left-color: var(--success, #176840); cursor: default; } .ds-option[data-wrong] { background: var(--danger-soft, #fae7e1); border-left-color: var(--danger, #b03527); cursor: default; } .ds-option[data-accepted]:hover, .ds-option[data-wrong]:hover { background: inherit; } .ds-radio { width: 18px; height: 18px; padding: 3px; box-sizing: border-box; border: 1px solid var(--control-line, #a39b8c); border-radius: 50%; background: var(--surface, #fef9f1); display: block; } .ds-radio-on { border-color: var(--primary, #3157ba); } .ds-radio-on i { display: block; width: 10px; height: 10px; border-radius: 50%; background: var(--primary, #3157ba); } .ds-option b { width: 24px; height: 24px; display: grid; place-items: center; color: var(--muted, #636363); font: 600 12px/1 var(--font-mono, ui-monospace, \"SF Mono\", Menlo, Consolas, monospace); } .ds-letter-ok { border: 1px solid var(--success-solid, #176840); border-radius: 2px; background: var(--success-solid, #176840); color: var(--on-primary, #ffffff) !important; } .ds-letter-wrong { border: 1px solid var(--danger, #b03527); border-radius: 2px; color: var(--danger, #b03527) !important; } .ds-option small { position: absolute; right: 12px; color: var(--muted, #636363); font: 400 11px/1 var(--font-mono, ui-monospace, \"SF Mono\", Menlo, Consolas, monospace); letter-spacing: .04em; } .ds-option[data-accepted] small { color: var(--success, #176840); } .ds-option[data-wrong] small { color: var(--danger, #b03527); } .ds-elim { position: absolute; right: 8px; top: 50%; width: 32px; height: 32px; transform: translateY(-50%); display: grid; place-items: center; color: var(--muted, #636363); border: 1px solid transparent; border-radius: 4px; } .ds-elim:hover { border-color: var(--control-line, #a39b8c); background: var(--surface, #fef9f1); color: var(--primary-strong, #283f7d); }"
+    },
+    {
+      "name": "題號方塊（簽名元件）",
+      "kind": "custom",
+      "refersTo": "question-tile",
+      "description": "38px 方塊、2px 圓角、等寬數字；底色說狀態：目前實心藍、答對綠洗、答錯紅洗、難題琥珀洗，角落紫點表示有筆記。",
+      "html": "<div class=\"ds-tiles\"><a class=\"ds-tile\" href=\"#\">1</a><a class=\"ds-tile\" href=\"#\" data-answered>2</a><a class=\"ds-tile\" href=\"#\" data-wrong data-noted>3</a><a class=\"ds-tile\" href=\"#\" data-difficult>4</a><a class=\"ds-tile\" href=\"#\" aria-current=\"step\">5</a><a class=\"ds-tile\" href=\"#\">6</a></div>",
+      "css": ".ds-tiles { display: grid; grid-template-columns: repeat(auto-fill, 38px); gap: 6px; } .ds-tile { position: relative; width: 38px; height: 38px; display: grid; place-items: center; border: 1px solid var(--control-line, #a39b8c); border-radius: 2px; background: var(--surface, #fef9f1); color: var(--text-soft, #4f4f4f); font: 500 12px/1 var(--font-mono, ui-monospace, \"SF Mono\", Menlo, Consolas, monospace); text-decoration: none; } .ds-tile:hover { border-color: var(--line-strong, #6b665d); background: var(--surface-2, #f6edda); } .ds-tile[data-answered] { border-color: color-mix(in srgb, var(--success, #176840) 45%, var(--control-line, #a39b8c)); background: var(--success-soft, #e1eedd); color: var(--success, #176840); } .ds-tile[data-wrong] { border-color: color-mix(in srgb, var(--danger, #b03527) 55%, var(--control-line, #a39b8c)); background: var(--danger-soft, #fae7e1); color: var(--danger, #b03527); } .ds-tile[data-difficult] { border-color: var(--warning, #875009); background: var(--warning-soft, #f7e8cc); color: var(--warning, #875009); } .ds-tile[aria-current=\"step\"] { border-color: var(--primary-solid, #283f7d); background: var(--primary-solid, #283f7d); color: var(--on-primary, #ffffff); } .ds-tile[data-noted]::after { content: \"\"; position: absolute; top: 3px; right: 3px; width: 6px; height: 6px; border-radius: 50%; background: var(--purple, #5f41ab); } .ds-tile:focus-visible { outline: 2px solid var(--primary, #3157ba); outline-offset: 2px; }"
+    },
+    {
+      "name": "標籤",
+      "kind": "chip",
+      "refersTo": "tag",
+      "description": "22px 等寬小標籤，框與底都是目前色的透明混色；色調：深墨線藍、綠、紫、橘。",
+      "html": "<span class=\"ds-tag\">建築法規與實務</span> <span class=\"ds-tag\" data-tone=\"green\">101 年</span> <span class=\"ds-tag\" data-tone=\"purple\">題目詳解</span> <span class=\"ds-tag\" data-tone=\"orange\">構造</span>",
+      "css": ".ds-tag { min-height: 22px; padding: 0 7px; display: inline-flex; align-items: center; border: 1px solid color-mix(in srgb, currentColor 45%, transparent); border-radius: 2px; background: color-mix(in srgb, currentColor 8%, transparent); color: var(--primary-strong, #283f7d); font: 500 11px/1 var(--font-mono, ui-monospace, \"SF Mono\", Menlo, Consolas, monospace); letter-spacing: .03em; white-space: nowrap; } .ds-tag[data-tone=\"green\"] { color: var(--success, #176840); } .ds-tag[data-tone=\"purple\"] { color: var(--purple, #5f41ab); } .ds-tag[data-tone=\"orange\"] { color: var(--warning, #875009); }"
+    },
+    {
+      "name": "側欄項目",
+      "kind": "nav",
+      "refersTo": "nav-item",
+      "description": "40px 高、15px 字、左側 18px 墨線藍線條圖示；滑過淡灰底，目前頁用側欄目前底與深墨線藍 600 字。",
+      "html": "<nav class=\"ds-nav\"><a class=\"ds-nav-item\" href=\"#\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><rect x=\"4\" y=\"5\" width=\"16\" height=\"16\" rx=\"1\"/><path d=\"M16 3v4M8 3v4M4 11h16\"/></svg><span>每日練習</span></a><a class=\"ds-nav-item\" href=\"#\" aria-current=\"page\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><rect x=\"4\" y=\"5\" width=\"16\" height=\"16\" rx=\"1\"/><path d=\"M16 3v4M8 3v4M4 11h16\"/></svg><span>考古題討論版</span></a><a class=\"ds-nav-item\" href=\"#\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><rect x=\"4\" y=\"5\" width=\"16\" height=\"16\" rx=\"1\"/><path d=\"M16 3v4M8 3v4M4 11h16\"/></svg><span>歷屆試題資料集成</span></a></nav>",
+      "css": ".ds-nav { width: 220px; display: grid; gap: 2px; padding: 8px; background: var(--sidebar-surface, var(--surface, #fef9f1)); border-right: 1px solid var(--control-line, #a39b8c); font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, \"Segoe UI\", \"Helvetica Neue\", \"Noto Sans TC\", \"PingFang TC\", \"Microsoft JhengHei\", sans-serif); } .ds-nav-item { min-height: 40px; padding: 3px 6px; display: flex; align-items: center; gap: 8px; border-radius: 2px; color: var(--sidebar-text, var(--text, #373737)); font-size: 15px; line-height: 1.35; text-decoration: none; } .ds-nav-item svg { width: 18px; height: 18px; margin: 0 3px; color: var(--primary, #3157ba); flex: none; } .ds-nav-item:hover { background: var(--sidebar-hover, rgb(55 55 55 / 6%)); } .ds-nav-item[aria-current=\"page\"] { background: var(--sidebar-active, rgb(40 63 125 / 10%)); color: var(--primary-strong, #283f7d); font-weight: 600; } .ds-nav-item:focus-visible { outline: 2px solid var(--primary, #3157ba); outline-offset: 1px; }"
+    },
+    {
+      "name": "面板（一層框）",
+      "kind": "card",
+      "refersTo": "panel",
+      "description": "奶油紙、1px 框線色、2px 轉角、24px 內距；header 下一條鉛筆線，區塊之間虛線墨線，裡面不再有框。",
+      "html": "<section class=\"ds-panel\"><header><div><span class=\"ds-eyebrow\">QUESTION MAP</span><h2>題號導覽</h2></div><strong>15/80</strong></header><p>同一個面板裡的小節用實線分隔。</p><div class=\"ds-panel-dashed\"><p>不同區塊之間用虛線分隔。</p></div></section>",
+      "css": ".ds-panel { padding: 20px; border: 1px solid var(--control-line, #a39b8c); border-radius: 2px; background: var(--surface, #fef9f1); color: var(--text, #373737); font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, \"Segoe UI\", \"Helvetica Neue\", \"Noto Sans TC\", \"PingFang TC\", \"Microsoft JhengHei\", sans-serif); } .ds-panel > header { margin-bottom: 16px; padding-bottom: 12px; display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; border-bottom: 1px solid var(--line, #cfc5ae); } .ds-panel > header div { display: grid; gap: 4px; } .ds-eyebrow { color: var(--muted, #636363); font: 500 11px/1.3 var(--font-mono, ui-monospace, \"SF Mono\", Menlo, Consolas, monospace); letter-spacing: .08em; } .ds-panel h2 { margin: 0; font-size: 16px; font-weight: 600; } .ds-panel > header strong { color: var(--muted, #636363); font: 600 12px/1 var(--font-mono, ui-monospace, \"SF Mono\", Menlo, Consolas, monospace); letter-spacing: .04em; } .ds-panel p { margin: 0; font-size: 14px; line-height: 1.6; } .ds-panel-dashed { margin-top: 16px; padding-top: 16px; border-top: 1px dashed var(--line-strong, #6b665d); }"
+    },
+    {
+      "name": "可點擊大方塊",
+      "kind": "card",
+      "refersTo": "card-clickable",
+      "description": "首頁四科與每日練習總覽的卡：實線框、等寬編號、科目圖示框、標題與連結行；滑過框線變墨線藍，沒有浮起。",
+      "html": "<a class=\"ds-card\" href=\"#\"><span class=\"ds-card-no\">01</span><span class=\"ds-card-icon\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><rect x=\"4\" y=\"5\" width=\"16\" height=\"16\" rx=\"1\"/><path d=\"M16 3v4M8 3v4M4 11h16\"/></svg></span><h2>建築法規與實務</h2><span class=\"ds-card-action\">選擇年份 <svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 12h14\"/><path d=\"M13 6l6 6-6 6\"/></svg></span></a>",
+      "css": ".ds-card { width: 230px; min-height: 260px; padding: 22px 24px; display: flex; flex-direction: column; align-items: flex-start; border: 1px solid var(--control-line, #a39b8c); border-radius: 2px; background: var(--surface, #fef9f1); color: var(--text, #373737); text-decoration: none; font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, \"Segoe UI\", \"Helvetica Neue\", \"Noto Sans TC\", \"PingFang TC\", \"Microsoft JhengHei\", sans-serif); } .ds-card:hover { border-color: var(--primary, #3157ba); } .ds-card:hover .ds-card-action { color: var(--primary-strong, #283f7d); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; } .ds-card-no { color: var(--muted, #636363); font: 500 12px/1 var(--font-mono, ui-monospace, \"SF Mono\", Menlo, Consolas, monospace); letter-spacing: .04em; } .ds-card-icon { width: 72px; height: 72px; margin: 36px 0 22px; display: grid; place-items: center; border: 1px solid color-mix(in srgb, var(--primary, #3157ba) 35%, transparent); border-radius: 2px; background: color-mix(in srgb, var(--primary, #3157ba) 12%, var(--surface, #fef9f1)); color: var(--primary, #3157ba); } .ds-card-icon svg { width: 28px; height: 28px; } .ds-card h2 { margin: 0; font-size: 21px; font-weight: 600; line-height: 1.4; } .ds-card-action { margin-top: auto; padding-top: 24px; display: inline-flex; align-items: center; gap: 6px; color: var(--primary, #3157ba); font-size: 14px; font-weight: 500; } .ds-card:focus-visible { outline: 2px solid var(--primary, #3157ba); outline-offset: 3px; }"
+    },
+    {
+      "name": "通知紙條",
+      "kind": "custom",
+      "refersTo": "toast",
+      "description": "右下角的浮紙：提亮奶油紙、墨線框、6px 圓角、硬邊偏移陰影，左側色調圖示格。",
+      "html": "<div class=\"ds-toast\" role=\"status\"><span class=\"ds-toast-mark\">✓</span><div><p class=\"ds-toast-title\">筆記已儲存</p><p class=\"ds-toast-desc\">登入後會同步到雲端。</p></div></div>",
+      "css": ".ds-toast { width: 320px; min-height: 64px; padding: 12px 12px 12px 14px; display: flex; align-items: center; gap: 11px; border: 1px solid var(--line-strong, #6b665d); border-radius: 6px; background: var(--surface-elevated, #fffbf3); color: var(--text, #373737); box-shadow: var(--shadow-lg, 6px 6px 0 rgb(55 55 55 / 10%)); font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, \"Segoe UI\", \"Helvetica Neue\", \"Noto Sans TC\", \"PingFang TC\", \"Microsoft JhengHei\", sans-serif); } .ds-toast-mark { width: 28px; height: 28px; flex: none; display: grid; place-items: center; border: 1px solid currentColor; border-radius: 2px; background: var(--success-soft, #e1eedd); color: var(--success, #176840); font-size: 14px; } .ds-toast-title { margin: 0; font-size: 14px; font-weight: 600; } .ds-toast-desc { margin: 3px 0 0; color: var(--muted, #636363); font-size: 12px; line-height: 1.5; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "建築師的方格筆記本",
+    "overview": "這個介面是一本建築師隨身的方格筆記本。頁面本身是米色方格紙，24px 一格；題目、作答紀錄、筆記與錯題都寫在同一本上，用奶油色的紙張面板、一圈細墨線框和實線、虛線的分隔來整理，而不是用顏色塊或陰影堆疊。使用者每天翻開它練習幾題，所以它必須安靜、不打擾：裝飾退到零，只留下讀題與作答需要的結構，長時間使用也不疲勞。\n\n整本筆記只有一支筆：墨線藍。它畫出目前所在的題號、連結、主要按鈕與焦點框，其餘一律是墨色文字與紙色。綠、紅、琥珀、紫四個狀態色只用來回報答對、答錯、難題標記與筆記，不當裝飾。操作元件是筆記本裡的工具：輕、安靜、不搶題目。按鈕、輸入框、選項列都是一圈細框，按下去一定有反應，但從不浮起、放大或發光。\n\n風格參考來源是 illoca.com 的 legal、changelog 與 community 頁：方格紙背景、以線條與外框分區、靜態的排版。配色取自參考頁並把藍色加深，讓文字直接放在方格紙上也清楚。深色模式與 24px 方格是本站自行設計的暖黑「墨紙方格」，參考站沒有深色版本。",
+    "keyCharacteristics": [
+      "米色方格紙底（24px 格），內容放在奶油色面板上，面板只有一圈 1px 細框、2px 近直角。",
+      "一層框原則：外面有框，裡面只用線分隔；裡面需要框，外面就改用線。",
+      "一支筆：墨線藍是唯一的強調色，狀態色只報告作答結果。",
+      "標題中等粗細（600）；日期、年度、題號、數量用等寬字小標。",
+      "平面為主，沒有漸層與浮起；只有離開紙面的下拉選單、對話框、通知有一道硬邊偏移陰影。",
+      "每個顏色都有深色雙生子，元件只用 CSS 變數，使用者可換官方配色或自訂六色。"
+    ],
+    "rules": [
+      {
+        "name": "一支筆規則",
+        "body": "墨線藍是整本筆記唯一的強調色，只畫目前的題號、連結、主要按鈕與焦點；綠、紅、琥珀、紫只回報作答狀態與筆記，不做裝飾。一個畫面上若出現第二種「強調」，就是錯的。",
+        "section": "colors"
+      },
+      {
+        "name": "雙生子規則",
+        "body": "每個顏色 token 都有深色雙生子，元件只寫 `var(--token)`，從不寫死色碼。設定頁可以換官方配色（米紙方格、現代紙白、藍圖晨光、松霧綠、鳶尾晨紫；墨紙方格、現代炭黑、藍圖深夜、深潮墨綠、夜幕鳶紫）或自訂六色，衍生 token 由程式計算並驗證對比（文字與強調色對紙面至少 4.5:1，淡墨至少 3:1）。只用 token 的元件才會跟著換色。",
+        "section": "colors"
+      },
+      {
+        "name": "等寬標註規則",
+        "body": "凡是數字、日期、年度、題號、數量與眉標，一律等寬字加字距，11px 到 12px，淡墨或深墨線藍；內文與標題永遠不用等寬。",
+        "section": "typography"
+      },
+      {
+        "name": "題目最大規則",
+        "body": "題幹與選項是畫面上最大的內文（18px、可由使用者放大），所有介面文字停在 13px 到 14px，標題也不壓過題目的份量。",
+        "section": "typography"
+      },
+      {
+        "name": "一層框規則",
+        "body": "一個面板只有一圈框。外面有框的，裡面只放文字、線和操作元件；裡面需要框的（年度分組、題目列、可點擊方塊），外面就改用線分隔。按鈕、輸入框、選項列、標籤是操作元件，不算框，可以放在面板裡。",
+        "section": "layout"
+      },
+      {
+        "name": "依容器收合規則",
+        "body": "頁面版面用 `@container` 在頁面根元素上收合，不用視窗 `@media`；因為側欄佔掉的寬度會變。只有側欄本身與全站外框用視窗寬度（800px）判斷。",
+        "section": "layout"
+      },
+      {
+        "name": "浮紙才有影規則",
+        "body": "貼在頁面上的東西一律沒有陰影；只有以 popup 或 dialog 形式離開紙面的層才用 `--shadow-lg` 硬陰影，而且永遠是硬邊偏移，不是模糊光暈。",
+        "section": "elevation"
+      },
+      {
+        "name": "近直角規則",
+        "body": "2px 給紙，4px 給操作元件，6px 給浮紙，0 給選項列，50% 只給單選鈕與圓點。不出現 8px 以上的圓角。",
+        "section": "shapes"
+      }
+    ],
+    "dos": [
+      "把頁面放在 24px 方格的米紙上，內容用奶油紙面板承載，面板只有一圈 1px 框線色實線和 2px 轉角。",
+      "遵守一層框規則：面板內用 `--rule` 實線分小節、`--rule-dashed` 虛線分區塊；需要內框時把外框拿掉改用線。",
+      "只用 `var(--token)` 取色，讓淺色、深色、官方配色與自訂配色全部跟著變。",
+      "把墨線藍留給目前題號、連結、主要按鈕與焦點；狀態色只回報答對、答錯、難題、筆記。",
+      "數字、日期、年度、題號、數量與眉標用等寬字 11px 到 12px 加字距；題幹與選項保持 18px 並可由使用者放大。",
+      "操作元件統一 40px 高、4px 圓角、1px 框線；主要按鈕是深墨線藍實心白字，一個畫面一顆。",
+      "選項列一律用共用的 OptionGroup 或 QuestionAnswerPanel 元件，不在頁面裡重畫。",
+      "頁面版面用頁面根元素的 `@container` 收合；側欄在 800px 以下收成抽屜。",
+      "只給離開紙面的下拉選單、對話框、通知加 `--shadow-lg` 硬邊偏移陰影；其餘保持平面。",
+      "所有可聚焦元件用 2px 實線墨線藍外框（offset 2px）表示焦點，並尊重 `prefers-reduced-motion`。"
+    ],
+    "donts": []
+  }
+}
