@@ -1,7 +1,10 @@
 /* Exams page: the question, the discussion, the compose form and the navigator are each
-   ONE framed cream panel; inside them only rules separate the groups (no inner boxes). */
-.interactionGuard {
-  display: contents;
+   ONE framed cream panel; inside them only rules separate the groups (no inner boxes).
+   Layout follows the page's own width, not the viewport: the app sidebar takes a varying
+   share of it, so the breakpoints at the end are container queries on .page. */
+.page {
+  min-width: 0;
+  container-type: inline-size;
 }
 
 .questionCard,
@@ -23,17 +26,21 @@
 .contentColumn {
   min-width: 0;
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 24px;
 }
 
-/* Question panel: tags row | source + number + prompt + answer rows | previous / next. */
+/* Question panel: tags row | source + number + prompt + answer rows | previous / next.
+   The explicit track keeps the header's minimum width from pushing the rows past the frame. */
 .questionCard {
   min-width: 0;
   padding: 24px;
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 16px;
 }
 
+/* Tags wrap beside the difficult toggle, which keeps its width (difficult-button.module.css). */
 .questionCard > header {
   padding-bottom: 14px;
   display: flex;
@@ -294,6 +301,7 @@
 .composeCard {
   padding: 24px;
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 14px;
 }
 
@@ -343,32 +351,22 @@
   line-height: 1.6;
 }
 
-@media (max-width: 950px) {
+/* ---- Narrower pages ---- */
+
+/* Under 900px the 340px navigator would leave the question under 540px: one column, with the
+   navigator after the content (a sticky map would otherwise cover the posts). */
+@container (max-width: 900px) {
   .examsLayout {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .questionNavigator {
     position: static;
-  }
-
-  .questionNavigator {
     max-height: none;
   }
 }
 
-@media (max-width: 680px) {
-  .questionCard > header {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .questionNavigation {
-    flex-wrap: wrap;
-  }
-}
-
-@media (max-width: 600px) {
+@container (max-width: 640px) {
   .examsLayout,
   .contentColumn {
     gap: 16px;
@@ -379,5 +377,17 @@
   .postsCard,
   .composeCard {
     padding: 16px;
+  }
+}
+
+/* Phone widths: the toggle goes under the tags rather than squeezing them to one chip a line. */
+@container (max-width: 480px) {
+  .questionCard > header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .questionNavigation {
+    flex-wrap: wrap;
   }
 }

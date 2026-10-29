@@ -1,5 +1,11 @@
 /* Difficult toggle: the standard framed Button (40px / 14px, no size override so it lines up
-   with the Buttons beside it); pressed = amber tint fill. */
+   with the Buttons beside it); pressed = amber tint fill. The label never wraps or shrinks:
+   in a tight row (tags, actions) the neighbours wrap instead. */
+.button {
+  flex: none;
+  white-space: nowrap;
+}
+
 .button.button[aria-pressed='true'] {
   border-color: var(--warning);
   background: var(--warning-soft);

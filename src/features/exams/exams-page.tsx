@@ -297,7 +297,7 @@ export function ExamsPage({
 
   return (
     <div
-      className={styles.interactionGuard}
+      className={styles.page}
       inert={!routeHydrated || !hydrated}
     >
       <QuestionSelector
