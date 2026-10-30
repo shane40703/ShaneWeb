@@ -1001,6 +1001,15 @@
   width: 100%;
 }
 
+/* A short window scrolls the whole column, so its end is never out of reach. */
+.paperQuiz .sidebar {
+  overflow-y: auto;
+}
+
+.paperQuiz .sidebar .navigator {
+  min-height: 178px;
+}
+
 .navigatorLegend {
   flex: 0 0 auto;
   padding: 10px 16px;
@@ -1520,6 +1529,13 @@
   }
 
   /* Three buttons and the time on a 320px phone: down to what each needs. */
+/* The year tag already says which question; it needs the room on the narrowest phones. */
+@container (max-width: 320px) {
+  .paperQuiz .challengeActions > strong {
+    display: none;
+  }
+}
+
   .paperQuiz .timer svg {
     display: none;
   }

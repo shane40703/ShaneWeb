@@ -22,7 +22,9 @@
 .popup {
   width: 100%;
   max-height: 80vh;
-  padding: 16px 16px 24px;
+  /* Block padding sits on what sticks, not here: browsers place sticky edges differently
+     inside a padded scroller. */
+  padding: 0 16px;
   overflow-y: auto;
   pointer-events: auto;
   border-top: 1px solid var(--line-strong);
@@ -34,6 +36,10 @@
   transition: transform 240ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+.popup > fieldset:last-child {
+  padding-bottom: 24px;
+}
+
 .popup[data-swiping] {
   transition: none;
 }
@@ -43,10 +49,15 @@
   transform: translateY(100%);
 }
 
-/* Title, position and the close button over a rule; the tiles follow. */
+/* Title, position and the close button over a rule; the tiles follow, and scroll under it so
+   the way out stays in reach on a long paper. */
 .header {
-  margin-bottom: 14px;
-  padding-bottom: 12px;
+  margin: 0 -16px 14px;
+  padding: 16px 16px 12px;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--surface-elevated);
   display: flex;
   align-items: center;
   gap: 10px;
@@ -72,10 +83,10 @@
 
 /* Runs edge to edge and stays on the sheet's bottom edge while the tiles scroll under it. */
 .footer {
-  margin: 16px -16px -24px;
+  margin: 16px -16px 0;
   padding: 12px 16px max(12px, env(safe-area-inset-bottom));
   position: sticky;
-  bottom: -24px;
+  bottom: 0;
   display: grid;
   gap: 10px;
   border-top: var(--rule);

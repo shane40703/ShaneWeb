@@ -5,6 +5,13 @@ import { QuestionNumberPicker } from '@/components/question-selector';
 import { Button } from '@/components/ui/ui';
 import styles from './question-map-drawer.module.css';
 
+/** A long paper would otherwise open the sheet with the current tile below its fold. */
+function showCurrentTile(popup: HTMLElement | null) {
+  popup
+    ?.querySelector('[aria-pressed="true"]')
+    ?.scrollIntoView?.({ block: 'center', behavior: 'instant' });
+}
+
 /**
  * The 題號導覽 of a one-column page as a bottom sheet: a 題號 button opens it, inside are the
  * same number tiles as the aside (QuestionNumberPicker), and choosing one navigates and closes
@@ -46,7 +53,7 @@ export function QuestionMapDrawer({
       <Drawer.Portal>
         <Drawer.Backdrop className={styles.backdrop} />
         <Drawer.Viewport className={styles.viewport}>
-          <Drawer.Popup className={styles.popup}>
+          <Drawer.Popup className={styles.popup} ref={showCurrentTile}>
             <header className={styles.header}>
               <Drawer.Title className={styles.title}>題號導覽</Drawer.Title>
               <strong className={styles.position}>
