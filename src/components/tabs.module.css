@@ -1,23 +1,28 @@
-/* Underline tabs: no frame, a rule under the list, the active tab marked by a 2px ink-blue
-   line (Base UI's indicator) that slides between tabs. */
+/* Tab strip: a translucent sheet laid over the graph paper. The grid shows through it and it
+   draws no line of its own, which would read as one more grid line. The active tab is the same
+   paper at full opacity: Base UI's indicator, which slides between the tabs, carries that base
+   and the 2px ink-blue line along the strip's bottom edge. */
 .root {
   min-width: 0;
 }
 
 .list {
   display: flex;
-  gap: 4px;
   position: relative;
-  border-bottom: var(--rule);
+  isolation: isolate;
+  border-radius: var(--radius-frame);
+  background: color-mix(in srgb, var(--surface-elevated) 55%, transparent);
 }
 
+/* Above the indicator, which comes after the tabs in the list. */
 .tab {
-  min-height: 40px;
-  padding: 0 12px;
+  min-height: 44px;
+  padding: 0 16px;
   display: inline-flex;
   align-items: center;
+  position: relative;
+  z-index: 1;
   border: 0;
-  border-radius: var(--radius-frame) var(--radius-frame) 0 0;
   background: transparent;
   color: var(--text-soft);
   font: inherit;
@@ -28,9 +33,10 @@
   cursor: pointer;
 }
 
+/* Still translucent: only the active tab goes opaque. */
 .tab:hover {
   color: var(--text);
-  background: var(--surface-2);
+  background: color-mix(in srgb, var(--surface-elevated) 50%, transparent);
 }
 
 .tab[data-active] {
@@ -50,11 +56,13 @@
 
 .indicator {
   position: absolute;
-  bottom: -1px;
+  top: 0;
+  bottom: 0;
   left: var(--active-tab-left);
   width: var(--active-tab-width);
-  height: 2px;
-  background: var(--primary);
+  border-bottom: 2px solid var(--primary);
+  border-radius: var(--radius-frame) var(--radius-frame) 0 0;
+  background: var(--surface-elevated);
   transition:
     left 180ms ease,
     width 180ms ease;
@@ -78,4 +86,12 @@
 
 .panel {
   min-width: 0;
+}
+
+/* Phone widths: the tabs share the strip, as the result view tabs do. */
+@container (max-width: 480px) {
+  .tab {
+    flex: 1;
+    justify-content: center;
+  }
 }

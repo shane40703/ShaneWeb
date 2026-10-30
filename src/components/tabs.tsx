@@ -4,7 +4,7 @@ import styles from './tabs.module.css';
 
 const TabsLabelContext = createContext<string | undefined>(undefined);
 
-/** Underline tabs (no frame): the list sits on the paper with a rule under it. */
+/** Tab strip: a translucent list on the paper, the active tab opaque over an ink-blue line. */
 export function TabsRoot<T extends string>({
   value,
   onValueChange,
