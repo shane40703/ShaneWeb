@@ -25,7 +25,7 @@ describe('question content renderer', () => {
 
     const { container } = render(<QuestionPrompt question={question!} />);
     const text = screen.getByText(/衝擊韌性試片結果圖/);
-    const image = screen.getByRole('img', { name: /第 1 題題幹引用圖示/ });
+    const image = screen.getByRole('img', { name: '第 1 題附圖' });
     expect(
       text.compareDocumentPosition(image) & Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
@@ -35,12 +35,12 @@ describe('question content renderer', () => {
 
     fireEvent.click(
       screen.getByRole('button', {
-        name: /放大題目圖片.*第 1 題題幹引用圖示/,
+        name: /放大題目圖片.*第 1 題附圖/,
       }),
     );
     expect(
       screen.getByRole('dialog', {
-        name: /放大檢視.*第 1 題題幹引用圖示/,
+        name: /放大檢視.*第 1 題附圖/,
       }),
     ).toBeInTheDocument();
     fireEvent.click(
