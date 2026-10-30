@@ -698,7 +698,9 @@ describe('PracticePage answering', () => {
     const view = renderAt('/practice/quiz?q=1');
     await screen.findByRole('region', { name: '題目與選項' });
     chooseOption('選項 B');
+    const later = vi.spyOn(Date, 'now').mockReturnValue(Date.now() + 1000);
     fireEvent.click(screen.getByText('選項 B').closest('label')!, { detail: 2 });
+    later.mockRestore();
     expect(optionRadio('選項 B')).toHaveAttribute('aria-checked', 'false');
     expect(stored()!.drafts).toEqual({});
     expect(screen.getByRole('button', { name: '確認答案' })).toBeDisabled();

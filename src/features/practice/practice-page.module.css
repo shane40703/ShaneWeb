@@ -531,6 +531,17 @@
   min-width: 0;
 }
 
+.visuallyHidden {
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  position: absolute;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 /* The question panel: one frame; verdict, explanation and notes are rule-separated sections. */
 .challenge {
   /* clip, not hidden: hidden would turn the card into the sticky footer's scroller. */
@@ -738,6 +749,31 @@
   letter-spacing: 0.04em;
 }
 
+/* Only where there is a keyboard to press and room beside the clock. */
+.shortcutHint {
+  display: none;
+}
+
+@container (width > 900px) {
+  @media (hover: hover) {
+    .shortcutHint {
+      margin: 0 auto 0 8px;
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+  }
+}
+
+.shortcutHint kbd {
+  padding: 0 4px;
+  border: 1px solid var(--control-line);
+  border-radius: var(--radius-frame);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
 .navButtons {
   margin-left: auto;
   display: flex;
@@ -832,6 +868,7 @@
 
 .scoreboard small {
   grid-column: 1 / -1;
+  font-size: inherit;
   text-align: center;
 }
 
@@ -883,7 +920,7 @@
 
 .navigator > header h2 {
   margin: 0;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 600;
 }
 

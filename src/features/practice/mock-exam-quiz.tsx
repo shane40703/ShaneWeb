@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, type KeyboardEvent } from 'react';
 import {
   IconAlertTriangle,
   IconArrowLeft,
@@ -62,6 +62,7 @@ export function MockExamQuiz({
   onLeave: () => void;
 }) {
   const { state, dispatch } = useAppState();
+  const headingRef = useRef<HTMLHeadingElement>(null);
   const numbersRef = useRef<HTMLDivElement>(null);
   const total = paper.questionCount;
   const ids = Array.from({ length: total }, (_, position) =>
@@ -86,8 +87,54 @@ export function MockExamQuiz({
     }
   }, [index]);
 
+  // Arriving, or a button that goes away (上一題 on the first question, 下一題 on the
+  // last), leaves focus on the page; the shortcuts and the keyboard need it in the paper.
+  useEffect(() => {
+    const focused = document.activeElement;
+    if (focused === document.body || focused?.matches(':disabled')) {
+      headingRef.current?.focus({ preventScroll: true });
+    }
+  }, [index, status]);
+
+  /** Active only with focus in the paper, and never on a dialog or the browser's keys. */
+  function handleShortcut(event: KeyboardEvent<HTMLElement>) {
+    if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+    if (event.repeat || !(event.target instanceof Element)) return;
+    if (event.target.closest('[role="dialog"], [role="alertdialog"]')) return;
+    // event.code: with 注音 on, event.key is ㄙ instead of n.
+    const digit = /^(?:Digit|Numpad)([1-9])$/.exec(event.code)?.[1];
+    if (digit && question) {
+      const option = Number(digit) - 1;
+      const eliminated = current?.eliminatedOptions?.includes(option);
+      if (
+        option < question.options.length &&
+        !eliminated &&
+        current?.selected !== option
+      ) {
+        onSelect(option);
+      }
+    } else if (event.code === 'KeyN' && !isLast) {
+      onGoTo(index + 1);
+    } else if (event.code === 'KeyP' && index > 0) {
+      onGoTo(index - 1);
+    }
+  }
+
   return (
-    <section className={styles.practice} aria-label="歷屆試題模擬考作答">
+    <section
+      className={styles.practice}
+      aria-label="歷屆試題模擬考作答"
+      onKeyDown={handleShortcut}
+    >
+      <h2
+        ref={headingRef}
+        className={styles.visuallyHidden}
+        tabIndex={-1}
+        aria-live="polite"
+        aria-atomic="true"
+      >
+        第 {index + 1} 題，共 {total} 題
+      </h2>
       <div className={styles.questionArea}>
         {status === 'loading' ? (
           <div className={styles.loading}>
@@ -151,6 +198,11 @@ export function MockExamQuiz({
             </div>
             <footer>
               <ElapsedClock timer={timer} savedSeconds={summary.elapsedSeconds} />
+              <p className={styles.shortcutHint}>
+                <kbd>1</kbd>～<kbd>{question.options.length}</kbd> 選答・<kbd>N</kbd>{' '}
+                下一題・
+                <kbd>P</kbd> 上一題
+              </p>
               <div className={styles.navButtons}>
                 <Button disabled={index === 0} onClick={() => onGoTo(index - 1)}>
                   <IconArrowLeft size={17} aria-hidden="true" /> 上一題

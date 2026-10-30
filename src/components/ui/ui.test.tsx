@@ -27,22 +27,44 @@ describe('Base UI controls', () => {
     expect(onValueChange).not.toHaveBeenCalled();
   });
 
-  it('clears an answer from its label or radio, including a quick second click', async () => {
+  it('clears an answer from its label or radio on a later click', async () => {
+    let now = 1_000_000;
+    const clock = vi.spyOn(Date, 'now').mockImplementation(() => now);
     const user = userEvent.setup();
     render(<ControlledOptions />);
     const radios = screen.getAllByRole('radio');
     await user.click(screen.getByText('第一個答案'));
     expect(radios[0]).toHaveAttribute('aria-checked', 'true');
+    now += 1000;
     await user.click(screen.getByText('第一個答案'));
     expect(radios.every(radio => radio.getAttribute('aria-checked') === 'false')).toBe(true);
     await user.click(radios[1]);
     expect(radios[1]).toHaveAttribute('aria-checked', 'true');
+    now += 1000;
     await user.click(radios[1]);
     expect(radios[1]).toHaveAttribute('aria-checked', 'false');
-    await user.dblClick(radios[0]);
-    expect(radios[0]).toHaveAttribute('aria-checked', 'false');
     await user.click(screen.getByText('刪去的答案'));
     expect(radios[2]).toHaveAttribute('aria-checked', 'false');
+    clock.mockRestore();
+  });
+
+  it('keeps the answer through a double-tap, even when it replaces another one', async () => {
+    const user = userEvent.setup();
+    render(<ControlledOptions />);
+    const radios = screen.getAllByRole('radio');
+    await user.dblClick(screen.getByText('第一個答案'));
+    expect(radios[0]).toHaveAttribute('aria-checked', 'true');
+    await user.dblClick(screen.getByText('第二個答案'));
+    expect(radios[1]).toHaveAttribute('aria-checked', 'true');
+    expect(radios[0]).toHaveAttribute('aria-checked', 'false');
+  });
+
+  it('names every radio by its letter and text', () => {
+    render(<ControlledOptions />);
+    const radios = screen.getAllByRole('radio');
+    expect(radios[0]).toHaveAccessibleName('A 第一個答案');
+    expect(radios[1]).toHaveAccessibleName('B 第二個答案');
+    expect(radios[2]).toHaveAccessibleName('C 刪去的答案');
   });
 
   it('retains keyboard selection, allows Space to clear and locks disabled answers', async () => {

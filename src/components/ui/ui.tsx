@@ -1,4 +1,4 @@
-import { type ComponentProps, type ReactNode, createContext, useContext, useId } from 'react';
+import { type ComponentProps, type ReactNode, createContext, useContext, useId, useRef } from 'react';
 import { AlertDialog } from '@base-ui/react/alert-dialog';
 import { Button as BaseButton } from '@base-ui/react/button';
 import { Drawer } from '@base-ui/react/drawer';
@@ -17,7 +17,7 @@ import {
   IconMenu2,
   IconX,
 } from '@tabler/icons-react';
-import { OriginalOptionLabel, originalOptionText } from '@/components/original-option-label';
+import { OriginalOptionLabel } from '@/components/original-option-label';
 import styles from './ui.module.css';
 
 function cx(...classes: Array<string | false | null | undefined>) {
@@ -113,6 +113,9 @@ export function SimpleSelect<T extends string>({
   );
 }
 
+/** Longer than a double-tap, shorter than a change of mind. */
+const REPEAT_TAP_MS = 500;
+
 export function OptionGroup({
   label,
   options,
@@ -135,6 +138,8 @@ export function OptionGroup({
 }) {
   const optionId = useId();
   const eliminated = new Set(eliminatedValues);
+  // When the current answer was picked: a double-tap must not pick it and clear it again.
+  const pickedAt = useRef(0);
 
   return (
     <Field.Root className={styles.optionField}>
@@ -143,13 +148,15 @@ export function OptionGroup({
         aria-label={label}
         value={value === undefined ? '' : String(value)}
         disabled={disabled}
-        onValueChange={(nextValue) => onValueChange(Number(nextValue))}
+        onValueChange={(nextValue) => {
+          pickedAt.current = Date.now();
+          onValueChange(Number(nextValue));
+        }}
         className={styles.options}
       >
         {options.map((option, index) => {
           const optionLetter = String.fromCharCode(65 + index);
           const optionEliminated = eliminated.has(index);
-          const originalLabel = originalOptionText(originalOptionIndexes?.[index]);
 
           return (
             <div
@@ -164,12 +171,14 @@ export function OptionGroup({
                   if (disabled || optionEliminated || value !== index) return;
                   // Cover the whole label, including text and Base UI's hidden input.
                   event.preventDefault();
+                  // Keyboard activation reports detail 0 and is always deliberate.
+                  if (event.detail > 0 && Date.now() - pickedAt.current < REPEAT_TAP_MS) return;
                   onValueChange(undefined);
                 }}
               >
                 <Radio.Root
                   value={String(index)}
-                  aria-labelledby={originalLabel ? `${optionId}-letter-${index} ${optionId}-text-${index}` : undefined}
+                  aria-labelledby={`${optionId}-letter-${index} ${optionId}-text-${index}`}
                   className={styles.radio}
                   disabled={optionEliminated}
                 >
