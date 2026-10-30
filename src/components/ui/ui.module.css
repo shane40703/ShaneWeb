@@ -467,6 +467,13 @@
   color: var(--danger);
 }
 
+/* Irreversible but not destructive (report): amber box; the confirm button is then primary. */
+.dialogIconWarning {
+  border-color: var(--warning);
+  background: var(--warning-soft);
+  color: var(--warning);
+}
+
 .dialogTitle {
   margin: 0;
   font-size: 19px;

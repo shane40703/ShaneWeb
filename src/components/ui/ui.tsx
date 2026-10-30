@@ -286,12 +286,15 @@ export function ConfirmDialog({
   description,
   confirmLabel,
   onConfirm,
+  tone = 'danger',
 }: {
   trigger: ReactNode;
   title: string;
   description: string;
   confirmLabel: string;
   onConfirm: () => void;
+  /** danger: destructive (red icon box, danger confirm); warning: irreversible but not destructive (amber icon box, primary confirm). */
+  tone?: 'danger' | 'warning';
 }) {
   return (
     <AlertDialog.Root>
@@ -300,7 +303,7 @@ export function ConfirmDialog({
         <AlertDialog.Backdrop className={styles.backdrop} />
         <AlertDialog.Viewport className={styles.dialogViewport}>
           <AlertDialog.Popup className={styles.dialogPopup}>
-            <div className={styles.dialogIcon}>
+            <div className={cx(styles.dialogIcon, tone === 'warning' && styles.dialogIconWarning)}>
               <IconAlertTriangle size={25} stroke={2} aria-hidden="true" />
             </div>
             <AlertDialog.Title className={styles.dialogTitle}>{title}</AlertDialog.Title>
@@ -312,7 +315,7 @@ export function ConfirmDialog({
                 取消
               </AlertDialog.Close>
               <AlertDialog.Close
-                className={cx(styles.button, styles.danger)}
+                className={cx(styles.button, tone === 'warning' ? styles.primary : styles.danger)}
                 onClick={onConfirm}
               >
                 {confirmLabel}

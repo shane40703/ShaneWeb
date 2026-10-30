@@ -1,4 +1,5 @@
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ToastProvider } from '@/components/ui/ui';
 import { CloudSyncProvider } from '@/components/cloud-sync-provider';
@@ -244,5 +245,39 @@ describe('ExamsPage question loading', () => {
     expect(screen.getByRole('button', { name: '送出共享投稿' })).toBeInTheDocument();
     expect(screen.queryByRole('region', { name: '題目選項' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: '標記為難題' })).not.toBeInTheDocument();
+  });
+
+  it('asks for confirmation before reporting a post', async () => {
+    const user = userEvent.setup();
+    renderPage();
+    fillRichEditor(screen.getByLabelText('內容'), '需要檢舉的投稿');
+    fireEvent.click(screen.getByRole('button', { name: '送出共享投稿' }));
+    await screen.findByText('需要檢舉的投稿');
+
+    await user.click(screen.getByRole('button', { name: '檢舉' }));
+    const cancel = await screen.findByRole('alertdialog');
+    expect(cancel).toHaveTextContent('檢舉這則內容？');
+    await user.click(within(cancel).getByRole('button', { name: '取消' }));
+    await waitFor(() => expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument());
+    expect(screen.getByRole('button', { name: '檢舉' })).toBeEnabled();
+    expect(screen.queryByText('已送出檢舉')).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: '檢舉' }));
+    const confirm = await screen.findByRole('alertdialog');
+    await user.click(within(confirm).getByRole('button', { name: '確認檢舉' }));
+    expect(await screen.findByRole('button', { name: '已檢舉' })).toBeDisabled();
+    expect(await screen.findByText('已送出檢舉')).toBeInTheDocument();
+  });
+
+  it('keeps the edit actions below the editor', async () => {
+    renderPage();
+    fillRichEditor(screen.getByLabelText('內容'), '要編輯的投稿');
+    fireEvent.click(screen.getByRole('button', { name: '送出共享投稿' }));
+    await screen.findByText('要編輯的投稿');
+
+    fireEvent.click(screen.getByRole('button', { name: '編輯' }));
+    const actions = screen.getByRole('button', { name: '儲存修改' }).parentElement!;
+    expect(actions.className).toMatch(/editActions/);
+    expect(within(actions).getByRole('button', { name: '取消' })).toBeInTheDocument();
   });
 });

@@ -266,8 +266,16 @@ export function ExamsPage({
   async function runPostAction(action: () => Promise<void>, title: string) {
     try {
       await action();
+      return true;
     } catch (reason) {
       notify(title, reason instanceof Error ? reason.message : '請稍後再試。', 'error');
+      return false;
+    }
+  }
+
+  async function reportPost(postId: string) {
+    if (await runPostAction(() => shared.reportPost(postId), '無法送出檢舉')) {
+      notify('已送出檢舉', undefined, 'info');
     }
   }
 
@@ -396,7 +404,7 @@ export function ExamsPage({
                           ariaLabel="編輯投稿內容"
                           maxLength={5000}
                         />
-                        <div>
+                        <div className={styles.editActions}>
                           <Button onClick={() => void saveEditedPost(post.id)}>
                             儲存修改
                           </Button>
@@ -419,17 +427,18 @@ export function ExamsPage({
                             <span>匿名回覆・{formatDateTime(reply.createdAt)}</span>
                             <p><RichText>{reply.content}</RichText></p>
                             {shared.user && reply.authorId === shared.user.uid ? (
-                              <Button
-                                variant="ghost"
-                                onClick={() =>
+                              <ConfirmDialog
+                                trigger={<Button variant="ghost">刪除回覆</Button>}
+                                title="刪除這則回覆？"
+                                description="刪除後無法復原。"
+                                confirmLabel="確認刪除"
+                                onConfirm={() =>
                                   void runPostAction(
                                     () => shared.deleteReply(post.id, reply.id),
                                     '刪除回覆失敗',
                                   )
                                 }
-                              >
-                                刪除回覆
-                              </Button>
+                              />
                             ) : null}
                           </div>
                         ))}
@@ -459,18 +468,21 @@ export function ExamsPage({
                         <IconNotebook size={17} stroke={2} aria-hidden="true" />
                         加入我的筆記
                       </Button>
-                      <Button
-                        variant="ghost"
-                        disabled={post.reported}
-                        onClick={() =>
-                          void runPostAction(
-                            () => shared.reportPost(post.id),
-                            '無法送出檢舉',
-                          )
+                      <ConfirmDialog
+                        tone="warning"
+                        trigger={
+                          <Button
+                            variant="ghost"
+                            disabled={post.reported || (shared.enabled && !shared.user)}
+                          >
+                            {post.reported ? '已檢舉' : '檢舉'}
+                          </Button>
                         }
-                      >
-                        {post.reported ? '已檢舉' : '檢舉'}
-                      </Button>
+                        title="檢舉這則內容？"
+                        description="檢舉後無法取消，網站管理者會審閱這則內容。"
+                        confirmLabel="確認檢舉"
+                        onConfirm={() => void reportPost(post.id)}
+                      />
                       {post.ownedByCurrentUser ? (
                         <>
                           <Button
@@ -485,7 +497,7 @@ export function ExamsPage({
                           </Button>
                           <ConfirmDialog
                             trigger={
-                              <Button variant="danger">
+                              <Button variant="ghost" className={styles.deleteAction}>
                                 <IconTrash size={16} stroke={2} aria-hidden="true" />
                                 刪除
                               </Button>

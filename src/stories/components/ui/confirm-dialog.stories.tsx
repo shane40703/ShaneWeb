@@ -4,14 +4,15 @@ import { fn } from 'storybook/test';
 import { Button, ConfirmDialog } from '@/components/ui/ui';
 
 /**
- * 刪除、清除前跳出的確認視窗。網站上的四種用途並排，按下按鈕才跳出視窗：
+ * 刪除、清除、檢舉前跳出的確認視窗。網站上的五種用途並排，按下按鈕才跳出視窗：
  * 我的筆記的「刪除筆記」、歷屆試題作答履歷的「清除第 2 次紀錄」、考古題討論版討論區刪除自己的
- * 共享投稿、速記圖庫管理的「下架」。
+ * 共享投稿、速記圖庫管理的「下架」，以及考古題討論版的「檢舉」。前四種是 danger（紅色圖示格、
+ * 紅字確認鈕）；檢舉是 warning（琥珀色圖示格、確認鈕是主要按鈕），因為不可取消但不會刪掉東西。
  *
  * 畫面上可以操作看到：按任一個按鈕跳出確認視窗（用滑鼠按開時焦點在「取消」但不畫焦點框；
  * 用 Tab 移到按鈕再按 Enter 開啟時會畫出焦點框），按「取消」、確認按鈕或 Esc 關閉（按背景不會
  * 關閉，確認按鈕記在 Actions）。
- * 第一個「刪除筆記」的文字可以用 Controls 調整。
+ * 第一個「刪除筆記」的文字與 tone 可以用 Controls 調整。
  */
 const meta = {
   title: 'Components/基礎 UI/ConfirmDialog',
@@ -27,8 +28,12 @@ const meta = {
     description: '文字與上傳的筆記圖片都會刪除，且無法復原。',
     confirmLabel: '確認刪除',
     onConfirm: fn(),
+    tone: 'danger',
   },
-  argTypes: { trigger: { control: false } },
+  argTypes: {
+    trigger: { control: false },
+    tone: { control: 'inline-radio', options: ['danger', 'warning'] },
+  },
 } satisfies Meta<typeof ConfirmDialog>;
 
 export default meta;
@@ -71,6 +76,14 @@ export const 全部用途: Story = {
         title="下架「構造高度限制整理」？"
         description="只從圖庫清單移除；原圖及索引保留於專案，可透過 Git 或圖庫索引還原。"
         confirmLabel="確認下架"
+        onConfirm={args.onConfirm}
+      />
+      <ConfirmDialog
+        tone="warning"
+        trigger={<Button variant="ghost">檢舉</Button>}
+        title="檢舉這則內容？"
+        description="檢舉後無法取消，網站管理者會審閱這則內容。"
+        confirmLabel="確認檢舉"
         onConfirm={args.onConfirm}
       />
     </div>

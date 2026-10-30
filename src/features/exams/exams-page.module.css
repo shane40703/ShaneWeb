@@ -194,17 +194,23 @@
   margin-top: 12px;
   display: flex;
   flex-wrap: wrap;
-  gap: 4px 6px;
+  gap: 8px 10px;
 }
 
 .postActions button {
-  min-height: 32px;
-  padding-inline: 8px;
-  font-size: 12px;
   white-space: nowrap;
 }
 
 .postActions button[aria-pressed='true'] {
+  color: var(--danger);
+}
+
+/* Delete is a quiet red text button; the confirm dialog, not a framed red button, guards it. */
+.deleteAction {
+  color: var(--danger);
+}
+
+.deleteAction:hover:not([data-disabled]) {
   color: var(--danger);
 }
 
@@ -236,10 +242,7 @@
 }
 
 .replies button {
-  min-height: 28px;
-  padding-inline: 0;
   justify-self: start;
-  font-size: 12px;
 }
 
 .replyForm {
@@ -311,26 +314,14 @@
   border-bottom: var(--rule);
 }
 
-.composeCard textarea {
-  padding: 10px 12px;
-  resize: vertical;
-  line-height: 1.6;
-}
-
 .editPost {
   margin: 14px 0;
   display: grid;
   gap: 8px;
 }
 
-.editPost textarea {
-  min-height: 150px;
-  padding: 10px 12px;
-  line-height: 1.7;
-  resize: vertical;
-}
-
-.editPost > div {
+/* The save / cancel row only; a bare child selector would also flatten the editor's grid root. */
+.editActions {
   display: flex;
   gap: 8px;
   justify-content: flex-end;
@@ -377,6 +368,11 @@
   .postsCard,
   .composeCard {
     padding: 16px;
+  }
+
+  .postActions button,
+  .replies button {
+    min-height: 44px;
   }
 }
 

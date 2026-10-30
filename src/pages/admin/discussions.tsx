@@ -68,7 +68,13 @@ export default function DiscussionAdminPage() {
                 {post.replies.map((reply) => (
                   <div className={styles.reply} key={reply.id}>
                     <span>回覆・{formatDateTime(reply.createdAt)}</span><p><RichText>{reply.content}</RichText></p>
-                    <Button variant="danger" onClick={() => dispatch({ type: 'delete-discussion-reply', postId: post.id, replyId: reply.id })}>刪除回覆</Button>
+                    <ConfirmDialog
+                      trigger={<Button variant="danger">刪除回覆</Button>}
+                      title="刪除這則回覆？"
+                      description="刪除後無法復原。"
+                      confirmLabel="確認刪除"
+                      onConfirm={() => dispatch({ type: 'delete-discussion-reply', postId: post.id, replyId: reply.id })}
+                    />
                   </div>
                 ))}
               </article>
