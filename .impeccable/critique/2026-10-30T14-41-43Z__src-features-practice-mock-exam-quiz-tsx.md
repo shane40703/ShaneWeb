@@ -10,6 +10,7 @@ target_fingerprint: "sha256:d07ebdda4cd26ab05b0cec5ceee38ce7dcf0be05eab1dc84df1a
 target_path: /Users/admin/repo/shane/ShaneWeb/src/features/practice/mock-exam-quiz.tsx
 timestamp: 2026-10-30T14-41-43Z
 slug: src-features-practice-mock-exam-quiz-tsx
+closed: true
 ---
 Method: dual-agent（A：設計審查 subagent · B：檢測器與瀏覽器證據 subagent）
 
