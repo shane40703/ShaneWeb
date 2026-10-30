@@ -1,0 +1,81 @@
+/* Underline tabs: no frame, a rule under the list, the active tab marked by a 2px ink-blue
+   line (Base UI's indicator) that slides between tabs. */
+.root {
+  min-width: 0;
+}
+
+.list {
+  display: flex;
+  gap: 4px;
+  position: relative;
+  border-bottom: var(--rule);
+}
+
+.tab {
+  min-height: 40px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  border: 0;
+  border-radius: var(--radius-frame) var(--radius-frame) 0 0;
+  background: transparent;
+  color: var(--text-soft);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.3;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.tab:hover {
+  color: var(--text);
+  background: var(--surface-2);
+}
+
+.tab[data-active] {
+  color: var(--primary-strong);
+  font-weight: 600;
+}
+
+.tab:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: -2px;
+}
+
+.tab[data-disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.indicator {
+  position: absolute;
+  bottom: -1px;
+  left: var(--active-tab-left);
+  width: var(--active-tab-width);
+  height: 2px;
+  background: var(--primary);
+  transition:
+    left 180ms ease,
+    width 180ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .indicator {
+    transition: none;
+  }
+}
+
+/* The count beside a label: mono, like every other count on the page. */
+.badge {
+  margin-left: 6px;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+}
+
+.panel {
+  min-width: 0;
+}

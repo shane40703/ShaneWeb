@@ -107,6 +107,7 @@ for (const theme of ['light', 'dark'] as const) {
     await page.getByRole('button', { name: '分享到考古題討論版', exact: true }).click();
     await expect(page.getByText('已分享到考古題討論版', { exact: true })).toBeVisible();
     await page.goto('/exams?question=law-114-01');
+    await page.getByRole('tab', { name: /討論區/ }).click();
     const post = page.locator('article').filter({ has: page.locator('sup', { hasText: '2' }) }).first();
     await expect(post).toContainText('0.75m2');
     await post.getByRole('button', { name: '編輯', exact: true }).click();

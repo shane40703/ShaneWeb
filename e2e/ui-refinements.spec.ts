@@ -117,6 +117,7 @@ for (const theme of ['light', 'dark'] as const) {
     await page.screenshot({ path: testInfo.outputPath(`mock-${theme}.png`), fullPage: true });
 
     await page.goto('/exams?question=law-114-01');
+    await page.getByRole('button', { name: '看解答', exact: true }).click();
     const answerRows = page.getByRole('region', { name: '題目選項', exact: true }).getByRole('listitem');
     await expect(answerRows.first()).toBeVisible();
     await expect(answerRows.first()).toHaveCSS('border-top-width', '0px');

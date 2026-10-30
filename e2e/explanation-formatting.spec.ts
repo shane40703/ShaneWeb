@@ -22,6 +22,7 @@ test('notes, shared explanations and replies retain whitespace and safe text for
   await page.getByRole('button', { name: '分享到考古題討論版', exact: true }).click();
   await expect(page.getByText('已分享到考古題討論版', { exact: true })).toBeVisible();
   await page.goto('/exams?question=law-114-01');
+  await page.getByRole('tab', { name: /討論區/ }).click();
   const postText = page.getByText('排版測試重點', { exact: true }).locator('..');
   await expect(postText).toHaveCSS('white-space', 'pre-wrap');
   expect(await postText.textContent()).toBe(displayedNote);

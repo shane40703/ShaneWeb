@@ -1,13 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { RichText } from '@/components/rich-text';
-import notesStyles from '@/features/notes/notes-page.module.css';
+import notesStyles from '@/components/question-note-editor.module.css';
 import { fixtureNoteContent } from '../../fixtures/app-state';
 
 /**
  * 題目與筆記的文字格式：`**粗體**`、`_斜體_`、`^上標^`、`~下標~`、`!!紅字!!`，格式可以
  * 互相包住（例如紅色粗體），網址自動變成在新分頁開啟的連結，換行與 Tab 縮排會保留。
  * 也會安全顯示新版即時編輯器儲存的字色、字級、底線、刪除線與清單（不執行任意 HTML）。
- * 放在我的筆記「已儲存筆記內容」的框裡（notes-page 的 noteResult），寬度大約是筆記欄的寬度。
+ * 放在我的筆記「已儲存筆記內容」的框裡（question-note-editor 的 noteResult），寬度大約是筆記欄的寬度。
  *
  * 範例文字前三行是我的筆記的範例，每一種格式都有；最後是很長的網址，工具列切到手機寬度時
  * 會換行、不會撐破版面。Controls 的 children 可以直接改文字試其他寫法。

@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ToastProvider } from '@/components/ui/ui';
 import { CloudSyncProvider } from '@/components/cloud-sync-provider';
 import { ExamsPage } from '@/features/exams/exams-page';
+import { STORAGE_KEY } from '@/lib/study';
 import type { Question, SubjectId } from '@/lib/types';
 import { AppStateProvider } from '@/state/app-state';
 import { fillRichEditor, selectRichEditor } from '@/test/rich-editor';
@@ -60,6 +61,11 @@ function renderPage(
 
 afterEach(cleanup);
 
+/** The discussion and note panels sit behind tabs; the 題目 tab is the default. */
+function openTab(name: RegExp) {
+  fireEvent.click(screen.getByRole('tab', { name }));
+}
+
 describe('ExamsPage question loading', () => {
   beforeEach(() => {
     vi.stubEnv('NEXT_PUBLIC_FIREBASE_API_KEY', '');
@@ -75,6 +81,7 @@ describe('ExamsPage question loading', () => {
   it('preserves note-style whitespace when adding and editing explanations', async () => {
     const content = '  第一行\n\n\t第二行 格式重點  對齊\n';
     renderPage();
+    openTab(/討論區/);
     const editor = screen.getByLabelText('內容');
     fillRichEditor(editor, content);
     fireEvent.click(screen.getByRole('button', { name: '送出共享投稿' }));
@@ -201,6 +208,7 @@ describe('ExamsPage question loading', () => {
 
   it('keeps local text posting available when Firebase is not configured', async () => {
     renderPage();
+    openTab(/討論區/);
 
     const navigator = screen.getByRole('complementary', {
       name: '詳解討論題號導覽',
@@ -227,6 +235,7 @@ describe('ExamsPage question loading', () => {
     renderPage();
 
     expect(screen.getByRole('heading', { name: '第 1 題' })).toBeInTheDocument();
+    openTab(/討論區/);
     const textarea = screen.getByLabelText('內容');
     fillRichEditor(textarea, '粗體內容');
     selectRichEditor(textarea, 0, 4);
@@ -242,14 +251,17 @@ describe('ExamsPage question loading', () => {
 
     expect(screen.getByRole('heading', { name: '申論第 1 題' })).toBeInTheDocument();
     expect(screen.getByText('申論題')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '送出共享投稿' })).toBeInTheDocument();
     expect(screen.queryByRole('region', { name: '題目選項' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('radiogroup')).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: '標記為難題' })).not.toBeInTheDocument();
+    openTab(/討論區/);
+    expect(screen.getByRole('button', { name: '送出共享投稿' })).toBeInTheDocument();
   });
 
   it('asks for confirmation before reporting a post', async () => {
     const user = userEvent.setup();
     renderPage();
+    openTab(/討論區/);
     fillRichEditor(screen.getByLabelText('內容'), '需要檢舉的投稿');
     fireEvent.click(screen.getByRole('button', { name: '送出共享投稿' }));
     await screen.findByText('需要檢舉的投稿');
@@ -271,6 +283,7 @@ describe('ExamsPage question loading', () => {
 
   it('keeps the edit actions below the editor', async () => {
     renderPage();
+    openTab(/討論區/);
     fillRichEditor(screen.getByLabelText('內容'), '要編輯的投稿');
     fireEvent.click(screen.getByRole('button', { name: '送出共享投稿' }));
     await screen.findByText('要編輯的投稿');
@@ -279,5 +292,165 @@ describe('ExamsPage question loading', () => {
     const actions = screen.getByRole('button', { name: '儲存修改' }).parentElement!;
     expect(actions.className).toMatch(/editActions/);
     expect(within(actions).getByRole('button', { name: '取消' })).toBeInTheDocument();
+  });
+
+  it('hides the answer until 看解答 and then reveals it with a verdict', () => {
+    renderPage();
+
+    expect(screen.getByRole('tablist', { name: '題目分頁' })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: '題目' })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByRole('radiogroup', { name: '題目選項' })).toBeInTheDocument();
+    expect(document.querySelector('[data-accepted]')).toBeNull();
+    expect(screen.queryByText(/正確答案/)).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '看解答' })).toBeEnabled();
+
+    fireEvent.click(screen.getByRole('button', { name: '看解答' }));
+
+    const answers = screen.getByRole('region', { name: '題目選項' });
+    expect(within(answers).getByRole('listitem', { name: /正確選項 A/ })).toBeInTheDocument();
+    const verdict = screen.getByText('正確答案：A').closest('[role="status"]');
+    expect(verdict).toHaveFocus();
+    expect(verdict).not.toHaveTextContent('你的答案');
+    expect(screen.queryByRole('radiogroup')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '看解答' })).not.toBeInTheDocument();
+  });
+
+  it('judges a chosen option, resets, and never saves an answer', async () => {
+    renderPage();
+
+    fireEvent.click(screen.getByText('law-114-01 B').closest('label')!);
+    fireEvent.click(screen.getByRole('button', { name: '看解答' }));
+
+    const verdict = screen.getByText('答錯了').closest('[role="status"]');
+    expect(verdict).toHaveTextContent('正確答案：A・你的答案：B');
+    expect(verdict).toHaveFocus();
+    const answers = screen.getByRole('region', { name: '題目選項' });
+    expect(within(answers).getByRole('listitem', { name: /你的答案 B/ })).toBeInTheDocument();
+    expect(within(answers).getByRole('listitem', { name: /正確選項 A/ })).toBeInTheDocument();
+    await waitFor(() => {
+      const stored = JSON.parse(window.localStorage.getItem(STORAGE_KEY) ?? '{}');
+      expect(stored.answers ?? {}).toEqual({});
+      expect(stored.attempts ?? []).toEqual([]);
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: '重新作答' }));
+    expect(screen.queryByText(/正確答案/)).not.toBeInTheDocument();
+    expect(document.querySelector('[data-accepted]')).toBeNull();
+    expect(
+      screen.getAllByRole('radio').every((radio) => radio.getAttribute('aria-checked') === 'false'),
+    ).toBe(true);
+
+    fireEvent.click(screen.getByText('law-114-01 A').closest('label')!);
+    fireEvent.click(screen.getByRole('button', { name: '看解答' }));
+    expect(screen.getByText('答對了')).toBeInTheDocument();
+  });
+
+  it('reveals only the explanation for an essay question', () => {
+    router.query = { question: writtenQuestion.id };
+    renderPage({ questions: [lawQuestion, writtenQuestion] });
+
+    expect(screen.queryByRole('radiogroup')).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: '詳解' })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: '看解答' }));
+
+    expect(screen.getByRole('heading', { name: '詳解' })).toBeInTheDocument();
+    expect(screen.getByText('目前尚無詳解。')).toBeInTheDocument();
+    expect(screen.queryByRole('region', { name: '題目選項' })).not.toBeInTheDocument();
+    expect(screen.queryByText(/正確答案/)).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: '收起解答' }));
+    expect(screen.queryByRole('heading', { name: '詳解' })).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: '看解答' }));
+    fireEvent.click(screen.getByRole('button', { name: '到討論區看看' }));
+    expect(screen.getByRole('button', { name: '送出共享投稿' })).toBeInTheDocument();
+    expect(router.replace).toHaveBeenCalledWith(
+      { pathname: '/exams', query: { question: writtenQuestion.id, tab: 'discussion' } },
+      undefined,
+      { shallow: true, scroll: false },
+    );
+  });
+
+  it('shows the built-in and shared explanations only after revealing', async () => {
+    renderPage({ questions: [{ ...lawQuestion, explanation: '內建詳解內容' }] });
+    openTab(/討論區/);
+    fillRichEditor(screen.getByLabelText('內容'), '共享的詳解');
+    fireEvent.click(screen.getByRole('button', { name: '送出共享投稿' }));
+    await screen.findByText('共享的詳解');
+    expect(screen.getByRole('tab', { name: /討論區/ })).toHaveTextContent('討論區1');
+
+    openTab(/^題目$/);
+    expect(screen.queryByText('內建詳解內容')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: '看解答' }));
+    expect(screen.getByText('內建詳解內容')).toBeInTheDocument();
+    expect(screen.getByText('共享的詳解')).toBeInTheDocument();
+    expect(screen.getByText('題目詳解')).toBeInTheDocument();
+    expect(screen.queryByText('目前尚無詳解。')).not.toBeInTheDocument();
+  });
+
+  it('mirrors the tab into the URL and keeps it when changing question', () => {
+    renderPage({
+      questions: [lawQuestion, { ...lawQuestion, id: 'law-114-02', questionNumber: 2 }],
+    });
+
+    openTab(/討論區/);
+    expect(screen.getByRole('tab', { name: /討論區/ })).toHaveAttribute('aria-selected', 'true');
+    expect(router.replace).toHaveBeenLastCalledWith(
+      { pathname: '/exams', query: { question: lawQuestion.id, tab: 'discussion' } },
+      undefined,
+      { shallow: true, scroll: false },
+    );
+
+    fireEvent.click(
+      within(screen.getByRole('group', { name: '題號' })).getByRole('button', { name: '第 2 題' }),
+    );
+    expect(router.replace).toHaveBeenLastCalledWith(
+      { pathname: '/exams', query: { question: 'law-114-02', tab: 'discussion' } },
+      undefined,
+      { shallow: true, scroll: false },
+    );
+
+    openTab(/筆記/);
+    expect(router.replace).toHaveBeenLastCalledWith(
+      { pathname: '/exams', query: { question: lawQuestion.id, tab: 'notes' } },
+      undefined,
+      { shallow: true, scroll: false },
+    );
+    openTab(/^題目$/);
+    expect(router.replace).toHaveBeenLastCalledWith(
+      { pathname: '/exams', query: { question: lawQuestion.id } },
+      undefined,
+      { shallow: true, scroll: false },
+    );
+  });
+
+  it('opens the tab named in the URL', () => {
+    router.query = { question: lawQuestion.id, tab: 'notes' };
+    renderPage();
+
+    expect(screen.getByRole('tab', { name: '筆記' })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByLabelText('我的筆記')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '看解答' })).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('內容')).not.toBeInTheDocument();
+  });
+
+  it('saves a note from the 筆記 tab into the shared notes', async () => {
+    renderPage();
+    openTab(/筆記/);
+
+    expect(screen.getByRole('heading', { name: '第 1 題' })).toBeInTheDocument();
+    fillRichEditor(screen.getByLabelText('我的筆記'), '討論版裡寫的筆記');
+    fireEvent.click(screen.getByRole('button', { name: '儲存筆記' }));
+
+    expect(await screen.findByRole('region', { name: '已儲存筆記內容' })).toHaveTextContent(
+      '討論版裡寫的筆記',
+    );
+    await waitFor(() => {
+      const stored = JSON.parse(window.localStorage.getItem(STORAGE_KEY)!);
+      expect(stored.notes[lawQuestion.id]).toContain('討論版裡寫的筆記');
+    });
+    expect(screen.getByRole('tab', { name: '筆記' })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByRole('button', { name: '編輯筆記' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '刪除筆記' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '分享到考古題討論版' })).toBeInTheDocument();
   });
 });

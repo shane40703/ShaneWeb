@@ -1,5 +1,6 @@
-/* Exams page: the question, the discussion, the compose form and the navigator are each
-   ONE framed cream panel; inside them only rules separate the groups (no inner boxes).
+/* Exams page: underline tabs (題目 / 討論區 / 筆記, components/tabs.tsx) over the content
+   column; the question, the discussion, the compose form, the note editor and the navigator
+   are each ONE framed cream panel; inside them only rules separate the groups (no inner boxes).
    Layout follows the page's own width, not the viewport: the app sidebar takes a varying
    share of it, so the breakpoints at the end are container queries on .page. */
 .page {
@@ -10,7 +11,8 @@
 .questionCard,
 .questionNavigator,
 .postsCard,
-.composeCard {
+.composeCard,
+.notesCard {
   border: var(--frame);
   border-radius: var(--radius-frame);
   background: var(--surface);
@@ -25,6 +27,14 @@
 
 .contentColumn {
   min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 24px;
+}
+
+/* The active tab's panels stack under the tab bar with the page's panel rhythm. */
+.tabPanel {
+  margin-top: 16px;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: 24px;
@@ -64,6 +74,134 @@
   font-weight: 600;
   letter-spacing: 0.04em;
   line-height: 1.3;
+}
+
+/* Answer-then-reveal area: the choices (OptionGroup rows), then the 看解答 / 重新作答 row,
+   then the verdict and the explanation under a rule once revealed. Spacing inside is by
+   margins, not the card's grid gap. */
+.practice {
+  min-width: 0;
+}
+
+/* The choices are plain rows (ui.module.css) at the question font size, no gaps between them. */
+.answerArea [role='radiogroup'] {
+  gap: 0;
+}
+
+.answerArea [role='radiogroup'] label {
+  font-size: var(--option-font-size, 18px);
+}
+
+.answerArea [role='radiogroup'] label > span:last-child {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.answerActions {
+  margin-top: 16px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* The verdict: a plain line under the answer rows; green when right, red when wrong, ink
+   when nothing was chosen (only the correct answer is reported). */
+.verdict {
+  margin: 14px 0 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  color: var(--danger);
+  scroll-margin-top: 96px;
+}
+
+.verdict:focus {
+  outline: none;
+}
+
+.verdict:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.verdict[data-correct] {
+  color: var(--success);
+}
+
+.verdict[data-unanswered] {
+  color: var(--text);
+}
+
+.verdict > svg {
+  flex: 0 0 auto;
+}
+
+.verdict strong {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.verdict span {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.02em;
+}
+
+/* 詳解: the built-in explanation, then each shared explanation post, rule-separated. */
+.explanation {
+  min-width: 0;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: var(--rule);
+}
+
+.explanation h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.explanation p {
+  margin: 10px 0 0;
+  font-size: 15px;
+  line-height: 1.75;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.explanation > article {
+  margin-top: 12px;
+  display: grid;
+  gap: 2px;
+}
+
+.explanation > article > span {
+  justify-self: start;
+}
+
+.explanation > p + article,
+.explanation > article + article {
+  padding-top: 12px;
+  border-top: var(--rule);
+}
+
+.explanation p a {
+  color: var(--primary);
+  overflow-wrap: anywhere;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.explanationEmpty {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.6;
+  white-space: normal;
+}
+
+.explanationEmpty + .answerActions {
+  margin-top: 10px;
 }
 
 /* No rule above the buttons: the answer rows end without a line. */
@@ -205,12 +343,13 @@
   color: var(--danger);
 }
 
-/* Delete is a quiet red text button; the confirm dialog, not a framed red button, guards it. */
-.deleteAction {
+/* Delete is a quiet red text button; the confirm dialog, not a framed red button, guards it.
+   Scoped under .postActions so it beats the ghost Button's colour whatever the CSS order. */
+.postActions .deleteAction {
   color: var(--danger);
 }
 
-.deleteAction:hover:not([data-disabled]) {
+.postActions .deleteAction:hover:not([data-disabled]) {
   color: var(--danger);
 }
 
@@ -300,6 +439,12 @@
   white-space: nowrap;
 }
 
+/* 筆記 tab: one frame around the shared note editor (question-note-editor.module.css). */
+.notesCard {
+  min-width: 0;
+  padding: 24px;
+}
+
 /* Compose panel: kicker + title over a rule, then plain fields. */
 .composeCard {
   padding: 24px;
@@ -359,14 +504,16 @@
 
 @container (max-width: 640px) {
   .examsLayout,
-  .contentColumn {
+  .contentColumn,
+  .tabPanel {
     gap: 16px;
   }
 
   .questionCard,
   .questionNavigator,
   .postsCard,
-  .composeCard {
+  .composeCard,
+  .notesCard {
     padding: 16px;
   }
 

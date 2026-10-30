@@ -1,5 +1,5 @@
 import type { AppState, DiscussionPost, Question } from '@/lib/types';
-import { fixtureImages } from './app-state';
+import { fixtureImages, fixtureNoteContent } from './app-state';
 import { getFixtureQuestion, withExplanation } from './questions';
 
 /**
@@ -118,13 +118,15 @@ const paperDiscussionPosts: DiscussionPost[] = [
 ];
 
 /**
- * 本機作答資料：第 15 題四種投稿各一則（題目詳解自己按過讚），第 8 題有只有圖片的投稿
- * 與文字詳解，第 40 題有提問；第 15、8、27、40 題標為難題。
+ * 本機作答資料：第 15 題四種投稿各一則（題目詳解自己按過讚）、一則有圖片的筆記，第 8 題
+ * 有只有圖片的投稿與文字詳解，第 40 題有提問；第 15、8、27、40 題標為難題。
  */
 export const examsAppState: Partial<AppState> = {
   discussionPosts: [imageOnlyPost, ...discussionPosts, ...paperDiscussionPosts],
   likedDiscussionPostIds: ['story-post-explanation'],
   difficultQuestionIds: ['law-101-15', 'law-101-08', 'law-101-27', 'law-101-40'],
+  notes: { [examDiscussionQuestionId]: fixtureNoteContent },
+  noteImages: { [examDiscussionQuestionId]: [fixtureImages[1]] },
 };
 
 /**
