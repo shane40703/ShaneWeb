@@ -18,6 +18,7 @@ export function QuestionNumberButton({
   stateLabel,
   href,
   replace = false,
+  shallow = false,
   onClick,
 }: {
   children: ReactNode;
@@ -33,6 +34,8 @@ export function QuestionNumberButton({
   href?: string;
   /** Moves within the page without adding a history entry. */
   replace?: boolean;
+  /** Stays on the loaded page, with no request and so no failure when offline. */
+  shallow?: boolean;
   onClick?: () => void;
 }) {
   const statusText = [
@@ -60,6 +63,8 @@ export function QuestionNumberButton({
         {...commonProps}
         href={href}
         replace={replace}
+        shallow={shallow}
+        prefetch={shallow ? false : undefined}
         aria-current={active ? 'step' : undefined}
       >
         {children}

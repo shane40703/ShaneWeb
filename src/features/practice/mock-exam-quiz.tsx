@@ -9,6 +9,7 @@ import {
 } from '@tabler/icons-react';
 import { QuestionPrompt, Tag } from '@/components/content/content';
 import { DifficultButton } from '@/components/difficult-button';
+import { QuestionMapDrawer } from '@/components/question-map-drawer';
 import {
   QuestionNumberButton,
   QuestionNumberGrid,
@@ -73,6 +74,9 @@ export function MockExamQuiz({
   const isLast = index === total - 1;
   const summary = summarizeMockExamDraft(progress, ids);
   const subjectName = getSubject(paper.subject)?.shortName ?? '';
+  const difficultCount = ids.filter((id) =>
+    state.difficultQuestionIds.includes(id),
+  ).length;
 
   // Keeps the current number visible inside the navigator's own scroll area.
   useEffect(() => {
@@ -122,7 +126,7 @@ export function MockExamQuiz({
 
   return (
     <section
-      className={styles.practice}
+      className={`${styles.practice} ${styles.paperQuiz}`}
       aria-label="歷屆試題模擬考作答"
       onKeyDown={handleShortcut}
     >
@@ -204,6 +208,52 @@ export function MockExamQuiz({
                 <kbd>P</kbd> 上一題
               </p>
               <div className={styles.navButtons}>
+                <QuestionMapDrawer
+                  triggerClassName={styles.mapTrigger}
+                  current={index + 1}
+                  total={total}
+                  questions={ids.map((id, position) => ({
+                    id,
+                    questionNumber: position + 1,
+                    ariaLabel: `前往第 ${position + 1} 題`,
+                    stateLabel:
+                      progress[id]?.selected !== undefined ? '已作答' : '未作答',
+                    answered: progress[id]?.selected !== undefined,
+                    difficult: state.difficultQuestionIds.includes(id),
+                  }))}
+                  value={questionId}
+                  onValueChange={(id) => onGoTo(ids.indexOf(id))}
+                  footer={(close) => (
+                    <>
+                      <p className={styles.mapSummary}>
+                        已作答 <strong>{summary.answered}</strong>・未作答{' '}
+                        <strong>{total - summary.answered}</strong>・難題{' '}
+                        <strong>{difficultCount}</strong>
+                      </p>
+                      <div className={styles.mapActions}>
+                        <Button
+                          onClick={() => {
+                            close();
+                            onLeave();
+                          }}
+                        >
+                          <IconPlayerPause size={16} aria-hidden="true" />{' '}
+                          先離開，保留進度
+                        </Button>
+                        <Button
+                          variant="primary"
+                          disabled={!canSubmit}
+                          onClick={() => {
+                            close();
+                            onSubmit();
+                          }}
+                        >
+                          <IconFlag size={17} aria-hidden="true" /> 交卷
+                        </Button>
+                      </div>
+                    </>
+                  )}
+                />
                 <Button disabled={index === 0} onClick={() => onGoTo(index - 1)}>
                   <IconArrowLeft size={17} aria-hidden="true" /> 上一題
                 </Button>
@@ -246,9 +296,7 @@ export function MockExamQuiz({
               <small>未作答</small>
             </span>
             <span>
-              <strong>
-                {ids.filter((id) => state.difficultQuestionIds.includes(id)).length}
-              </strong>
+              <strong>{difficultCount}</strong>
               <small>難題</small>
             </span>
           </div>
@@ -280,6 +328,7 @@ export function MockExamQuiz({
                     q: position + 1,
                   })}
                   replace
+                  shallow
                   ariaLabel={`前往第 ${position + 1} 題`}
                   stateLabel={progress[id]?.selected !== undefined ? '已作答' : '未作答'}
                   active={position === index}

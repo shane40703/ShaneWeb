@@ -754,7 +754,7 @@
   display: none;
 }
 
-@container (width > 900px) {
+@container (width > 960px) {
   @media (hover: hover) {
     .shortcutHint {
       margin: 0 auto 0 8px;
@@ -791,6 +791,33 @@
 
 .navButtons > button:last-child {
   min-width: 120px;
+}
+
+/* One column has no side column: the 題號 button opens it as a sheet instead. */
+.navButtons > .mapTrigger {
+  display: none;
+}
+
+.mapSummary {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.mapSummary strong {
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-weight: 600;
+}
+
+.mapActions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 8px;
+}
+
+.mapActions > button {
+  justify-content: center;
 }
 
 /* The side column: one framed panel; progress, actions and the number map are rule-separated. */
@@ -1242,6 +1269,30 @@
   .questionNumbers a {
     width: 38px;
   }
+
+  /* A paper in one column: the card fills the window, so 下一題 stays under the thumb from
+     question to question. 120px is a little under the card's offset from the window top,
+     which leaves the card's end below the fold and the bar on its sticky edge. */
+  .paperQuiz .challenge {
+    min-height: calc(100vh - 120px);
+    min-height: calc(100dvh - 120px);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .paperQuiz .answerBody {
+    flex: 1 0 auto;
+    align-content: start;
+  }
+
+  /* Only with a question on screen: loading and error states have no bar and keep the column. */
+  .paperQuiz:has(.challenge) .sidebar {
+    display: none;
+  }
+
+  .navButtons > .mapTrigger {
+    display: inline-flex;
+  }
 }
 
 @container (max-width: 760px) {
@@ -1317,6 +1368,17 @@
     min-width: 0;
   }
 
+  /* One row beside the clock: a second row would cost a line of the question. */
+  .paperQuiz .challenge > footer {
+    flex-wrap: nowrap;
+  }
+
+  .paperQuiz .navButtons {
+    width: auto;
+    flex: 1 1 auto;
+    flex-wrap: nowrap;
+  }
+
   .completed {
     padding: 26px 16px 24px;
   }
@@ -1379,6 +1441,11 @@
     font-size: 0;
   }
 
+  /* The time alone; the label stays in the clock's aria-label. */
+  .paperQuiz .timer {
+    font-size: 0;
+  }
+
   .yearRange {
     grid-template-columns: 1fr;
   }
@@ -1391,6 +1458,20 @@
 @container (max-width: 400px) {
   .navButtons svg {
     display: none;
+  }
+
+  /* Three buttons and the time on a 320px phone: down to what each needs. */
+  .paperQuiz .timer svg {
+    display: none;
+  }
+
+  .paperQuiz .challenge > footer,
+  .paperQuiz .navButtons {
+    gap: 6px;
+  }
+
+  .paperQuiz .navButtons > button {
+    padding-inline: 8px;
   }
 }
 

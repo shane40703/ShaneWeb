@@ -342,17 +342,20 @@ export function SideDrawer({
   onOpenChange,
   triggerLabel,
   title,
+  triggerClassName,
   children,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   triggerLabel: string;
   title: string;
+  /** Shows the trigger above the phone width, for a page that gives the sidebar up there too. */
+  triggerClassName?: string;
   children: ReactNode;
 }) {
   return (
     <Drawer.Root open={open} onOpenChange={onOpenChange} swipeDirection="left">
-      <Drawer.Trigger className={cx(styles.button, styles.icon, styles.mobileTrigger)}>
+      <Drawer.Trigger className={cx(styles.button, styles.icon, styles.mobileTrigger, triggerClassName)}>
         <IconMenu2 size={21} stroke={2} aria-hidden="true" />
         <span className={styles.visuallyHidden}>{triggerLabel}</span>
       </Drawer.Trigger>

@@ -19,6 +19,33 @@ async function openNavigation(page: Page) {
   return nav;
 }
 
+/** The 題號 sheet, which holds the paper's side column at one-column widths. */
+async function openPaperSheet(page: Page) {
+  await expect(page.getByRole('region', { name: '題目與選項' })).toBeVisible();
+  const trigger = page.getByRole('button', { name: '題號', exact: true });
+  if (!(await trigger.isVisible())) return null;
+  await trigger.click();
+  const sheet = page.getByRole('dialog', { name: '題號導覽' });
+  await expect(sheet).toBeVisible();
+  return sheet;
+}
+
+async function goToPaperQuestion(page: Page, number: number) {
+  const sheet = await openPaperSheet(page);
+  const name = new RegExp(`^前往第 ${number} 題`);
+  await (sheet
+    ? sheet.getByRole('button', { name })
+    : page.getByRole('region', { name: '題號導覽' }).getByRole('link', { name })
+  ).click();
+}
+
+async function paperActions(page: Page) {
+  return (
+    (await openPaperSheet(page)) ??
+    page.getByRole('complementary', { name: '試卷資訊' })
+  );
+}
+
 async function openSetup(page: Page) {
   await page.goto('/practice/quiz');
   const setup = page.getByRole('region', { name: '每日抽題練習設定' });
@@ -330,10 +357,9 @@ test('the mock exam answers a whole paper, keeps it when leaving, and scores it 
   await page.screenshot({ path: testInfo.outputPath('mock-question.png') });
 
   // Moving around the paper adds no history: Back leaves it for the setup it came from.
-  const map = page.getByRole('region', { name: '題號導覽' });
-  await map.getByRole('link', { name: /^前往第 5 題/ }).click();
+  await goToPaperQuestion(page, 5);
   await expect(page).toHaveURL(/q=5$/);
-  await map.getByRole('link', { name: /^前往第 2 題/ }).click();
+  await goToPaperQuestion(page, 2);
   await expect(page).toHaveURL(/q=2$/);
   await page.goBack();
   await expect(page).toHaveURL(/\?subject=env&year=113$/);
@@ -341,7 +367,7 @@ test('the mock exam answers a whole paper, keeps it when leaving, and scores it 
   await expect(page).toHaveURL(/q=2$/);
   await expect(page.getByRole('region', { name: '題目與選項' })).toBeVisible();
 
-  await page.getByRole('button', { name: /先離開，保留進度/ }).click();
+  await (await paperActions(page)).getByRole('button', { name: /先離開，保留進度/ }).click();
   await expect(page).toHaveURL(/\?subject=env&year=113$/);
   await expect(setup.getByRole('button', { name: '繼續作答（第 3 題）' })).toBeVisible();
   // The paper waits on its setup, whichever way the setup is reached again.
@@ -358,10 +384,7 @@ test('the mock exam answers a whole paper, keeps it when leaving, and scores it 
     expect(dialog.message()).toMatch(/^還有 38 題未作答/);
     void dialog.accept();
   });
-  await page
-    .getByRole('complementary', { name: '試卷資訊' })
-    .getByRole('button', { name: /交卷/ })
-    .click();
+  await (await paperActions(page)).getByRole('button', { name: /交卷/ }).click();
   await expect(page).toHaveURL(/\?subject=env&year=113&result=attempt-/);
   const result = page.getByRole('region', { name: /環控 113 年模擬考結果/ });
   const score = result.getByRole('meter', { name: '模擬考分數' });
@@ -431,6 +454,51 @@ test('每日抽題練習 explicit saves appear only in 每日練習履歷, and �
   await expect(page.getByLabel('第 1 題，共 5 題')).toBeVisible();
 });
 
+test('a paper in one column keeps 下一題 where the thumb left it', async ({ page, isMobile }) => {
+  test.skip(!isMobile, 'one-column widths only');
+  await page.goto('/practice/mock-exam?subject=env&year=113');
+  await page.getByRole('button', { name: '開始作答' }).click();
+  await expect(page.getByRole('region', { name: '題目與選項' })).toBeVisible();
+  const quiz = page.getByRole('region', { name: '歷屆試題模擬考作答', exact: true });
+  const next = quiz.getByRole('article').getByRole('button', { name: /下一題/ });
+  const bottom = page.viewportSize()!.height;
+  for (let question = 2; question <= 8; question += 1) {
+    const box = (await next.boundingBox())!;
+    expect(box.y + box.height).toBeLessThanOrEqual(bottom);
+    expect(box.y + box.height).toBeGreaterThan(bottom - 32);
+    await next.click();
+    await expect(page).toHaveURL(new RegExp(`q=${question}$`));
+  }
+  await expect(page.getByRole('complementary', { name: '試卷資訊' })).toBeHidden();
+  await goToPaperQuestion(page, 30);
+  await expect(page).toHaveURL(/q=30$/);
+  await expectNoHorizontalOverflow(page);
+});
+
+test('answering a paper takes the sidebar\'s room in a window too narrow for both', async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(isMobile, 'the phone has no sidebar to give up');
+  await page.setViewportSize({ width: 1100, height: 800 });
+  await page.goto('/practice/mock-exam?subject=env&year=113');
+  const menu = page.getByRole('button', { name: '開啟選單' });
+  await expect(page.getByRole('navigation', { name: '主要功能', exact: true })).toBeVisible();
+  await expect(menu).toBeHidden();
+
+  await page.getByRole('button', { name: '開始作答' }).click();
+  await expect(page.getByRole('region', { name: '題目與選項' })).toBeVisible();
+  await expect(menu).toBeVisible();
+  await expect(page.getByRole('navigation', { name: '主要功能', exact: true })).toBeHidden();
+  // Both columns fit now, so the sheet is not needed.
+  await expect(page.getByRole('complementary', { name: '試卷資訊' })).toBeVisible();
+  await expect(page.getByRole('button', { name: '題號', exact: true })).toBeHidden();
+
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await expect(page.getByRole('navigation', { name: '主要功能', exact: true })).toBeVisible();
+  await expect(menu).toBeHidden();
+});
+
 test('the mock exam scores a blank 一律給分 question, as the real exam does', async ({
   page,
 }) => {
@@ -444,10 +512,7 @@ test('the mock exam scores a blank 一律給分 question, as the real exam does'
     );
     void dialog.accept();
   });
-  await page
-    .getByRole('complementary', { name: '試卷資訊' })
-    .getByRole('button', { name: /交卷/ })
-    .click();
+  await (await paperActions(page)).getByRole('button', { name: /交卷/ }).click();
   const result = page.getByRole('region', { name: /構造 114 年模擬考結果/ });
   await expect(result.getByRole('meter', { name: '模擬考分數' }))
     .toHaveAttribute('aria-valuetext', '2.50 分，滿分 100 分');

@@ -126,6 +126,8 @@ export function QuestionNumberPicker({
     questionNumber: number;
     label?: ReactNode;
     ariaLabel?: string;
+    answered?: boolean;
+    stateLabel?: string;
     difficult?: boolean;
     hasContent?: boolean;
   }[];
@@ -142,6 +144,8 @@ export function QuestionNumberPicker({
             key={question.id}
             ariaLabel={question.ariaLabel ?? `第 ${question.questionNumber} 題`}
             active={question.id === value}
+            answered={question.answered}
+            stateLabel={question.stateLabel}
             difficult={question.difficult}
             hasContent={question.hasContent}
             onClick={() => onValueChange(question.id)}

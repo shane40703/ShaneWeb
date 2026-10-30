@@ -44,6 +44,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = router.pathname;
   const navigationPath = pathname === '/appearance' ? '/settings' : pathname;
   const pageTitle = navigationPageTitle(pathname);
+  const answeringPaper = pathname === '/practice/mock-exam' && router.query.q !== undefined;
 
   useEffect(() => {
     if (!settingsOpen) return;
@@ -62,6 +63,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div
       className={styles.shell}
+      data-answering-paper={answeringPaper || undefined}
       style={
         {
           '--question-font-size': `${state.readingPreferences.questionFontSize}px`,
@@ -83,6 +85,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               onOpenChange={setDrawerOpen}
               triggerLabel="開啟選單"
               title="主要功能"
+              triggerClassName={styles.answeringPaperMenu}
             >
               <SidebarContent
                 pathname={navigationPath}

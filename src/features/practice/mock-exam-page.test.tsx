@@ -478,6 +478,34 @@ describe('MockExamPage answering', () => {
     expect(appState.dispatch).not.toHaveBeenCalled();
   });
 
+  it('carries the side column in the 題號 sheet for one-column widths', async () => {
+    seedDraft({ 'law-114-01': answered(1), 'law-114-02': answered(0) });
+    appState.state.difficultQuestionIds = ['law-114-03'];
+    renderAt('/practice/mock-exam?subject=law&year=114&q=1');
+    await screen.findByRole('region', { name: '題目與選項' });
+
+    // Hidden here: the stylesheet shows it from a container query jsdom does not run.
+    const openSheet = () => fireEvent.click(screen.getByText('題號'));
+    openSheet();
+    const sheet = await screen.findByRole('dialog', { name: '題號導覽' });
+    expect(sheet).toHaveTextContent('已作答 2・未作答 3・難題 1');
+    expect(
+      within(sheet).getByRole('button', { name: '前往第 3 題（未作答、已標記難題）' }),
+    ).toBeInTheDocument();
+
+    // Moving by a tile changes the question without reloading the page's data.
+    fireEvent.click(within(sheet).getByRole('button', { name: /^前往第 2 題/ }));
+    await flush();
+    expect(router.snapshot.asPath).toBe('/practice/mock-exam?subject=law&year=114&q=2');
+    expect(screen.queryByRole('dialog', { name: '題號導覽' })).not.toBeInTheDocument();
+
+    openSheet();
+    const reopened = await screen.findByRole('dialog', { name: '題號導覽' });
+    fireEvent.click(within(reopened).getByRole('button', { name: /先離開，保留進度/ }));
+    await flush();
+    expect(router.snapshot.asPath).toBe('/practice/mock-exam?subject=law&year=114');
+  });
+
   it('announces the question it moves to', async () => {
     seedDraft({ 'law-114-01': answered(0) });
     renderAt('/practice/mock-exam?subject=law&year=114&q=1');

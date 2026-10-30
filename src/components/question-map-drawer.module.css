@@ -70,6 +70,18 @@
   white-space: nowrap;
 }
 
+/* Runs edge to edge and stays on the sheet's bottom edge while the tiles scroll under it. */
+.footer {
+  margin: 16px -16px -24px;
+  padding: 12px 16px max(12px, env(safe-area-inset-bottom));
+  position: sticky;
+  bottom: -24px;
+  display: grid;
+  gap: 10px;
+  border-top: var(--rule);
+  background: var(--surface-elevated);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .popup {
     transition-duration: 0.01ms;

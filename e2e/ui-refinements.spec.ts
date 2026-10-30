@@ -98,7 +98,7 @@ for (const theme of ['light', 'dark'] as const) {
     await expect(optionRows.last()).toHaveCSS('border-bottom-width', '0px');
     await radios.nth(1).click();
     await expect(radios.nth(1)).toHaveAttribute('aria-checked', 'false');
-    await expect(quiz.getByRole('link', { name: '前往第 1 題（未作答）', exact: true })).toBeVisible();
+    await expect(quiz.locator('a[aria-label="前往第 1 題（未作答）"]')).toHaveCount(1);
     // A double-tap keeps the answer; only a later click takes it back.
     await radios.first().dblclick();
     await expect(radios.first()).toHaveAttribute('aria-checked', 'true');

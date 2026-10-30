@@ -416,6 +416,22 @@
   }
 }
 
+/* A paper being answered takes the sidebar's room wherever both would not fit (900 for the
+   paper's two columns, 56 of padding, 260 of sidebar): the sidebar moves to the phone's drawer. */
+@media (max-width: 1216px) {
+  .shell[data-answering-paper] {
+    display: block;
+  }
+
+  .shell[data-answering-paper] .desktopSidebar {
+    display: none;
+  }
+
+  .shell[data-answering-paper] .answeringPaperMenu {
+    display: inline-flex;
+  }
+}
+
 .persistenceWarning {
   margin: 0 0 18px;
   padding: 12px 14px;

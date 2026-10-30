@@ -1,4 +1,4 @@
-import { type ComponentProps, useState } from 'react';
+import { type ComponentProps, type ReactNode, useState } from 'react';
 import { Drawer } from '@base-ui/react/drawer';
 import { IconLayoutGrid, IconX } from '@tabler/icons-react';
 import { QuestionNumberPicker } from '@/components/question-selector';
@@ -17,6 +17,8 @@ export function QuestionMapDrawer({
   value,
   onValueChange,
   showStatusLegend,
+  triggerClassName,
+  footer,
 }: {
   /** 1-based position of the current question in the paper, shown beside the title. */
   current: number;
@@ -25,6 +27,9 @@ export function QuestionMapDrawer({
   value: string;
   onValueChange: (questionId: string) => void;
   showStatusLegend?: boolean;
+  triggerClassName?: string;
+  /** Stays in view under the tiles, however long they scroll; `close` shuts the sheet. */
+  footer?: (close: () => void) => ReactNode;
 }) {
   const [open, setOpen] = useState(false);
 
@@ -32,7 +37,7 @@ export function QuestionMapDrawer({
     <Drawer.Root open={open} onOpenChange={setOpen} swipeDirection="down">
       <Drawer.Trigger
         render={
-          <Button>
+          <Button className={triggerClassName}>
             <IconLayoutGrid size={17} stroke={2} aria-hidden="true" />
             題號
           </Button>
@@ -64,6 +69,9 @@ export function QuestionMapDrawer({
               }}
               showStatusLegend={showStatusLegend}
             />
+            {footer ? (
+              <footer className={styles.footer}>{footer(() => setOpen(false))}</footer>
+            ) : null}
           </Drawer.Popup>
         </Drawer.Viewport>
       </Drawer.Portal>
