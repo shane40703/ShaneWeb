@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Locator, type Page } from '@playwright/test';
 
 async function openNavigation(page: Page) {
   const nav = page.getByRole('navigation', { name: '主要功能', exact: true });
@@ -125,6 +125,48 @@ test('the compact bar scrolls with the page and the footer returns to it', async
   const box = await nextPosition.boundingBox();
   expect(box!.y).toBeGreaterThanOrEqual(60);
   await expect(page.locator('h2').first()).toBeInViewport();
+});
+
+/** Every row's marker centres on the first line of its text, and at least one row wraps. */
+async function expectMarkerOnFirstLine(rows: Locator, marker: string) {
+  const measured = await rows.evaluateAll((elements, selector) => {
+    return elements.map((row) => {
+      const text = row.querySelector(':scope > span:last-of-type')!;
+      const textBox = text.getBoundingClientRect();
+      const markerBox = row.querySelector(selector)!.getBoundingClientRect();
+      const lineHeight = parseFloat(getComputedStyle(row).lineHeight);
+      return {
+        lines: Math.round(textBox.height / lineHeight),
+        drift: Math.abs(
+          markerBox.top + markerBox.height / 2 - (textBox.top + lineHeight / 2),
+        ),
+      };
+    });
+  }, marker);
+
+  expect(measured.some((row) => row.lines > 1)).toBe(true);
+  for (const row of measured) expect(row.drift).toBeLessThanOrEqual(1);
+}
+
+test('a long option keeps its letter on the first line', async ({ page }) => {
+  await page.goto('/exams?question=law-114-39');
+  const choices = page.getByRole('radiogroup', { name: '題目選項' }).locator('label');
+  // The page can show another question until the URL's question is read.
+  await expect(choices.first()).toContainText('電氣設備配電場所應設置於地面');
+  await expectMarkerOnFirstLine(choices, ':scope > span:nth-last-of-type(2)');
+  await expectMarkerOnFirstLine(choices, '[role="radio"]');
+
+  const answers = page
+    .getByRole('region', { name: '題目選項', exact: true })
+    .getByRole('listitem');
+  // The button can render before hydration, so retry until the answers show.
+  await expect(async () => {
+    await page
+      .getByRole('button', { name: '看解答', exact: true })
+      .click({ timeout: 1000 });
+    await expect(answers.first()).toBeVisible({ timeout: 1000 });
+  }).toPass();
+  await expectMarkerOnFirstLine(answers, 'b');
 });
 
 test('posts on past exams stay with the question', async ({ page }) => {
