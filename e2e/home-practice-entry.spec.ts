@@ -14,6 +14,7 @@ for (const theme of ['light', 'dark'] as const) {
     const shortcut = page.getByRole('link', { name: /每日抽題練習.*開始練習/ });
     await expect(shortcut).toHaveAttribute('href', '/practice/quiz');
     expect((await countdown.boundingBox())!.y).toBeLessThan((await shortcut.boundingBox())!.y);
+    await expect(page.getByRole('heading', { name: /過去一年作答/ })).toBeVisible();
     expect((await countdown.getByText('19', { exact: true }).boundingBox())!.height).toBeGreaterThanOrEqual(70);
     if (isMobile) await page.setViewportSize({ width: 320, height: 740 });
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(page.viewportSize()!.width);

@@ -415,6 +415,47 @@ export function attemptsAppState(attempts: readonly QuizAttempt[]): Partial<AppS
   return { attempts: state.attempts, answers: state.answers };
 }
 
+/** 兩次作答相隔的天數：多半連著幾天，偶爾停一兩週，跟實際讀書的節奏一樣。 */
+const heatmapDayGaps = [1, 1, 1, 2, 3, 4, 7, 10, 14];
+/** 一次作答的題數：涵蓋熱力圖的四種深淺，80 題是整份模擬考。 */
+const heatmapQuestionCounts = [4, 7, 12, 20, 25, 35, 45, 80];
+
+/**
+ * 一年份的活動紀錄（新到舊）：從 FIXTURE_NOW 往回排 70 次作答，間隔與題數用固定種子算出，
+ * 每次打開都一樣。答錯的題目也算作答題數，所以不用另外排。
+ */
+function buildHeatmapAttempts() {
+  const lawQuestionIds = fixtureQuestionsFor('law', 113)
+    .filter((question) => question.format !== 'written')
+    .map((question) => question.id);
+  const attempts: QuizAttempt[] = [];
+  let seed = 20261020;
+  let daysAgo = 0;
+  for (let index = 0; index < 70; index += 1) {
+    seed = (seed * 48271) % 2147483647;
+    const id = `story-heatmap-${index + 1}`;
+    const submittedAt = new Date(
+      Date.parse(FIXTURE_NOW) - daysAgo * 86_400_000,
+    ).toISOString();
+    const questionCount =
+      heatmapQuestionCounts[(seed >> 4) % heatmapQuestionCounts.length];
+    attempts.push(
+      questionCount === 80
+        ? paperAttempt({ id, subject: 'law', year: 113, submittedAt })
+        : practiceAttempt({
+            id,
+            questionIds: lawQuestionIds.slice(0, questionCount),
+            submittedAt,
+          }),
+    );
+    daysAgo += heatmapDayGaps[seed % heatmapDayGaps.length];
+  }
+  return attempts;
+}
+
+export const heatmapAttempts = buildHeatmapAttempts();
+export const heatmapAppState = attemptsAppState(heatmapAttempts);
+
 // ---------- 難題 ----------
 
 /** 四科都有標記的難題。 */

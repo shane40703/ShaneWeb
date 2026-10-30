@@ -172,3 +172,8 @@ export function useAppState() {
   if (!context) throw new Error('useAppState must be used within AppStateProvider');
   return context;
 }
+
+/** 給 Provider 外也會畫出來的元件用：拿不到就是 null，不丟錯。 */
+export function useOptionalAppState() {
+  return useContext(AppStateContext);
+}
