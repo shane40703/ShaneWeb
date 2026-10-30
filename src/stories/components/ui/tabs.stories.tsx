@@ -4,21 +4,31 @@ import { fn } from 'storybook/test';
 import { Tab, TabList, TabPanel, TabsRoot } from '@/components/tabs';
 
 const tabLabels = { question: '題目', discussion: '討論區', notes: '筆記' };
+const variantLabels = { outline: '外框', strip: '半透明底' };
 
 const panelStyle = {
-  margin: '16px 0 0',
+  margin: 0,
+  padding: 24,
+  border: 'var(--frame)',
+  borderRadius: 'var(--radius-frame)',
+  background: 'var(--surface)',
   color: 'var(--text-soft)',
   fontSize: 14,
   lineHeight: 1.6,
 } as const;
 
 /**
- * 分頁列（考古題討論版的題目／討論區／筆記）：半透明的底鋪在方格紙上，格線透得過來，下緣
- * 一條鉛筆線，沒有外框。目前的分頁是不透明的底加 2px 墨線藍底線，標籤旁可以放等寬字的數量
- * （討論區的投稿數）。考古題討論版的頁面窄於 480px 時，分頁平分整列寬度。
+ * 分頁（考古題討論版的題目／討論區／筆記）有兩種樣式，用 Controls 的 variant 切換：
+ * - 外框 outline（考古題討論版目前使用）：分頁放在方格紙上，下方一條和面板同色的框線。目前的
+ *   分頁用同色框線圍住三邊、底部打開，和下方的面板連成一張紙。
+ * - 半透明底 strip：半透明的底鋪在方格紙上，格線透得過來，下緣一條鉛筆線。目前的分頁是不透明
+ *   的底加 2px 墨線藍底線。
  *
- * 畫面上可以操作看到：點分頁切換，不透明的底滑到新的分頁、下方內容跟著換；用 Tab 移到分頁列
- * 後按左右鍵切換；滑過與焦點框。Controls 的 value 也跟著更新。
+ * 標籤旁可以放等寬字的數量（討論區的投稿數）。考古題討論版的頁面窄於 480px 時，分頁平分整列
+ * 寬度。
+ *
+ * 畫面上可以操作看到：點分頁切換，目前分頁的形狀滑到新的分頁、下方內容跟著換；用 Tab 移到
+ * 分頁列後按左右鍵切換；滑過與焦點框。Controls 的 value 也跟著更新。
  */
 const meta = {
   title: 'Components/基礎 UI/Tabs',
@@ -27,6 +37,7 @@ const meta = {
     value: 'question',
     onValueChange: fn(),
     ariaLabel: '題目分頁',
+    variant: 'outline',
     // 分頁與內容由 render 組出來，不在 Controls 調整。
     children: null,
   },
@@ -34,6 +45,10 @@ const meta = {
     value: {
       control: { type: 'inline-radio', labels: tabLabels },
       options: Object.keys(tabLabels),
+    },
+    variant: {
+      control: { type: 'inline-radio', labels: variantLabels },
+      options: Object.keys(variantLabels),
     },
     children: { control: false, table: { disable: true } },
   },

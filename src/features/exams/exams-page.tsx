@@ -509,7 +509,7 @@ export function ExamsPage({
             </div>
           </div>
 
-          <TabsRoot value={tab} onValueChange={setTab} ariaLabel="題目分頁">
+          <TabsRoot value={tab} onValueChange={setTab} ariaLabel="題目分頁" variant="outline">
             <TabList>
               <Tab value="question">題目</Tab>
               <Tab value="discussion" badge={posts.length > 0 ? posts.length : undefined}>

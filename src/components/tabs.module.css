@@ -1,7 +1,10 @@
-/* Tab strip: a translucent sheet laid over the graph paper, closed by a rule along its bottom.
-   The grid shows through it, and the rule edges the sheet rather than sitting on the bare paper.
-   The active tab is the same paper at full opacity: Base UI's indicator, which slides between
-   the tabs, carries that base and the 2px ink-blue line over the rule. */
+/* Two looks, set on the root. In both, Base UI's indicator is the active tab's shape, and it
+   slides between the tabs.
+   Strip: a translucent sheet laid over the graph paper, closed by a rule along its bottom. The
+   grid shows through it, and the rule edges the sheet rather than sitting on the bare paper. The
+   active tab is the same paper at full opacity, over a 2px ink-blue line.
+   Outline: the tabs sit on the paper above a line in the panels' frame colour. The active tab is
+   framed on three sides and open at the bottom, so it and the panel below read as one sheet. */
 .root {
   min-width: 0;
 }
@@ -10,9 +13,16 @@
   display: flex;
   position: relative;
   isolation: isolate;
+}
+
+.strip .list {
   border-bottom: var(--rule);
   border-radius: var(--radius-frame) var(--radius-frame) 0 0;
   background: color-mix(in srgb, var(--surface-elevated) 55%, transparent);
+}
+
+.outline .list {
+  border-bottom: var(--frame);
 }
 
 /* Above the indicator, which comes after the tabs in the list. */
@@ -34,8 +44,12 @@
   cursor: pointer;
 }
 
+.outline .tab {
+  border-radius: var(--radius-control) var(--radius-control) 0 0;
+}
+
 /* Still translucent: only the active tab goes opaque. */
-.tab:hover {
+.tab:not([data-active]):hover {
   color: var(--text);
   background: color-mix(in srgb, var(--surface-elevated) 50%, transparent);
 }
@@ -61,12 +75,23 @@
   bottom: -1px;
   left: var(--active-tab-left);
   width: var(--active-tab-width);
-  border-bottom: 2px solid var(--primary);
-  border-radius: var(--radius-frame) var(--radius-frame) 0 0;
-  background: var(--surface-elevated);
   transition:
     left 180ms ease,
     width 180ms ease;
+}
+
+.strip .indicator {
+  border-bottom: 2px solid var(--primary);
+  border-radius: var(--radius-frame) var(--radius-frame) 0 0;
+  background: var(--surface-elevated);
+}
+
+/* No bottom frame: the fill covers the list's line, and the panel's top frame under it. */
+.outline .indicator {
+  border: var(--frame);
+  border-bottom: 0;
+  border-radius: var(--radius-control) var(--radius-control) 0 0;
+  background: var(--surface);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -87,6 +112,17 @@
 
 .panel {
   min-width: 0;
+  margin-top: 16px;
+}
+
+/* The panel's top frame lands on the list's line, and its sheet continues the active tab. */
+.outline .panel {
+  margin-top: -1px;
+}
+
+.outline .panel > :first-child {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
 }
 
 /* Phone widths: the tabs share the strip, as the result view tabs do. */

@@ -4,22 +4,27 @@ import styles from './tabs.module.css';
 
 const TabsLabelContext = createContext<string | undefined>(undefined);
 
-/** Tab strip: a translucent list closed by a rule, the active tab opaque over an ink-blue line. */
+/**
+ * Two looks: `strip` is a translucent list closed by a rule, the active tab opaque over an
+ * ink-blue line; `outline` frames the active tab and opens it into the framed panel below.
+ */
 export function TabsRoot<T extends string>({
   value,
   onValueChange,
   ariaLabel,
+  variant = 'strip',
   children,
 }: {
   value: T;
   onValueChange: (value: T) => void;
   ariaLabel: string;
+  variant?: 'strip' | 'outline';
   children: ReactNode;
 }) {
   return (
     <TabsLabelContext.Provider value={ariaLabel}>
       <Tabs.Root
-        className={styles.root}
+        className={`${styles.root} ${styles[variant]}`}
         value={value}
         onValueChange={(next) => onValueChange(next as T)}
       >

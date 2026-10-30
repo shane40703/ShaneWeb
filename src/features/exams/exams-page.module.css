@@ -1,4 +1,4 @@
-/* Exams page: a tab strip (題目 / 討論區 / 筆記, components/tabs.tsx) over the content
+/* Exams page: tabs (題目 / 討論區 / 筆記, components/tabs.tsx) over the content
    column; the question, its 類似考題, the discussion, the compose form, the note editor and
    the navigator are each ONE framed cream panel; inside them only rules separate the groups
    (no inner boxes).
@@ -156,7 +156,6 @@
 
 /* The active tab's panels stack under the tab bar with the page's panel rhythm. */
 .tabPanel {
-  margin-top: 16px;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: 24px;
