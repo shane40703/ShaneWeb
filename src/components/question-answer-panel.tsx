@@ -29,6 +29,9 @@ export function QuestionAnswerPanel({
       aria-labelledby={heading ? headingId : undefined}
     >
       {heading ? <h3 id={headingId}>{heading}</h3> : null}
+      {question.answerKey.kind === 'all-credit' ? (
+        <p className={styles.allCreditNote}>本題一律給分，四個選項都算正確。</p>
+      ) : null}
       <ol>
         {question.options.map((option, index) => {
           const accepted = acceptedAnswers.includes(index);

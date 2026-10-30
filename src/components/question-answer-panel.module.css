@@ -12,6 +12,17 @@
   font-weight: 500;
 }
 
+/* All-credit questions say why every row below is marked correct. */
+.allCreditNote {
+  margin: 0;
+  padding-left: 10px;
+  border-left: 2px solid var(--success);
+  color: var(--success);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
 .panel ol {
   margin: 0;
   padding: 0;

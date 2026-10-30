@@ -45,6 +45,7 @@ describe('QuestionAnswerPanel', () => {
     );
     expect(screen.queryByText('正確答案')).not.toBeInTheDocument();
     expect(screen.queryByText('A、C')).not.toBeInTheDocument();
+    expect(screen.queryByText('本題一律給分，四個選項都算正確。')).not.toBeInTheDocument();
   });
 
   it('gives every option an accessible correct-option name for all-credit questions', () => {
@@ -62,7 +63,8 @@ describe('QuestionAnswerPanel', () => {
         name: /^正確選項 [A-D]：選項 [A-D]$/,
       }),
     ).toHaveLength(4);
-    expect(screen.queryByText('本題一律給分')).not.toBeInTheDocument();
+    const note = screen.getByText('本題一律給分，四個選項都算正確。');
+    expect(note.closest('li')).toBeNull();
     expect(screen.queryByText('正確答案')).not.toBeInTheDocument();
   });
 
