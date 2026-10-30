@@ -103,6 +103,30 @@ test('past exams opens from the navigation and keeps browsing on /exams', async 
   ).toBeLessThanOrEqual(0);
 });
 
+test('the compact bar scrolls with the page and the footer returns to it', async ({
+  page,
+}) => {
+  test.skip(!onPhone());
+  await page.goto('/exams?question=law-114-01');
+  const position = page.getByText('1 / 80', { exact: true });
+  await expect(position).toBeVisible();
+
+  await page.evaluate(() => window.scrollTo({ top: 400, behavior: 'instant' }));
+  await expect(position).not.toBeInViewport();
+
+  // The footer can render before hydration, so retry until the question changes.
+  await expect(async () => {
+    await page.getByRole('button', { name: '下一題' }).last().click({ timeout: 1000 });
+    await expect(page).toHaveURL(/\/exams\?question=law-114-02$/, { timeout: 1000 });
+  }).toPass();
+
+  const nextPosition = page.getByText('2 / 80', { exact: true });
+  await expect(nextPosition).toBeInViewport();
+  const box = await nextPosition.boundingBox();
+  expect(box!.y).toBeGreaterThanOrEqual(60);
+  await expect(page.locator('h2').first()).toBeInViewport();
+});
+
 test('posts on past exams stay with the question', async ({ page }) => {
   const content = `考古題討論版頁的共享投稿 ${test.info().project.name}`;
   await page.goto('/exams?question=law-114-03');

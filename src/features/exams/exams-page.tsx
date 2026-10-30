@@ -152,6 +152,7 @@ export function ExamsPage({
   // decides when); it folds again after a choice.
   const [selectorExpanded, setSelectorExpanded] = useState(false);
   const selectorId = useId();
+  const compactNavRef = useRef<HTMLDivElement>(null);
   const verdictRef = useRef<HTMLParagraphElement>(null);
   const focusVerdictFor = useRef<string | null>(null);
   const shared = useSharedDiscussions(currentQuestion?.id ?? 'unavailable');
@@ -273,6 +274,13 @@ export function ExamsPage({
       undefined,
       { shallow: true, scroll: false },
     );
+  }
+
+  // The compact bar scrolls with the page, so the footer's 上一題／下一題 comes back to it and
+  // the new question's start. Two-column pages hide the bar and stay where they are.
+  function navigateFromFooter(questionId: string) {
+    navigateTo(questionId);
+    compactNavRef.current?.scrollIntoView({ block: 'nearest', behavior: 'instant' });
   }
 
   function setTab(nextTab: ExamsTab) {
@@ -466,7 +474,7 @@ export function ExamsPage({
 
       <div className={styles.examsLayout}>
         <main className={styles.contentColumn}>
-          <div className={styles.compactNav}>
+          <div className={styles.compactNav} ref={compactNavRef}>
             <div className={styles.compactPosition}>
               <strong>
                 {paperIndex + 1} / {paperQuestions.length}
@@ -652,7 +660,7 @@ export function ExamsPage({
                     disabled={currentIndex <= 0}
                     onClick={() =>
                       subjectQuestions[currentIndex - 1] &&
-                      navigateTo(subjectQuestions[currentIndex - 1].id)
+                      navigateFromFooter(subjectQuestions[currentIndex - 1].id)
                     }
                   >
                     <IconArrowLeft size={17} stroke={2} aria-hidden="true" /> 上一題
@@ -661,7 +669,7 @@ export function ExamsPage({
                     disabled={currentIndex >= subjectQuestions.length - 1}
                     onClick={() =>
                       subjectQuestions[currentIndex + 1] &&
-                      navigateTo(subjectQuestions[currentIndex + 1].id)
+                      navigateFromFooter(subjectQuestions[currentIndex + 1].id)
                     }
                   >
                     下一題 <IconArrowRight size={17} stroke={2} aria-hidden="true" />

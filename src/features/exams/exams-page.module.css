@@ -95,12 +95,10 @@
   transform: rotate(180deg);
 }
 
-/* Sticky under the topbar (64px; 60px on phones, a viewport rule below), over the panels. */
+/* Scrolls with the page; the footer's 上一題／下一題 returns here, clear of the sticky topbar. */
 .compactNav {
-  position: sticky;
-  top: 64px;
-  z-index: 20;
   padding: 8px 10px;
+  scroll-margin-top: 72px;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -142,13 +140,6 @@
 
 .compactActions button {
   white-space: nowrap;
-}
-
-/* The shell's topbar is 60px under an 800px viewport (app-shell.module.css), not a page width. */
-@media (max-width: 800px) {
-  .compactNav {
-    top: 60px;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
