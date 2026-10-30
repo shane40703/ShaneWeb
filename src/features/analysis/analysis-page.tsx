@@ -3,7 +3,6 @@ import { useRouter } from 'next/router';
 import { type CSSProperties, useState } from 'react';
 import {
   IconArrowRight,
-  IconChartPie,
   IconListCheck,
 } from '@tabler/icons-react';
 import { EmptyState } from '@/components/content/content';
@@ -408,7 +407,7 @@ export function AnalysisPage({ questions }: { questions: QuestionSummary[] }) {
         </>
       ) : (
         <section className={styles.tableCard}>
-          <EmptyState icon={IconChartPie} title="這個範圍尚無分析資料" description="題庫補齊後，分類題數與占比會自動出現在這裡。" />
+          <EmptyState title="這個範圍尚無分析資料" description="題庫補齊後，分類題數與占比會自動出現在這裡。" />
         </section>
       )}
     </>

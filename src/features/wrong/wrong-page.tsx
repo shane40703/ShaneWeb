@@ -4,7 +4,6 @@ import {
   IconAlertTriangle,
   IconCircleCheck,
   IconLoader2,
-  IconRepeat,
   IconX,
 } from '@tabler/icons-react';
 import { ReviewNoteEditor } from '@/components/attempt-review';
@@ -168,7 +167,7 @@ export function WrongPage({
   if (!hydrated) {
     return (
       <section className={styles.panel}>
-        <EmptyState icon={IconLoader2} title="正在讀取常錯題目" description="請稍候。" />
+        <EmptyState title="正在讀取常錯題目" description="請稍候。" />
       </section>
     );
   }
@@ -177,7 +176,6 @@ export function WrongPage({
     return (
       <section className={styles.panel}>
         <EmptyState
-          icon={IconRepeat}
           title="還沒有作答紀錄"
           description="完成每日抽題練習並選擇儲存，或歷屆試題模擬考交卷後，答錯的題目與累計次數會整理在這裡。"
           action={
@@ -199,7 +197,6 @@ export function WrongPage({
     return (
       <section className={styles.panel}>
         <EmptyState
-          icon={IconLoader2}
           title="正在整理常錯題目"
           description="正在依作答紀錄取得題目與答案，請稍候。"
         />
@@ -211,7 +208,6 @@ export function WrongPage({
     return (
       <section className={styles.panel}>
         <EmptyState
-          icon={IconCircleCheck}
           title="目前沒有答錯題目"
           description="已載入的作答紀錄中沒有錯題，繼續保持。"
         />
@@ -351,7 +347,6 @@ export function WrongPage({
           </>
         ) : (
           <EmptyState
-            icon={IconAlertTriangle}
             title="錯題內容暫時無法顯示"
             description="題庫載入失敗，已保存的作答紀錄不受影響。"
           />

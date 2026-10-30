@@ -1,10 +1,6 @@
 import { useRouter } from 'next/router';
 import { useCallback, useEffect, useState } from 'react';
 import {
-  IconAlertCircle,
-  IconHelpCircle,
-  IconLoader2,
-  IconNotebook,
   IconPencil,
   IconTrash,
 } from '@tabler/icons-react';
@@ -158,7 +154,6 @@ export function NotesPage({
   ) {
     return (
       <EmptyState
-        icon={IconLoader2}
         title="正在載入題目"
         description="正在取得指定題目的筆記資料，請稍候。"
       />
@@ -172,7 +167,6 @@ export function NotesPage({
   ) {
     return (
       <EmptyState
-        icon={IconAlertCircle}
         title="題庫載入失敗"
         description="目前無法取得完整題庫，請重新載入後再試。"
         action={
@@ -193,7 +187,6 @@ export function NotesPage({
   ) {
     return (
       <EmptyState
-        icon={IconHelpCircle}
         title="題庫尚無資料"
         description="目前找不到這個科目的題目。"
       />
@@ -203,7 +196,6 @@ export function NotesPage({
   if (!currentQuestion) {
     return (
       <EmptyState
-        icon={requestedQuestionId ? IconHelpCircle : IconNotebook}
         title={requestedQuestionId ? '找不到指定題目' : '題庫尚無資料'}
         description={
           requestedQuestionId

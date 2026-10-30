@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import type { ReactNode } from 'react';
-import { IconExternalLink, type TablerIcon } from '@tabler/icons-react';
+import { IconExternalLink } from '@tabler/icons-react';
 import { DifficultButton } from '@/components/difficult-button';
 import { Button } from '@/components/ui/ui';
 import { ImageLightbox } from '@/components/image-lightbox';
@@ -19,21 +19,16 @@ export function Tag({ children, tone = 'blue' }: { children: ReactNode; tone?: s
 }
 
 export function EmptyState({
-  icon: Icon,
   title,
   description,
   action,
 }: {
-  icon: TablerIcon;
   title: string;
   description: string;
   action?: ReactNode;
 }) {
   return (
     <div className={styles.emptyState}>
-      <span className={styles.emptySymbol} aria-hidden="true">
-        <Icon size={32} stroke={1.8} />
-      </span>
       <h2>{title}</h2>
       <p>{description}</p>
       {action ? <div className={styles.emptyAction}>{action}</div> : null}

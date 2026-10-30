@@ -5,8 +5,6 @@ import {
   IconArrowRight,
   IconChevronUp,
   IconChevronDown,
-  IconHistory,
-  IconLoader2,
   IconTrash,
 } from '@tabler/icons-react';
 import { AttemptReview } from '@/components/attempt-review';
@@ -365,19 +363,16 @@ export function HistoryPage({
           ) : filteredWrongCount &&
             filteredQuestionStatuses.includes('loading') ? (
             <EmptyState
-              icon={IconLoader2}
               title="正在載入跨年度錯題"
               description="題目載入完成後，就能依分類查看歷次答錯紀錄。"
             />
           ) : filteredWrongCount ? (
             <EmptyState
-              icon={IconHistory}
               title="錯題內容暫時無法顯示"
               description="作答次數與分數仍會保留，請確認連線後再試一次。"
             />
           ) : (
             <EmptyState
-              icon={IconHistory}
               title="目前沒有跨年度錯題"
               description={dailyOnly
                 ? '儲存每日抽題練習後，這裡會彙整每次答錯的分類與題目。'
@@ -398,7 +393,6 @@ export function HistoryPage({
         >
           {!hydrated ? (
             <EmptyState
-              icon={IconLoader2}
               title="正在讀取紀錄"
               description="請稍候。"
             />
@@ -774,7 +768,6 @@ export function HistoryPage({
             </div>
           ) : (
             <EmptyState
-              icon={IconHistory}
               title={dailyOnly ? '還沒有每日練習履歷' : '還沒有作答紀錄'}
               description={dailyOnly ? '完成每日抽題練習後，選擇「儲存此次作答」才會加入履歷。不記錄不會新增資料。'
                 : '完成歷屆試題模擬考並交卷後，結果會保存在這裡。每日抽題練習請至「每日練習履歷」查看。'}

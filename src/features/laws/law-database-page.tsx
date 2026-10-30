@@ -86,7 +86,6 @@ export function LawDatabasePage({
       ) : (
         <div className={styles.list}>
           <EmptyState
-            icon={IconScale}
             title="尚無法規資料"
             description="題庫標註法規後，法規清單與出現次數會自動出現在這裡。"
           />

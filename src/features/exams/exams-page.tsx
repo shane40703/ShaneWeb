@@ -3,12 +3,8 @@ import { useRouter } from 'next/router';
 import {
   IconArrowLeft,
   IconArrowRight,
-  IconAlertCircle,
   IconHeart,
   IconHeartFilled,
-  IconHelpCircle,
-  IconLoader2,
-  IconMessageCircle,
   IconNotebook,
   IconPencil,
   IconTrash,
@@ -130,7 +126,6 @@ export function ExamsPage({
   ) {
     return (
       <EmptyState
-        icon={IconLoader2}
         title="正在載入題目"
         description="正在取得指定題目的詳解與討論，請稍候。"
       />
@@ -140,7 +135,6 @@ export function ExamsPage({
   if (questionBankStatus === 'error' && !currentQuestion) {
     return (
       <EmptyState
-        icon={IconAlertCircle}
         title="題庫載入失敗"
         description="目前無法取得完整題庫，請重新載入後再試。"
         action={
@@ -155,7 +149,6 @@ export function ExamsPage({
   if (!currentQuestion) {
     return (
       <EmptyState
-        icon={IconHelpCircle}
         title={requestedQuestionId ? '找不到指定題目' : '題庫尚無資料'}
         description={
           requestedQuestionId
@@ -545,7 +538,6 @@ export function ExamsPage({
               </div>
             ) : (
               <EmptyState
-                icon={IconMessageCircle}
                 title="還沒有內容"
                 description="成為第一個留下詳解或提問的人。"
               />

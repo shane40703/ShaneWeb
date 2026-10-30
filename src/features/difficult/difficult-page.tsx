@@ -11,7 +11,6 @@ import {
   type SelectorYear,
 } from '@/components/question-selector';
 import {
-  IconBulb,
   IconCircleCheck,
   IconLoader2,
   IconPlugConnectedX,
@@ -151,10 +150,9 @@ export function DifficultPage({
   return (
     <section className={styles.panel}>
       {!hydrated ? (
-        <EmptyState icon={IconLoader2} title="正在讀取難題" description="請稍候。" />
+        <EmptyState title="正在讀取難題" description="請稍候。" />
       ) : !state.difficultQuestionIds.length ? (
         <EmptyState
-          icon={IconBulb}
           title="還沒有標記難題"
           description="在作答頁、交卷結果或詳解頁按下「標記為難題」，題目就會出現在這裡。"
         />
@@ -272,13 +270,11 @@ export function DifficultPage({
             </div>
           ) : difficultQuestions.length ? (
             <EmptyState
-              icon={IconBulb}
               title="這個科目沒有難題"
               description="可切換到其他科目查看已標記的題目。"
             />
           ) : !failedSubjects.length && !loadingSubjects.length ? (
             <EmptyState
-              icon={IconPlugConnectedX}
               title="難題內容暫時無法顯示"
               description="題目可能已移除，其他已保存資料不受影響。"
             />
