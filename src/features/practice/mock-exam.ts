@@ -127,13 +127,16 @@ export function hasMockExamDraft(progress: QuizProgressByQuestion) {
 }
 
 /**
- * A draft someone has worked on: an answer or a struck-out option. The original
+ * A draft someone has worked on: an answer, a struck-out option or a 待檢查 mark. The original
  * 考古題討論版 opened a draft just by showing a question, so merely reading a paper there
  * does not make it a paper in progress.
  */
 export function isMockExamStarted(progress: QuizProgressByQuestion) {
   return Object.values(progress).some(
-    (item) => item?.selected !== undefined || Boolean(item?.eliminatedOptions?.length),
+    (item) =>
+      item?.selected !== undefined ||
+      Boolean(item?.eliminatedOptions?.length) ||
+      item?.review === true,
   );
 }
 

@@ -453,11 +453,18 @@
   color: var(--text);
   box-shadow: var(--shadow-lg);
   text-align: center;
+  /* Never taller than the window: the buttons must stay reachable with a phone on its side. */
+  max-height: calc(100vh - 40px);
+  max-height: calc(100dvh - 40px);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
 }
 
 .dialogIcon {
   width: 40px;
   height: 40px;
+  flex: none;
   margin: 0 auto 14px;
   display: grid;
   place-items: center;
@@ -487,6 +494,7 @@
 }
 
 .dialogActions {
+  flex: none;
   display: flex;
   justify-content: center;
   gap: 10px;
@@ -535,6 +543,13 @@
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
+}
+
+/* On a short window the words and buttons matter more than the icon. */
+@media (max-height: 420px) {
+  .dialogIcon {
+    display: none;
+  }
 }
 
 @media (max-width: 800px) {

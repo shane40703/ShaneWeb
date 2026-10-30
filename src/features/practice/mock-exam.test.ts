@@ -15,6 +15,7 @@ import {
   mockExamQuestionId,
   mockExamScope,
   mockExamSubmitWarning,
+  isMockExamStarted,
   startMockExamDraft,
   summarizeMockExamDraft,
   touchMockExamQuestion,
@@ -322,6 +323,12 @@ describe('mock exam results', () => {
       '還有 1 題未作答，這一題一律給分，仍會計分。',
     );
     expect(mockExamSubmitWarning(questions.slice(0, 1), progress)).toBeNull();
+  });
+
+  it('treats a paper with only 待檢查 marks as started, so leaving keeps them', () => {
+    const opened = { elapsedSeconds: 0, startedAt: '2026-10-20T00:00:00.000Z' };
+    expect(isMockExamStarted({ 'law-114-01': opened })).toBe(false);
+    expect(isMockExamStarted({ 'law-114-01': { ...opened, review: true } })).toBe(true);
   });
 
   it('counts the blanks of a record, telling 一律給分 apart', () => {

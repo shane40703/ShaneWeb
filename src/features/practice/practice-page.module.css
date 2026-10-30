@@ -1018,14 +1018,20 @@
 
 /* 交卷 with blanks: the numbers still open, each a way back to its question. */
 .blankNumbers {
-  /* Five and a half rows: the cut row says there are more. */
+  /* Five and a half rows: the cut row says there are more. It gives way first on a short
+     window, down to one row. */
+  min-height: 52px;
   max-height: min(38vh, 242px);
   margin-bottom: 20px;
-  padding: 2px;
+  padding: 4px;
+  flex: 0 1 auto;
   overflow-y: auto;
 }
 
+/* Flex, not the shared grid: a grid of fixed tracks leaves two tiles at the left edge. */
 .blankNumbers > div {
+  display: flex;
+  flex-wrap: wrap;
   justify-content: center;
 }
 
@@ -1523,12 +1529,6 @@
   }
 }
 
-@container (max-width: 400px) {
-  .navButtons svg {
-    display: none;
-  }
-
-  /* Three buttons and the time on a 320px phone: down to what each needs. */
 /* The year tag already says which question; it needs the room on the narrowest phones. */
 @container (max-width: 320px) {
   .paperQuiz .challengeActions > strong {
@@ -1536,6 +1536,12 @@
   }
 }
 
+@container (max-width: 400px) {
+  .navButtons svg {
+    display: none;
+  }
+
+  /* Three buttons and the time on a 320px phone: down to what each needs. */
   .paperQuiz .timer svg {
     display: none;
   }

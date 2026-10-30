@@ -299,6 +299,7 @@ export function ConfirmDialog({
   cancelLabel = '取消',
   onConfirm,
   tone = 'danger',
+  finalFocus,
   children,
 }: {
   /** Left out when the page opens the dialog itself, through `open`. */
@@ -312,6 +313,8 @@ export function ConfirmDialog({
   onConfirm: () => void;
   /** danger: destructive (red icon box, danger confirm); warning: irreversible but not destructive (amber icon box, primary confirm). */
   tone?: 'danger' | 'warning';
+  /** Where focus lands on closing, when what opened the dialog may be gone by then. */
+  finalFocus?: ComponentProps<typeof AlertDialog.Popup>['finalFocus'];
   /** Goes between the text and the buttons; focus still starts on the cancel button. */
   children?: ReactNode;
 }) {
@@ -322,7 +325,11 @@ export function ConfirmDialog({
       <AlertDialog.Portal>
         <AlertDialog.Backdrop className={styles.backdrop} />
         <AlertDialog.Viewport className={styles.dialogViewport}>
-          <AlertDialog.Popup className={styles.dialogPopup} initialFocus={children ? cancelRef : undefined}>
+          <AlertDialog.Popup
+            className={styles.dialogPopup}
+            initialFocus={children ? cancelRef : undefined}
+            finalFocus={finalFocus}
+          >
             <div className={cx(styles.dialogIcon, tone === 'warning' && styles.dialogIconWarning)}>
               <IconAlertTriangle size={25} stroke={2} aria-hidden="true" />
             </div>

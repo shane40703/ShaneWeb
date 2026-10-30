@@ -411,6 +411,7 @@ export function MockExamQuiz({
         description={submitWarning ?? ''}
         confirmLabel="確定交卷"
         cancelLabel="回去檢查"
+        finalFocus={headingRef}
         onConfirm={onSubmit}
       >
         <div className={styles.blankNumbers}>

@@ -562,6 +562,21 @@ test('the paper keeps its shortcuts wherever a click or a closed dialog leaves f
   await expectQuestion(8);
 });
 
+test('the 交卷 check stays usable on a window as short as a phone on its side', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 568, height: 320 });
+  await page.goto('/practice/mock-exam?subject=env&year=113');
+  await page.getByRole('button', { name: '開始作答' }).click();
+  await expect(page.getByRole('region', { name: '題目與選項' })).toBeVisible();
+  await (await paperActions(page)).getByRole('button', { name: /交卷/ }).click();
+  const check = page.getByRole('alertdialog', { name: '確定要交卷嗎？' });
+  for (const name of ['回去檢查', '確定交卷']) {
+    const box = (await check.getByRole('button', { name }).boundingBox())!;
+    expect(box.y + box.height).toBeLessThanOrEqual(320);
+  }
+});
+
 test('answering a paper takes the sidebar\'s room in a window too narrow for both', async ({
   page,
   isMobile,
