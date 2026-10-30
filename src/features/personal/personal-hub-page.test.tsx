@@ -84,7 +84,7 @@ describe('PersonalHubPage', () => {
       </ToastProvider>,
     );
 
-    const heading = await screen.findByRole('heading', { name: '過去一年作答 32 題' });
+    const heading = await screen.findByRole('heading', { name: '近一年寫了 32 題' });
     expect(screen.getByRole('img')).toHaveAccessibleName(
       '過去一年每天的作答題數熱力圖，共 32 題，2 天有作答',
     );
@@ -95,9 +95,7 @@ describe('PersonalHubPage', () => {
 
   it('stays empty without the app state provider', () => {
     render(<PersonalHubPage today="2026-10-26" />);
-    expect(
-      screen.getByRole('heading', { name: '過去一年作答 0 題' }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: '近一年寫了 0 題' })).toBeInTheDocument();
     expect(screen.getByRole('img')).toHaveAccessibleName(
       '過去一年每天的作答題數熱力圖，共 0 題，0 天有作答',
     );
@@ -107,6 +105,6 @@ describe('PersonalHubPage', () => {
     const html = renderToString(<PersonalHubPage />);
     expect(html.match(/<a /g)).toHaveLength(5);
     expect(html).toContain('href="/practice-history"');
-    expect(html).toContain('過去一年作答 <!-- -->—<!-- --> 題');
+    expect(html).toContain('近一年寫了 <!-- -->—<!-- --> 題');
   });
 });

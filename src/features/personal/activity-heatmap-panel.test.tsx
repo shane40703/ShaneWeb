@@ -1,4 +1,4 @@
-import { cleanup, render, screen, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { renderToString } from 'react-dom/server';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { QuizAttempt } from '@/lib/types';
@@ -35,8 +35,8 @@ afterEach(() => {
 describe('ActivityHeatmap', () => {
   it('shows the totals, the 53-week grid and the legend', () => {
     const { container } = render(<ActivityHeatmap attempts={attempts} today={today} />);
-    const panel = screen.getByRole('region', { name: '過去一年作答 12 題' });
-    expect(within(panel).getByText('活動天數 1 天')).toBeInTheDocument();
+    const panel = screen.getByRole('region', { name: '近一年寫了 12 題' });
+    expect(within(panel).getByText('活動 1 天')).toBeInTheDocument();
     expect(within(panel).getByText('最長連續 1 天')).toBeInTheDocument();
     expect(cellsOf(container)).toHaveLength(53 * 7);
     expect(within(panel).getByText('11月')).toBeInTheDocument();
@@ -52,16 +52,47 @@ describe('ActivityHeatmap', () => {
     const { container } = render(<ActivityHeatmap attempts={attempts} today={today} />);
     const cells = cellsOf(container);
     const answered = cells.find(
-      (cell) => cell.getAttribute('title') === '2026/10/19・作答 12 題',
+      (cell) => cell.getAttribute('data-tooltip') === '10/19, 12題',
     );
     expect(answered).toHaveAttribute('data-level', '2');
     expect(answered).toHaveAttribute('aria-hidden', 'true');
-    expect(
-      cells.some((cell) => cell.getAttribute('title') === '2026/10/20・沒有作答'),
-    ).toBe(true);
+    expect(cells.some((cell) => cell.getAttribute('data-tooltip') === '10/20, 0題')).toBe(
+      true,
+    );
     expect(
       cells.filter((cell) => cell.getAttribute('data-in-range') === 'false'),
     ).toHaveLength(4);
+  });
+
+  it('shows the hovered day and hides the tooltip when the pointer leaves the grid', () => {
+    const { container } = render(<ActivityHeatmap attempts={attempts} today={today} />);
+    const cell = (label: string) =>
+      cellsOf(container).find((day) => day.getAttribute('data-tooltip') === label)!;
+
+    expect(screen.queryByText('10/19, 12題')).not.toBeInTheDocument();
+    fireEvent.pointerOver(cell('10/19, 12題'));
+    expect(screen.getByText('10/19, 12題')).toBeInTheDocument();
+
+    fireEvent.pointerOver(cell('10/20, 0題'));
+    expect(screen.getByText('10/20, 0題')).toBeInTheDocument();
+    expect(screen.queryByText('10/19, 12題')).not.toBeInTheDocument();
+
+    fireEvent.pointerLeave(screen.getByRole('img'));
+    expect(screen.queryByText('10/20, 0題')).not.toBeInTheDocument();
+  });
+
+  it('keeps the tooltip across the gaps between cells and drops it on scroll', () => {
+    const { container } = render(<ActivityHeatmap attempts={attempts} today={today} />);
+    fireEvent.pointerOver(
+      cellsOf(container).find(
+        (day) => day.getAttribute('data-tooltip') === '10/19, 12題',
+      )!,
+    );
+    fireEvent.pointerOver(screen.getByRole('img'));
+    expect(screen.getByText('10/19, 12題')).toBeInTheDocument();
+
+    fireEvent.scroll(container.querySelector('[class*="scroller"]')!);
+    expect(screen.queryByText('10/19, 12題')).not.toBeInTheDocument();
   });
 
   it('describes the whole grid as one image without any clickable cell', () => {
@@ -78,7 +109,7 @@ describe('ActivityHeatmap', () => {
     expect(html).toContain('—');
     expect(html).not.toContain('data-in-range');
     expect(html).not.toContain('role="img"');
-    expect(html).toContain('活動天數');
+    expect(html).toContain('最長連續');
   });
 
   it('scrolls to the latest weeks once the date arrives after mount', () => {

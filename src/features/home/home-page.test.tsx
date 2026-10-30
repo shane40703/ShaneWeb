@@ -15,7 +15,7 @@ describe('HomePage exam countdown', () => {
     expect(within(countdown).getByRole('link')).toHaveAttribute('href', ARCHITECT_EXAM.source);
     expect(screen.getByRole('link', { name: /每日抽題練習/ })).toHaveAttribute('href', '/practice/quiz');
     expect(screen.getAllByRole('link').filter(link => link.getAttribute('href')?.startsWith('/practice/mock-exam'))).toHaveLength(4);
-    expect(screen.queryByRole('heading', { name: /過去一年作答/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: /近一年寫了/ })).not.toBeInTheDocument();
   });
 
   it.each([

@@ -69,7 +69,7 @@ test('我的作答存摺 opens its hub, whose rows reach every page while the si
     await nav.getByRole('link', { name: personal.label, exact: true }).click();
     await expect(page).toHaveURL(/\/personal$/);
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(personal.label);
-    await expect(page.getByRole('heading', { name: /過去一年作答/ })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /近一年寫了/ })).toBeVisible();
     await expect(page.getByRole('dialog', { name: '主要功能', exact: true })).toHaveCount(
       0,
     );
@@ -88,6 +88,27 @@ test('我的作答存摺 opens its hub, whose rows reach every page while the si
       await expect(drawer).toHaveCount(0);
     }
   }
+});
+
+test('hovering a heatmap day shows its date and count, also on the first and last column', async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(isMobile, 'Touch devices have no hover.');
+  await page.goto('/personal');
+  const panel = page.getByRole('region', { name: /近一年寫了/ });
+  const days = panel.locator('[data-in-range="true"]');
+  const tooltip = panel.getByText(/^\d+\/\d+, 0題$/);
+  for (const day of [days.first(), days.last()]) {
+    await day.hover();
+    await expect(tooltip).toHaveText((await day.getAttribute('data-tooltip'))!);
+    const box = (await tooltip.boundingBox())!;
+    const frame = (await panel.boundingBox())!;
+    expect(box.x).toBeGreaterThanOrEqual(frame.x);
+    expect(box.x + box.width).toBeLessThanOrEqual(frame.x + frame.width);
+  }
+  await page.mouse.move(0, 0);
+  await expect(tooltip).toHaveCount(0);
 });
 
 test('the hub rows open their page anywhere along the row and fit a phone', async ({
