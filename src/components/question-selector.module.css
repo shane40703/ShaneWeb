@@ -228,12 +228,15 @@
   }
 }
 
-@container (max-width: 520px) {
-  /* A container cannot query itself: this one follows the page's container (exams page). */
+/* The gap below the selector belongs to the page, and not every page root is a container
+   (the notes page root is display: contents), so this one stays a viewport rule. */
+@media (max-width: 520px) {
   .panel {
     margin-bottom: 16px;
   }
+}
 
+@container (max-width: 520px) {
   .body {
     padding: 16px 16px 0;
   }
