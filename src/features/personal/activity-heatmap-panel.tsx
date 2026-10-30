@@ -112,7 +112,7 @@ export function ActivityHeatmap({
   );
 }
 
-/** 首頁用：讀本機作答存摺，沒有 Provider 或還沒讀到資料時就是空的格子。 */
+/** 我的作答存摺用：讀本機作答存摺，沒有 Provider 或還沒讀到資料時就是空的格子。 */
 export function ActivityHeatmapSection({ today }: { today: string | null }) {
   const app = useOptionalAppState();
   return (

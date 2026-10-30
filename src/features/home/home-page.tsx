@@ -4,7 +4,6 @@ import { SubjectIconBadge } from '@/components/subject-icon';
 import { mockExamHref } from '@/features/practice/mock-exam';
 import { practiceQuizPage } from '@/features/practice/practice-pages';
 import { subjects } from '@/question-bank/catalog';
-import { ActivityHeatmapSection } from './activity-heatmap-panel';
 import { ARCHITECT_EXAM, getExamCountdown, useTaipeiDate } from './exam-countdown';
 import styles from './home-page.module.css';
 
@@ -29,7 +28,6 @@ export function HomePage({ today }: { today?: string }) {
           <small>以臺灣日期計算{countdown?.phase === 'before' ? '・倒數至第一天' : ''}</small>
         </div>
       </section>
-      <ActivityHeatmapSection today={date} />
       <Link href={practiceQuizPage.href} className={styles.practiceShortcut}>
         <span><strong>{practiceQuizPage.label}</strong><small>重新選科、隨機抽題，逐題對答案</small></span>
         <span>開始練習 <IconArrowRight size={20} aria-hidden="true" /></span>

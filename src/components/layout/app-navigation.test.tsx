@@ -1,12 +1,4 @@
-import {
-  cleanup,
-  fireEvent,
-  render,
-  screen,
-  waitFor,
-  within,
-} from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { navigationPageTitle, SidebarContent } from './app-navigation';
 
@@ -25,19 +17,10 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-const personal = {
-  label: '我的作答存摺',
-  links: [
-    ['我的筆記', '/notes'],
-    ['難題標記', '/difficult'],
-    ['常錯題目', '/wrong'],
-    ['每日練習履歷', '/practice-history'],
-    ['歷屆試題作答履歷', '/history'],
-  ],
-};
+const personal = { label: '我的作答存摺' };
 
 describe('grouped app navigation', () => {
-  it('lists only the new pages, then 我的作答存摺, and uses only the brand as the home link', () => {
+  it('lists only the top-level pages and uses only the brand as the home link', () => {
     render(<SidebarContent pathname="/" />);
     const nav = screen.getByRole('navigation', { name: '主要功能' });
     expect(nav.children[0]).toHaveTextContent(/^每日練習$/);
@@ -53,73 +36,30 @@ describe('grouped app navigation', () => {
       within(nav)
         .getAllByRole('link')
         .map((link) => link.getAttribute('href')),
-    ).toEqual(['/practice', '/exams', '/resources', '/settings', '/report']);
-    expect(
-      within(nav)
-        .getAllByRole('button')
-        .map((button) => button.textContent),
-    ).toEqual([personal.label]);
+    ).toEqual(['/practice', '/exams', '/resources', '/personal', '/settings', '/report']);
+    expect(within(nav).queryByRole('button')).not.toBeInTheDocument();
   });
 
-  it('opens the exact links in 我的作答存摺 and closes with Escape', async () => {
-    const user = userEvent.setup();
-    render(<SidebarContent pathname="/" />);
-    const trigger = screen.getByRole('button', { name: personal.label });
-    expect(trigger).toHaveAttribute('aria-expanded', 'false');
-    await user.click(trigger);
-    const popup = await screen.findByRole('group', { name: `${personal.label}子選單` });
-    expect(trigger).toHaveAttribute('aria-expanded', 'true');
-    expect(
-      within(popup)
-        .getAllByRole('link')
-        .map((link) => [link.textContent, link.getAttribute('href')]),
-    ).toEqual(personal.links);
-    await user.keyboard('{Escape}');
-    await waitFor(() =>
-      expect(
-        screen.queryByRole('group', { name: `${personal.label}子選單` }),
-      ).not.toBeInTheDocument(),
-    );
-    await waitFor(() => expect(trigger).toHaveFocus());
-  });
-
-  it('closes the open section when the route changes', async () => {
-    const user = userEvent.setup();
-    const { rerender } = render(<SidebarContent pathname="/" />);
-    await user.click(screen.getByRole('button', { name: personal.label }));
-    await screen.findByRole('group', { name: `${personal.label}子選單` });
-    rerender(<SidebarContent pathname="/notes" />);
-    expect(screen.queryByRole('group')).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: personal.label })).toHaveAttribute(
-      'data-active',
-      'true',
+  it.each([
+    '/personal',
+    '/notes',
+    '/difficult',
+    '/wrong',
+    '/practice-history',
+    '/history',
+  ])('keeps 我的作答存摺 current on %s', (pathname) => {
+    render(<SidebarContent pathname={pathname} />);
+    expect(screen.getByRole('link', { name: personal.label })).toHaveAttribute(
+      'aria-current',
+      'page',
     );
   });
 
-  it('highlights the current child and parent and closes the submenu after navigation', async () => {
-    const user = userEvent.setup();
-    const onNavigate = vi.fn();
-    render(<SidebarContent pathname="/history" onNavigate={onNavigate} />);
-    const trigger = screen.getByRole('button', { name: personal.label });
-    expect(trigger).toHaveAttribute('data-active', 'true');
-    await user.click(trigger);
-    const link = await screen.findByRole('link', { name: '歷屆試題作答履歷' });
-    expect(link).toHaveAttribute('aria-current', 'page');
-    link.addEventListener('click', (event) => event.preventDefault());
-    await user.click(link);
-    expect(onNavigate).toHaveBeenCalledOnce();
-    await waitFor(() => expect(screen.queryByRole('group')).not.toBeInTheDocument());
-  });
-
-  it('opens a section from the keyboard with its first link focused', async () => {
-    const user = userEvent.setup();
-    render(<SidebarContent pathname="/notes" />);
-    const trigger = screen.getByRole('button', { name: personal.label });
-    trigger.focus();
-    await user.keyboard('{Enter}');
-    const notes = await screen.findByRole('link', { name: '我的筆記' });
-    await waitFor(() => expect(notes).toHaveFocus());
-    expect(notes).toHaveAttribute('aria-current', 'page');
+  it('does not mark 我的作答存摺 current on 每日練習', () => {
+    render(<SidebarContent pathname="/practice" />);
+    expect(screen.getByRole('link', { name: personal.label })).not.toHaveAttribute(
+      'aria-current',
+    );
   });
 
   it('keeps the resources hub current on its pages', () => {
@@ -127,8 +67,8 @@ describe('grouped app navigation', () => {
     const hub = screen.getByRole('link', { name: '歷屆試題資料集成' });
     expect(hub).toHaveAttribute('href', '/resources');
     expect(hub).toHaveAttribute('aria-current', 'page');
-    expect(screen.getByRole('button', { name: personal.label })).not.toHaveAttribute(
-      'data-active',
+    expect(screen.getByRole('link', { name: personal.label })).not.toHaveAttribute(
+      'aria-current',
     );
   });
 
@@ -138,7 +78,6 @@ describe('grouped app navigation', () => {
     render(
       <SidebarContent
         pathname="/practice"
-        inDrawer
         onNavigate={onNavigate}
         onOpenSettings={onOpenSettings}
       />,
@@ -178,6 +117,7 @@ describe('grouped app navigation', () => {
     ['/resources/memory-gallery', '速記圖庫'],
     ['/resources/memory-gallery/[[...category]]', '速記圖庫'],
     ['/resources/laws', '法規資料庫'],
+    ['/personal', '我的作答存摺'],
     ['/notes', '我的筆記'],
     ['/difficult', '難題標記'],
     ['/wrong', '常錯題目'],

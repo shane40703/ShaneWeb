@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
-import { ActivityHeatmap } from '@/features/home/activity-heatmap-panel';
+import { ActivityHeatmap } from '@/features/personal/activity-heatmap-panel';
 import type { QuizAttempt } from '@/lib/types';
 import { FIXTURE_NOW } from '../../fixtures/app-state';
 import { heatmapAttempts } from '../../fixtures/personal';
@@ -8,7 +8,7 @@ import { heatmapAttempts } from '../../fixtures/personal';
 const attemptSets = { empty: [], year: heatmapAttempts };
 
 /**
- * 首頁的活動熱力圖：過去一年每天的作答題數，每欄一週，月份之間沒有間距。
+ * 我的作答存摺的活動熱力圖：過去一年每天的作答題數，每欄一週，月份之間沒有間距。
  * 格子不能點，滑過只顯示日期與題數。
  *
  * Controls 的 attempts 切換「沒有紀錄」與「一年份紀錄」；today 改成今天以外的日期會重算
@@ -30,7 +30,7 @@ const meta = {
     },
     today: { control: 'text' },
   },
-  // 首頁的最外層是容器，面板依它的寬度收合內距。
+  // 我的作答存摺的最外層是容器，面板依它的寬度收合內距。
   decorators: [
     (Story) => (
       <div style={{ containerType: 'inline-size' }}>

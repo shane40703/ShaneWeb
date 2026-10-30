@@ -1,0 +1,96 @@
+/* 我的作答存摺總覽：熱力圖下面接一塊帳目面板，一列一個頁面。外面一層框，列與列之間只用線，
+   整列都是連結。 */
+.hub {
+  min-width: 0;
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 20px;
+  container-type: inline-size;
+}
+
+.links {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  border: var(--frame);
+  border-radius: var(--radius-frame);
+  background: var(--surface);
+  list-style: none;
+}
+
+.links > li + li {
+  border-top: var(--rule);
+}
+
+.row {
+  position: relative;
+  min-width: 0;
+  min-height: 60px;
+  padding: 14px 28px;
+  display: grid;
+  grid-template-columns: 180px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 2px 16px;
+}
+
+.row h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.row p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.rowLink {
+  color: inherit;
+  text-decoration: none;
+  outline: none;
+}
+
+/* 撐滿整列，文字和空白處都能點。 */
+.rowLink::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+
+.rowLink:focus-visible::after {
+  outline: 2px solid var(--primary);
+  outline-offset: -2px;
+}
+
+.row:hover .rowLink {
+  color: var(--primary-strong);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.chevron {
+  color: var(--muted);
+}
+
+.row:hover .chevron {
+  color: var(--primary);
+}
+
+/* 手機上標題和說明上下排，箭頭跨兩行置中。 */
+@container (max-width: 640px) {
+  .row {
+    padding: 12px 16px;
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .chevron {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+  }
+}

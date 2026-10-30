@@ -16,6 +16,7 @@ import DifficultRoute from '@/pages/difficult';
 import HistoryRoute from '@/pages/history';
 import DailyPracticeHistoryRoute from '@/pages/practice-history';
 import HomeRoute from '@/pages/index';
+import PersonalRoute from '@/pages/personal';
 import ReportPage from '@/pages/report';
 import SettingsPage from '@/pages/settings';
 import WrongRoute from '@/pages/wrong';
@@ -45,6 +46,7 @@ const pages = {
     label: '歷屆試題資料集成',
     content: <ResourcesPage overview={resourcesOverview} />,
   },
+  '/personal': { label: '我的作答存摺', content: <PersonalRoute /> },
   '/notes': { label: '我的筆記', content: <NotesRoute /> },
   '/difficult': { label: '難題標記', content: <DifficultRoute /> },
   '/wrong': { label: '常錯題目', content: <WrongRoute /> },
@@ -143,13 +145,12 @@ function SitePages({
  *
  * 畫面上可以操作看到：
  * - 點側欄的頁面或左上角的網站名稱（首頁）換頁，側欄標示與頂部列的頁面名稱跟著換
- *   （Controls 的 page 也跟著更新）；滑過或點「我的作答存摺」在同一個外框內向下展開子選單，子頁面時
- *   「我的作答存摺」標示為目前位置。頁面裡的操作照常，例如考古題討論版、我的筆記點題號換題。
+ *   （Controls 的 page 也跟著更新）；從「我的作答存摺」的頁面列進入子頁面時，側欄仍標示
+ *   「我的作答存摺」。頁面裡的操作照常，例如考古題討論版、我的筆記點題號換題。
  * - 點側欄的「設定」在原頁面上開啟設定視窗，可以展開閱讀設定、介面配色設定；
  *   按右上角的關閉、背景或 Esc 關閉。設定頁（/settings）本身從 Controls 的 page 選。
  * - 頂部列的深淺色切換。
- * - 工具列切到手機寬度：側欄收進左上角的「開啟選單」抽屜，「我的作答存摺」往下展開子選單，
- *   頂部列的按鈕只剩圖示。
+ * - 工具列切到手機寬度：側欄收進左上角的「開啟選單」抽屜，頂部列的按鈕只剩圖示。
  *
  * 工具列的「雲端同步」看正式網站頂部列右上角的「同步作答」：未登入、登入中、已登入
  * （使用者名稱與登出圖示）、同步中、登入失敗（下方跳出紅色的錯誤說明）。

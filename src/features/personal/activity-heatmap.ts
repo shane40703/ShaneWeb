@@ -1,5 +1,5 @@
 import type { QuizAttempt } from '@/lib/types';
-import { getTaipeiDate } from './exam-countdown';
+import { getTaipeiDate } from '@/features/home/exam-countdown';
 
 const dayMs = 86_400_000;
 

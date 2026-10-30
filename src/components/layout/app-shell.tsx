@@ -85,7 +85,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               title="主要功能"
             >
               <SidebarContent
-                inDrawer
                 pathname={navigationPath}
                 onNavigate={() => setDrawerOpen(false)}
                 onOpenSettings={() => setSettingsOpen(true)}

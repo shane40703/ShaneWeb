@@ -165,6 +165,7 @@ test('all retained routes support direct visits and the removed old pages return
     { path: '/resources/analysis', title: '考題分析' },
     { path: '/resources/memory-gallery', title: '速記圖庫' },
     { path: '/resources/laws', title: '法規資料庫' },
+    { path: '/personal', title: '我的作答存摺' },
     { path: '/notes', title: '我的筆記' },
     { path: '/difficult', title: '難題標記' },
     { path: '/wrong', title: '常錯題目' },

@@ -1,14 +1,10 @@
 import { act, cleanup, render, screen, within } from '@testing-library/react';
 import { renderToString } from 'react-dom/server';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { ToastProvider } from '@/components/ui/ui';
-import { createDefaultState, STORAGE_KEY } from '@/lib/study';
-import type { QuizAttempt } from '@/lib/types';
-import { AppStateProvider } from '@/state/app-state';
 import { ARCHITECT_EXAM, getExamCountdown, getTaipeiDate } from './exam-countdown';
 import { HomePage } from './home-page';
 
-afterEach(() => { cleanup(); vi.useRealTimers(); window.localStorage.clear(); });
+afterEach(() => { cleanup(); vi.useRealTimers(); });
 
 describe('HomePage exam countdown', () => {
   it('shows a large countdown before the subject cards and a fresh daily-practice shortcut', () => {
@@ -19,6 +15,7 @@ describe('HomePage exam countdown', () => {
     expect(within(countdown).getByRole('link')).toHaveAttribute('href', ARCHITECT_EXAM.source);
     expect(screen.getByRole('link', { name: /每日抽題練習/ })).toHaveAttribute('href', '/practice/quiz');
     expect(screen.getAllByRole('link').filter(link => link.getAttribute('href')?.startsWith('/practice/mock-exam'))).toHaveLength(4);
+    expect(screen.queryByRole('heading', { name: /過去一年作答/ })).not.toBeInTheDocument();
   });
 
   it.each([
@@ -51,34 +48,5 @@ describe('HomePage exam countdown', () => {
     expect(html).toContain('2026-11-14');
     expect(html).toContain('href="/practice/quiz"');
     expect(html).toContain('<strong>—</strong>');
-  });
-});
-
-describe('HomePage activity heatmap', () => {
-  const attempt = (id: string, submittedAt: string, correctCount: number, wrongCount: number): QuizAttempt => ({
-    id, mode: 'practice', subject: 'law', year: null, questionIds: [], answers: {},
-    startedAt: submittedAt, submittedAt, elapsedSeconds: 60, correctCount, wrongCount, unansweredCount: 3,
-  });
-
-  it('sums the saved attempts between the countdown and the shortcut without adding links', async () => {
-    const state = createDefaultState();
-    state.attempts = [attempt('second', '2026-10-25T17:30:00.000Z', 18, 2), attempt('first', '2026-10-24T02:00:00.000Z', 7, 5)];
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    render(<ToastProvider><AppStateProvider><HomePage today="2026-10-26" /></AppStateProvider></ToastProvider>);
-
-    const heading = await screen.findByRole('heading', { name: '過去一年作答 32 題' });
-    expect(screen.getByRole('img')).toHaveAccessibleName('過去一年每天的作答題數熱力圖，共 32 題，2 天有作答');
-    const countdown = screen.getByRole('region', { name: ARCHITECT_EXAM.name });
-    const shortcut = screen.getByRole('link', { name: /每日抽題練習/ });
-    expect(countdown.compareDocumentPosition(heading)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
-    expect(heading.compareDocumentPosition(shortcut)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
-    expect(within(countdown).getAllByRole('link')).toHaveLength(1);
-    expect(screen.getAllByRole('link').filter(link => link.getAttribute('href')?.startsWith('/practice/mock-exam'))).toHaveLength(4);
-  });
-
-  it('stays empty without the app state provider', () => {
-    render(<HomePage today="2026-10-26" />);
-    expect(screen.getByRole('heading', { name: '過去一年作答 0 題' })).toBeInTheDocument();
-    expect(screen.getByRole('img')).toHaveAccessibleName('過去一年每天的作答題數熱力圖，共 0 題，0 天有作答');
   });
 });

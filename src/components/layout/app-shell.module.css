@@ -118,8 +118,7 @@
   outline-offset: 1px;
 }
 
-.navItem[aria-current='page'],
-.navItem[data-active] {
+.navItem[aria-current='page'] {
   background: var(--sidebar-active);
   color: var(--primary-strong);
   font-weight: 600;
@@ -147,12 +146,6 @@
   line-height: 1.35;
 }
 
-.navSection { min-width: 0; border: 1px solid transparent; border-radius: var(--radius-frame); }
-.navSection[data-open] { border-color: var(--line); background: var(--sidebar-hover); }
-.navSectionTrigger { justify-content: flex-start; }
-.navSectionItems { padding: 4px 4px 6px 14px; border-top: var(--rule); }
-.navChevron { margin-left: auto; flex: 0 0 auto; color: var(--sidebar-muted); }
-.navSectionTrigger[aria-expanded='true'] .navChevron { transform: rotate(90deg); }
 
 .workspace {
   min-width: 0;

@@ -109,10 +109,10 @@ for (const decision of ['skip', 'leave'] as const) {
     await page.goto('/practice-history');
     await expect(page.getByRole('heading', { name: '還沒有每日練習履歷', exact: true })).toBeVisible();
     expect(await page.evaluate(() => JSON.parse(localStorage.getItem('shaneweb:state')!).attempts)).toEqual([protectedAttempt, legacy]);
-    await page.getByRole('button', { name: '我的作答存摺', exact: true }).isVisible().then(async visible => {
+    const passbook = page.getByRole('link', { name: '我的作答存摺', exact: true });
+    await passbook.isVisible().then(async visible => {
       if (!visible) await page.getByRole('button', { name: '開啟選單', exact: true }).click();
     });
-    await page.getByRole('button', { name: '我的作答存摺', exact: true }).click();
-    await expect(page.getByRole('link', { name: '每日練習履歷', exact: true })).toHaveAttribute('aria-current', 'page');
+    await expect(passbook).toHaveAttribute('aria-current', 'page');
   });
 }

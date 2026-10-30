@@ -5,12 +5,13 @@ import { fn } from 'storybook/test';
 import { SidebarContent } from '@/components/layout/app-navigation';
 import shellStyles from '@/components/layout/app-shell.module.css';
 
-/** Controls 的 pathname 選單：側欄連得到的頁面。 */
+/** Controls 的 pathname 選單：側欄連得到的頁面，以及標示「我的作答存摺」的子頁面。 */
 const pathnameLabels = {
   '/': '首頁',
   '/practice': '每日練習',
   '/exams': '考古題討論版',
   '/resources': '歷屆試題資料集成',
+  '/personal': '我的作答存摺',
   '/notes': '我的筆記',
   '/difficult': '難題標記',
   '/wrong': '常錯題目',
@@ -35,11 +36,10 @@ const inSidebar: Decorator = (Story) => (
  * 寬度 800px 以下網站改用抽屜選單，所以固定用筆電寬度。
  *
  * 畫面上可以操作看到：點連結換成那一頁的目前頁面標示（「設定」在網站上是開啟設定視窗，
- * 只記錄在 Actions 面板）；滑過或點「我的作答存摺」在同一個外框內往下展開，點子選單裡的頁面
- * 換標示並收起子選單。Controls 的 pathname 也跟著更新。
+ * 只記錄在 Actions 面板）。Controls 的 pathname 也跟著更新。
  *
- * 手機抽屜裡的側欄（inDrawer：子選單往下展開、項目較高）只在手機寬度出現，看
- * `Components/基礎 UI/SideDrawer`，或 `Layouts/網站外框/側欄與頂部列` 切到手機寬度。
+ * 手機抽屜裡的側欄（項目較高）只在手機寬度出現，看 `Components/基礎 UI/SideDrawer`，或
+ * `Layouts/網站外框/側欄與頂部列` 切到手機寬度。
  */
 const meta = {
   title: 'Components/網站外框/SidebarContent',
@@ -57,8 +57,6 @@ const meta = {
       control: { type: 'select', labels: pathnameLabels },
       options: Object.keys(pathnameLabels),
     },
-    // 抽屜的互動交由網站外框故事在手機寬度中操作。
-    inDrawer: { control: false },
   },
   render: function Render(args) {
     const [, updateArgs] = useArgs<typeof args>();
