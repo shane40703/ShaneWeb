@@ -143,6 +143,11 @@ function parseProvenance(filePath: string, value: unknown): QuestionProvenance {
   return { kind, page: positiveInteger(filePath, provenance.page, 'provenance.page') };
 }
 
+/** meta.json keeps the import's working notes; a reader only needs what the picture is. */
+export function publicImageAlt(alt: string) {
+  return alt.replace(/^(第 \d+ 題).*附圖$/, '$1附圖');
+}
+
 function parseImages(filePath: string, value: unknown) {
   if (value === undefined) return undefined;
   const imageValues = objectValue(filePath, value, 'images');
@@ -794,7 +799,7 @@ export async function loadQuestion(entry: QuestionEntry): Promise<Question> {
     content.push({
       kind: 'image',
       src: publicAssetPath(entry, file.name),
-      alt: image.alt,
+      alt: publicImageAlt(image.alt),
       ...(await readImageDimensions(filePath)),
     });
   }
