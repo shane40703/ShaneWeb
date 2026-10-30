@@ -1,8 +1,9 @@
-import { useEffect, useRef, type KeyboardEvent } from 'react';
+import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import {
   IconAlertTriangle,
   IconArrowLeft,
   IconArrowRight,
+  IconBookmark,
   IconFlag,
   IconLoader2,
   IconPlayerPause,
@@ -13,8 +14,9 @@ import { QuestionMapDrawer } from '@/components/question-map-drawer';
 import {
   QuestionNumberButton,
   QuestionNumberGrid,
+  QuestionSheetLegend,
 } from '@/components/question-number-button';
-import { Button, OptionGroup } from '@/components/ui/ui';
+import { Button, ConfirmDialog, OptionGroup } from '@/components/ui/ui';
 import type { QuizProgressByQuestion } from './mock-exam-progress';
 import type { Question } from '@/lib/types';
 import { getSubject } from '@/question-bank/catalog';
@@ -39,9 +41,11 @@ export function MockExamQuiz({
   progress,
   timer,
   canSubmit,
+  submitWarning,
   onRetry,
   onSelect,
   onToggleEliminated,
+  onToggleReview,
   onGoTo,
   onSubmit,
   onLeave,
@@ -55,9 +59,12 @@ export function MockExamQuiz({
   timer: PracticeTimer;
   /** Grading needs every question of the paper loaded. */
   canSubmit: boolean;
+  /** Said before 交卷 while questions are blank; a finished paper goes straight in. */
+  submitWarning: string | null;
   onRetry: () => void;
   onSelect: (selected: number | undefined) => void;
   onToggleEliminated: (option: number) => void;
+  onToggleReview: () => void;
   onGoTo: (index: number) => void;
   onSubmit: () => void;
   onLeave: () => void;
@@ -65,6 +72,7 @@ export function MockExamQuiz({
   const { state, dispatch } = useAppState();
   const headingRef = useRef<HTMLHeadingElement>(null);
   const numbersRef = useRef<HTMLDivElement>(null);
+  const [checkingBlanks, setCheckingBlanks] = useState(false);
   const total = paper.questionCount;
   const ids = Array.from({ length: total }, (_, position) =>
     mockExamQuestionId(paper.subject, paper.year, position + 1),
@@ -77,6 +85,30 @@ export function MockExamQuiz({
   const difficultCount = ids.filter((id) =>
     state.difficultQuestionIds.includes(id),
   ).length;
+  const blanks = ids.flatMap((id, position) =>
+    progress[id]?.selected === undefined ? [position] : [],
+  );
+  // The next blank after this question, coming round from the start; never this one.
+  const nextBlank = blanks.find((position) => position > index) ?? blanks[0];
+  const otherBlank = nextBlank === index ? undefined : nextBlank;
+
+  function sheetTile(id: string) {
+    const selected = progress[id]?.selected;
+    const answer =
+      selected === undefined ? undefined : String.fromCharCode(65 + selected);
+    return {
+      sheet: true,
+      answer,
+      review: progress[id]?.review === true,
+      stateLabel: answer ? `已作答 ${answer}` : '未作答',
+      difficult: state.difficultQuestionIds.includes(id),
+    };
+  }
+
+  function requestSubmit() {
+    if (submitWarning) setCheckingBlanks(true);
+    else onSubmit();
+  }
 
   // Keeps the current number visible inside the navigator's own scroll area.
   useEffect(() => {
@@ -158,6 +190,9 @@ export function MockExamQuiz({
               找不到這一題的資料，請重新整理頁面再試。可以先作答其他題目，整份試卷的題目都能顯示後才能交卷。
             </span>
             {!isLast ? <Button onClick={() => onGoTo(index + 1)}>下一題</Button> : null}
+            {isLast && index > 0 ? (
+              <Button onClick={() => onGoTo(index - 1)}>上一題</Button>
+            ) : null}
           </div>
         ) : (
           <article className={styles.challenge}>
@@ -180,6 +215,15 @@ export function MockExamQuiz({
                     dispatch({ type: 'toggle-difficult', questionId: question.id })
                   }
                 />
+                <Button
+                  className={styles.reviewButton}
+                  aria-pressed={current?.review === true}
+                  aria-label="待檢查"
+                  onClick={onToggleReview}
+                >
+                  <IconBookmark size={18} stroke={2} aria-hidden="true" />
+                  待檢查
+                </Button>
                 <strong aria-label={`第 ${index + 1} 題，共 ${total} 題`}>
                   {index + 1} / {total}
                 </strong>
@@ -216,20 +260,31 @@ export function MockExamQuiz({
                     id,
                     questionNumber: position + 1,
                     ariaLabel: `前往第 ${position + 1} 題`,
-                    stateLabel:
-                      progress[id]?.selected !== undefined ? '已作答' : '未作答',
-                    answered: progress[id]?.selected !== undefined,
-                    difficult: state.difficultQuestionIds.includes(id),
+                    ...sheetTile(id),
                   }))}
                   value={questionId}
                   onValueChange={(id) => onGoTo(ids.indexOf(id))}
                   footer={(close) => (
                     <>
-                      <p className={styles.mapSummary}>
-                        已作答 <strong>{summary.answered}</strong>・未作答{' '}
-                        <strong>{total - summary.answered}</strong>・難題{' '}
-                        <strong>{difficultCount}</strong>
-                      </p>
+                      <QuestionSheetLegend />
+                      <div className={styles.mapSummary}>
+                        <p>
+                          已作答 <strong>{summary.answered}</strong>・未作答{' '}
+                          <strong>{total - summary.answered}</strong>・難題{' '}
+                          <strong>{difficultCount}</strong>
+                        </p>
+                        {otherBlank !== undefined ? (
+                          <Button
+                            variant="ghost"
+                            onClick={() => {
+                              close();
+                              onGoTo(otherBlank);
+                            }}
+                          >
+                            下一個未作答
+                          </Button>
+                        ) : null}
+                      </div>
                       <div className={styles.mapActions}>
                         <Button
                           onClick={() => {
@@ -245,7 +300,7 @@ export function MockExamQuiz({
                           disabled={!canSubmit}
                           onClick={() => {
                             close();
-                            onSubmit();
+                            requestSubmit();
                           }}
                         >
                           <IconFlag size={17} aria-hidden="true" /> 交卷
@@ -263,7 +318,7 @@ export function MockExamQuiz({
                     key="submit"
                     variant="primary"
                     disabled={!canSubmit}
-                    onClick={onSubmit}
+                    onClick={requestSubmit}
                   >
                     <IconFlag size={17} aria-hidden="true" /> 交卷
                   </Button>
@@ -301,10 +356,10 @@ export function MockExamQuiz({
             </span>
           </div>
           <div className={styles.sideActions}>
-            <Button variant="primary" disabled={!canSubmit} onClick={onSubmit}>
+            <Button disabled={!canSubmit} onClick={requestSubmit}>
               <IconFlag size={17} aria-hidden="true" /> 交卷
             </Button>
-            <Button onClick={onLeave}>
+            <Button variant="ghost" onClick={onLeave}>
               <IconPlayerPause size={16} aria-hidden="true" /> 先離開，保留進度
             </Button>
           </div>
@@ -313,9 +368,11 @@ export function MockExamQuiz({
         <section className={styles.navigator} aria-label="題號導覽">
           <header>
             <h2>題號導覽</h2>
-            <strong>
-              {summary.answered}/{total}
-            </strong>
+            {otherBlank !== undefined ? (
+              <Button variant="ghost" onClick={() => onGoTo(otherBlank)}>
+                下一個未作答
+              </Button>
+            ) : null}
           </header>
           <div className={styles.questionNumbers} ref={numbersRef}>
             <QuestionNumberGrid>
@@ -330,18 +387,49 @@ export function MockExamQuiz({
                   replace
                   shallow
                   ariaLabel={`前往第 ${position + 1} 題`}
-                  stateLabel={progress[id]?.selected !== undefined ? '已作答' : '未作答'}
                   active={position === index}
-                  answered={progress[id]?.selected !== undefined}
-                  difficult={state.difficultQuestionIds.includes(id)}
+                  {...sheetTile(id)}
                 >
                   {position + 1}
                 </QuestionNumberButton>
               ))}
             </QuestionNumberGrid>
           </div>
+          <div className={styles.navigatorLegend}>
+            <QuestionSheetLegend />
+          </div>
         </section>
       </aside>
+
+      <ConfirmDialog
+        open={checkingBlanks}
+        onOpenChange={setCheckingBlanks}
+        tone="warning"
+        title="確定要交卷嗎？"
+        description={submitWarning ?? ''}
+        confirmLabel="確定交卷"
+        cancelLabel="回去檢查"
+        onConfirm={onSubmit}
+      >
+        <div className={styles.blankNumbers}>
+          <QuestionNumberGrid>
+            {blanks.map((position) => (
+              <QuestionNumberButton
+                key={position}
+                ariaLabel={`回到第 ${position + 1} 題`}
+                active={position === index}
+                sheet
+                onClick={() => {
+                  setCheckingBlanks(false);
+                  onGoTo(position);
+                }}
+              >
+                {position + 1}
+              </QuestionNumberButton>
+            ))}
+          </QuestionNumberGrid>
+        </div>
+      </ConfirmDialog>
     </section>
   );
 }

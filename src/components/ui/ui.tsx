@@ -291,27 +291,38 @@ export function useToast() {
 
 export function ConfirmDialog({
   trigger,
+  open,
+  onOpenChange,
   title,
   description,
   confirmLabel,
+  cancelLabel = '取消',
   onConfirm,
   tone = 'danger',
+  children,
 }: {
-  trigger: ReactNode;
+  /** Left out when the page opens the dialog itself, through `open`. */
+  trigger?: ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
   title: string;
   description: string;
   confirmLabel: string;
+  cancelLabel?: string;
   onConfirm: () => void;
   /** danger: destructive (red icon box, danger confirm); warning: irreversible but not destructive (amber icon box, primary confirm). */
   tone?: 'danger' | 'warning';
+  /** Goes between the text and the buttons; focus still starts on the cancel button. */
+  children?: ReactNode;
 }) {
+  const cancelRef = useRef<HTMLButtonElement>(null);
   return (
-    <AlertDialog.Root>
-      <AlertDialog.Trigger render={trigger as React.ReactElement} />
+    <AlertDialog.Root open={open} onOpenChange={onOpenChange}>
+      {trigger ? <AlertDialog.Trigger render={trigger as React.ReactElement} /> : null}
       <AlertDialog.Portal>
         <AlertDialog.Backdrop className={styles.backdrop} />
         <AlertDialog.Viewport className={styles.dialogViewport}>
-          <AlertDialog.Popup className={styles.dialogPopup}>
+          <AlertDialog.Popup className={styles.dialogPopup} initialFocus={children ? cancelRef : undefined}>
             <div className={cx(styles.dialogIcon, tone === 'warning' && styles.dialogIconWarning)}>
               <IconAlertTriangle size={25} stroke={2} aria-hidden="true" />
             </div>
@@ -319,9 +330,10 @@ export function ConfirmDialog({
             <AlertDialog.Description className={styles.dialogDescription}>
               {description}
             </AlertDialog.Description>
+            {children}
             <div className={styles.dialogActions}>
-              <AlertDialog.Close className={cx(styles.button, styles.secondary)}>
-                取消
+              <AlertDialog.Close ref={cancelRef} className={cx(styles.button, styles.secondary)}>
+                {cancelLabel}
               </AlertDialog.Close>
               <AlertDialog.Close
                 className={cx(styles.button, tone === 'warning' ? styles.primary : styles.danger)}

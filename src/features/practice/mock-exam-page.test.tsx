@@ -366,10 +366,13 @@ describe('MockExamPage answering', () => {
     expect(await screen.findByText('114 年第 2 題題幹')).toBeInTheDocument();
     expect(option('2-丙')).toHaveAttribute('data-eliminated', 'true');
     const navigator = screen.getByRole('region', { name: '題號導覽' });
-    // Answered or not is said, not only coloured.
-    expect(
-      within(navigator).getByRole('link', { name: '前往第 1 題（已作答）' }),
-    ).toHaveAttribute('data-answered', 'true');
+    // Answered or not is said, not only coloured, and shown without a verdict colour.
+    const answeredTile = within(navigator).getByRole('link', {
+      name: '前往第 1 題（已作答 B）',
+    });
+    expect(answeredTile).toHaveAttribute('data-filled', 'true');
+    expect(answeredTile).not.toHaveAttribute('data-answered');
+    expect(answeredTile).toHaveTextContent('1B');
     expect(
       within(navigator).getByRole('link', { name: '前往第 2 題（未作答）' }),
     ).toHaveAttribute('aria-current', 'step');
@@ -672,7 +675,6 @@ describe('MockExamPage submitting', () => {
 
   it('counts the time on the question where 交卷 is pressed', async () => {
     vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval', 'Date'] });
-    vi.spyOn(window, 'confirm').mockReturnValue(true);
     seedDraft({ 'law-114-05': { selected: 0, elapsedSeconds: 10, startedAt: 'a' } });
     renderAt('/practice/mock-exam?subject=law&year=114&q=5');
     await flush();
@@ -681,6 +683,8 @@ describe('MockExamPage submitting', () => {
     });
     const sidebar = screen.getByRole('complementary', { name: '試卷資訊' });
     fireEvent.click(within(sidebar).getByRole('button', { name: /交卷/ }));
+    await flush();
+    fireEvent.click(screen.getByRole('button', { name: '確定交卷' }));
 
     expect(appState.dispatch.mock.calls[0][0].attempt.elapsedSeconds).toBe(14);
   });
@@ -728,22 +732,93 @@ describe('MockExamPage submitting', () => {
 
   it('asks before leaving questions unanswered, and cancelling keeps answering', async () => {
     seedAnswers();
-    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
     renderAt('/practice/mock-exam?subject=law&year=114&q=3');
 
     const sidebar = await screen.findByRole('complementary', { name: '試卷資訊' });
     fireEvent.click(within(sidebar).getByRole('button', { name: /交卷/ }));
 
-    expect(confirm).toHaveBeenCalledWith(
-      '還有 3 題未作答，其中 1 題一律給分仍會計分，其餘不給分。確定要交卷嗎？',
+    const dialog = await screen.findByRole('alertdialog', { name: '確定要交卷嗎？' });
+    expect(dialog).toHaveTextContent(
+      '還有 3 題未作答，其中 1 題一律給分仍會計分，其餘不給分。',
     );
+    fireEvent.click(within(dialog).getByRole('button', { name: '回去檢查' }));
+    await flush();
+
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
     expect(appState.dispatch).not.toHaveBeenCalled();
+    expect(router.snapshot.asPath).toBe('/practice/mock-exam?subject=law&year=114&q=3');
+  });
+
+  it('goes back to a blank question from the 交卷 check', async () => {
+    seedAnswers();
+    renderAt('/practice/mock-exam?subject=law&year=114&q=3');
+
+    const sidebar = await screen.findByRole('complementary', { name: '試卷資訊' });
+    fireEvent.click(within(sidebar).getByRole('button', { name: /交卷/ }));
+    const dialog = await screen.findByRole('alertdialog');
+    expect(
+      within(dialog)
+        .getAllByRole('button', { name: /^回到第/ })
+        .map((button) => button.textContent),
+    ).toEqual(['3', '4', '5']);
+    fireEvent.click(within(dialog).getByRole('button', { name: '回到第 5 題' }));
+    await flush();
+
+    expect(router.snapshot.asPath).toBe('/practice/mock-exam?subject=law&year=114&q=5');
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+    expect(appState.dispatch).not.toHaveBeenCalled();
+  });
+
+  it('submits a finished paper straight away, with no check', async () => {
+    seedDraft(
+      Object.fromEntries(
+        [1, 2, 3, 4, 5].map((number) => [`law-114-0${number}`, answered(0)]),
+      ),
+    );
+    renderAt('/practice/mock-exam?subject=law&year=114&q=2');
+
+    const sidebar = await screen.findByRole('complementary', { name: '試卷資訊' });
+    fireEvent.click(within(sidebar).getByRole('button', { name: /交卷/ }));
+    await flush();
+
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+    expect(appState.dispatch).toHaveBeenCalledTimes(1);
+  });
+
+  it('marks a question 待檢查 for this paper only, and steps to the next blank', async () => {
+    seedDraft({
+      'law-114-01': answered(1),
+      'law-114-02': answered(0),
+      'law-114-04': answered(2),
+    });
+    renderAt('/practice/mock-exam?subject=law&year=114&q=2');
+    await screen.findByRole('region', { name: '題目與選項' });
+
+    const review = screen.getByRole('button', { name: '待檢查' });
+    expect(review).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(review);
+    expect(storedDraft()['law-114-02']).toMatchObject({ selected: 0, review: true });
+    expect(appState.dispatch).not.toHaveBeenCalled();
+    expect(review).toHaveAttribute('aria-pressed', 'true');
+    const navigator = screen.getByRole('region', { name: '題號導覽' });
+    expect(
+      within(navigator).getByRole('link', { name: '前往第 2 題（已作答 A、待檢查）' }),
+    ).toHaveAttribute('data-review', 'true');
+
+    fireEvent.click(within(navigator).getByRole('button', { name: '下一個未作答' }));
+    await flush();
+    expect(router.snapshot.asPath).toBe('/practice/mock-exam?subject=law&year=114&q=3');
+    fireEvent.click(within(navigator).getByRole('button', { name: '下一個未作答' }));
+    await flush();
+    expect(router.snapshot.asPath).toBe('/practice/mock-exam?subject=law&year=114&q=5');
+    // From the last blank it comes round to the first one left.
+    fireEvent.click(within(navigator).getByRole('button', { name: '下一個未作答' }));
+    await flush();
     expect(router.snapshot.asPath).toBe('/practice/mock-exam?subject=law&year=114&q=3');
   });
 
   it('saves the paper to 歷屆試題作答履歷 with the official score, and shows it until deleted', async () => {
     seedAnswers();
-    vi.spyOn(window, 'confirm').mockReturnValue(true);
     renderAt('/practice/mock-exam?subject=law&year=114');
     const historyLength = window.history.length;
     fireEvent.click(await screen.findByRole('button', { name: '繼續作答（第 3 題）' }));
@@ -762,6 +837,7 @@ describe('MockExamPage submitting', () => {
     fireEvent.click(
       within(question.closest('article')!).getByRole('button', { name: /^交卷$/ }),
     );
+    fireEvent.click(await screen.findByRole('button', { name: '確定交卷' }));
     await flush();
 
     expect(appState.dispatch).toHaveBeenCalledTimes(1);

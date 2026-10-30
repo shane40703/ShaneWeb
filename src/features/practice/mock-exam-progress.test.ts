@@ -15,6 +15,23 @@ afterEach(() => {
 });
 
 describe('quizProgressReducer', () => {
+  it('marks a question 待檢查 for this sitting, and takes the mark off again', () => {
+    const action = {
+      type: 'toggle-review',
+      questionId: 'law-114-01',
+      startedAt: '2026-10-20T00:00:00.000Z',
+    } as const;
+    const marked = quizProgressReducer({}, action);
+    expect(marked['law-114-01']?.review).toBe(true);
+    const unmarked = quizProgressReducer(marked, action);
+    expect(unmarked['law-114-01']).not.toHaveProperty('review');
+    expect(
+      parseStoredQuizProgress(
+        composeQuizProgress(null, paperProgressScope('law', 114), marked),
+      )[paperProgressScope('law', 114)],
+    ).toEqual(marked);
+  });
+
   it('clears a draft answer without losing its time or eliminated options, including after reload', () => {
     const progress = { q: { selected: 1, elapsedSeconds: 14, startedAt: 'a', eliminatedOptions: [2] } };
     const cleared = quizProgressReducer(progress, {

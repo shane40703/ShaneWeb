@@ -799,15 +799,32 @@
 }
 
 .mapSummary {
-  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   color: var(--muted);
   font-size: 12px;
+}
+
+.mapSummary p {
+  margin: 0;
 }
 
 .mapSummary strong {
   color: var(--text);
   font-family: var(--font-mono);
   font-weight: 600;
+}
+
+/* A small text link in a heading row, not a 40px control. */
+.mapSummary > button,
+.navigator > header > button {
+  min-height: 24px;
+  height: 24px;
+  padding: 0;
+  flex: none;
+  font-size: 13px;
 }
 
 .mapActions {
@@ -825,8 +842,9 @@
   min-width: 0;
   position: sticky;
   top: 88px;
-  /* Fits any window height, before and after it sticks: only the number grid scrolls. */
-  max-height: calc(100dvh - 120px);
+  /* Fits any window height, before and after it sticks: only the number grid scrolls. The page
+     opens with the column 140px down, so that is what it must fit, plus a margin. */
+  max-height: calc(100dvh - 164px);
   display: flex;
   flex-direction: column;
   border: var(--frame);
@@ -976,6 +994,40 @@
 
 .questionNumbers a {
   width: 100%;
+}
+
+.navigatorLegend {
+  flex: 0 0 auto;
+  padding: 10px 16px;
+  border-top: var(--rule);
+}
+
+/* 交卷 with blanks: the numbers still open, each a way back to its question. */
+.blankNumbers {
+  /* Five and a half rows: the cut row says there are more. */
+  max-height: min(38vh, 242px);
+  margin-bottom: 20px;
+  padding: 2px;
+  overflow-y: auto;
+}
+
+.blankNumbers > div {
+  justify-content: center;
+}
+
+/* Pressed = the paper's own note, in ink: amber stays with the lasting 難題 mark. */
+.challenge .challengeActions > .reviewButton {
+  flex: none;
+  white-space: nowrap;
+}
+
+.challenge .challengeActions > .reviewButton[aria-pressed='true'],
+.challenge
+  .challengeActions
+  > .reviewButton[aria-pressed='true']:hover:not([data-disabled]) {
+  border-color: var(--line-strong);
+  background: var(--surface-3);
+  color: var(--text);
 }
 
 /* ---- Result: framed panels stacked on the paper ---- */

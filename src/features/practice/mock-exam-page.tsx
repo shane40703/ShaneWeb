@@ -371,8 +371,6 @@ export function MockExamPage({ papers }: { papers: MockExamPaper[] }) {
     flushTimer();
     const stored = readMockExamDraft(scope);
     if (!hasMockExamDraft(stored) || questions.length < total) return;
-    const warning = mockExamSubmitWarning(questions, stored);
-    if (warning && !window.confirm(warning)) return;
     const submitted = createMockExamAttempt(questions, stored);
     dispatch({
       type: 'save-attempt',
@@ -472,6 +470,9 @@ export function MockExamPage({ papers }: { papers: MockExamPaper[] }) {
         progress={progress}
         timer={timer}
         canSubmit={questions.length >= total}
+        submitWarning={
+          questions.length >= total ? mockExamSubmitWarning(questions, progress) : null
+        }
         onRetry={bank.retry}
         onSelect={(selected) =>
           currentId &&
@@ -488,6 +489,14 @@ export function MockExamPage({ papers }: { papers: MockExamPaper[] }) {
             type: 'toggle-eliminated-option',
             questionId: currentId,
             option,
+            startedAt: new Date().toISOString(),
+          })
+        }
+        onToggleReview={() =>
+          currentId &&
+          update({
+            type: 'toggle-review',
+            questionId: currentId,
             startedAt: new Date().toISOString(),
           })
         }

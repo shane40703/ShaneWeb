@@ -380,11 +380,11 @@ test('the mock exam answers a whole paper, keeps it when leaving, and scores it 
   await setup.getByRole('button', { name: '繼續作答（第 3 題）' }).click();
   await expect(page).toHaveURL(/\?subject=env&year=113&q=3$/);
 
-  page.once('dialog', (dialog) => {
-    expect(dialog.message()).toMatch(/^還有 38 題未作答/);
-    void dialog.accept();
-  });
   await (await paperActions(page)).getByRole('button', { name: /交卷/ }).click();
+  const check = page.getByRole('alertdialog', { name: '確定要交卷嗎？' });
+  await expect(check).toContainText('還有 38 題未作答');
+  await expect(check.getByRole('button', { name: '回去檢查' })).toBeFocused();
+  await check.getByRole('button', { name: '確定交卷' }).click();
   await expect(page).toHaveURL(/\?subject=env&year=113&result=attempt-/);
   const result = page.getByRole('region', { name: /環控 113 年模擬考結果/ });
   const score = result.getByRole('meter', { name: '模擬考分數' });
@@ -475,6 +475,49 @@ test('a paper in one column keeps 下一題 where the thumb left it', async ({ p
   await expectNoHorizontalOverflow(page);
 });
 
+test('the mock exam marks answers on a sheet, not as right or wrong, and checks blanks before 交卷', async ({
+  page,
+}) => {
+  await page.goto('/practice/mock-exam?subject=env&year=113');
+  await page.getByRole('button', { name: '開始作答' }).click();
+  const question = page.getByRole('region', { name: '題目與選項' });
+  await question.getByRole('radio').nth(1).click();
+  const quiz = page.getByRole('region', { name: '歷屆試題模擬考作答', exact: true });
+  await quiz.getByRole('button', { name: '待檢查', exact: true }).click();
+  await expect(quiz.getByRole('button', { name: '待檢查', exact: true })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+  await page.reload();
+  await expect(quiz.getByRole('button', { name: '待檢查', exact: true })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+
+  await quiz.getByRole('button', { name: /下一題/ }).click();
+  await expect(page).toHaveURL(/q=2$/);
+  const actions = await paperActions(page);
+  await expect(
+    actions.locator('[aria-label="前往第 1 題（已作答 B、待檢查）"]'),
+  ).toHaveCSS('background-color', await page.evaluate(() => {
+    const probe = document.createElement('i');
+    probe.style.background = 'var(--surface-3)';
+    document.body.append(probe);
+    const colour = getComputedStyle(probe).backgroundColor;
+    probe.remove();
+    return colour;
+  }));
+
+  await actions.getByRole('button', { name: /交卷/ }).click();
+  const check = page.getByRole('alertdialog', { name: '確定要交卷嗎？' });
+  await expect(check.getByRole('button', { name: '回去檢查' })).toBeFocused();
+  await expect(check.getByRole('button', { name: /^回到第/ })).toHaveCount(39);
+  await check.getByRole('button', { name: '回到第 7 題' }).click();
+  await expect(page).toHaveURL(/q=7$/);
+  await expect(check).toBeHidden();
+  await expect(quiz.getByRole('heading', { name: '第 7 題，共 40 題' })).toBeAttached();
+});
+
 test('answering a paper takes the sidebar\'s room in a window too narrow for both', async ({
   page,
   isMobile,
@@ -506,13 +549,12 @@ test('the mock exam scores a blank 一律給分 question, as the real exam does'
   await page.goto('/practice/mock-exam?subject=construction&year=114');
   await page.getByRole('button', { name: '開始作答' }).click();
   await expect(page.getByRole('region', { name: '題目與選項' })).toBeVisible();
-  page.once('dialog', (dialog) => {
-    expect(dialog.message()).toBe(
-      '還有 80 題未作答，其中 2 題一律給分仍會計分，其餘不給分。確定要交卷嗎？',
-    );
-    void dialog.accept();
-  });
   await (await paperActions(page)).getByRole('button', { name: /交卷/ }).click();
+  const check = page.getByRole('alertdialog', { name: '確定要交卷嗎？' });
+  await expect(check).toContainText(
+    '還有 80 題未作答，其中 2 題一律給分仍會計分，其餘不給分。',
+  );
+  await check.getByRole('button', { name: '確定交卷' }).click();
   const result = page.getByRole('region', { name: /構造 114 年模擬考結果/ });
   await expect(result.getByRole('meter', { name: '模擬考分數' }))
     .toHaveAttribute('aria-valuetext', '2.50 分，滿分 100 分');

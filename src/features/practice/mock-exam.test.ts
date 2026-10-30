@@ -313,13 +313,13 @@ describe('mock exam results', () => {
   it('says which blank questions still score before 交卷', () => {
     const progress = { 'law-114-01': { selected: 0, elapsedSeconds: 1, startedAt: 'a' } };
     expect(mockExamSubmitWarning(questions.slice(0, 3), progress)).toBe(
-      '還有 2 題未作答，未作答的題目不給分。確定要交卷嗎？',
+      '還有 2 題未作答，未作答的題目不給分。',
     );
     expect(mockExamSubmitWarning(questions, progress)).toBe(
-      '還有 3 題未作答，其中 1 題一律給分仍會計分，其餘不給分。確定要交卷嗎？',
+      '還有 3 題未作答，其中 1 題一律給分仍會計分，其餘不給分。',
     );
     expect(mockExamSubmitWarning([questions[3]], {})).toBe(
-      '還有 1 題未作答，這些題目一律給分，仍會計分。確定要交卷嗎？',
+      '還有 1 題未作答，這一題一律給分，仍會計分。',
     );
     expect(mockExamSubmitWarning(questions.slice(0, 1), progress)).toBeNull();
   });

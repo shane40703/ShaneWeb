@@ -152,6 +152,8 @@ const DRAFT_STARTED_AT = Date.parse('2026-10-20T08:40:00.000Z');
 interface DraftEntry {
   selected?: number;
   eliminatedOptions?: number[];
+  /** 待檢查。 */
+  review?: boolean;
   /** 這題花的秒數，預設 62 秒。 */
   seconds?: number;
 }
@@ -181,6 +183,7 @@ function mockExamDraft(
             ...(entry.eliminatedOptions?.length
               ? { eliminatedOptions: entry.eliminatedOptions }
               : {}),
+            ...(entry.review ? { review: true } : {}),
             elapsedSeconds,
             startedAt,
             updatedAt: new Date(clock).toISOString(),
@@ -194,12 +197,20 @@ function mockExamDraft(
  * 作答計畫轉成作答進度：作答到 `through` 為止的每題都打開過（跳過的題目沒有選項）；
  * `current` 是後面再打開的題目，例如目前這題。
  */
-function plannedDraft(plan: PaperAnswerPlan, current: Record<number, DraftEntry> = {}) {
+function plannedDraft(
+  plan: PaperAnswerPlan,
+  current: Record<number, DraftEntry> = {},
+  review: readonly number[] = [],
+) {
   const answers = planPaperAnswers(plan);
   const entries: Record<number, DraftEntry> = {};
   const last = plan.through ?? bankPapers[plan.subject].choice;
   for (let number = 1; number <= last; number += 1) {
-    entries[number] = { selected: answers[number], seconds: 40 + ((number * 17) % 55) };
+    entries[number] = {
+      selected: answers[number],
+      review: review.includes(number) || undefined,
+      seconds: 40 + ((number * 17) % 55),
+    };
   }
   return mockExamDraft(plan.subject, plan.year, { ...entries, ...current });
 }
@@ -291,6 +302,7 @@ function mockExamAppState(
 export const law101Draft = plannedDraft(
   { subject: 'law', year: 101, through: 14, blank: [8, 11] },
   { 15: { selected: 3, eliminatedOptions: [1, 2], seconds: 35 } },
+  [6, 14],
 );
 
 /** 法規 109 年（範例題庫沒有題目）：做了前 12 題就先離開。 */

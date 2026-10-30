@@ -9,6 +9,8 @@ const PAPER_SCOPE_PREFIX = 'paper:';
 export interface QuizQuestionProgress {
   selected?: number;
   eliminatedOptions?: number[];
+  /** 待檢查: a note for this sitting, gone with the draft at 交卷. */
+  review?: boolean;
   elapsedSeconds: number;
   startedAt: string;
   /** Last change made on the 歷屆試題模擬考 page, which lists recent papers first. */
@@ -31,7 +33,8 @@ export type QuizProgressAction =
       questionId: QuestionId;
       option: number;
       startedAt: string;
-    };
+    }
+  | { type: 'toggle-review'; questionId: QuestionId; startedAt: string };
 
 export function quizProgressReducer(
   state: QuizProgressByQuestion,
@@ -66,6 +69,12 @@ export function quizProgressReducer(
       else delete progress.eliminatedOptions;
       return { ...state, [action.questionId]: progress };
     }
+    case 'toggle-review': {
+      const progress = { ...current };
+      if (progress.review) delete progress.review;
+      else progress.review = true;
+      return { ...state, [action.questionId]: progress };
+    }
   }
 }
 
@@ -84,6 +93,7 @@ function isQuestionProgress(value: unknown): value is QuizQuestionProgress {
         progress.eliminatedOptions.every(
           (option) => Number.isInteger(option) && option >= 0,
         ))) &&
+    (progress.review === undefined || typeof progress.review === 'boolean') &&
     Number.isInteger(progress.elapsedSeconds) &&
     typeof progress.startedAt === 'string'
   );

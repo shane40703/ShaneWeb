@@ -296,9 +296,9 @@ export function mockExamSubmitWarning(
   const rule = !free
     ? '未作答的題目不給分'
     : free === blank.length
-      ? '這些題目一律給分，仍會計分'
+      ? `${blank.length > 1 ? '這些題目' : '這一題'}一律給分，仍會計分`
       : `其中 ${free} 題一律給分仍會計分，其餘不給分`;
-  return `還有 ${blank.length} 題未作答，${rule}。確定要交卷嗎？`;
+  return `還有 ${blank.length} 題未作答，${rule}。`;
 }
 
 export function getMockExamScore(

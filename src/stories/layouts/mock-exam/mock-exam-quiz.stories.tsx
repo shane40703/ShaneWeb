@@ -30,7 +30,9 @@ import { MockExamPageRoot, withMockExamFrame } from './mock-exam-frame';
  *   「下一題」換成「交卷」）。
  * - 手機與平板直向（單欄）：題目卡填滿畫面，「下一題」固定在底部；「題號」打開底部抽屜，
  *   裡面是題號導覽、作答數量、先離開與交卷。窗寬放不下兩欄時，網站側欄收進左上角選單。
- * - 交卷：確認有未作答後到作答結果。
+ * - 題號導覽是答案卡：格子是鉛筆色底加所選字母，第 15 題是目前題，第 3、12、15、41 題有難題
+ *   折角，第 6、14 題有待檢查折角；「下一個未作答」跳到下一個空白題。
+ * - 交卷：有未作答時先出現確認視窗，列出空白題號，可以點回該題或確定交卷。
  * - 先離開（回到選卷）：從那裡點 114 年「開始作答」是全新的第 1 題；點 112 年「開始作答」
  *   是題庫裡找不到這一題（範例題庫沒有 112 年）。
  */
@@ -82,9 +84,11 @@ function QuizWithoutQuestion({ status }: { status: 'loading' | 'error' }) {
         progress={law101Draft}
         timer={timer}
         canSubmit={false}
+        submitWarning={null}
         onRetry={fn()}
         onSelect={fn()}
         onToggleEliminated={fn()}
+        onToggleReview={fn()}
         onGoTo={goTo}
         onSubmit={fn()}
         onLeave={fn()}

@@ -9,7 +9,8 @@ type SampleProps = Omit<
 
 /**
  * 網站上會出現的題號狀態：綠色答對（模擬考結果是得分）、紅色答錯（蓋過綠色）、橘色底線
- * 難題、紫點是有筆記（筆記頁）或有詳解或討論（考古題討論版）。
+ * 難題、紫點是有筆記（筆記頁）或有詳解或討論（考古題討論版）。模擬考作答中是答案卡：不用
+ * 狀態色，鉛筆色底加所選字母是已作答，折角是難題（右上）與待檢查（左上）。
  */
 const samples: SampleProps[] = [
   { label: '未作答', active: false },
@@ -24,6 +25,19 @@ const samples: SampleProps[] = [
   { label: '有詳解或討論', active: false, hasContent: true },
   { label: '有筆記也有詳解', active: false, noted: true, hasContent: true },
   { label: '申論題題號', number: '申1', active: false, noted: true },
+  { label: '答案卡未作答', active: false, sheet: true },
+  { label: '答案卡已作答', active: false, sheet: true, answer: 'B' },
+  { label: '答案卡目前題目', active: true, sheet: true, answer: 'B' },
+  { label: '答案卡難題', active: false, sheet: true, difficult: true },
+  { label: '答案卡待檢查', active: false, sheet: true, answer: 'C', review: true },
+  {
+    label: '答案卡目前題目兩種折角',
+    active: true,
+    sheet: true,
+    answer: 'A',
+    difficult: true,
+    review: true,
+  },
 ];
 
 function Sample({ label, number = '12', active: initialActive, ...props }: SampleProps) {
