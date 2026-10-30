@@ -30,13 +30,27 @@ describe('law question fine topics', () => {
       .toBe('都市更新權利變換');
   });
 
-  it('returns only questions sharing the same fine topic', () => {
+  it('returns only questions sharing the same fine topic, newest year first', () => {
     const current = lawQuestion('fire-114', 114, '防火區劃的防火門規定');
+    const older = lawQuestion('fire-101', 101, '防火門的防火區劃規定');
     const similar = lawQuestion('fire-113', 113, '防火牆的防火區劃規定');
+    const later = { ...lawQuestion('fire-114-9', 114, '防火捲門的防火區劃規定'), questionNumber: 9 };
     const unrelated = lawQuestion('sound-113', 113, '分戶牆隔音構造規定');
 
-    expect(getSimilarLawQuestions(current, [current, similar, unrelated]).questions)
-      .toEqual([similar]);
+    expect(getSimilarLawQuestions(current, [older, current, similar, unrelated, later]))
+      .toEqual({ topic: '防火區劃與防火間隔', questions: [later, similar, older], total: 3 });
+  });
+
+  it('lists every matching question instead of the nearest few', () => {
+    const current = lawQuestion('fire-114', 114, '防火區劃的防火門規定');
+    const siblings = Array.from({ length: 9 }, (_, index) =>
+      lawQuestion(`fire-${100 + index}`, 100 + index, '防火區劃的防火門規定'),
+    );
+
+    const result = getSimilarLawQuestions(current, [current, ...siblings]);
+    expect(result.total).toBe(9);
+    expect(result.questions.map((question) => question.year))
+      .toEqual([108, 107, 106, 105, 104, 103, 102, 101, 100]);
   });
 
   it('prefers a manually assigned fine topic over keyword detection', () => {

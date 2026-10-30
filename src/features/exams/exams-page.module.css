@@ -1,6 +1,7 @@
 /* Exams page: underline tabs (題目 / 討論區 / 筆記, components/tabs.tsx) over the content
-   column; the question, the discussion, the compose form, the note editor and the navigator
-   are each ONE framed cream panel; inside them only rules separate the groups (no inner boxes).
+   column; the question, its 類似考題, the discussion, the compose form, the note editor and
+   the navigator are each ONE framed cream panel; inside them only rules separate the groups
+   (no inner boxes).
    Layout follows the page's own width, not the viewport: the app sidebar takes a varying
    share of it, so the breakpoints at the end are container queries on .page. */
 .page {
@@ -9,6 +10,7 @@
 }
 
 .questionCard,
+.similarCard,
 .questionNavigator,
 .postsCard,
 .composeCard,
@@ -212,6 +214,12 @@
   align-items: center;
   justify-content: space-between;
   gap: 10px;
+}
+
+/* 類似考題 panel under the question; similar-questions.module.css draws its insides. */
+.similarCard {
+  min-width: 0;
+  padding: 24px;
 }
 
 /* Navigator panel: kicker + title + position, then the number tiles. */
@@ -510,6 +518,7 @@
   }
 
   .questionCard,
+  .similarCard,
   .questionNavigator,
   .postsCard,
   .composeCard,

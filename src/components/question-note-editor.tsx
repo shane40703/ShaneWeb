@@ -9,7 +9,10 @@ import { DifficultButton } from '@/components/difficult-button';
 import { QuestionPrompt, QuestionSourceLine, Tag } from '@/components/content/content';
 import { QuestionAnswerPanel } from '@/components/question-answer-panel';
 import { RichText } from '@/components/rich-text';
-import { SimilarQuestions } from '@/components/similar-questions';
+import {
+  hasSimilarQuestionsBlock,
+  SimilarQuestions,
+} from '@/components/similar-questions';
 import { RichTextEditor } from '@/components/rich-text-editor';
 import { Button, ConfirmDialog, useToast } from '@/components/ui/ui';
 import { getSubject } from '@/question-bank/catalog';
@@ -113,7 +116,7 @@ export function QuestionNoteEditor({
   }
 
   return (
-    <div className={styles.editor}>
+    <div className={styles.editor} data-compact={header === 'compact' ? '' : undefined}>
       {header === 'full' ? (
         <>
           <div className={styles.questionMeta}>
@@ -218,8 +221,10 @@ export function QuestionNoteEditor({
           )}
         </div>
       </div>
-      {showSimilarQuestions && questions ? (
-        <SimilarQuestions question={question} questions={questions} basePath="/notes" />
+      {showSimilarQuestions && questions && hasSimilarQuestionsBlock(question) ? (
+        <div className={styles.similarQuestions}>
+          <SimilarQuestions question={question} questions={questions} basePath="/notes" />
+        </div>
       ) : null}
     </div>
   );

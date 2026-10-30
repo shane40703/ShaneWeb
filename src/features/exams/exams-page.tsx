@@ -25,7 +25,7 @@ import {
   type QuestionNoteDraft,
 } from '@/components/question-note-editor';
 import { RichText } from '@/components/rich-text';
-import { SimilarQuestions } from '@/components/similar-questions';
+import { hasSimilarQuestionsBlock, SimilarQuestions } from '@/components/similar-questions';
 import { RichTextEditor } from '@/components/rich-text-editor';
 import { Tab, TabList, TabPanel, TabsRoot } from '@/components/tabs';
 import { mergeRichTextValues } from '@/lib/rich-document';
@@ -587,11 +587,15 @@ export function ExamsPage({
                   </Button>
                 </footer>
               </section>
-              <SimilarQuestions
-                question={currentQuestion}
-                questions={questions}
-                basePath="/exams"
-              />
+              {hasSimilarQuestionsBlock(currentQuestion) ? (
+                <section className={styles.similarCard}>
+                  <SimilarQuestions
+                    question={currentQuestion}
+                    questions={questions}
+                    basePath="/exams"
+                  />
+                </section>
+              ) : null}
             </TabPanel>
 
             <TabPanel value="discussion" className={styles.tabPanel}>

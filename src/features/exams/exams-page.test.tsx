@@ -453,4 +453,22 @@ describe('ExamsPage question loading', () => {
     expect(screen.getByRole('button', { name: '刪除筆記' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '分享到考古題討論版' })).toBeInTheDocument();
   });
+
+  it('tells when no other question shares the law question topic', () => {
+    renderPage({ questions: [{ ...lawQuestion, fineTopic: '只有這題的考點' }] });
+
+    const similar = screen.getByRole('region', { name: '類似題目' });
+    expect(similar).toHaveTextContent('類似考題');
+    expect(similar).toHaveTextContent('這個考點目前只有這一題。');
+    expect(within(similar).queryByRole('link')).not.toBeInTheDocument();
+  });
+
+  it('shows no similar-question panel for other subjects', () => {
+    router.query = { question: environmentQuestion.id };
+    renderPage({ questions: [lawQuestion, environmentQuestion] });
+
+    expect(screen.getByText('env-114-01 題幹')).toBeInTheDocument();
+    expect(screen.queryByRole('region', { name: '類似題目' })).not.toBeInTheDocument();
+    expect(screen.queryByText('類似考題')).not.toBeInTheDocument();
+  });
 });

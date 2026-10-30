@@ -1,7 +1,7 @@
 /*
  * The shared note editor: question, then a quiet rule, the note fields, then a rule and the
- * action row. It draws no frame of its own; the page's panel (我的筆記 editor panel, the 筆記
- * tab of 考古題討論版) frames it.
+ * action row; on 我的筆記 a dashed rule and 類似考題 follow. It draws no frame of its own: the
+ * page's panel (我的筆記 editor panel, the 筆記 tab of 考古題討論版) frames it.
  */
 .editor {
   min-width: 0;
@@ -28,31 +28,20 @@
   line-height: 1.3;
 }
 
+/* Compact header (the 筆記 tab of 考古題討論版): the same mono number as the 題目 tab. */
+.editor[data-compact] > .questionNumber {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--primary-strong);
+}
+
 /* Only the 「我的筆記」 field label; the ImageAttachments upload <label> is a button and keeps its own look. */
 .noteToolbar > label {
   color: var(--muted);
   font-size: 13px;
   font-weight: 500;
-}
-
-.editor textarea {
-  width: 100%;
-  min-height: 360px;
-  padding: 12px;
-  border: var(--frame);
-  border-radius: var(--radius-control);
-  background: var(--surface);
-  color: var(--text);
-  font: inherit;
-  font-size: 15px;
-  line-height: 1.75;
-  resize: vertical;
-}
-
-.editor textarea:focus {
-  border-color: var(--primary);
-  outline: 2px solid var(--focus);
-  outline-offset: 1px;
 }
 
 /* The note section starts under a quiet rule: label + the small formatting controls on one row. */
@@ -107,13 +96,15 @@
   justify-content: flex-end;
 }
 
+/* 類似考題 after the action row: a dashed rule divides the two sections, no inner frame. */
+.editor > .similarQuestions {
+  padding-top: 20px;
+  border-top: var(--rule-dashed);
+}
+
 @media (max-width: 560px) {
   .editor {
     gap: 14px;
-  }
-
-  .editor textarea {
-    min-height: 240px;
   }
 
   .editorFooter {
