@@ -154,8 +154,6 @@ html {
   scroll-behavior: smooth;
   background: var(--bg);
   scrollbar-color: var(--control-line) transparent;
-  /* Tabs and pages differ in height: the width holds when the scrollbar comes and goes. */
-  scrollbar-gutter: stable;
 }
 body {
   position: relative;

@@ -3,9 +3,12 @@
    the navigator are each ONE framed cream panel; inside them only rules separate the groups
    (no inner boxes).
    Layout follows the page's own width, not the viewport: the app sidebar takes a varying
-   share of it, so the breakpoints at the end are container queries on .page. */
+   share of it, so the breakpoints at the end are container queries on .page.
+   At least a screen tall, so the page always scrolls: the tabs and questions differ in height,
+   and a scrollbar that came and went would shift the layout sideways. */
 .page {
   min-width: 0;
+  min-height: 100vh;
   container-type: inline-size;
 }
 
