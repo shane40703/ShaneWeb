@@ -518,6 +518,50 @@ test('the mock exam marks answers on a sheet, not as right or wrong, and checks 
   await expect(quiz.getByRole('heading', { name: '第 7 題，共 40 題' })).toBeAttached();
 });
 
+test('the paper keeps its shortcuts wherever a click or a closed dialog leaves focus', async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(isMobile, 'keyboard shortcuts');
+  await page.goto('/practice/mock-exam?subject=env&year=113');
+  await page.getByRole('button', { name: '開始作答' }).click();
+  const question = page.getByRole('region', { name: '題目與選項' });
+  await expect(question).toBeVisible();
+  const quiz = page.getByRole('region', { name: '歷屆試題模擬考作答', exact: true });
+  const expectQuestion = async (number: number) => {
+    await expect(page).toHaveURL(new RegExp(`q=${number}$`));
+    // A key pressed while the question is still on its way is dropped on purpose.
+    await page.waitForTimeout(150);
+  };
+
+  // A click on the question's text.
+  await question.locator('p').first().click();
+  await page.keyboard.press('n');
+  await expectQuestion(2);
+  // A double-click on an option keeps the answer and the shortcuts.
+  await question.getByRole('radiogroup').locator('label').nth(1).dblclick();
+  await expect(question.getByRole('radio').nth(1)).toHaveAttribute('aria-checked', 'true');
+  await page.keyboard.press('n');
+  await expectQuestion(3);
+  // The strike-out button under focus turns off once its option is chosen.
+  await question.getByRole('button', { name: '刪去選項 A' }).focus();
+  await page.keyboard.press('1');
+  await expect(question.getByRole('button', { name: '刪去選項 A' })).toBeDisabled();
+  await page.keyboard.press('n');
+  await expectQuestion(4);
+
+  // Back from the 交卷 check to a blank, with the button that opened it gone.
+  await page.goto('/practice/mock-exam?subject=env&year=113&q=40');
+  await expect(question).toBeVisible();
+  await quiz.getByRole('article').getByRole('button', { name: '交卷', exact: true }).click();
+  const check = page.getByRole('alertdialog', { name: '確定要交卷嗎？' });
+  await check.getByRole('button', { name: '回到第 7 題' }).click();
+  await expectQuestion(7);
+  await expect(check).toBeHidden();
+  await page.keyboard.press('n');
+  await expectQuestion(8);
+});
+
 test('answering a paper takes the sidebar\'s room in a window too narrow for both', async ({
   page,
   isMobile,

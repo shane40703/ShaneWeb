@@ -348,7 +348,8 @@ export function MockExamPage({ papers }: { papers: MockExamPaper[] }) {
   }
 
   function update(action: Extract<QuizProgressAction, { questionId: string }>) {
-    if (!scope) return;
+    // On the way to another question, this render's question is no longer the one meant.
+    if (!scope || ownNavigations.current > 0) return;
     const stored = readMockExamDraft(scope);
     if (!hasMockExamDraft(stored)) return;
     const next = quizProgressReducer(stored, action);

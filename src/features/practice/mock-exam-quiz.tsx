@@ -130,7 +130,7 @@ export function MockExamQuiz({
     if (focused === document.body || focused?.matches(':disabled')) {
       headingRef.current?.focus({ preventScroll: true });
     }
-  }, [index, status]);
+  }, [index, status, current?.selected]);
 
   /** Active only with focus in the paper, and never on a dialog or the browser's keys. */
   function handleShortcut(event: KeyboardEvent<HTMLElement>) {
@@ -160,6 +160,8 @@ export function MockExamQuiz({
     <section
       className={`${styles.practice} ${styles.paperQuiz}`}
       aria-label="歷屆試題模擬考作答"
+      // Takes focus from a click anywhere in the paper, so the shortcuts never go quiet.
+      tabIndex={-1}
       onKeyDown={handleShortcut}
     >
       <h2

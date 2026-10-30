@@ -837,6 +837,11 @@
   justify-content: center;
 }
 
+/* Focus from a click in the paper, for the shortcuts; a click needs no ring. */
+.paperQuiz:focus {
+  outline: none;
+}
+
 /* The side column: one framed panel; progress, actions and the number map are rule-separated. */
 .sidebar {
   min-width: 0;

@@ -463,6 +463,25 @@ describe('MockExamPage answering', () => {
     expect(router.snapshot.asPath).toBe('/practice/mock-exam?subject=law&year=114&q=1');
   });
 
+  it('does not take a key pressed on the way to the next question as an answer to this one', async () => {
+    seedDraft({ 'law-114-01': answered(0) });
+    renderAt('/practice/mock-exam?subject=law&year=114&q=1');
+    await screen.findByRole('region', { name: '題目與選項' });
+    const heading = screen.getByRole('heading', { name: '第 1 題，共 5 題' });
+
+    fireEvent.keyDown(heading, { code: 'KeyN' });
+    fireEvent.keyDown(heading, { code: 'Digit3' });
+    await flush();
+
+    expect(router.snapshot.asPath).toBe('/practice/mock-exam?subject=law&year=114&q=2');
+    expect(storedDraft()['law-114-01']?.selected).toBe(0);
+    expect(storedDraft()['law-114-02']?.selected).toBeUndefined();
+
+    // Once the question is there, the same key answers it.
+    fireEvent.keyDown(document.activeElement!, { code: 'Digit3' });
+    expect(storedDraft()['law-114-02']?.selected).toBe(2);
+  });
+
   it('never submits from the keyboard shortcut on the last question', async () => {
     seedDraft(
       Object.fromEntries(

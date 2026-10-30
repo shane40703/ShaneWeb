@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { IconX, IconZoomIn } from '@tabler/icons-react';
 import styles from './image-lightbox.module.css';
@@ -16,9 +16,11 @@ export function ImageLightbox({
   triggerLabel?: string;
 }) {
   const [open, setOpen] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (!open) return;
+    const trigger = triggerRef.current;
     const previousOverflow = document.body.style.overflow;
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape') setOpen(false);
@@ -28,12 +30,15 @@ export function ImageLightbox({
     return () => {
       document.body.style.overflow = previousOverflow;
       window.removeEventListener('keydown', closeOnEscape);
+      // The close button goes with the dialog; without this, focus falls to the page.
+      trigger?.focus({ preventScroll: true });
     };
   }, [open]);
 
   return (
     <>
       <button
+        ref={triggerRef}
         type="button"
         className={`${styles.trigger} ${triggerClassName ?? ''}`.trim()}
         aria-label={triggerLabel ?? `放大圖片 ${alt}`}
