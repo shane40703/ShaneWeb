@@ -1,21 +1,14 @@
-/* 逐題作答結果: one framed panel on result pages; frameless when embedded in 已作答紀錄.
-   Each question is a rule-separated row with a 2px left rule in its status colour;
-   details, discussion and the note editor are rule-separated groups of text and controls. */
+/* 逐題作答結果: one framed card per question on result pages, so the heading sits on the
+   paper; embedded in 已作答紀錄 the page's panel is the frame and questions are rule-separated
+   rows. Either way a 2px left line carries the status colour, and details, discussion and
+   the note editor are rule-separated groups of text and controls. */
 
 .reviewSection {
   margin-top: 20px;
-  padding: 24px;
-  border: var(--frame);
-  border-radius: var(--radius-frame);
-  background: var(--surface);
 }
 
 .reviewSection[data-embedded='true'] {
   margin-top: 0;
-  padding: 0;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
 }
 
 .reviewHeader {
@@ -51,20 +44,36 @@
 
 .reviewList {
   display: grid;
+  gap: 14px;
+}
+
+[data-embedded='true'] > .reviewList {
+  gap: 0;
 }
 
 .reviewList > article {
   scroll-margin-top: 104px;
-  padding: 16px 0 16px 14px;
+  padding: 18px 20px;
   display: grid;
   grid-template-columns: 22px minmax(0, 1fr);
   align-items: start;
   gap: 10px;
-  border-top: var(--rule);
+  border: var(--frame);
   border-left: 2px solid var(--muted);
+  border-radius: var(--radius-frame);
+  background: var(--surface);
 }
 
-.reviewList > article:last-child {
+[data-embedded='true'] > .reviewList > article {
+  padding: 16px 0 16px 14px;
+  border: 0;
+  border-top: var(--rule);
+  border-left: 2px solid var(--muted);
+  border-radius: 0;
+  background: transparent;
+}
+
+[data-embedded='true'] > .reviewList > article:last-child {
   border-bottom: var(--rule);
 }
 
@@ -77,7 +86,9 @@
 }
 
 .reviewStatus {
+  min-height: 40px;
   display: flex;
+  align-items: center;
   color: var(--muted);
 }
 
@@ -96,10 +107,10 @@
 }
 
 .reviewQuestionHeader {
+  min-height: 40px;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
   gap: 8px 12px;
 }
 
@@ -131,6 +142,7 @@
 }
 
 .reviewQuestionHeader > button {
+  margin-left: auto;
   flex: 0 0 auto;
 }
 
@@ -325,23 +337,24 @@
 }
 
 @media (max-width: 600px) {
-  .reviewSection {
-    padding: 16px;
-  }
-
-  .reviewSection[data-embedded='true'] {
-    padding: 0;
-  }
-
   .reviewList > article {
     position: relative;
-    padding: 14px 0 14px 12px;
+    padding: 16px;
     grid-template-columns: minmax(0, 1fr);
   }
 
+  [data-embedded='true'] > .reviewList > article {
+    padding: 14px 0 14px 12px;
+  }
+
   .reviewStatus {
+    min-height: 0;
     position: absolute;
     top: 16px;
+    left: 16px;
+  }
+
+  [data-embedded='true'] .reviewStatus {
     left: 12px;
   }
 

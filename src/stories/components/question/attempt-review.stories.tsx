@@ -41,7 +41,7 @@ function attemptQuestions(attempt: QuizAttempt) {
  *   - 每日抽題練習（8 題）：答錯 3 題、答對 3 題、未作答 2 題。一律給分的第 17 題沒作答，
  *     在每日抽題練習算未作答。第 27 題連同之前共答錯 3 次、第 15 題 2 次。
  *   - 101 年法規模擬考（80 題）：答錯 10 題、空白 3 題。一律給分的第 17 題沒作答也算答對。
- * - Controls 的 embedded：作答紀錄裡內嵌（沒有外框）；模擬考結果頁是有外框的版本。
+ * - Controls 的 embedded：作答紀錄裡內嵌（題目之間用線分隔）；模擬考結果頁每題一張卡片。
  */
 const meta = {
   title: 'Components/題目/AttemptReview',

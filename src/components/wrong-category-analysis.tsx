@@ -124,35 +124,37 @@ export function WrongCategoryAnalysis({
       data-embedded={embedded || undefined}
       aria-label={ariaLabel}
     >
-      <header>
-        <div>
-          <span>{eyebrow}</span>
-          <h2>{title}</h2>
+      <div className={styles.overview}>
+        <header>
+          <div>
+            <span>{eyebrow}</span>
+            <h2>{title}</h2>
+          </div>
+          <strong>
+            {aggregate
+              ? `${yearCount} 個年度・${wrongAnswerCount} 次答錯`
+              : `${categories.length} 類`}
+          </strong>
+        </header>
+        <div className={styles.tabs} role="tablist">
+          {categories.map(([category, entries]) => (
+            <button
+              type="button"
+              role="tab"
+              key={category}
+              aria-selected={category === selectedCategory}
+              onClick={() => setSelectedCategoryValue(category)}
+            >
+              <span>
+                <strong>{category}</strong>
+                <small>{formatQuestionReferences(entries)}</small>
+              </span>
+              <b>
+                {entries.length} {aggregate ? '次' : '題'}
+              </b>
+            </button>
+          ))}
         </div>
-        <strong>
-          {aggregate
-            ? `${yearCount} 個年度・${wrongAnswerCount} 次答錯`
-            : `${categories.length} 類`}
-        </strong>
-      </header>
-      <div className={styles.tabs} role="tablist">
-        {categories.map(([category, entries]) => (
-          <button
-            type="button"
-            role="tab"
-            key={category}
-            aria-selected={category === selectedCategory}
-            onClick={() => setSelectedCategoryValue(category)}
-          >
-            <span>
-              <strong>{category}</strong>
-              <small>{formatQuestionReferences(entries)}</small>
-            </span>
-            <b>
-              {entries.length} {aggregate ? '次' : '題'}
-            </b>
-          </button>
-        ))}
       </div>
       <div
         className={styles.panel}

@@ -1,22 +1,21 @@
-/* 錯題類型統計: one framed panel on result pages; frameless when embedded in an attempt row.
-   Categories are colour-keyed tab controls (a solid chart-colour rule on the left); the chosen
-   category's questions are rule-separated rows. */
+/* 錯題類型統計: on result pages the heading and category tabs are one framed panel, and each
+   question of the chosen category is its own framed card on the paper; embedded in an attempt
+   row the surrounding panel is the frame, so questions are rule-separated rows. Categories are
+   colour-keyed tab controls (a solid chart-colour rule on the left). */
 
-.summary {
-  margin-top: 20px;
+.overview {
   border: var(--frame);
   border-radius: var(--radius-frame);
   background: var(--surface);
 }
 
-.summary[data-embedded='true'] {
-  margin-top: 0;
+.summary[data-embedded='true'] > .overview {
   border: 0;
   border-radius: 0;
   background: transparent;
 }
 
-.summary > header {
+.overview > header {
   padding: 20px 24px 14px;
   display: flex;
   align-items: flex-end;
@@ -25,11 +24,11 @@
   border-bottom: var(--rule);
 }
 
-.summary[data-embedded='true'] > header {
+.summary[data-embedded='true'] > .overview > header {
   padding: 0 0 12px;
 }
 
-.summary > header span {
+.overview > header span {
   color: var(--muted);
   font-family: var(--font-mono);
   font-size: 11px;
@@ -37,14 +36,14 @@
   text-transform: uppercase;
 }
 
-.summary > header h2 {
+.overview > header h2 {
   margin: 4px 0 0;
   font-size: 18px;
   font-weight: 600;
   letter-spacing: -0.01em;
 }
 
-.summary > header > strong {
+.overview > header > strong {
   color: var(--danger);
   font-family: var(--font-mono);
   font-size: 12px;
@@ -62,7 +61,7 @@
   gap: 6px 16px;
 }
 
-.summary[data-embedded='true'] > .tabs {
+.summary[data-embedded='true'] > .overview > .tabs {
   padding: 12px 0;
 }
 
@@ -152,11 +151,16 @@
 }
 
 .panel {
+  margin-top: 24px;
+}
+
+.summary[data-embedded='true'] > .panel {
+  margin-top: 0;
   border-top: var(--rule);
 }
 
 .panel > header {
-  padding: 16px 24px 4px;
+  padding-bottom: 14px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -181,21 +185,31 @@
 }
 
 .panel > div {
-  padding: 0 24px 8px;
   display: grid;
+  gap: 14px;
 }
 
 .summary[data-embedded='true'] > .panel > div {
-  padding: 0;
+  gap: 0;
 }
 
 .panel article {
-  padding: 16px 0;
+  padding: 18px 20px;
   display: grid;
   gap: 12px;
+  border: var(--frame);
+  border-radius: var(--radius-frame);
+  background: var(--surface);
 }
 
-.panel article + article {
+.summary[data-embedded='true'] > .panel article {
+  padding: 16px 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.summary[data-embedded='true'] > .panel article + article {
   border-top: var(--rule);
 }
 
@@ -225,7 +239,7 @@
 }
 
 @media (max-width: 560px) {
-  .summary > header {
+  .overview > header {
     padding: 16px 16px 12px;
     align-items: flex-start;
     flex-direction: column;
@@ -237,12 +251,8 @@
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .panel > header {
-    padding: 12px 16px 4px;
-  }
-
-  .panel > div {
-    padding: 0 16px 4px;
+  .panel article {
+    padding: 16px;
   }
 
   .panel article > header {

@@ -29,10 +29,6 @@
   min-height: 430px;
 }
 
-.crossYearPanel > section:first-child {
-  margin-top: 0;
-}
-
 .analysisNotice {
   margin: 16px 0 0;
   padding: 2px 0 2px 12px;
