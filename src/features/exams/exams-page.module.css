@@ -34,6 +34,126 @@
   gap: 24px;
 }
 
+/* ---- One-column controls ----
+   The selector's summary button and the compact navigation bar serve one-column pages; the
+   container rule at the end hides them above 900px (jsdom, which has no container queries,
+   therefore sees them, and the tests rely on that). */
+
+/* The summary is a control (a framed button); the selector under it keeps its own frame. */
+.selectorSummary {
+  width: 100%;
+  min-height: 44px;
+  margin-bottom: 16px;
+  padding: 0 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border: var(--frame);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.3;
+  text-align: left;
+  cursor: pointer;
+}
+
+.selectorSummary:hover {
+  border-color: var(--line-strong);
+  background: var(--surface-elevated);
+}
+
+.selectorSummary:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.selectorSummary > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.selectorSummary > svg {
+  flex: 0 0 auto;
+  color: var(--muted);
+  transition: transform 160ms ease;
+}
+
+.selectorSummary[aria-expanded='true'] {
+  margin-bottom: 10px;
+}
+
+.selectorSummary[aria-expanded='true'] > svg {
+  transform: rotate(180deg);
+}
+
+/* Sticky under the topbar (64px; 60px on phones, a viewport rule below), over the panels. */
+.compactNav {
+  position: sticky;
+  top: 64px;
+  z-index: 20;
+  padding: 8px 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: var(--frame);
+  border-radius: var(--radius-frame);
+  background: var(--surface);
+}
+
+.compactPosition {
+  min-width: 0;
+  flex: 1 1 auto;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  white-space: nowrap;
+}
+
+.compactPosition strong {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.compactPosition span {
+  overflow: hidden;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-overflow: ellipsis;
+}
+
+.compactActions {
+  flex: 0 0 auto;
+  display: flex;
+  gap: 8px;
+}
+
+.compactActions button {
+  white-space: nowrap;
+}
+
+/* The shell's topbar is 60px under an 800px viewport (app-shell.module.css), not a page width. */
+@media (max-width: 800px) {
+  .compactNav {
+    top: 60px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .selectorSummary > svg {
+    transition: none;
+  }
+}
+
 /* The active tab's panels stack under the tab bar with the page's panel rhythm. */
 .tabPanel {
   margin-top: 16px;
@@ -497,16 +617,28 @@
 
 /* ---- Narrower pages ---- */
 
-/* Under 900px the 340px navigator would leave the question under 540px: one column, with the
-   navigator after the content (a sticky map would otherwise cover the posts). */
+/* Under 900px the 340px navigator would leave the question under 540px: one column. The aside
+   gives way to a compact bar above the tabs (position, previous / next, the 題號 drawer) and the
+   selector folds behind a one-line summary, so the question is on the first screen. */
 @container (max-width: 900px) {
   .examsLayout {
     grid-template-columns: minmax(0, 1fr);
   }
 
   .questionNavigator {
-    position: static;
-    max-height: none;
+    display: none;
+  }
+
+  .selectorWrap:not([data-expanded='true']) > .selectorBody {
+    display: none;
+  }
+}
+
+/* Two columns: the aside is the navigator and the selector is always open. */
+@container (width > 900px) {
+  .selectorSummary,
+  .compactNav {
+    display: none;
   }
 }
 
@@ -541,5 +673,10 @@
 
   .questionNavigation {
     flex-wrap: wrap;
+  }
+
+  /* The bar keeps the position and the buttons; the subject・year reading goes. */
+  .compactPosition span {
+    display: none;
   }
 }

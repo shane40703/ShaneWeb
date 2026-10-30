@@ -11,6 +11,29 @@ async function openNavigation(page: Page) {
   return nav;
 }
 
+const onPhone = () => test.info().project.name === 'mobile';
+
+/** The 題號 tiles: the aside beside the question on desktop; on phones the aside is hidden and
+    the compact bar's 題號 button opens them in the 題號導覽 drawer (opened here). */
+async function questionTiles(page: Page) {
+  if (!onPhone()) return page.getByRole('group', { name: '題號' });
+  await page.getByRole('button', { name: '題號', exact: true }).click();
+  return page
+    .getByRole('dialog', { name: '題號導覽' })
+    .getByRole('group', { name: '題號' });
+}
+
+async function closeQuestionTiles(page: Page) {
+  if (!onPhone()) return;
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog', { name: '題號導覽' })).toHaveCount(0);
+}
+
+/** On phones the subject / year selector sits behind a summary button and folds after a choice. */
+async function expandSelector(page: Page) {
+  if (onPhone()) await page.getByRole('button', { name: '展開科目與年度' }).click();
+}
+
 test('past exams opens from the navigation and keeps browsing on /exams', async ({
   page,
   isMobile,
@@ -34,20 +57,30 @@ test('past exams opens from the navigation and keeps browsing on /exams', async 
     );
   }
 
-  const numbers = page.getByRole('group', { name: '題號' });
+  const numbers = await questionTiles(page);
   await expect(numbers.getByRole('button', { name: '第 1 題' })).toHaveAttribute(
     'aria-pressed',
     'true',
   );
-  await page.getByRole('button', { name: '下一題' }).click();
+  await closeQuestionTiles(page);
+  // On phones the compact bar above the tabs and the panel footer both offer 上一題／下一題;
+  // the first match is the bar's icon button (on desktop the bar is hidden, so the footer's).
+  await page.getByRole('button', { name: '下一題' }).first().click();
   await expect(page).toHaveURL(/\/exams\?question=law-114-02$/);
-  await page.getByRole('button', { name: '上一題' }).click();
+  await page.getByRole('button', { name: '上一題' }).first().click();
   await expect(page).toHaveURL(/\/exams\?question=law-114-01$/);
+  await expandSelector(page);
   await page
     .getByRole('group', { name: '年度' })
     .getByRole('button', { name: '112 年' })
     .click();
   await expect(page).toHaveURL(/\/exams\?question=law-112-01$/);
+  if (onPhone())
+    await expect(page.getByRole('button', { name: '展開科目與年度' })).toHaveAttribute(
+      'aria-expanded',
+      'false',
+    );
+  await expandSelector(page);
   await page
     .getByRole('group', { name: '科目' })
     .getByRole('button', { name: /建築環境控制/ })
@@ -81,14 +114,13 @@ test('posts on past exams stay with the question', async ({ page }) => {
 
   // Moving within the page keeps the loaded posts, so their absence on the next question counts;
   // the open tab follows the question, and the 題目 tab drops the parameter again.
-  await page
-    .getByRole('group', { name: '題號' })
-    .getByRole('button', { name: '第 4 題' })
-    .click();
+  await (await questionTiles(page)).getByRole('button', { name: '第 4 題' }).click();
   await expect(page).toHaveURL(/\/exams\?question=law-114-04&tab=discussion$/);
+  // Choosing a tile closes the phone drawer, so it is opened again to read the state.
   await expect(
-    page.getByRole('group', { name: '題號' }).getByRole('button', { name: '第 4 題' }),
+    (await questionTiles(page)).getByRole('button', { name: '第 4 題' }),
   ).toHaveAttribute('aria-pressed', 'true');
+  await closeQuestionTiles(page);
   await expect(page.locator('article').filter({ hasText: content })).toHaveCount(0);
   await page.getByRole('tab', { name: /^題目$/ }).click();
   await expect(page).toHaveURL(/\/exams\?question=law-114-04$/);

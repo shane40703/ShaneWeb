@@ -43,7 +43,7 @@ describe('SimilarQuestions', () => {
 
     const region = screen.getByRole('region', { name: '類似題目' });
     expect(within(region).getByRole('heading', { name: '類似考題' })).toBeInTheDocument();
-    expect(region).toHaveTextContent('同考點「防火區劃」的其他年度考題，共 10 題');
+    expect(region).toHaveTextContent('同考點「防火區劃」的其他考題，共 10 題');
     const links = within(region).getAllByRole('link');
     expect(links).toHaveLength(8);
     expect(links[0]).toHaveAccessibleName(/112 年・第 2 題/);

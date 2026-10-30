@@ -1,8 +1,9 @@
-import { type FormEvent, useEffect, useRef, useState } from 'react';
+import { type FormEvent, useEffect, useId, useRef, useState } from 'react';
 import { useRouter } from 'next/router';
 import {
   IconArrowLeft,
   IconArrowRight,
+  IconChevronDown,
   IconCircleCheck,
   IconHeart,
   IconHeartFilled,
@@ -20,6 +21,7 @@ import {
 } from '@/components/content/content';
 import { DifficultButton } from '@/components/difficult-button';
 import { QuestionAnswerPanel } from '@/components/question-answer-panel';
+import { QuestionMapDrawer } from '@/components/question-map-drawer';
 import {
   QuestionNoteEditor,
   type QuestionNoteDraft,
@@ -146,6 +148,10 @@ export function ExamsPage({
   const [editingPostId, setEditingPostId] = useState<string | null>(null);
   const [editingContent, setEditingContent] = useState('');
   const [pendingSubject, setPendingSubject] = useState<SubjectId | null>(null);
+  // One-column pages fold the subject / year selector behind a summary button (the CSS
+  // decides when); it folds again after a choice.
+  const [selectorExpanded, setSelectorExpanded] = useState(false);
+  const selectorId = useId();
   const verdictRef = useRef<HTMLParagraphElement>(null);
   const focusVerdictFor = useRef<string | null>(null);
   const shared = useSharedDiscussions(currentQuestion?.id ?? 'unavailable');
@@ -234,6 +240,9 @@ export function ExamsPage({
   const currentIndex = subjectQuestions.findIndex(
     (question) => question.id === currentQuestion.id,
   );
+  const paperIndex = paperQuestions.findIndex(
+    (question) => question.id === currentQuestion.id,
+  );
   const posts = shared.posts;
   const difficultQuestionIds = new Set(state.difficultQuestionIds);
   const difficult = state.difficultQuestionIds.includes(currentQuestion.id);
@@ -247,6 +256,16 @@ export function ExamsPage({
     explanationPostTypes.includes(post.type),
   );
   const hasExplanation = Boolean(builtInExplanation) || explanationPosts.length > 0;
+  /** The paper's tiles, shared by the aside and the 題號 drawer of the compact bar. */
+  const pickerQuestions = paperQuestions.map((question) => ({
+    id: question.id,
+    questionNumber: question.questionNumber,
+    label: formatQuestionNumberLabel(question, true),
+    ariaLabel: formatQuestionNumberLabel(question),
+    difficult: question.format !== 'written' && difficultQuestionIds.has(question.id),
+    hasContent:
+      Boolean(question.explanation?.trim()) || discussionQuestionIds.has(question.id),
+  }));
 
   function navigateTo(questionId: string) {
     void router.replace(
@@ -266,6 +285,7 @@ export function ExamsPage({
   }
 
   function selectSubject(subjectId: SubjectId) {
+    setSelectorExpanded(false);
     const first = questions
       .filter((question) => question.subject === subjectId)
       .sort(
@@ -281,6 +301,7 @@ export function ExamsPage({
 
   function selectYear(year: SelectorYear) {
     if (typeof year !== 'number') return;
+    setSelectorExpanded(false);
     const first = questions.find(
       (question) => question.subject === activeQuestion.subject && question.year === year,
     );
@@ -414,20 +435,80 @@ export function ExamsPage({
 
   return (
     <div className={styles.page} inert={!routeHydrated || !hydrated}>
-      <QuestionSelector
-        subjectId={pendingSubject ?? currentQuestion.subject}
-        year={currentQuestion.year}
-        yearOptions={years.map((year) => ({
-          value: year,
-          disabled: !availableYears.includes(year),
-        }))}
-        onSubjectChange={selectSubject}
-        onYearChange={selectYear}
-        ariaLabel="題目選擇"
-      />
+      <div className={styles.selectorWrap} data-expanded={selectorExpanded}>
+        <button
+          type="button"
+          className={styles.selectorSummary}
+          aria-expanded={selectorExpanded}
+          aria-controls={selectorId}
+          aria-label="展開科目與年度"
+          onClick={() => setSelectorExpanded((current) => !current)}
+        >
+          <span>
+            {subject?.name}・{currentQuestion.year} 年
+          </span>
+          <IconChevronDown size={18} stroke={2} aria-hidden="true" />
+        </button>
+        <div id={selectorId} className={styles.selectorBody}>
+          <QuestionSelector
+            subjectId={pendingSubject ?? currentQuestion.subject}
+            year={currentQuestion.year}
+            yearOptions={years.map((year) => ({
+              value: year,
+              disabled: !availableYears.includes(year),
+            }))}
+            onSubjectChange={selectSubject}
+            onYearChange={selectYear}
+            ariaLabel="題目選擇"
+          />
+        </div>
+      </div>
 
       <div className={styles.examsLayout}>
         <main className={styles.contentColumn}>
+          <div className={styles.compactNav}>
+            <div className={styles.compactPosition}>
+              <strong>
+                {paperIndex + 1} / {paperQuestions.length}
+              </strong>
+              <span>
+                {subject?.shortName}・{currentQuestion.year} 年
+              </span>
+            </div>
+            <div className={styles.compactActions}>
+              <Button
+                variant="icon"
+                aria-label="上一題"
+                disabled={currentIndex <= 0}
+                onClick={() =>
+                  subjectQuestions[currentIndex - 1] &&
+                  navigateTo(subjectQuestions[currentIndex - 1].id)
+                }
+              >
+                <IconArrowLeft size={18} stroke={2} aria-hidden="true" />
+              </Button>
+              <Button
+                variant="icon"
+                aria-label="下一題"
+                disabled={currentIndex >= subjectQuestions.length - 1}
+                onClick={() =>
+                  subjectQuestions[currentIndex + 1] &&
+                  navigateTo(subjectQuestions[currentIndex + 1].id)
+                }
+              >
+                <IconArrowRight size={18} stroke={2} aria-hidden="true" />
+              </Button>
+              <QuestionMapDrawer
+                current={paperIndex + 1}
+                total={paperQuestions.length}
+                questions={pickerQuestions}
+                value={currentQuestion.id}
+                onValueChange={navigateTo}
+                showStatusLegend
+              />
+            </div>
+          </div>
+
           <TabsRoot value={tab} onValueChange={setTab} ariaLabel="題目分頁">
             <TabList>
               <Tab value="question">題目</Tab>
@@ -861,22 +942,11 @@ export function ExamsPage({
               <h2>題號導覽</h2>
             </div>
             <strong>
-              {paperQuestions.findIndex((item) => item.id === currentQuestion.id) + 1}/
-              {paperQuestions.length}
+              {paperIndex + 1}/{paperQuestions.length}
             </strong>
           </header>
           <QuestionNumberPicker
-            questions={paperQuestions.map((question) => ({
-              id: question.id,
-              questionNumber: question.questionNumber,
-              label: formatQuestionNumberLabel(question, true),
-              ariaLabel: formatQuestionNumberLabel(question),
-              difficult:
-                question.format !== 'written' && difficultQuestionIds.has(question.id),
-              hasContent:
-                Boolean(question.explanation?.trim()) ||
-                discussionQuestionIds.has(question.id),
-            }))}
+            questions={pickerQuestions}
             value={currentQuestion.id}
             onValueChange={navigateTo}
             showStatusLegend

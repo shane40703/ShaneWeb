@@ -471,4 +471,50 @@ describe('ExamsPage question loading', () => {
     expect(screen.queryByRole('region', { name: '類似題目' })).not.toBeInTheDocument();
     expect(screen.queryByText('類似考題')).not.toBeInTheDocument();
   });
+
+  it('opens the 題號 drawer from the compact bar and navigates from its tiles', async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    expect(screen.queryByRole('dialog', { name: '題號導覽' })).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: '題號' }));
+    const drawer = await screen.findByRole('dialog', { name: '題號導覽' });
+    expect(within(drawer).getByRole('note', { name: '題號標記說明' })).toBeInTheDocument();
+    const tile = within(drawer).getByRole('button', { name: '第 1 題' });
+    expect(tile).toHaveAttribute('aria-pressed', 'true');
+
+    await user.click(tile);
+    expect(router.replace).toHaveBeenLastCalledWith(
+      { pathname: '/exams', query: { question: lawQuestion.id } },
+      undefined,
+      { shallow: true, scroll: false },
+    );
+    await waitFor(() =>
+      expect(screen.queryByRole('dialog', { name: '題號導覽' })).not.toBeInTheDocument(),
+    );
+  });
+
+  it('folds the subject and year selector behind a summary button', () => {
+    renderPage({ questions: [lawQuestion, environmentQuestion] });
+
+    const summary = screen.getByRole('button', { name: '展開科目與年度' });
+    expect(summary).toHaveTextContent('建築法規與實務・114 年');
+    expect(summary).toHaveAttribute('aria-expanded', 'false');
+    const selector = document.getElementById(summary.getAttribute('aria-controls')!)!;
+    expect(within(selector).getByRole('group', { name: '科目' })).toBeInTheDocument();
+
+    fireEvent.click(summary);
+    expect(summary).toHaveAttribute('aria-expanded', 'true');
+    fireEvent.click(summary);
+    expect(summary).toHaveAttribute('aria-expanded', 'false');
+
+    fireEvent.click(summary);
+    fireEvent.click(within(selector).getByRole('button', { name: /建築環境控制/ }));
+    expect(summary).toHaveAttribute('aria-expanded', 'false');
+    expect(router.replace).toHaveBeenLastCalledWith(
+      { pathname: '/exams', query: { question: environmentQuestion.id } },
+      undefined,
+      { shallow: true, scroll: false },
+    );
+  });
 });

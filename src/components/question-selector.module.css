@@ -1,8 +1,11 @@
 /* Subject + year selector: ONE framed panel. The subject tiles and year buttons are
-   framed controls; the year row, question picker and footer are rule-separated groups. */
+   framed controls; the year row, question picker and footer are rule-separated groups.
+   The panel is its own container: the breakpoints at the end follow its width, not the
+   viewport's (beside the sidebar an 820px window leaves it about 500px). */
 .panel {
   width: 100%;
   margin-bottom: 24px;
+  container-type: inline-size;
   border: var(--frame);
   border-radius: var(--radius-frame);
   background: var(--surface);
@@ -219,13 +222,14 @@
   white-space: nowrap;
 }
 
-@media (max-width: 760px) {
+@container (max-width: 760px) {
   .subjectGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
-@media (max-width: 520px) {
+@container (max-width: 520px) {
+  /* A container cannot query itself: this one follows the page's container (exams page). */
   .panel {
     margin-bottom: 16px;
   }

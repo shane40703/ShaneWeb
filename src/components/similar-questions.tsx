@@ -45,7 +45,7 @@ export function SimilarQuestions({
       ) : (
         <>
           <p className={styles.lead}>
-            同考點「{similar.topic}」的其他年度考題，共 {similar.total} 題
+            同考點「{similar.topic}」的其他考題，共 {similar.total} 題
           </p>
           <ol className={styles.rows}>
             {shown.map((candidate) => (
