@@ -1463,13 +1463,15 @@
     min-height: 44px;
     grid-template-columns: 20px minmax(0, 1fr);
     gap: 8px;
+    align-items: start;
     padding: 7px 44px 7px 10px;
   }
 
-  /* The letter chip, beside the option text. */
+  /* The letter chip, on the first line of a long option. */
   .optionsArea [role='radiogroup'] label > :nth-last-child(2) {
     width: 20px;
     height: 20px;
+    margin-top: 4px;
   }
 
   .optionsArea [role='radiogroup'] label > [role='radio'] {
