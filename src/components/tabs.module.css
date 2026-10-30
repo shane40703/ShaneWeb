@@ -1,7 +1,7 @@
-/* Tab strip: a translucent sheet laid over the graph paper. The grid shows through it and it
-   draws no line of its own, which would read as one more grid line. The active tab is the same
-   paper at full opacity: Base UI's indicator, which slides between the tabs, carries that base
-   and the 2px ink-blue line along the strip's bottom edge. */
+/* Tab strip: a translucent sheet laid over the graph paper, closed by a rule along its bottom.
+   The grid shows through it, and the rule edges the sheet rather than sitting on the bare paper.
+   The active tab is the same paper at full opacity: Base UI's indicator, which slides between
+   the tabs, carries that base and the 2px ink-blue line over the rule. */
 .root {
   min-width: 0;
 }
@@ -10,7 +10,8 @@
   display: flex;
   position: relative;
   isolation: isolate;
-  border-radius: var(--radius-frame);
+  border-bottom: var(--rule);
+  border-radius: var(--radius-frame) var(--radius-frame) 0 0;
   background: color-mix(in srgb, var(--surface-elevated) 55%, transparent);
 }
 
@@ -57,7 +58,7 @@
 .indicator {
   position: absolute;
   top: 0;
-  bottom: 0;
+  bottom: -1px;
   left: var(--active-tab-left);
   width: var(--active-tab-width);
   border-bottom: 2px solid var(--primary);
