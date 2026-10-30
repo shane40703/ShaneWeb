@@ -14,6 +14,7 @@ import {
 import { withExplanation } from '../../fixtures/questions';
 import { practiceDiscussionPosts } from '../../fixtures/practice';
 import { pageParameters, withPageFrame } from '../../support/story-environment';
+import { withPersonalFrame } from '../personal/personal-frame';
 
 /**
  * 難題標記（/difficult）：網站的頁面元件，只載入有標記難題的科目與年度。
@@ -58,6 +59,7 @@ export const 還沒有標記難題: Story = {};
  */
 export const 有詳解的難題: Story = {
   parameters: { appState: markedAppState },
+  decorators: [withPersonalFrame],
   render: () => (
     <DifficultPage
       questions={loadedPapersOf(personalDifficultIds).map((question) =>
@@ -130,6 +132,7 @@ function DifficultBankStates({
  */
 export const 題庫載入中或失敗: StoryObj<typeof DifficultBankStates> = {
   parameters: { appState: markedAppState },
+  decorators: [withPersonalFrame],
   render: (args) => <DifficultBankStates {...args} />,
   args: { bank: 'partial', onRetryQuestionBank: fn() },
   argTypes: {

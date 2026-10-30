@@ -1,4 +1,5 @@
 import Head from 'next/head';
+import { PersonalLayout } from '@/features/personal/personal-layout';
 import { WrongPage } from '@/features/wrong/wrong-page';
 import { useSubjectQuestions } from '@/lib/question-bank-client';
 import { parseQuestionId, subjectsOfQuestionIds } from '@/lib/question-path';
@@ -52,17 +53,19 @@ export default function WrongRoute() {
       <Head>
         <title>常錯題目｜建築師考試</title>
       </Head>
-      <WrongPage
-        attempts={state.attempts}
-        questions={banks.flatMap((bank) => bank.questions)}
-        questionBankStatuses={{
-          law: lawBank.status,
-          env: environmentBank.status,
-          construction: constructionBank.status,
-          structure: structureBank.status,
-        }}
-        onRetryQuestionBank={(subjectId) => bankBySubject[subjectId].retry()}
-      />
+      <PersonalLayout>
+        <WrongPage
+          attempts={state.attempts}
+          questions={banks.flatMap((bank) => bank.questions)}
+          questionBankStatuses={{
+            law: lawBank.status,
+            env: environmentBank.status,
+            construction: constructionBank.status,
+            structure: structureBank.status,
+          }}
+          onRetryQuestionBank={(subjectId) => bankBySubject[subjectId].retry()}
+        />
+      </PersonalLayout>
     </>
   );
 }

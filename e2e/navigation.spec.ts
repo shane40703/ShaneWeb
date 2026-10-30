@@ -87,6 +87,8 @@ test('我的作答存摺 opens its hub, whose rows reach every page while the si
       await page.keyboard.press('Escape');
       await expect(drawer).toHaveCount(0);
     }
+    await page.getByRole('link', { name: `返回${personal.label}`, exact: true }).click();
+    await expect(page).toHaveURL(/\/personal$/);
   }
 });
 

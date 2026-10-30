@@ -1,8 +1,6 @@
-import Link from 'next/link';
 import type { ReactNode } from 'react';
-import { IconArrowLeft } from '@tabler/icons-react';
+import { HubLayout } from '@/components/layout/hub-layout';
 import { practiceHub } from './practice-pages';
-import styles from './practice-layout.module.css';
 
 /**
  * Frame for the practice hub's pages: a way back to the hub instead of the resources
@@ -16,12 +14,8 @@ export function PracticeLayout({
   children: ReactNode;
 }) {
   return (
-    <div className={narrow ? `${styles.frame} ${styles.narrow}` : styles.frame}>
-      <Link href={practiceHub.href} className={styles.back}>
-        <IconArrowLeft size={16} stroke={2.2} aria-hidden="true" />
-        返回每日練習
-      </Link>
+    <HubLayout hub={practiceHub} narrow={narrow}>
       {children}
-    </div>
+    </HubLayout>
   );
 }

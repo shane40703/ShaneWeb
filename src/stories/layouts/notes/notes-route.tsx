@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 import { NotesPage, type NotesQuestionBankStatus } from '@/features/notes/notes-page';
+import { PersonalLayout } from '@/features/personal/personal-layout';
 import { useSubjectQuestions } from '@/lib/question-bank-client';
 import type { Question, SubjectId } from '@/lib/types';
 import { subjects } from '@/question-bank/catalog';
@@ -97,11 +98,13 @@ export function NotesRoute({
   }
 
   return (
-    <NotesPage
-      questions={questions}
-      questionBankStatuses={questionBankStatuses}
-      onRequestQuestionBank={requestQuestionBank}
-      onRetryQuestionBank={retryQuestionBank}
-    />
+    <PersonalLayout>
+      <NotesPage
+        questions={questions}
+        questionBankStatuses={questionBankStatuses}
+        onRequestQuestionBank={requestQuestionBank}
+        onRetryQuestionBank={retryQuestionBank}
+      />
+    </PersonalLayout>
   );
 }

@@ -17,6 +17,7 @@ import {
 import { withExplanation } from '../../fixtures/questions';
 import { practiceDiscussionPosts } from '../../fixtures/practice';
 import { pageParameters, withPageFrame } from '../../support/story-environment';
+import { withPersonalFrame } from '../personal/personal-frame';
 
 /**
  * 常錯題目（/wrong）：網站的頁面元件，依每次交卷的紀錄統計每題累計答錯幾次，
@@ -73,6 +74,7 @@ export const 沒有答錯題目: Story = {
  */
 export const 有詳解的錯題: Story = {
   parameters: { appState: wrongAppState },
+  decorators: [withPersonalFrame],
   render: () => (
     <WrongPage
       attempts={wrongAttempts}
@@ -141,6 +143,7 @@ function WrongBankStates({
  */
 export const 題庫載入中或失敗: StoryObj<typeof WrongBankStates> = {
   parameters: { appState: wrongAppState },
+  decorators: [withPersonalFrame],
   render: (args) => <WrongBankStates {...args} />,
   args: { bank: 'partial', onRetryQuestionBank: fn() },
   argTypes: {

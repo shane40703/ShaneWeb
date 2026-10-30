@@ -18,6 +18,7 @@ import {
   questionBankStatusesWith,
 } from '../../fixtures/personal';
 import { pageParameters, withPageFrame } from '../../support/story-environment';
+import { withPersonalFrame } from '../personal/personal-frame';
 
 /**
  * 歷屆試題作答履歷（/history）：網站的頁面元件，只載入作答紀錄用到的科目與年度。
@@ -119,6 +120,7 @@ function HistoryBankStates({
  */
 export const 題庫載入中或失敗: StoryObj<typeof HistoryBankStates> = {
   parameters: { appState: attemptsAppState(mixedAttempts) },
+  decorators: [withPersonalFrame],
   render: (args) => <HistoryBankStates {...args} />,
   args: { bank: 'loading', onRetryQuestionBank: fn() },
   argTypes: {

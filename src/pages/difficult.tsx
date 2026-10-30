@@ -1,5 +1,6 @@
 import Head from 'next/head';
 import { DifficultPage } from '@/features/difficult/difficult-page';
+import { PersonalLayout } from '@/features/personal/personal-layout';
 import { useSubjectQuestions } from '@/lib/question-bank-client';
 import { parseQuestionId, subjectsOfQuestionIds } from '@/lib/question-path';
 import { useAppState } from '@/state/app-state';
@@ -51,18 +52,20 @@ export default function DifficultRoute() {
       <Head>
         <title>難題標記｜建築師考試</title>
       </Head>
-      <DifficultPage
-        questions={banks.flatMap((bank) => bank.questions)}
-        questionBankStatuses={{
-          law: lawBank.status,
-          env: environmentBank.status,
-          construction: constructionBank.status,
-          structure: structureBank.status,
-        }}
-        onRetryQuestionBank={(subjectId) =>
-          bankBySubject[subjectId].retry()
-        }
-      />
+      <PersonalLayout>
+        <DifficultPage
+          questions={banks.flatMap((bank) => bank.questions)}
+          questionBankStatuses={{
+            law: lawBank.status,
+            env: environmentBank.status,
+            construction: constructionBank.status,
+            structure: structureBank.status,
+          }}
+          onRetryQuestionBank={(subjectId) =>
+            bankBySubject[subjectId].retry()
+          }
+        />
+      </PersonalLayout>
     </>
   );
 }

@@ -5,6 +5,7 @@ import type { SubjectId } from '@/lib/types';
 import { notesAppState } from '../../fixtures/personal';
 import { withStatefulRouter } from '../../support/stateful-router';
 import { pageParameters, withPageFrame } from '../../support/story-environment';
+import { withPersonalFrame } from '../personal/personal-frame';
 import { notesInitialQuestions, NotesRoute } from './notes-route';
 
 /**
@@ -61,6 +62,7 @@ const bankCallbacks = { onRequestQuestionBank: fn(), onRetryQuestionBank: fn() }
  */
 export const 題庫載入中或失敗: StoryObj<{ bank: 'loading' | 'error' } & BankCallbacks> = {
   parameters: { ...pageParameters('/notes', { question: 'env-113-23' }) },
+  decorators: [withPersonalFrame],
   render: ({ bank, ...callbacks }) => (
     <NotesPage
       questions={notesInitialQuestions}
@@ -86,6 +88,7 @@ export const 題庫載入中或失敗: StoryObj<{ bank: 'loading' | 'error' } & 
  * 沒有題目。
  */
 export const 題庫尚無資料: StoryObj<{ bank: 'all' | 'env' } & BankCallbacks> = {
+  decorators: [withPersonalFrame],
   render: ({ bank, ...callbacks }) =>
     bank === 'all' ? (
       <NotesPage questions={[]} />

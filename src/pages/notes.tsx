@@ -5,6 +5,7 @@ import {
   NotesPage,
   type NotesQuestionBankStatus,
 } from '@/features/notes/notes-page';
+import { PersonalLayout } from '@/features/personal/personal-layout';
 import { loadSubjectQuestions } from '@/server/question-bank.server';
 import { useSubjectQuestions } from '@/lib/question-bank-client';
 import { subjects } from '@/question-bank/catalog';
@@ -108,12 +109,14 @@ export default function NotesRoute({
       <Head>
         <title>我的筆記｜建築師考試</title>
       </Head>
-      <NotesPage
-        questions={questions}
-        questionBankStatuses={questionBankStatuses}
-        onRequestQuestionBank={requestQuestionBank}
-        onRetryQuestionBank={retryQuestionBank}
-      />
+      <PersonalLayout>
+        <NotesPage
+          questions={questions}
+          questionBankStatuses={questionBankStatuses}
+          onRequestQuestionBank={requestQuestionBank}
+          onRetryQuestionBank={retryQuestionBank}
+        />
+      </PersonalLayout>
     </>
   );
 }

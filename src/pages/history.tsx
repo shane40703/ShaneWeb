@@ -1,6 +1,7 @@
 import Head from 'next/head';
 import { HistoryPage } from '@/features/history/history-page';
 import { selectHistoryAttempts } from '@/features/history/history-attempts';
+import { PersonalLayout } from '@/features/personal/personal-layout';
 import { useSubjectQuestions } from '@/lib/question-bank-client';
 import { parseQuestionId, subjectsOfQuestionIds } from '@/lib/question-path';
 import { useAppState } from '@/state/app-state';
@@ -54,19 +55,21 @@ export default function HistoryRoute({ dailyOnly = false }: { dailyOnly?: boolea
       <Head>
         <title>{dailyOnly ? '每日練習履歷' : '歷屆試題作答履歷'}｜建築師考試</title>
       </Head>
-      <HistoryPage
-        dailyOnly={dailyOnly}
-        questions={banks.flatMap((bank) => bank.questions)}
-        questionBankStatuses={{
-          law: lawBank.status,
-          env: environmentBank.status,
-          construction: constructionBank.status,
-          structure: structureBank.status,
-        }}
-        onRetryQuestionBank={(subjectId) =>
-          bankBySubject[subjectId].retry()
-        }
-      />
+      <PersonalLayout>
+        <HistoryPage
+          dailyOnly={dailyOnly}
+          questions={banks.flatMap((bank) => bank.questions)}
+          questionBankStatuses={{
+            law: lawBank.status,
+            env: environmentBank.status,
+            construction: constructionBank.status,
+            structure: structureBank.status,
+          }}
+          onRetryQuestionBank={(subjectId) =>
+            bankBySubject[subjectId].retry()
+          }
+        />
+      </PersonalLayout>
     </>
   );
 }
