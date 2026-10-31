@@ -9,7 +9,9 @@ import {
 import { ReviewNoteEditor } from '@/components/attempt-review';
 import { QuestionPrompt, Tag } from '@/components/content/content';
 import { QuestionAnswerPanel } from '@/components/question-answer-panel';
+import { QuestionBodyPlaceholder } from '@/components/question-body-placeholder';
 import { Button } from '@/components/ui/ui';
+import type { QuestionBankStatus } from '@/lib/question-bank-client';
 import { formatDuration } from '@/lib/study';
 import type { Question } from '@/lib/types';
 import { getSubject } from '@/question-bank/catalog';
@@ -27,6 +29,8 @@ import styles from './practice-page.module.css';
 export function PracticeResultView({
   result,
   questionById,
+  bodyStatus = 'ready',
+  onRetryBodies,
   onRetry,
   onNewDraw,
   onSave,
@@ -34,6 +38,8 @@ export function PracticeResultView({
 }: {
   result: PracticeResult;
   questionById: ReadonlyMap<string, Question>;
+  bodyStatus?: QuestionBankStatus;
+  onRetryBodies?: () => void;
   onRetry: () => void;
   onNewDraw: () => void;
   onSave?: () => void;
@@ -41,6 +47,9 @@ export function PracticeResultView({
 }) {
   const { session, summary } = result;
   const subjectName = getSubject(session.subject)?.shortName ?? '';
+  const bodiesMissing =
+    bodyStatus !== 'ready' &&
+    session.questionIds.some((questionId) => !questionById.has(questionId));
 
   return (
     <div className={styles.resultArea}>
@@ -101,6 +110,10 @@ export function PracticeResultView({
           </Button>
         </div>
       </section>
+
+      {bodiesMissing ? (
+        <QuestionBodyPlaceholder status={bodyStatus} onRetry={() => onRetryBodies?.()} />
+      ) : null}
 
       <section className={styles.completionReview} aria-labelledby="practice-wrong-title">
         <header>

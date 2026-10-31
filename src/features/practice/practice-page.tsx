@@ -9,7 +9,11 @@ import {
 } from 'react';
 import { IconLoader2 } from '@tabler/icons-react';
 import { useToast } from '@/components/ui/ui';
-import { useSubjectQuestions } from '@/lib/question-bank-client';
+import {
+  loadQuestionBodies,
+  useQuestionBodies,
+  useSubjectFacets,
+} from '@/lib/question-bank-client';
 import { readStoredValue, writeStoredValue } from '@/lib/storage';
 import { isSubjectId, parseYear } from '@/lib/study';
 import type { SubjectId } from '@/lib/types';
@@ -113,11 +117,17 @@ export function PracticePage() {
   const activeSubject = choosing ? subject : session?.subject ?? subject;
   const choosingRef = useRef(choosing);
   useEffect(() => { choosingRef.current = choosing; }, [choosing]);
-  const bank = useSubjectQuestions(restored && activeSubject ? [activeSubject] : []);
-  const questionById = useMemo(
-    () => new Map(bank.questions.map((question) => [question.id, question])),
-    [bank.questions],
-  );
+  // The draw only counts and filters, so it reads facets. Bodies load as the reader gets there:
+  // this question and the next, and the whole set for the result.
+  const bank = useSubjectFacets(restored && activeSubject ? [activeSubject] : []);
+  const openIds = useMemo(() => {
+    if (!session || choosing) return [];
+    return resultShown
+      ? session.questionIds
+      : session.questionIds.slice(session.currentIndex, session.currentIndex + 2);
+  }, [choosing, resultShown, session]);
+  const bodies = useQuestionBodies(openIds);
+  const questionById = bodies.byId;
   const pool = useMemo(
     () => resolvePracticePool(subject ? bank.questions : [], subject ?? 'law', settings),
     [bank.questions, subject, settings],
@@ -491,11 +501,11 @@ export function PracticePage() {
     navigate('replace', { q: 1 }, 0);
   }
 
-  function makePaper() {
+  async function makePaper() {
     if (!subject) throw new Error('請先選擇科目。');
     // A separate draw: the paper never becomes the online set.
     const draw = createPracticeSession(pool, subject, settings.shuffleOptions);
-    return createPracticePaper(draw, questionById);
+    return createPracticePaper(draw, await loadQuestionBodies(draw.questionIds));
   }
 
   function goTo(index: number) {
@@ -639,6 +649,8 @@ export function PracticePage() {
       <PracticeResultView
         result={result}
         questionById={questionById}
+        bodyStatus={bodies.status}
+        onRetryBodies={bodies.retry}
         onRetry={retrySet}
         onNewDraw={newDraw}
         onSave={saveDailyPractice}
@@ -648,9 +660,9 @@ export function PracticePage() {
   } else if (session && currentId) {
     const status: PracticeQuestionStatus = currentQuestion
       ? 'ready'
-      : bank.status === 'loading'
+      : bodies.status === 'loading'
         ? 'loading'
-        : bank.status === 'error'
+        : bodies.status === 'error'
           ? 'error'
           : 'missing';
     content = (
@@ -659,7 +671,7 @@ export function PracticePage() {
         question={currentQuestion}
         status={status}
         timer={timer}
-        onRetry={bank.retry}
+        onRetry={bodies.retry}
         onSelect={(selected) =>
           changeAnswers((current) => selectPracticeOption(current, currentId, selected))
         }

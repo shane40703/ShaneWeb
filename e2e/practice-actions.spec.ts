@@ -29,7 +29,7 @@ for (const kind of ['daily', 'mock'] as const) {
           answers: { 'law-114-01': { selected: 0, correct: false } }, drafts: {}, eliminated: {}, elapsedSeconds: {}, currentIndex: 0,
         }));
       }, theme);
-      await page.route('**/question-data/law/114.json', async route => {
+      await page.route('**/question-data/law/114.json*', async route => {
         const response = await route.fetch();
         const questions = await response.json();
         const question = questions.find((item: { id: string }) => item.id === 'law-114-01');

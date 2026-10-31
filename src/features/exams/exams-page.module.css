@@ -673,3 +673,40 @@
     display: none;
   }
 }
+
+/* Another paper is on its way: the card keeps its size, and says so once the wait shows. */
+.questionCard[data-loading],
+.notesCard[data-loading] {
+  position: relative;
+}
+
+/* 上一題 and 下一題 stay: the button that was just pressed keeps the keyboard focus. */
+.questionCard[data-loading] > :not(.bodyPending, .questionNavigation),
+.notesCard[data-loading] > :not(.bodyPending) {
+  visibility: hidden;
+}
+
+.bodyPending {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  font-size: 14px;
+  pointer-events: none;
+}
+
+.bodyPending > * {
+  pointer-events: auto;
+}
+
+.bodyPending[data-status='loading'] {
+  opacity: 0;
+  animation: body-pending 0s linear 240ms forwards;
+}
+
+@keyframes body-pending {
+  to {
+    opacity: 1;
+  }
+}

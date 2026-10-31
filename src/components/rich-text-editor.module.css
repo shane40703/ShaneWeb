@@ -33,3 +33,14 @@
   .toolbar button, .toolbar select, .colorPicker { min-height: 44px; }
   .colorPicker { width: 44px; }
 }
+
+.loadingEditor {
+  min-height: 140px;
+  margin: 0;
+  padding: 10px 12px;
+  border: var(--frame);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 14px;
+}

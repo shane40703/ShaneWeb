@@ -348,16 +348,26 @@ export function useDiscussionPublisher(questionId: QuestionId) {
   return { publish, enabled };
 }
 
-export function useDiscussionQuestionIds() {
+/**
+ * Which questions of one paper have shared content, for its tiles. `prefix` is the paper's id
+ * prefix: the collection is read only as far as the tiles on screen, by the automatic
+ * single-field index on questionId, so opening a paper costs its posts and not everyone's.
+ */
+export function useDiscussionQuestionIds(prefix: string | null) {
   const { state } = useAppState();
   const enabled = firebaseConfigurationAvailable();
   const [cloudQuestionIds, setCloudQuestionIds] = useState<string[]>([]);
 
   useEffect(() => {
-    if (!enabled) return;
+    if (!enabled || !prefix) return;
     const firebase = getFirebaseServices();
     if (!firebase) return;
-    return onSnapshot(collection(firebase.db, 'discussionPosts'), (snapshot) => {
+    const paperPosts = query(
+      collection(firebase.db, 'discussionPosts'),
+      where('questionId', '>=', prefix),
+      where('questionId', '<', `${prefix}\uf8ff`),
+    );
+    return onSnapshot(paperPosts, (snapshot) => {
       setCloudQuestionIds([
         ...new Set(
           snapshot.docs.flatMap((item) => {
@@ -369,7 +379,7 @@ export function useDiscussionQuestionIds() {
         ),
       ]);
     });
-  }, [enabled]);
+  }, [enabled, prefix]);
 
   return useMemo(
     () =>

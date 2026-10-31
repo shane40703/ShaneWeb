@@ -16,7 +16,7 @@ import { DifficultButton } from '@/components/difficult-button';
 import { QuestionAnswerPanel } from '@/components/question-answer-panel';
 import { AttachmentGallery } from '@/components/image-attachments';
 import { RichText } from '@/components/rich-text';
-import { RichTextEditor } from '@/components/rich-text-editor';
+import { RichTextEditor } from '@/components/rich-text-editor-lazy';
 import { Button, useToast } from '@/components/ui/ui';
 import {
   formatCorrectAnswer,

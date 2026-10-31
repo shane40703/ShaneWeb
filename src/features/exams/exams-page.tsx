@@ -27,8 +27,9 @@ import {
   type QuestionNoteDraft,
 } from '@/components/question-note-editor';
 import { RichText } from '@/components/rich-text';
+import { QuestionBodyPlaceholder } from '@/components/question-body-placeholder';
 import { hasSimilarQuestionsBlock, SimilarQuestions } from '@/components/similar-questions';
-import { RichTextEditor } from '@/components/rich-text-editor';
+import { RichTextEditor } from '@/components/rich-text-editor-lazy';
 import { Tab, TabList, TabPanel, TabsRoot } from '@/components/tabs';
 import { mergeRichTextValues } from '@/lib/rich-document';
 import {
@@ -44,10 +45,10 @@ import {
   useToast,
 } from '@/components/ui/ui';
 import { getSubject, years } from '@/question-bank/catalog';
+import { hasBody, type QuestionEntry } from '@/question-bank/derived-data';
 import type {
   DiscussionPost,
   DiscussionPostType,
-  Question,
   SubjectId,
 } from '@/lib/types';
 import type { QuestionBankStatus } from '@/lib/question-bank-client';
@@ -113,12 +114,27 @@ function queryFor(questionId: string, tab: ExamsTab) {
   return tab === 'question' ? { question: questionId } : { question: questionId, tab };
 }
 
+function BodyPending({
+  status,
+  onRetry,
+}: {
+  status: QuestionBankStatus;
+  onRetry?: () => void;
+}) {
+  return (
+    <div className={styles.bodyPending} data-status={status}>
+      <QuestionBodyPlaceholder status={status} onRetry={() => onRetry?.()} />
+    </div>
+  );
+}
+
 export function ExamsPage({
   questions,
   questionBankStatus = 'ready',
   onRetryQuestionBank,
 }: {
-  questions: Question[];
+  /** The bank to navigate over; a question has a body once its paper has loaded. */
+  questions: readonly QuestionEntry[];
   questionBankStatus?: QuestionBankStatus;
   onRetryQuestionBank?: () => void;
 }) {
@@ -132,8 +148,15 @@ export function ExamsPage({
   const requestedQuestion = requestedQuestionId
     ? questions.find((question) => question.id === requestedQuestionId)
     : undefined;
-  const currentQuestion = requestedQuestionId ? requestedQuestion : questions[0];
-  const currentQuestionId = currentQuestion?.id;
+  const currentEntry = requestedQuestionId ? requestedQuestion : questions[0];
+  const currentBody = currentEntry && hasBody(currentEntry) ? currentEntry : undefined;
+  // While another paper downloads, the card keeps its size: the number, tiles and selector
+  // have already moved on, and nothing else jumps.
+  const [shownBody, setShownBody] = useState(currentBody);
+  if (currentBody && currentBody !== shownBody) setShownBody(currentBody);
+  const currentQuestion = currentBody ?? shownBody;
+  const bodyPending = !currentBody && questionBankStatus !== 'ready';
+  const currentQuestionId = currentEntry?.id;
   // The tab comes from the URL (so a shared link or back/forward lands on the right tab);
   // a click switches the panel at once and is remembered only until router.replace has
   // updated the query, after which the URL alone decides again.
@@ -147,7 +170,6 @@ export function ExamsPage({
   const [replyDrafts, setReplyDrafts] = useState<Record<string, string>>({});
   const [editingPostId, setEditingPostId] = useState<string | null>(null);
   const [editingContent, setEditingContent] = useState('');
-  const [pendingSubject, setPendingSubject] = useState<SubjectId | null>(null);
   // One-column pages fold the subject / year selector behind a summary button (the CSS
   // decides when); it folds again after a choice.
   const [selectorExpanded, setSelectorExpanded] = useState(false);
@@ -155,25 +177,12 @@ export function ExamsPage({
   const compactNavRef = useRef<HTMLDivElement>(null);
   const verdictRef = useRef<HTMLParagraphElement>(null);
   const focusVerdictFor = useRef<string | null>(null);
-  const shared = useSharedDiscussions(currentQuestion?.id ?? 'unavailable');
-  const discussionQuestionIds = useDiscussionQuestionIds();
+  const shared = useSharedDiscussions(currentQuestionId ?? 'unavailable');
+  const discussionQuestionIds = useDiscussionQuestionIds(
+    currentEntry ? `${currentEntry.subject}-${currentEntry.year}-` : null,
+  );
   const currentPractice = currentQuestionId ? practice[currentQuestionId] : undefined;
   const revealed = currentPractice?.revealed ?? false;
-
-  useEffect(() => {
-    if (!pendingSubject) return;
-    const first = questions
-      .filter((question) => question.subject === pendingSubject)
-      .sort(
-        (left, right) => right.year - left.year || comparePaperQuestionOrder(left, right),
-      )[0];
-    if (!first) return;
-    void router.replace(
-      { pathname: '/exams', query: queryFor(first.id, tab) },
-      undefined,
-      { shallow: true, scroll: false },
-    );
-  }, [pendingSubject, questions, router, tab]);
 
   // 看解答 disappears with the reveal, so focus moves to the verdict line.
   useEffect(() => {
@@ -208,7 +217,7 @@ export function ExamsPage({
     );
   }
 
-  if (!currentQuestion) {
+  if (!currentEntry || !currentQuestion || (!currentBody && !bodyPending)) {
     return (
       <EmptyState
         title={requestedQuestionId ? '找不到指定題目' : '題庫尚無資料'}
@@ -222,9 +231,10 @@ export function ExamsPage({
   }
 
   const activeQuestion = currentQuestion;
-  const subject = getSubject(currentQuestion.subject);
+  const activeEntry = currentEntry;
+  const subject = getSubject(currentEntry.subject);
   const subjectQuestions = questions
-    .filter((question) => question.subject === currentQuestion.subject)
+    .filter((question) => question.subject === currentEntry.subject)
     .sort(
       (left, right) => right.year - left.year || comparePaperQuestionOrder(left, right),
     );
@@ -234,15 +244,15 @@ export function ExamsPage({
   const paperQuestions = questions
     .filter(
       (question) =>
-        question.subject === currentQuestion.subject &&
-        question.year === currentQuestion.year,
+        question.subject === currentEntry.subject &&
+        question.year === currentEntry.year,
     )
     .sort(comparePaperQuestionOrder);
   const currentIndex = subjectQuestions.findIndex(
-    (question) => question.id === currentQuestion.id,
+    (question) => question.id === currentEntry.id,
   );
   const paperIndex = paperQuestions.findIndex(
-    (question) => question.id === currentQuestion.id,
+    (question) => question.id === currentEntry.id,
   );
   const posts = shared.posts;
   const difficultQuestionIds = new Set(state.difficultQuestionIds);
@@ -250,8 +260,8 @@ export function ExamsPage({
   const written = currentQuestion.format === 'written';
   const selected = currentPractice?.selected;
   const correct = isQuestionCorrect(currentQuestion, selected);
-  const builtInExplanation = currentQuestion.explanation?.trim()
-    ? currentQuestion.explanation
+  const builtInExplanation = currentBody?.explanation?.trim()
+    ? currentBody.explanation
     : undefined;
   const explanationPosts = posts.filter((post) =>
     explanationPostTypes.includes(post.type),
@@ -265,7 +275,8 @@ export function ExamsPage({
     ariaLabel: formatQuestionNumberLabel(question),
     difficult: question.format !== 'written' && difficultQuestionIds.has(question.id),
     hasContent:
-      Boolean(question.explanation?.trim()) || discussionQuestionIds.has(question.id),
+      (hasBody(question) && Boolean(question.explanation?.trim())) ||
+      discussionQuestionIds.has(question.id),
   }));
 
   function navigateTo(questionId: string) {
@@ -286,7 +297,7 @@ export function ExamsPage({
   function setTab(nextTab: ExamsTab) {
     setTabOverride({ tab: nextTab, queryTab });
     void router.replace(
-      { pathname: '/exams', query: queryFor(activeQuestion.id, nextTab) },
+      { pathname: '/exams', query: queryFor(activeEntry.id, nextTab) },
       undefined,
       { shallow: true, scroll: false },
     );
@@ -299,19 +310,14 @@ export function ExamsPage({
       .sort(
         (left, right) => right.year - left.year || comparePaperQuestionOrder(left, right),
       )[0];
-    if (first) {
-      setPendingSubject(null);
-      navigateTo(first.id);
-      return;
-    }
-    setPendingSubject(subjectId);
+    if (first) navigateTo(first.id);
   }
 
   function selectYear(year: SelectorYear) {
     if (typeof year !== 'number') return;
     setSelectorExpanded(false);
     const first = questions.find(
-      (question) => question.subject === activeQuestion.subject && question.year === year,
+      (question) => question.subject === activeEntry.subject && question.year === year,
     );
     if (first) navigateTo(first.id);
   }
@@ -364,11 +370,12 @@ export function ExamsPage({
   // Merges into the unsaved 筆記 draft when there is one, so nothing typed there is lost;
   // the draft is then dropped because its content is saved.
   function savePostToNote(post: DiscussionPost) {
-    const draft = noteDrafts[activeQuestion.id];
-    const currentContent = draft?.content ?? state.notes[activeQuestion.id] ?? '';
+    // The post belongs to the question in the URL, which can be ahead of the body on screen.
+    const draft = noteDrafts[activeEntry.id];
+    const currentContent = draft?.content ?? state.notes[activeEntry.id] ?? '';
     const importedContent = post.content;
     const content = mergeRichTextValues(currentContent, importedContent);
-    const existingImages = draft?.images ?? state.noteImages[activeQuestion.id] ?? [];
+    const existingImages = draft?.images ?? state.noteImages[activeEntry.id] ?? [];
     const imageIds = new Set(existingImages.map((image) => image.id));
     const images = [
       ...existingImages,
@@ -376,13 +383,13 @@ export function ExamsPage({
     ];
     dispatch({
       type: 'save-note',
-      questionId: activeQuestion.id,
+      questionId: activeEntry.id,
       content,
       images,
     });
     setNoteDrafts((current) => {
       const next = { ...current };
-      delete next[activeQuestion.id];
+      delete next[activeEntry.id];
       return next;
     });
     notify('已加入我的筆記', '文字與圖片已保存到這一題。');
@@ -453,14 +460,14 @@ export function ExamsPage({
           onClick={() => setSelectorExpanded((current) => !current)}
         >
           <span>
-            {subject?.name}・{currentQuestion.year} 年
+            {subject?.name}・{currentEntry.year} 年
           </span>
           <IconChevronDown size={18} stroke={2} aria-hidden="true" />
         </button>
         <div id={selectorId} className={styles.selectorBody}>
           <QuestionSelector
-            subjectId={pendingSubject ?? currentQuestion.subject}
-            year={currentQuestion.year}
+            subjectId={currentEntry.subject}
+            year={currentEntry.year}
             yearOptions={years.map((year) => ({
               value: year,
               disabled: !availableYears.includes(year),
@@ -480,7 +487,7 @@ export function ExamsPage({
                 {paperIndex + 1} / {paperQuestions.length}
               </strong>
               <span>
-                {subject?.shortName}・{currentQuestion.year} 年
+                {subject?.shortName}・{currentEntry.year} 年
               </span>
             </div>
             <div className={styles.compactActions}>
@@ -510,7 +517,7 @@ export function ExamsPage({
                 current={paperIndex + 1}
                 total={paperQuestions.length}
                 questions={pickerQuestions}
-                value={currentQuestion.id}
+                value={currentEntry.id}
                 onValueChange={navigateTo}
                 showStatusLegend
               />
@@ -527,7 +534,13 @@ export function ExamsPage({
             </TabList>
 
             <TabPanel value="question" className={styles.tabPanel}>
-              <section className={styles.questionCard}>
+              <section
+                className={styles.questionCard}
+                data-loading={bodyPending || undefined}
+              >
+                {bodyPending ? (
+                  <BodyPending status={questionBankStatus} onRetry={onRetryQuestionBank} />
+                ) : null}
                 <header>
                   <div className={styles.tags}>
                     <Tag tone="green">{subject?.name}</Tag>
@@ -676,13 +689,9 @@ export function ExamsPage({
                   </Button>
                 </footer>
               </section>
-              {hasSimilarQuestionsBlock(currentQuestion) ? (
+              {currentBody && hasSimilarQuestionsBlock(currentBody) ? (
                 <section className={styles.similarCard}>
-                  <SimilarQuestions
-                    question={currentQuestion}
-                    questions={questions}
-                    basePath="/exams"
-                  />
+                  <SimilarQuestions question={currentBody} basePath="/exams" />
                 </section>
               ) : null}
             </TabPanel>
@@ -923,7 +932,13 @@ export function ExamsPage({
             </TabPanel>
 
             <TabPanel value="notes" className={styles.tabPanel}>
-              <section className={styles.notesCard}>
+              <section
+                className={styles.notesCard}
+                data-loading={bodyPending || undefined}
+              >
+                {bodyPending ? (
+                  <BodyPending status={questionBankStatus} onRetry={onRetryQuestionBank} />
+                ) : null}
                 <QuestionNoteEditor
                   key={`${currentQuestion.id}-${hydrated ? 'ready' : 'hydrating'}`}
                   question={currentQuestion}
@@ -955,7 +970,7 @@ export function ExamsPage({
           </header>
           <QuestionNumberPicker
             questions={pickerQuestions}
-            value={currentQuestion.id}
+            value={currentEntry.id}
             onValueChange={navigateTo}
             showStatusLegend
           />

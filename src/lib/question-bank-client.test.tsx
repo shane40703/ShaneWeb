@@ -78,7 +78,7 @@ describe('useSubjectQuestions', () => {
     expect(fetchMock).toHaveBeenCalledTimes(years.length * 2);
   });
 
-  it('limits each subject to one in-flight year request', async () => {
+  it('requests every year of a subject at once', async () => {
     let active = 0;
     let peak = 0;
     const fetchMock = vi.fn(async () => {
@@ -93,7 +93,7 @@ describe('useSubjectQuestions', () => {
     const { result } = renderHook(() => useSubjectQuestions(['construction']));
 
     await waitFor(() => expect(result.current.status).toBe('ready'));
-    expect(peak).toBe(1);
+    expect(peak).toBe(years.length);
     expect(fetchMock).toHaveBeenCalledTimes(years.length);
   });
 

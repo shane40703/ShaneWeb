@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { SimilarQuestions } from '@/components/similar-questions';
 import { fixtureOptions } from '../../fixtures/question';
-import { fixtureQuestions, getFixtureQuestion } from '../../fixtures/questions';
+import { getFixtureQuestion } from '../../fixtures/questions';
 
 /**
  * Controls 的 question：範例題庫裡同考點題數不同的法規題。四題同考點是 101 年第 39 題（都市更新）、
@@ -29,7 +29,6 @@ const meta = {
   component: SimilarQuestions,
   args: {
     question: questionOptions.initial,
-    questions: fixtureQuestions,
     basePath: '/exams',
   },
   argTypes: {
@@ -46,7 +45,6 @@ const meta = {
       },
     },
     basePath: { control: 'inline-radio', options: ['/exams', '/notes'] },
-    questions: { control: false, table: { disable: true } },
   },
   decorators: [
     (Story) => (

@@ -1,4 +1,6 @@
-import { fixtureQuestionData } from '../fixtures/questions';
+import { buildFacets, buildSimilarFiles, buildStems } from '@/question-bank/derived-data';
+import type { SubjectId } from '@/lib/types';
+import { fixtureQuestionData, fixtureQuestionsFor } from '../fixtures/questions';
 
 /**
  * 故事可以用 `parameters.fetchMocks` 攔截網站 API（例如 `/api/admin/...`）。
@@ -34,6 +36,8 @@ export interface FetchMock {
 }
 
 const questionDataPath = /^\/question-data\/([a-z]+)\/(\d+)\.json$/;
+const derivedDataPath = /^\/question-data\/([a-z]+)\/(facets|stems)\.json$/;
+const similarDataPath = /^\/question-data\/law\/similar\/(\w+)\.json$/;
 let storyMocks: readonly FetchMock[] = [];
 let installed = false;
 
@@ -66,6 +70,19 @@ export function installFetchMock() {
     if (questionData) {
       const [, subject, year] = questionData;
       return jsonResponse(fixtureQuestionData[`${subject}:${year}`] ?? []);
+    }
+    // 其他題庫檔案用網站本身的產生方式，從範例題庫算出來。
+    const derivedData = derivedDataPath.exec(url.pathname);
+    if (derivedData) {
+      const questions = fixtureQuestionsFor(derivedData[1] as SubjectId);
+      return jsonResponse(
+        derivedData[2] === 'facets' ? buildFacets(questions) : buildStems(questions),
+      );
+    }
+    const similarData = similarDataPath.exec(url.pathname);
+    if (similarData) {
+      const rows = buildSimilarFiles(fixtureQuestionsFor('law')).get(similarData[1]);
+      return jsonResponse(rows ?? [], rows ? 200 : 404);
     }
 
     const method = (

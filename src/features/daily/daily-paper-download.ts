@@ -30,13 +30,13 @@ export function useDailyPaperDownload() {
   const [downloading, setDownloading] = useState(false);
   const [error, setError] = useState('');
   const [fontNotice, setFontNotice] = useState('');
-  async function download(getPaper: () => DailyPaper) {
+  async function download(getPaper: () => DailyPaper | Promise<DailyPaper>) {
     if (downloading) return;
     setDownloading(true); setError(''); setFontNotice('');
     try {
-      const paper = getPaper();
-      // Start the permission request within the click gesture, before loading the PDF engine.
+      // Start the permission request within the click gesture, before anything is awaited.
       const fonts = requestLocalPaperFonts();
+      const paper = await getPaper();
       const { downloadDailyPaperPdf } = await import('./daily-paper-pdf');
       await downloadDailyPaperPdf(paper, await fonts, notice => setFontNotice(`${paper.subjectName}：${notice}`));
     } catch (reason) {

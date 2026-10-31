@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { QuestionPrompt } from '@/components/content/content';
 import { QuestionAnswerPanel } from '@/components/question-answer-panel';
+import { QuestionBodyPlaceholder } from '@/components/question-body-placeholder';
+import { useFilledBodies } from '@/lib/question-bank-client';
 import {
   formatDateTime,
   getQuestionDisplayCategory,
@@ -106,6 +108,8 @@ export function WrongCategoryAnalysis({
   const selectedQuestions = selectedCategory
     ? categoryMap.get(selectedCategory) ?? []
     : [];
+  // Facets group and count; only the rows of the category on screen need their text.
+  const bodies = useFilledBodies(selectedQuestions.map(({ question }) => question as Question));
   const wrongAnswerCount = categories.reduce(
     (total, [, entries]) => total + entries.length,
     0,
@@ -180,14 +184,23 @@ export function WrongCategoryAnalysis({
                   {String.fromCharCode(65 + entry.selectedAnswer)}
                 </span>
               </header>
-              <QuestionPrompt question={entry.question} compact />
-              <QuestionAnswerPanel
-                question={entry.question}
-                heading={null}
-                ariaLabel={`第 ${entry.question.questionNumber} 題錯題選項`}
-                selectedIndex={entry.selectedAnswer}
-                showStatusLabels
-              />
+              {(() => {
+                const body = bodies.bodyOf(entry.question as Question);
+                return body ? (
+                  <>
+                    <QuestionPrompt question={body} compact />
+                    <QuestionAnswerPanel
+                      question={body}
+                      heading={null}
+                      ariaLabel={`第 ${entry.question.questionNumber} 題錯題選項`}
+                      selectedIndex={entry.selectedAnswer}
+                      showStatusLabels
+                    />
+                  </>
+                ) : (
+                  <QuestionBodyPlaceholder status={bodies.status} onRetry={bodies.retry} />
+                );
+              })()}
             </article>
           ))}
         </div>

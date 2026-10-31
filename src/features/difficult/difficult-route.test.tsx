@@ -1,22 +1,26 @@
-import { fireEvent, render, screen } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import DifficultRoute from '@/pages/difficult';
 
 const mocks = vi.hoisted(() => ({
-  useSubjectQuestions: vi.fn(),
+  useSubjectFacets: vi.fn(),
   lawRetry: vi.fn(),
   environmentRetry: vi.fn(),
+  writtenRetry: vi.fn(),
+  written: { status: 'ready', byId: new Map<string, { id: string }>() },
+  marks: ['law-114-01', 'env-114-01'],
 }));
 
 vi.mock('@/lib/question-bank-client', () => ({
-  useSubjectQuestions: mocks.useSubjectQuestions,
+  useSubjectFacets: mocks.useSubjectFacets,
+  useQuestionBodies: () => ({ ...mocks.written, retry: mocks.writtenRetry }),
 }));
 
 vi.mock('@/state/app-state', () => ({
   useAppState: () => ({
     hydrated: true,
     state: {
-      difficultQuestionIds: ['law-114-01', 'env-114-01'],
+      difficultQuestionIds: mocks.marks,
     },
   }),
 }));
@@ -43,11 +47,17 @@ vi.mock('@/features/difficult/difficult-page', () => ({
 }));
 
 describe('difficult route question loading', () => {
+  afterEach(cleanup);
+
   beforeEach(() => {
+    mocks.marks = ['law-114-01', 'env-114-01'];
+    mocks.written.status = 'ready';
+    mocks.written.byId = new Map();
+    mocks.writtenRetry.mockClear();
     mocks.lawRetry.mockClear();
     mocks.environmentRetry.mockClear();
-    mocks.useSubjectQuestions.mockReset();
-    mocks.useSubjectQuestions.mockImplementation((subjectIds: string[]) => {
+    mocks.useSubjectFacets.mockReset();
+    mocks.useSubjectFacets.mockImplementation((subjectIds: string[]) => {
       if (subjectIds[0] === 'law') {
         return {
           questions: [{ id: 'law-114-01' }],
@@ -73,10 +83,10 @@ describe('difficult route question loading', () => {
   it('retains successful subjects and retries only the selected failed subject', () => {
     render(<DifficultRoute />);
 
-    expect(mocks.useSubjectQuestions).toHaveBeenNthCalledWith(1, ['law'], [114]);
-    expect(mocks.useSubjectQuestions).toHaveBeenNthCalledWith(2, ['env'], [114]);
-    expect(mocks.useSubjectQuestions).toHaveBeenNthCalledWith(3, [], []);
-    expect(mocks.useSubjectQuestions).toHaveBeenNthCalledWith(4, [], []);
+    expect(mocks.useSubjectFacets).toHaveBeenNthCalledWith(1, ['law']);
+    expect(mocks.useSubjectFacets).toHaveBeenNthCalledWith(2, ['env']);
+    expect(mocks.useSubjectFacets).toHaveBeenNthCalledWith(3, []);
+    expect(mocks.useSubjectFacets).toHaveBeenNthCalledWith(4, []);
     expect(screen.getByText('law-114-01')).toBeInTheDocument();
     expect(screen.getByText('ready')).toBeInTheDocument();
     expect(screen.getByText('error')).toBeInTheDocument();
@@ -86,5 +96,25 @@ describe('difficult route question loading', () => {
     );
     expect(mocks.environmentRetry).toHaveBeenCalledOnce();
     expect(mocks.lawRetry).not.toHaveBeenCalled();
+  });
+
+  it('lists a written mark once its paper is here, and waits or retries with the rest', () => {
+    mocks.marks = [...mocks.marks, 'structure-114-written-01'];
+    mocks.written.status = 'error';
+    render(<DifficultRoute />);
+    expect(screen.getAllByText('error').length).toBeGreaterThanOrEqual(2);
+    expect(screen.queryByText('ready')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'retry environment' }));
+    expect(mocks.writtenRetry).toHaveBeenCalledOnce();
+  });
+
+  it('adds the written question to the list', () => {
+    mocks.marks = [...mocks.marks, 'structure-114-written-01'];
+    mocks.written.byId = new Map([
+      ['structure-114-written-01', { id: 'structure-114-written-01' }],
+    ]);
+    render(<DifficultRoute />);
+    expect(screen.getByText(/structure-114-written-01/)).toBeInTheDocument();
   });
 });

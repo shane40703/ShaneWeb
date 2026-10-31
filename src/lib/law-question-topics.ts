@@ -69,18 +69,3 @@ export function getLawQuestionFineTopic(question: Question) {
   const source = searchableText(question);
   return topicRules.find((rule) => rule.pattern.test(source))?.label ?? null;
 }
-
-/** Every other 法規 question on the same fine topic, newest year first, then by number. */
-export function getSimilarLawQuestions(question: Question, questions: readonly Question[]) {
-  const topic = getLawQuestionFineTopic(question);
-  if (!topic) return { topic: null, questions: [] as Question[], total: 0 };
-  const similar = questions
-    .filter(
-      (candidate) =>
-        candidate.id !== question.id &&
-        candidate.subject === 'law' &&
-        getLawQuestionFineTopic(candidate) === topic,
-    )
-    .sort((left, right) => right.year - left.year || left.questionNumber - right.questionNumber);
-  return { topic, questions: similar, total: similar.length };
-}

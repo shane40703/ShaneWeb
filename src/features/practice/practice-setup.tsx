@@ -56,7 +56,7 @@ export function PracticeSetup({
   onSubjectChange: (subject: SubjectId) => void;
   onSettingsChange: (settings: PracticeSettings) => void;
   onStart: () => void;
-  onMakePaper: () => DailyPaper;
+  onMakePaper: () => DailyPaper | Promise<DailyPaper>;
   resume?: { subject: SubjectId; index: number; total: number; onResume: () => void };
 }) {
   const paperDownload = useDailyPaperDownload();

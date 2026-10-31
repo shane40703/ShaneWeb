@@ -1,114 +1,93 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Question, SubjectId } from '@/lib/types';
+import type { Question } from '@/lib/types';
+import { questionRefs } from '@/question-bank/derived-data';
 import NotesRoute from '@/pages/notes';
 
 const mocks = vi.hoisted(() => ({
-  useSubjectQuestions: vi.fn(),
+  query: {} as Record<string, string>,
+  useQuestionBodies: vi.fn(),
+  preloadPaper: vi.fn(),
   retry: vi.fn(),
 }));
 
+vi.mock('next/router', () => ({ useRouter: () => ({ query: mocks.query, isReady: true }) }));
+
 vi.mock('@/lib/question-bank-client', () => ({
-  useSubjectQuestions: mocks.useSubjectQuestions,
+  useQuestionBodies: mocks.useQuestionBodies,
+  preloadPaper: mocks.preloadPaper,
+  useSimilarRows: () => ({ rows: [], status: 'ready' }),
 }));
 
 vi.mock('@/features/notes/notes-page', () => ({
-  NotesPage: ({
-    questions,
-    questionBankStatuses,
-    onRequestQuestionBank,
-  }: {
-    questions: Array<{ id: string }>;
-    questionBankStatuses: Record<string, string>;
-    onRequestQuestionBank: (subjectId: SubjectId, year?: number) => void;
-  }) => (
+  NotesPage: ({ questions }: { questions: Array<{ id: string; content?: unknown }> }) => (
     <div>
-      <span data-testid="questions">
-        {questions.map((question) => question.id).join(',')}
+      <span data-testid="entries">{questions.length}</span>
+      <span data-testid="bodies">
+        {questions.filter((question) => question.content).map((question) => question.id).join(',')}
       </span>
-      <span data-testid="environment-status">
-        {questionBankStatuses.env}
-      </span>
-      <button type="button" onClick={() => onRequestQuestionBank('env')}>
-        載入環控
-      </button>
-      <button type="button" onClick={() => onRequestQuestionBank('env', 114)}>
-        載入環控 114 年
-      </button>
     </div>
   ),
 }));
 
-function question(id: string, subject: SubjectId): Question {
-  return {
-    id,
-    subject,
-    year: 114,
-    questionNumber: 1,
-    topic: '測試主題',
-    primaryCategory: '測試分類',
-    tags: [],
-    text: `${id} 題幹`,
-    content: [{ kind: 'text', text: `${id} 題幹` }],
-    options: ['A', 'B', 'C', 'D'],
-    answerKey: { kind: 'accepted', options: [0] },
-    source: { kind: 'sample' },
-  };
-}
+const paperIndex = {
+  law: [[114, 2, 0]],
+  env: [[114, 2, 0]],
+} as const;
 
-const lawQuestion = question('law-114-01', 'law');
-const environmentQuestion = question('env-114-01', 'env');
+const lawQuestion: Question = {
+  id: 'law-114-01',
+  subject: 'law',
+  year: 114,
+  questionNumber: 1,
+  topic: '測試主題',
+  primaryCategory: '測試分類',
+  tags: [],
+  text: 'law-114-01 題幹',
+  content: [{ kind: 'text', text: 'law-114-01 題幹' }],
+  options: ['A', 'B', 'C', 'D'],
+  answerKey: { kind: 'accepted', options: [0] },
+  source: { kind: 'sample' },
+};
+
+function renderRoute() {
+  render(
+    <NotesRoute
+      paperIndex={paperIndex}
+      initialQuestion={lawQuestion}
+      initialSimilar={[]}
+    />,
+  );
+}
 
 afterEach(cleanup);
 
 describe('notes route question loading', () => {
   beforeEach(() => {
-    mocks.retry.mockClear();
-    mocks.useSubjectQuestions.mockReset();
-    mocks.useSubjectQuestions.mockImplementation((subjectIds: SubjectId[]) => ({
-      questions: subjectIds[0] === 'env' ? [environmentQuestion] : [],
+    mocks.query = {};
+    mocks.useQuestionBodies.mockReset();
+    mocks.useQuestionBodies.mockReturnValue({
+      byId: new Map(),
       status: 'ready',
       retry: mocks.retry,
-    }));
+    });
   });
 
-  it('does not request any API-backed subject until it is needed', () => {
-    render(<NotesRoute initialQuestions={[lawQuestion]} />);
+  it('knows every question from the index, with a body for the prerendered one', () => {
+    renderRoute();
 
-    expect(mocks.useSubjectQuestions).toHaveBeenNthCalledWith(1, [], undefined);
-    expect(mocks.useSubjectQuestions).toHaveBeenNthCalledWith(2, [], undefined);
-    expect(mocks.useSubjectQuestions).toHaveBeenNthCalledWith(3, [], undefined);
-    expect(mocks.useSubjectQuestions).toHaveBeenNthCalledWith(4, [], undefined);
-    expect(screen.getByTestId('questions')).toHaveTextContent(lawQuestion.id);
-    expect(screen.getByTestId('environment-status')).toHaveTextContent('idle');
-  });
-
-  it('loads and retains a subject after an explicit request', () => {
-    render(<NotesRoute initialQuestions={[lawQuestion]} />);
-
-    fireEvent.click(screen.getByRole('button', { name: '載入環控' }));
-
-    expect(
-      mocks.useSubjectQuestions.mock.calls.some(
-        ([subjectIds]) => subjectIds[0] === 'env',
-      ),
-    ).toBe(true);
-    expect(screen.getByTestId('questions')).toHaveTextContent(
-      `${lawQuestion.id},${environmentQuestion.id}`,
+    expect(screen.getByTestId('entries')).toHaveTextContent(
+      String(questionRefs(paperIndex).length),
     );
-    expect(screen.getByTestId('environment-status')).toHaveTextContent('ready');
+    expect(screen.getByTestId('bodies')).toHaveTextContent('law-114-01');
+    expect(mocks.useQuestionBodies).toHaveBeenLastCalledWith(['law-114-01']);
   });
 
-  it('loads only the requested year when opening a saved note', () => {
-    render(<NotesRoute initialQuestions={[lawQuestion]} />);
+  it('asks only for the question in the URL', () => {
+    mocks.query = { question: 'env-114-02' };
 
-    fireEvent.click(screen.getByRole('button', { name: '載入環控 114 年' }));
+    renderRoute();
 
-    expect(
-      mocks.useSubjectQuestions.mock.calls.some(
-        ([subjectIds, requestedYears]) =>
-          subjectIds[0] === 'env' && requestedYears?.[0] === 114,
-      ),
-    ).toBe(true);
+    expect(mocks.useQuestionBodies).toHaveBeenLastCalledWith(['env-114-02']);
   });
 });

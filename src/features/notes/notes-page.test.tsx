@@ -43,6 +43,13 @@ function question(id: string, subject: SubjectId): Question {
 
 const lawQuestion = question('law-114-01', 'law');
 const environmentQuestion = question('env-114-01', 'env');
+const environmentRef = {
+  id: environmentQuestion.id,
+  format: 'multiple-choice',
+  subject: 'env',
+  year: 114,
+  questionNumber: 1,
+} as const;
 const writtenQuestion: Question = {
   ...question('structure-114-written-01', 'structure'),
   format: 'written',
@@ -84,49 +91,22 @@ describe('NotesPage question loading', () => {
     expect(screen.queryByText('law-114-01 題幹')).not.toBeInTheDocument();
   });
 
-  it('requests only the subject referenced by an unresolved deep link', async () => {
-    const requestQuestionBank = vi.fn();
+  it('keeps the selector and tiles while the paper of a deep link loads', async () => {
     router.query = { question: environmentQuestion.id };
 
-    render(
-      page({
-        questionBankStatuses: { env: 'idle' },
-        onRequestQuestionBank: requestQuestionBank,
-      }),
-    );
+    render(page({ questions: [lawQuestion, environmentRef], questionBankStatus: 'loading' }));
 
-    await waitFor(() => {
-      expect(requestQuestionBank).toHaveBeenCalledWith('env', 114);
-    });
-    expect(
-      screen.getByRole('heading', { name: '正在載入題目' }),
-    ).toBeInTheDocument();
+    expect(await screen.findByText('正在載入題目內容…')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /建築環境控制/ })).toBeInTheDocument();
+    expect(screen.queryByLabelText('我的筆記')).not.toBeInTheDocument();
+    expect(screen.queryByText('law-114-01 題幹')).not.toBeInTheDocument();
   });
 
-  it('loads another subject only after the user selects it', async () => {
-    const requestQuestionBank = vi.fn();
-    const view = render(
-      page({
-        questionBankStatuses: { env: 'idle' },
-        onRequestQuestionBank: requestQuestionBank,
-      }),
-    );
+  it('moves to a subject whose paper has not loaded yet', async () => {
+    render(page({ questions: [lawQuestion, environmentRef] }));
 
     fireEvent.click(
       await screen.findByRole('button', { name: /建築環境控制/ }),
-    );
-
-    expect(requestQuestionBank).toHaveBeenCalledWith('env');
-    expect(
-      screen.getByRole('heading', { name: '正在載入題目' }),
-    ).toBeInTheDocument();
-
-    view.rerender(
-      page({
-        questions: [lawQuestion, environmentQuestion],
-        questionBankStatuses: { env: 'ready' },
-        onRequestQuestionBank: requestQuestionBank,
-      }),
     );
 
     await waitFor(() => {
@@ -141,20 +121,22 @@ describe('NotesPage question loading', () => {
     });
   });
 
-  it('shows a retry action instead of the wrong editor after a load error', () => {
+  it('shows a retry action instead of the wrong editor after a load error', async () => {
     const retry = vi.fn();
     router.query = { question: environmentQuestion.id };
 
     render(
       page({
+        questions: [lawQuestion, environmentRef],
         questionBankStatus: 'error',
         onRetryQuestionBank: retry,
       }),
     );
 
     expect(
-      screen.getByRole('heading', { name: '題庫載入失敗' }),
+      await screen.findByRole('heading', { name: '題目暫時無法顯示' }),
     ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /建築環境控制/ })).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: '重新載入' }));
     expect(retry).toHaveBeenCalledOnce();
     expect(screen.queryByLabelText('我的筆記')).not.toBeInTheDocument();
@@ -217,14 +199,22 @@ describe('NotesPage question loading', () => {
       text: '防火牆的防火區劃規定',
       content: [{ kind: 'text' as const, text: '防火牆的防火區劃規定' }],
     };
+    vi.stubGlobal('fetch', async () => ({
+      ok: true,
+      json: async () => [
+        [current.id, current.text],
+        [similar.id, similar.text],
+      ],
+    }));
     render(page({ questions: [current, similar] }));
 
     const panel = await screen.findByRole('region', { name: '類似題目' });
     expect(panel).toHaveTextContent('類似考題');
     expect(panel).not.toHaveTextContent('細分考點');
     expect(panel).toHaveTextContent('防火區劃與防火間隔');
-    expect(within(panel).getByRole('link', { name: /113 年・第 2 題/ }))
+    expect(await within(panel).findByRole('link', { name: /113 年・第 2 題/ }))
       .toHaveAttribute('href', '/notes?question=law-113-02');
+    vi.unstubAllGlobals();
   });
 
   it('offers rich formatting without a separate preview', async () => {

@@ -13,7 +13,7 @@ for (const shuffled of [true, false]) {
       const wrongOriginal = question.options.findIndex((_, index) => question.answerKey.kind === 'accepted' && !question.answerKey.options.includes(index));
       const selected = order.indexOf(wrongOriginal);
       const explanation = '詳解仍引用原題選項 A、B、C、D，內容不隨打亂的順序改寫。';
-      await page.route('**/question-data/law/114.json', async route => {
+      await page.route('**/question-data/law/114.json*', async route => {
         await route.fulfill({ json: questions.map(item => item.id === question.id ? { ...item, explanation } : item) });
       });
       await page.addInitScript(({ id, order, shuffled, theme }) => {

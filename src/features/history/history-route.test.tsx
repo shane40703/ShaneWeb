@@ -4,7 +4,7 @@ import HistoryRoute from '@/pages/history';
 import DailyPracticeHistoryRoute from '@/pages/practice-history';
 
 const mocks = vi.hoisted(() => ({
-  useSubjectQuestions: vi.fn(),
+  useSubjectFacets: vi.fn(),
   lawRetry: vi.fn(),
   environmentRetry: vi.fn(),
   attempts: [] as Array<{ id?: string; mode?: string; questionIds: string[] }>,
@@ -13,7 +13,7 @@ const mocks = vi.hoisted(() => ({
 afterEach(cleanup);
 
 vi.mock('@/lib/question-bank-client', () => ({
-  useSubjectQuestions: mocks.useSubjectQuestions,
+  useSubjectFacets: mocks.useSubjectFacets,
 }));
 
 vi.mock('@/state/app-state', () => ({
@@ -54,8 +54,8 @@ describe('history route question loading', () => {
     mocks.attempts = [{ mode: 'paper', questionIds: ['law-114-01'] }, { mode: 'paper', questionIds: ['env-114-01'] }];
     mocks.lawRetry.mockClear();
     mocks.environmentRetry.mockClear();
-    mocks.useSubjectQuestions.mockReset();
-    mocks.useSubjectQuestions.mockImplementation((subjectIds: string[]) => {
+    mocks.useSubjectFacets.mockReset();
+    mocks.useSubjectFacets.mockImplementation((subjectIds: string[]) => {
       if (subjectIds[0] === 'law') {
         return {
           questions: [{ id: 'law-114-01' }],
@@ -86,19 +86,19 @@ describe('history route question loading', () => {
     ];
     render(<DailyPracticeHistoryRoute />);
     expect(screen.getByText('daily-only')).toBeInTheDocument();
-    expect(mocks.useSubjectQuestions).toHaveBeenNthCalledWith(1, ['law'], [113]);
-    expect(mocks.useSubjectQuestions).toHaveBeenNthCalledWith(2, [], []);
-    expect(mocks.useSubjectQuestions).toHaveBeenNthCalledWith(3, [], []);
-    expect(mocks.useSubjectQuestions).toHaveBeenNthCalledWith(4, [], []);
+    expect(mocks.useSubjectFacets).toHaveBeenNthCalledWith(1, ['law']);
+    expect(mocks.useSubjectFacets).toHaveBeenNthCalledWith(2, []);
+    expect(mocks.useSubjectFacets).toHaveBeenNthCalledWith(3, []);
+    expect(mocks.useSubjectFacets).toHaveBeenNthCalledWith(4, []);
   });
 
   it('retains successful subject questions and retries only failed subjects', () => {
     render(<HistoryRoute />);
 
-    expect(mocks.useSubjectQuestions).toHaveBeenNthCalledWith(1, ['law'], [114]);
-    expect(mocks.useSubjectQuestions).toHaveBeenNthCalledWith(2, ['env'], [114]);
-    expect(mocks.useSubjectQuestions).toHaveBeenNthCalledWith(3, [], []);
-    expect(mocks.useSubjectQuestions).toHaveBeenNthCalledWith(4, [], []);
+    expect(mocks.useSubjectFacets).toHaveBeenNthCalledWith(1, ['law']);
+    expect(mocks.useSubjectFacets).toHaveBeenNthCalledWith(2, ['env']);
+    expect(mocks.useSubjectFacets).toHaveBeenNthCalledWith(3, []);
+    expect(mocks.useSubjectFacets).toHaveBeenNthCalledWith(4, []);
     expect(screen.getByText('law-114-01')).toBeInTheDocument();
     expect(screen.getByText('ready')).toBeInTheDocument();
     expect(screen.getByText('error')).toBeInTheDocument();
@@ -119,10 +119,10 @@ describe('history route question loading', () => {
     const before = structuredClone(mocks.attempts);
     render(<HistoryRoute />);
     expect(screen.getByText('paper-only')).toBeInTheDocument();
-    expect(mocks.useSubjectQuestions).toHaveBeenNthCalledWith(1, ['law'], [114]);
-    expect(mocks.useSubjectQuestions).toHaveBeenNthCalledWith(2, [], []);
-    expect(mocks.useSubjectQuestions).toHaveBeenNthCalledWith(3, [], []);
-    expect(mocks.useSubjectQuestions).toHaveBeenNthCalledWith(4, [], []);
+    expect(mocks.useSubjectFacets).toHaveBeenNthCalledWith(1, ['law']);
+    expect(mocks.useSubjectFacets).toHaveBeenNthCalledWith(2, []);
+    expect(mocks.useSubjectFacets).toHaveBeenNthCalledWith(3, []);
+    expect(mocks.useSubjectFacets).toHaveBeenNthCalledWith(4, []);
     expect(mocks.attempts).toEqual(before);
   });
 });

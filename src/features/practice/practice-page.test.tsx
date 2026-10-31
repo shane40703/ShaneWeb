@@ -178,7 +178,7 @@ const bankState = vi.hoisted(() => ({
   status: 'ready' as 'ready' | 'loading' | 'error',
 }));
 vi.mock('@/lib/question-bank-client', () => ({
-  useSubjectQuestions: (subjects: SubjectId[]) => ({
+  useSubjectFacets: (subjects: SubjectId[]) => ({
     questions:
       bankState.status === 'loading'
         ? []
@@ -186,6 +186,15 @@ vi.mock('@/lib/question-bank-client', () => ({
     status: bankState.status,
     retry: vi.fn(),
   }),
+  useQuestionBodies: () => ({
+    byId:
+      bankState.status === 'loading'
+        ? new Map()
+        : new Map(bank.map((question) => [question.id, question])),
+    status: bankState.status,
+    retry: vi.fn(),
+  }),
+  loadQuestionBodies: async () => new Map(bank.map((question) => [question.id, question])),
 }));
 
 beforeEach(() => {
@@ -1050,6 +1059,8 @@ describe('PracticePage with another tab', () => {
     const session = seed({});
     renderAt('/practice/quiz?q=2');
     await screen.findByLabelText('第 2 題，共 5 題');
+    // The page's own first save can come after that render.
+    await act(async () => {});
     const writes = vi.spyOn(Storage.prototype, 'setItem');
     writeFromOtherTab({
       ...session,

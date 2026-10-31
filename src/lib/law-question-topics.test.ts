@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { getLawQuestionFineTopic, getSimilarLawQuestions } from '@/lib/law-question-topics';
+import { getLawQuestionFineTopic } from '@/lib/law-question-topics';
 import type { Question } from '@/lib/types';
+import { similarRowsOf } from '@/question-bank/derived-data';
 
 function lawQuestion(id: string, year: number, text: string): Question {
   return {
@@ -37,8 +38,9 @@ describe('law question fine topics', () => {
     const later = { ...lawQuestion('fire-114-9', 114, '防火捲門的防火區劃規定'), questionNumber: 9 };
     const unrelated = lawQuestion('sound-113', 113, '分戶牆隔音構造規定');
 
-    expect(getSimilarLawQuestions(current, [older, current, similar, unrelated, later]))
-      .toEqual({ topic: '防火區劃與防火間隔', questions: [later, similar, older], total: 3 });
+    const rows = similarRowsOf([older, current, similar, unrelated, later], '防火區劃與防火間隔');
+    expect(getLawQuestionFineTopic(current)).toBe('防火區劃與防火間隔');
+    expect(rows.map(([id]) => id)).toEqual(['fire-114', 'fire-114-9', 'fire-113', 'fire-101']);
   });
 
   it('lists every matching question instead of the nearest few', () => {
@@ -47,10 +49,11 @@ describe('law question fine topics', () => {
       lawQuestion(`fire-${100 + index}`, 100 + index, '防火區劃的防火門規定'),
     );
 
-    const result = getSimilarLawQuestions(current, [current, ...siblings]);
-    expect(result.total).toBe(9);
-    expect(result.questions.map((question) => question.year))
-      .toEqual([108, 107, 106, 105, 104, 103, 102, 101, 100]);
+    const rows = similarRowsOf([current, ...siblings], '防火區劃與防火間隔');
+    expect(rows.map(([id]) => id)).toEqual([
+      'fire-114', 'fire-108', 'fire-107', 'fire-106', 'fire-105', 'fire-104', 'fire-103', 'fire-102',
+      'fire-101', 'fire-100',
+    ]);
   });
 
   it('prefers a manually assigned fine topic over keyword detection', () => {
