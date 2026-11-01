@@ -1,6 +1,7 @@
 import { useRouter } from 'next/router';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { EmptyState } from '@/components/content/content';
+import { QuestionBodyPlaceholder } from '@/components/question-body-placeholder';
 import {
   QuestionNoteEditor,
   type QuestionNoteDraft,
@@ -17,12 +18,13 @@ import { Button } from '@/components/ui/ui';
 import type { QuestionBankStatus } from '@/lib/question-bank-client';
 import { parseQuestionId } from '@/lib/question-path';
 import { getSubject, years } from '@/question-bank/catalog';
+import { hasBody, type QuestionEntry } from '@/question-bank/derived-data';
 import {
   comparePaperQuestionOrder,
   formatQuestionNumberLabel,
 } from '@/lib/study';
 import { stripTextFormatting } from '@/lib/text-formatting';
-import type { Question, SubjectId } from '@/lib/types';
+import type { SubjectId } from '@/lib/types';
 import { useClientReady } from '@/lib/use-client-ready';
 import { useAppState } from '@/state/app-state';
 import styles from './notes-page.module.css';
@@ -31,49 +33,29 @@ function valueOf(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;
 }
 
-export type NotesQuestionBankStatus = QuestionBankStatus | 'idle';
-
 export function NotesPage({
   questions,
   questionBankStatus = 'ready',
-  questionBankStatuses,
-  onRequestQuestionBank,
   onRetryQuestionBank,
 }: {
-  questions: Question[];
+  /** The bank to navigate over; a question has a body once its paper has loaded. */
+  questions: readonly QuestionEntry[];
   questionBankStatus?: QuestionBankStatus;
-  questionBankStatuses?: Partial<Record<SubjectId, NotesQuestionBankStatus>>;
-  onRequestQuestionBank?: (subjectId: SubjectId, year?: number) => void;
-  onRetryQuestionBank?: (subjectId: SubjectId) => void;
+  onRetryQuestionBank?: () => void;
 }) {
   const router = useRouter();
   const { state, hydrated } = useAppState();
   const routeHydrated = useClientReady();
   const [drafts, setDrafts] = useState<Record<string, QuestionNoteDraft>>({});
-  const [pendingSubject, setPendingSubject] = useState<SubjectId>();
   const requestedQuestionId =
     routeHydrated && router.isReady !== false
       ? valueOf(router.query.question)
       : undefined;
-  const requestedQuestion = requestedQuestionId
-    ? questions.find((question) => question.id === requestedQuestionId)
-    : undefined;
   const currentQuestion = requestedQuestionId
-    ? requestedQuestion
+    ? questions.find((question) => question.id === requestedQuestionId)
     : questions[0];
-  const requestedSubject = requestedQuestionId
-    ? parseQuestionId(requestedQuestionId)?.subject
-    : undefined;
-  const unresolvedSubject =
-    pendingSubject ??
-    (requestedQuestionId && !requestedQuestion ? requestedSubject : undefined);
-  const unresolvedStatus = unresolvedSubject
-    ? (questionBankStatuses?.[unresolvedSubject] ?? questionBankStatus)
-    : questionBankStatus;
-  const retrySubject = unresolvedSubject ?? currentQuestion?.subject;
-  const pendingSubjectHasQuestions = pendingSubject
-    ? questions.some((question) => question.subject === pendingSubject)
-    : false;
+  const currentBody =
+    currentQuestion && hasBody(currentQuestion) ? currentQuestion : undefined;
 
   const navigateTo = useCallback(
     (questionId: string) =>
@@ -85,50 +67,9 @@ export function NotesPage({
     [router],
   );
 
-  useEffect(() => {
-    if (
-      !routeHydrated ||
-      !requestedSubject ||
-      requestedQuestion ||
-      unresolvedStatus === 'error'
-    ) {
-      return;
-    }
-    onRequestQuestionBank?.(
-      requestedSubject,
-      requestedQuestionId ? parseQuestionId(requestedQuestionId)?.year : undefined,
-    );
-  }, [
-    onRequestQuestionBank,
-    requestedQuestion,
-    requestedQuestionId,
-    requestedSubject,
-    routeHydrated,
-    unresolvedStatus,
-  ]);
-
-  useEffect(() => {
-    if (!pendingSubject) return;
-    const first = questions
-      .filter((question) => question.subject === pendingSubject)
-      .sort(
-        (left, right) =>
-          right.year - left.year ||
-          comparePaperQuestionOrder(left, right),
-      )[0];
-    if (!first) return;
-    void Promise.resolve(navigateTo(first.id)).then(() => {
-      setPendingSubject(undefined);
-    });
-  }, [navigateTo, pendingSubject, questions]);
-
   if (
     routeHydrated &&
-    (router.isReady === false ||
-      (Boolean(unresolvedSubject) &&
-        (unresolvedStatus === 'idle' ||
-          unresolvedStatus === 'loading' ||
-          (Boolean(pendingSubject) && pendingSubjectHasQuestions))))
+    (router.isReady === false || (!currentQuestion && questionBankStatus === 'loading'))
   ) {
     return (
       <EmptyState
@@ -138,40 +79,21 @@ export function NotesPage({
     );
   }
 
-  if (
-    unresolvedStatus === 'error' &&
-    !currentQuestion &&
-    !pendingSubjectHasQuestions
-  ) {
+  if (questionBankStatus === 'error' && !currentQuestion) {
     return (
       <EmptyState
         title="題庫載入失敗"
         description="目前無法取得完整題庫，請重新載入後再試。"
         action={
-          onRetryQuestionBank && retrySubject ? (
-            <Button onClick={() => onRetryQuestionBank(retrySubject)}>
-              重新載入
-            </Button>
+          onRetryQuestionBank ? (
+            <Button onClick={onRetryQuestionBank}>重新載入</Button>
           ) : undefined
         }
       />
     );
   }
 
-  if (
-    pendingSubject &&
-    unresolvedStatus === 'ready' &&
-    !pendingSubjectHasQuestions
-  ) {
-    return (
-      <EmptyState
-        title="題庫尚無資料"
-        description="目前找不到這個科目的題目。"
-      />
-    );
-  }
-
-  if (!currentQuestion) {
+  if (!currentQuestion || (!currentBody && questionBankStatus === 'ready')) {
     return (
       <EmptyState
         title={requestedQuestionId ? '找不到指定題目' : '題庫尚無資料'}
@@ -228,12 +150,7 @@ export function NotesPage({
         (left, right) =>
           right.year - left.year || comparePaperQuestionOrder(left, right),
       )[0];
-    if (first) {
-      void navigateTo(first.id);
-      return;
-    }
-    setPendingSubject(subjectId);
-    onRequestQuestionBank?.(subjectId);
+    if (first) void navigateTo(first.id);
   }
 
   function selectYear(value: SelectorYear) {
@@ -267,18 +184,24 @@ export function NotesPage({
       {questionSelector}
       <div className={styles.layout}>
         <section className={styles.editor}>
-          <QuestionNoteEditor
-            key={`${currentQuestion.id}-${hydrated ? 'ready' : 'hydrating'}`}
-            question={currentQuestion}
-            questions={questions}
-            draft={activeDraft}
-            onDraftChange={(draft) =>
-              setDrafts((current) => ({
-                ...current,
-                [currentQuestion.id]: draft,
-              }))
-            }
-          />
+          {currentBody ? (
+            <QuestionNoteEditor
+              key={`${currentBody.id}-${hydrated ? 'ready' : 'hydrating'}`}
+              question={currentBody}
+              draft={activeDraft}
+              onDraftChange={(draft) =>
+                setDrafts((current) => ({
+                  ...current,
+                  [currentBody.id]: draft,
+                }))
+              }
+            />
+          ) : (
+            <QuestionBodyPlaceholder
+              status={questionBankStatus}
+              onRetry={() => onRetryQuestionBank?.()}
+            />
+          )}
         </section>
         <aside className={styles.noteSidebar} aria-label="筆記題號導覽">
           <section className={styles.numberNavigator}>

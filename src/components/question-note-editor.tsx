@@ -13,7 +13,7 @@ import {
   hasSimilarQuestionsBlock,
   SimilarQuestions,
 } from '@/components/similar-questions';
-import { RichTextEditor } from '@/components/rich-text-editor';
+import { RichTextEditor } from '@/components/rich-text-editor-lazy';
 import { Button, ConfirmDialog, useToast } from '@/components/ui/ui';
 import { getSubject } from '@/question-bank/catalog';
 import { useDiscussionPublisher } from '@/lib/shared-discussions';
@@ -35,7 +35,6 @@ export interface QuestionNoteDraft {
  */
 export function QuestionNoteEditor({
   question,
-  questions,
   draft,
   onDraftChange,
   header = 'full',
@@ -44,8 +43,6 @@ export function QuestionNoteEditor({
   onShared,
 }: {
   question: Question;
-  /** The bank the similar-question list searches; only needed with `showSimilarQuestions`. */
-  questions?: readonly Question[];
   draft?: QuestionNoteDraft;
   onDraftChange: (draft: QuestionNoteDraft) => void;
   /** full: tags, source, number, prompt and answer rows; compact: number and prompt only. */
@@ -221,9 +218,9 @@ export function QuestionNoteEditor({
           )}
         </div>
       </div>
-      {showSimilarQuestions && questions && hasSimilarQuestionsBlock(question) ? (
+      {showSimilarQuestions && hasSimilarQuestionsBlock(question) ? (
         <div className={styles.similarQuestions}>
-          <SimilarQuestions question={question} questions={questions} basePath="/notes" />
+          <SimilarQuestions question={question} basePath="/notes" />
         </div>
       ) : null}
     </div>

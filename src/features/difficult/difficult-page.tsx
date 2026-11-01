@@ -4,6 +4,7 @@ import {
   QuestionCard,
 } from '@/components/content/content';
 import { ReviewNoteEditor } from '@/components/attempt-review';
+import { QuestionBodyPlaceholder } from '@/components/question-body-placeholder';
 import { QuestionExplanationContent } from '@/components/question-explanation-content';
 import { QuestionReviewDetails } from '@/components/question-review-details';
 import {
@@ -17,7 +18,7 @@ import {
   IconX,
 } from '@tabler/icons-react';
 import { Button, OptionGroup } from '@/components/ui/ui';
-import type { QuestionBankStatus } from '@/lib/question-bank-client';
+import { useFilledBodies, type QuestionBankStatus } from '@/lib/question-bank-client';
 import { subjectsOfQuestionIds } from '@/lib/question-path';
 import { formatCorrectAnswer, isQuestionCorrect } from '@/lib/study';
 import type { Question, SubjectId } from '@/lib/types';
@@ -136,6 +137,7 @@ export function DifficultPage({
     .filter((subject) => !availableSubjects.some((item) => item.id === subject.id))
     .map((subject) => subject.id);
   const difficultSubjects = subjectsOfQuestionIds(state.difficultQuestionIds);
+  const visibleBodies = useFilledBodies(visibleQuestions);
   const loadingSubjects = difficultSubjects.filter(
     (subjectId) => questionBankStatuses[subjectId] === 'loading',
   );
@@ -233,11 +235,19 @@ export function DifficultPage({
                   <span>{visibleQuestions.length} 題難題</span>
                 </header>
                 <div className={styles.questionList}>
-                  {visibleQuestions.map((question) => (
+                  {visibleQuestions.map((entry) => {
+                    const question = visibleBodies.bodyOf(entry);
+                    return (
                     <article
                       className={styles.difficultItem}
-                      key={question.id}
+                      key={entry.id}
                     >
+                      {!question ? (
+                        <QuestionBodyPlaceholder
+                          status={visibleBodies.status}
+                          onRetry={visibleBodies.retry}
+                        />
+                      ) : <>
                       <QuestionCard
                         question={question}
                         difficult
@@ -263,8 +273,10 @@ export function DifficultPage({
                           </div>
                         </div>
                       </QuestionReviewDetails>
+                      </>}
                     </article>
-                  ))}
+                    );
+                  })}
                 </div>
               </section>
             </div>

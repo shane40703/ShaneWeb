@@ -185,7 +185,7 @@ export function OptionGroup({
                   <Radio.Indicator className={styles.radioIndicator} />
                 </Radio.Root>
                 <span id={`${optionId}-letter-${index}`} className={styles.optionLetter}>{optionLetter}</span>
-                <span id={`${optionId}-text-${index}`}>
+                <span id={`${optionId}-text-${index}`} className={styles.optionContent}>
                   <span className={styles.optionText}>{option}</span>
                   <OriginalOptionLabel index={originalOptionIndexes?.[index]} />
                 </span>

@@ -46,7 +46,14 @@ function valueOf(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;
 }
 
-export function AnalysisPage({ questions }: { questions: QuestionSummary[] }) {
+export function AnalysisPage({
+  questions,
+  rowsLoading = false,
+}: {
+  questions: QuestionSummary[];
+  /** The charts are ready; the rows' stems are still on their way. */
+  rowsLoading?: boolean;
+}) {
   const router = useRouter();
   const querySubject = valueOf(router.query.subject);
   const subjectId: SubjectId = isSubjectId(querySubject) ? querySubject : 'law';
@@ -341,9 +348,15 @@ export function AnalysisPage({ questions }: { questions: QuestionSummary[] }) {
                 </header>
                 <div>
                   {selectedCategoryQuestions.map((question) => (
-                    <Link href={`/exams?question=${question.id}`} key={question.id}>
+                    <Link
+                      href={`/exams?question=${question.id}`}
+                      prefetch={false}
+                      key={question.id}
+                    >
                       <span>{question.year} 年・{question.questionNumber} 題</span>
-                      <strong>{question.text || `${question.topic}題目`}</strong>
+                      <strong aria-busy={rowsLoading || undefined}>
+                        {question.text || (rowsLoading ? '…' : `${question.topic}題目`)}
+                      </strong>
                       <IconArrowRight size={16} stroke={2} aria-hidden="true" />
                     </Link>
                   ))}

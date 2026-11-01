@@ -3,11 +3,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import WrongRoute from '@/pages/wrong';
 
 const mocks = vi.hoisted(() => ({
-  useSubjectQuestions: vi.fn(),
+  useSubjectFacets: vi.fn(),
 }));
 
 vi.mock('@/lib/question-bank-client', () => ({
-  useSubjectQuestions: mocks.useSubjectQuestions,
+  useSubjectFacets: mocks.useSubjectFacets,
 }));
 
 vi.mock('@/state/app-state', () => ({
@@ -40,29 +40,21 @@ vi.mock('@/features/wrong/wrong-page', () => ({
 
 describe('wrong route question loading', () => {
   beforeEach(() => {
-    mocks.useSubjectQuestions.mockReset();
-    mocks.useSubjectQuestions.mockImplementation((subjects: string[]) => ({
+    mocks.useSubjectFacets.mockReset();
+    mocks.useSubjectFacets.mockImplementation((subjects: string[]) => ({
       questions: subjects.length ? [{ id: `${subjects[0]}-question` }] : [],
       status: 'ready',
       retry: vi.fn(),
     }));
   });
 
-  it('loads only the subject years of answered questions', () => {
+  it('reads only the subjects of answered questions', () => {
     render(<WrongRoute />);
 
-    expect(mocks.useSubjectQuestions).toHaveBeenNthCalledWith(
-      1,
-      ['law'],
-      [114, 112, 105],
-    );
-    expect(mocks.useSubjectQuestions).toHaveBeenNthCalledWith(
-      2,
-      ['env'],
-      [113],
-    );
-    expect(mocks.useSubjectQuestions).toHaveBeenNthCalledWith(3, [], []);
-    expect(mocks.useSubjectQuestions).toHaveBeenNthCalledWith(4, [], []);
+    expect(mocks.useSubjectFacets).toHaveBeenNthCalledWith(1, ['law']);
+    expect(mocks.useSubjectFacets).toHaveBeenNthCalledWith(2, ['env']);
+    expect(mocks.useSubjectFacets).toHaveBeenNthCalledWith(3, []);
+    expect(mocks.useSubjectFacets).toHaveBeenNthCalledWith(4, []);
     expect(screen.getByLabelText('loaded questions'))
       .toHaveTextContent('law-question,env-question');
   });

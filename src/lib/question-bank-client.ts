@@ -1,6 +1,20 @@
-import { useCallback, useEffect, useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  useSyncExternalStore,
+} from 'react';
+import { parseQuestionId } from '@/lib/question-path';
 import type { Question, SubjectId } from '@/lib/types';
 import { years } from '@/question-bank/catalog';
+import {
+  facetQuestions,
+  similarFileKey,
+  type SimilarRow,
+  type SubjectFacets,
+  type SubjectStems,
+} from '@/question-bank/derived-data';
 
 export type QuestionBankStatus = 'loading' | 'ready' | 'error';
 
@@ -11,138 +25,239 @@ export interface QuestionBankResult {
 }
 
 /**
- * Requests are cached for the lifetime of the tab so moving between question
- * pages, notes, and history reuses the same year-sized downloads.
+ * Versioned URLs are cached for a year (next.config.ts), so a file is downloaded once per bank
+ * version and a repeat visit makes no request at all. The version is a query string, not a path:
+ * a tab left open across a deployment keeps working, because the CDN serves the same file for
+ * any query. Development has no version and always revalidates.
  */
-const subjectRequests = new Map<string, Promise<Question[]>>();
-const subjectYearRequests = new Map<string, Promise<Question[]>>();
-const noQuestions: Question[] = [];
+const dataVersion = process.env.NEXT_PUBLIC_QUESTION_DATA_VERSION;
 
-class PartialQuestionBankError extends Error {
-  constructor(readonly questions: Question[]) {
-    super('部分年度題庫載入失敗');
+function dataUrl(path: string) {
+  return `/question-data/${path}${dataVersion ? `?v=${dataVersion}` : ''}`;
+}
+
+async function fetchJson<T>(path: string) {
+  const response = await fetch(dataUrl(path));
+  if (!response.ok) throw new Error(`題庫載入失敗（${response.status}）`);
+  return (await response.json()) as T;
+}
+
+interface Slot<T> {
+  value?: T;
+  failed?: boolean;
+  request?: Promise<T>;
+}
+
+/** One kind of file: loaded once per key, kept for the life of the tab, readable synchronously. */
+function createFileStore<T>() {
+  const slots = new Map<string, Slot<T>>();
+  const listeners = new Set<() => void>();
+  let revision = 0;
+
+  function changed() {
+    revision += 1;
+    listeners.forEach((listener) => listener());
   }
-}
 
-function fetchSubjectYear(subject: SubjectId, year: number) {
-  const key = `${subject}:${year}`;
-  const cached = subjectYearRequests.get(key);
-  if (cached) return cached;
-
-  const request = fetch(`/question-data/${subject}/${year}.json`).then(
-    async (response) => {
-      if (!response.ok) throw new Error(`題庫載入失敗（${response.status}）`);
-      return (await response.json()) as Question[];
+  return {
+    load(key: string): Promise<T> {
+      const slot = slots.get(key);
+      if (slot?.value !== undefined) return Promise.resolve(slot.value);
+      if (slot?.request) return slot.request;
+      const request = fetchJson<T>(key).then(
+        (value) => {
+          slots.set(key, { value });
+          changed();
+          return value;
+        },
+        (error: unknown) => {
+          // A failed request must not poison the cache, otherwise retrying is pointless.
+          slots.set(key, { failed: true });
+          changed();
+          throw error;
+        },
+      );
+      slots.set(key, { request });
+      changed();
+      return request;
     },
-  );
-  request.catch(() => subjectYearRequests.delete(key));
-  subjectYearRequests.set(key, request);
-  return request;
+    peek: (key: string) => slots.get(key)?.value,
+    failed: (key: string) => Boolean(slots.get(key)?.failed),
+    pending: (key: string) => {
+      const slot = slots.get(key);
+      return !slot || Boolean(slot.request);
+    },
+    values: () =>
+      [...slots.values()].flatMap((slot) => (slot.value === undefined ? [] : [slot.value])),
+    subscribe(listener: () => void) {
+      listeners.add(listener);
+      return () => {
+        listeners.delete(listener);
+      };
+    },
+    revision: () => revision,
+  };
 }
 
-function fetchSubject(subject: SubjectId, requestedYears: readonly number[]) {
-  const subjectKey = `${subject}:${requestedYears.join(',')}`;
-  const cached = subjectRequests.get(subjectKey);
-  if (cached) return cached;
+type FileStore<T> = ReturnType<typeof createFileStore<T>>;
 
-  // Full-subject responses grow beyond Vercel's function response limit as the
-  // bank expands. Year-sized chunks stay small and can be cached independently.
-  // Keep one request per subject in flight. Four subjects may still load in
-  // parallel, but Vercel no longer receives 52 simultaneous cold requests.
-  let failed = false;
-  const request = requestedYears.reduce<Promise<Question[]>>(
-    (loaded, year) =>
-      loaded.then(async (questions) => {
-        try {
-          return [...questions, ...(await fetchSubjectYear(subject, year))];
-        } catch {
-          failed = true;
-          return questions;
-        }
-      }),
-    Promise.resolve([]),
-  ).then((questions) => {
-    if (failed) throw new PartialQuestionBankError(questions);
-    return questions;
-  });
-  // A failed request must not poison the cache, otherwise retrying is pointless.
-  request.catch(() => subjectRequests.delete(subjectKey));
-  subjectRequests.set(subjectKey, request);
-  return request;
+const noRevision = () => 0;
+
+/** Loads `keys`, and re-renders as each file arrives instead of when the last one does. */
+function useFiles<T>(store: FileStore<T>, keys: readonly string[]) {
+  const joined = keys.join('\n');
+  const [attempt, setAttempt] = useState(0);
+  const request = `${attempt}\n${joined}`;
+  const revision = useSyncExternalStore(store.subscribe, store.revision, noRevision);
+  // A failure from before this request is not its answer: asking again moves the revision on.
+  const [asked, setAsked] = useState({ request, revision });
+  if (asked.request !== request) setAsked({ request, revision });
+
+  useEffect(() => {
+    if (!joined) return;
+    joined.split('\n').forEach((key) => {
+      store.load(key).catch(() => {});
+    });
+  }, [attempt, joined, store]);
+
+  const retry = useCallback(() => setAttempt((value) => value + 1), []);
+  return useMemo(() => {
+    void revision;
+    const wanted = joined ? joined.split('\n') : [];
+    const failed = wanted.some((key) => store.failed(key));
+    const status: QuestionBankStatus =
+      wanted.some((key) => store.pending(key)) || (failed && asked.revision === revision)
+        ? 'loading'
+        : failed
+          ? 'error'
+          : 'ready';
+    return {
+      values: wanted.flatMap((key) => store.peek(key) ?? []) as T extends readonly unknown[]
+        ? T[number][]
+        : never,
+      status,
+      retry,
+    };
+  }, [asked.revision, joined, retry, revision, store]);
 }
 
-interface LoadedBank {
-  key: string;
-  orderKey: string;
-  attempt: number;
-  status: 'ready' | 'error';
-  questions: Question[];
+const paperStore = createFileStore<Question[]>();
+const facetStore = createFileStore<SubjectFacets>();
+const stemStore = createFileStore<SubjectStems>();
+const similarStore = createFileStore<SimilarRow[]>();
+
+const paperFile = (subject: SubjectId, year: number) => `${subject}/${year}.json`;
+
+/** Starts a paper's download; for the next paper before a reader reaches it. */
+export function preloadPaper(subject: SubjectId, year: number) {
+  paperStore.load(paperFile(subject, year)).catch(() => {});
 }
 
 /**
- * Loads whole subjects on demand. The sorted key identifies the requested set,
- * while `orderKey` keeps the caller's subject order for the flattened result.
- * Both are strings so callers can pass a freshly derived array on every render.
+ * Whole papers on demand. The result grows as files arrive, and `status` stays `loading` until
+ * all of them have settled, so a page can show what it has while the rest is on its way.
  */
 export function useSubjectQuestions(
   subjects: readonly SubjectId[],
   requestedYears: readonly number[] = years,
 ): QuestionBankResult {
   const wantedSubjects = [...new Set(subjects)];
-  const yearKey = [...new Set(requestedYears)]
-    .filter((year) => years.includes(year))
-    .join(',');
-  const key = `${[...wantedSubjects].sort().join(',')}|${yearKey}`;
-  const orderKey = wantedSubjects.join(',');
-  const [attempt, setAttempt] = useState(0);
-  const [loaded, setLoaded] = useState<LoadedBank>();
+  const wantedYears = [...new Set(requestedYears)].filter((year) => years.includes(year));
+  const keys = wantedSubjects.flatMap((subject) =>
+    wantedYears.map((year) => paperFile(subject, year)),
+  );
+  const { values, status, retry } = useFiles(paperStore, keys);
+  return { questions: values, status, retry };
+}
 
-  useEffect(() => {
-    const wanted = orderKey ? (orderKey.split(',') as SubjectId[]) : [];
-    const wantedYears = yearKey
-      ? yearKey.split(',').map(Number)
+function papersOf(ids: readonly string[]) {
+  return [
+    ...new Set(
+      ids.flatMap((id) => {
+        const parsed = parseQuestionId(id);
+        // A year outside the catalog has no file: the question simply does not exist.
+        return parsed && years.includes(parsed.year)
+          ? [paperFile(parsed.subject, parsed.year)]
+          : [];
+      }),
+    ),
+  ];
+}
+
+/**
+ * The bodies these questions need: only their papers download. `byId` holds every question this
+ * tab has loaded so far, so moving back to an earlier question never waits.
+ */
+export function useQuestionBodies(ids: readonly string[]) {
+  const { status, retry } = useFiles(paperStore, papersOf(ids));
+  const revision = useSyncExternalStore(paperStore.subscribe, paperStore.revision, noRevision);
+  const byId = useMemo(() => {
+    void revision;
+    return new Map(
+      paperStore.values().flat().map((question) => [question.id, question] as const),
+    );
+  }, [revision]);
+  return { byId, status, retry };
+}
+
+/** The bodies of the questions a page shows, from facets or from questions already whole. */
+export function useFilledBodies(questions: readonly Question[]) {
+  const { byId, status, retry } = useQuestionBodies(
+    questions.flatMap((question) => (question.content.length ? [] : [question.id])),
+  );
+  const bodyOf = useCallback(
+    (question: Question) => (question.content.length ? question : byId.get(question.id)),
+    [byId],
+  );
+  return { bodyOf, status, retry };
+}
+
+/** For an action that needs a whole set at once, such as the printed paper. */
+export async function loadQuestionBodies(ids: readonly string[]) {
+  const papers = await Promise.all(papersOf(ids).map((file) => paperStore.load(file)));
+  return new Map(papers.flat().map((question) => [question.id, question] as const));
+}
+
+/**
+ * Body-less questions of these subjects: what a screen counts, filters, draws and grades by.
+ * Same shape as a bank, so the code that does those things does not change.
+ */
+export function useSubjectFacets(subjects: readonly SubjectId[]): QuestionBankResult {
+  const wanted = [...new Set(subjects)];
+  const keys = wanted.map((subject) => `${subject}/facets.json`);
+  const joined = keys.join('\n');
+  const { status, retry } = useFiles(facetStore, keys);
+  const revision = useSyncExternalStore(facetStore.subscribe, facetStore.revision, noRevision);
+  const questions = useMemo(() => {
+    void revision;
+    return joined
+      ? joined.split('\n').flatMap((key) => {
+          const facets = facetStore.peek(key);
+          return facets ? facetQuestions(key.split('/')[0] as SubjectId, facets) : [];
+        })
       : [];
-    if (!wanted.length) return;
+  }, [joined, revision]);
+  return { questions, status, retry };
+}
 
-    let cancelled = false;
-    Promise.allSettled(wanted.map((subject) => fetchSubject(subject, wantedYears)))
-      .then((results) => {
-        if (!cancelled) {
-          const questions = results.flatMap((result) =>
-            result.status === 'fulfilled'
-              ? result.value
-              : result.reason instanceof PartialQuestionBankError
-                ? result.reason.questions
-                : [],
-          );
-          setLoaded({
-            key,
-            orderKey,
-            attempt,
-            status: results.some((result) => result.status === 'rejected')
-              ? 'error'
-              : 'ready',
-            questions,
-          });
-        }
-      });
+/** 考題分析 rows of one subject, as soon as the page needs a year it did not ship with. */
+export function useSubjectStems(subject: SubjectId | null) {
+  const key = subject ? `${subject}/stems.json` : null;
+  const { status } = useFiles(stemStore, key ? [key] : []);
+  const revision = useSyncExternalStore(stemStore.subscribe, stemStore.revision, noRevision);
+  return useMemo(() => {
+    void revision;
+    return { stems: key ? stemStore.peek(key) : undefined, status };
+  }, [key, revision, status]);
+}
 
-    return () => {
-      cancelled = true;
-    };
-  }, [key, orderKey, yearKey, attempt]);
-
-  const current =
-    loaded?.key === key &&
-    loaded.orderKey === orderKey &&
-    loaded.attempt === attempt
-      ? loaded
-      : undefined;
-  const retry = useCallback(() => setAttempt((value) => value + 1), []);
-
-  return {
-    questions: current?.questions ?? noQuestions,
-    status: !orderKey ? 'ready' : (current?.status ?? 'loading'),
-    retry,
-  };
+/** 類似考題 rows of one fine topic. */
+export function useSimilarRows(topic: string | null) {
+  const key = topic ? `law/similar/${similarFileKey(topic)}.json` : null;
+  const { status, retry } = useFiles(similarStore, key ? [key] : []);
+  const revision = useSyncExternalStore(similarStore.subscribe, similarStore.revision, noRevision);
+  return useMemo(() => {
+    void revision;
+    return { rows: key ? similarStore.peek(key) : undefined, status, retry };
+  }, [key, retry, revision, status]);
 }

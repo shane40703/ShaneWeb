@@ -15,6 +15,7 @@ import { SettingsPanel } from '@/features/settings/settings-panel';
 import { useAppState } from '@/state/app-state';
 import { ThemeToggle } from './theme-toggle';
 import { navigationPageTitle, SidebarContent } from './app-navigation';
+import { RouteProgress, RouteSheet, usePendingRoute } from './route-progress';
 import styles from './app-shell.module.css';
 
 const persistenceMessages = {
@@ -41,7 +42,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const cloud = useCloudSync();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const pathname = router.pathname;
+  const pendingRoute = usePendingRoute();
+  const leaving = pendingRoute !== null && pendingRoute !== router.pathname;
+  // The sidebar and title answer the click at once; the page follows when it has arrived.
+  const pathname = leaving ? pendingRoute : router.pathname;
   const navigationPath = pathname === '/appearance' ? '/settings' : pathname;
   const pageTitle = navigationPageTitle(pathname);
   const answeringPaper = pathname === '/practice/mock-exam' && router.query.q !== undefined;
@@ -79,6 +83,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </aside>
       <div className={styles.workspace}>
         <header className={styles.topbar}>
+          <RouteProgress active={pendingRoute !== null} />
           <div className={styles.topbarLeft}>
             <SideDrawer
               open={drawerOpen}
@@ -144,8 +149,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             )}
           </div>
         </header>
-        <main className={styles.main}>
+        <main className={styles.main} data-leaving={leaving || undefined}>
           <PersistenceWarning />
+          {leaving ? <RouteSheet /> : null}
           {children}
         </main>
       </div>

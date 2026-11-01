@@ -451,3 +451,73 @@
   flex: none;
   margin-top: 2px;
 }
+
+/* Route change: the only pen draws one line, and an empty placeholder stands in for a slow page. */
+.routeProgress {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  z-index: 1;
+  height: 2px;
+  background: var(--primary);
+  transform: scaleX(0);
+  transform-origin: left;
+  animation: route-progress 2400ms cubic-bezier(0.1, 0.7, 0.2, 1) 120ms forwards;
+}
+
+@keyframes route-progress {
+  to {
+    transform: scaleX(0.9);
+  }
+}
+
+.main[data-leaving] {
+  position: relative;
+}
+
+.main[data-leaving] > :not(.routeSheet) {
+  animation: route-leave 0s linear 240ms forwards;
+}
+
+.routeSheet {
+  display: none;
+}
+
+.main[data-leaving] .routeSheet {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: block;
+  padding: inherit;
+  opacity: 0;
+  animation: route-sheet 0s linear 240ms forwards;
+}
+
+.routeSheet span {
+  display: block;
+  max-width: 880px;
+  min-height: 220px;
+  border: var(--frame-dashed);
+  border-radius: var(--radius-frame);
+  background: var(--surface);
+}
+
+@keyframes route-leave {
+  to {
+    visibility: hidden;
+  }
+}
+
+@keyframes route-sheet {
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .routeProgress {
+    animation: none;
+    transform: scaleX(1);
+  }
+}

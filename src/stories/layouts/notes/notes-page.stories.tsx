@@ -1,7 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { fn } from 'storybook/test';
 import { NotesPage } from '@/features/notes/notes-page';
-import type { SubjectId } from '@/lib/types';
 import { notesAppState } from '../../fixtures/personal';
 import { withStatefulRouter } from '../../support/stateful-router';
 import { pageParameters, withPageFrame } from '../../support/story-environment';
@@ -11,7 +10,7 @@ import { notesInitialQuestions, NotesRoute } from './notes-route';
 /**
  * 我的筆記（/notes）：左邊是題目與筆記編輯器，右邊是題號導覽與已儲存筆記。
  * 要看哪一題由網址的 `?question=題目編號` 決定，沒有指定就是題庫的第一題（法規最新的
- * 114 年第 1 題）。預先載入的是法規（getStaticProps），其他科目會在需要時才載入範例題庫。
+ * 114 年第 1 題）。網站只下載看到的那一卷；這裡一次向範例題庫要所有科目。
  *
  * 畫面上可以操作看到：
  * - 上方切換科目與年度，右側點題號或已儲存筆記換題。
@@ -49,28 +48,24 @@ export const 找不到指定題目: Story = {
   parameters: { ...pageParameters('/notes', { question: 'law-113-99' }) },
 };
 
-/** 頁面向題庫要其他科目、重新載入的動作，記在 Actions。 */
-interface BankCallbacks {
-  onRequestQuestionBank: (subjectId: SubjectId, year?: number) => void;
-  onRetryQuestionBank: (subjectId: SubjectId) => void;
-}
-const bankCallbacks = { onRequestQuestionBank: fn(), onRetryQuestionBank: fn() };
-
 /**
  * 網址指定環控的題目（環控 113 年第 23 題），環控題庫還沒下載好（用頁面的 props 固定狀態）：
  * Controls 的 bank 切換「正在載入題目」與「題庫載入失敗」，失敗時的「重新載入」記在 Actions。
  */
-export const 題庫載入中或失敗: StoryObj<{ bank: 'loading' | 'error' } & BankCallbacks> = {
+export const 題庫載入中或失敗: StoryObj<{
+  bank: 'loading' | 'error';
+  onRetryQuestionBank: () => void;
+}> = {
   parameters: { ...pageParameters('/notes', { question: 'env-113-23' }) },
   decorators: [withPersonalFrame],
-  render: ({ bank, ...callbacks }) => (
+  render: ({ bank, onRetryQuestionBank }) => (
     <NotesPage
       questions={notesInitialQuestions}
-      questionBankStatuses={{ law: 'ready', env: bank }}
-      {...callbacks}
+      questionBankStatus={bank}
+      onRetryQuestionBank={onRetryQuestionBank}
     />
   ),
-  args: { bank: 'loading', ...bankCallbacks },
+  args: { bank: 'loading', onRetryQuestionBank: fn() },
   argTypes: {
     bank: {
       options: ['loading', 'error'],
@@ -82,31 +77,8 @@ export const 題庫載入中或失敗: StoryObj<{ bank: 'loading' | 'error' } & 
   },
 };
 
-/**
- * 沒有題目可以寫筆記（用頁面的 props 固定題目）。Controls 的 bank 切換：「整個題庫」
- * 連法規也沒有題目；「環控沒有題目」先顯示法規，點上方「建築環境控制」，環控下載完成卻
- * 沒有題目。
- */
-export const 題庫尚無資料: StoryObj<{ bank: 'all' | 'env' } & BankCallbacks> = {
+/** 沒有題目可以寫筆記（用頁面的 props 固定題目）。 */
+export const 題庫尚無資料: Story = {
   decorators: [withPersonalFrame],
-  render: ({ bank, ...callbacks }) =>
-    bank === 'all' ? (
-      <NotesPage questions={[]} />
-    ) : (
-      <NotesPage
-        questions={notesInitialQuestions}
-        questionBankStatuses={{ law: 'ready', env: 'ready' }}
-        {...callbacks}
-      />
-    ),
-  args: { bank: 'all', ...bankCallbacks },
-  argTypes: {
-    bank: {
-      options: ['all', 'env'],
-      control: {
-        type: 'select',
-        labels: { all: '整個題庫', env: '環控沒有題目' },
-      },
-    },
-  },
+  render: () => <NotesPage questions={[]} />,
 };

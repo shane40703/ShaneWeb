@@ -32,15 +32,18 @@
 }
 
 /* Every row reserves the 2px left rule (transparent) so text does not shift when a
-   status colours it. */
+   status colours it. The first row is one text line tall: the letter and status centre on
+   it, and a long option's text runs on through both rows. */
 .panel li {
   min-width: 0;
   min-height: 52px;
   padding: 10px 12px 10px 10px;
   display: grid;
   grid-template-columns: 24px minmax(0, 1fr) auto;
+  grid-template-rows: 1lh auto;
   align-items: center;
-  gap: 12px;
+  align-content: center;
+  column-gap: 12px;
   border-left: 2px solid transparent;
   color: var(--text);
   font-size: var(--option-font-size, 18px);
@@ -61,6 +64,11 @@
 .panel li[data-accepted='true'] {
   border-left-color: var(--success);
   background: var(--success-soft);
+}
+
+.panel li > span {
+  grid-row: span 2;
+  align-self: start;
 }
 
 .panel li b {
@@ -111,6 +119,7 @@
 
   .panel li small {
     grid-column: 2;
+    margin-top: 12px;
     white-space: normal;
   }
 }

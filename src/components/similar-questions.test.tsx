@@ -1,10 +1,12 @@
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   hasSimilarQuestionsBlock,
   SimilarQuestions,
+  SimilarRowsSeed,
 } from '@/components/similar-questions';
 import type { Question } from '@/lib/types';
+import { similarRowsOf } from '@/question-bank/derived-data';
 
 function lawQuestion(year: number, questionNumber: number): Question {
   const id = `law-${year}-${String(questionNumber).padStart(2, '0')}`;
@@ -25,20 +27,36 @@ function lawQuestion(year: number, questionNumber: number): Question {
   };
 }
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  vi.unstubAllGlobals();
+});
 
 describe('SimilarQuestions', () => {
+  it('offers another try when the rows fail to arrive', async () => {
+    const current = { ...lawQuestion(114, 1), fineTopic: '只在這個測試出現的考點' };
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({ ok: false, status: 503 })
+      .mockResolvedValue({ ok: true, json: async () => [[current.id, '本題'], ['law-113-01', '另一題']] });
+    vi.stubGlobal('fetch', fetchMock);
+
+    render(<SimilarQuestions question={current} basePath="/exams" />);
+    fireEvent.click(await screen.findByRole('button', { name: '重新載入' }));
+
+    expect(await screen.findByRole('link', { name: /另一題/ })).toBeInTheDocument();
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
   it('lists the newest eight siblings as links and unfolds the rest on request', () => {
     const current = lawQuestion(114, 1);
     const siblings = Array.from({ length: 10 }, (_, index) =>
       lawQuestion(103 + index, 2),
     );
     render(
-      <SimilarQuestions
-        question={current}
-        questions={[current, ...siblings]}
-        basePath="/exams"
-      />,
+      <SimilarRowsSeed rows={similarRowsOf([current, ...siblings], '防火區劃')}>
+        <SimilarQuestions question={current} basePath="/exams" />
+      </SimilarRowsSeed>,
     );
 
     const region = screen.getByRole('region', { name: '類似題目' });
@@ -65,7 +83,7 @@ describe('SimilarQuestions', () => {
 
     expect(hasSimilarQuestionsBlock(question)).toBe(false);
     const { container } = render(
-      <SimilarQuestions question={question} questions={[question]} basePath="/notes" />,
+      <SimilarQuestions question={question} basePath="/notes" />,
     );
     expect(container).toBeEmptyDOMElement();
   });

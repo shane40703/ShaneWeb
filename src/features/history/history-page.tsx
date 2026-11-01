@@ -9,6 +9,7 @@ import {
 } from '@tabler/icons-react';
 import { AttemptReview } from '@/components/attempt-review';
 import { EmptyState, Tag } from '@/components/content/content';
+import { WithQuestionBodies } from '@/components/question-body-placeholder';
 import {
   ResultViewTabs,
   type ResultView,
@@ -667,12 +668,16 @@ export function HistoryPage({
                                     embedded
                                   />
                                 ) : (
-                                  <AttemptReview
-                                    attempt={attempt}
-                                    questions={attemptQuestions}
-                                    embedded
-                                    showDifficultActions
-                                  />
+                                  <WithQuestionBodies questions={attemptQuestions}>
+                                    {(reviewed) => (
+                                      <AttemptReview
+                                        attempt={attempt}
+                                        questions={reviewed}
+                                        embedded
+                                        showDifficultActions
+                                      />
+                                    )}
+                                  </WithQuestionBodies>
                                 )}
                               </div>
                             </div>

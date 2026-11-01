@@ -38,6 +38,13 @@ function question(id: string, subject: SubjectId): Question {
 
 const lawQuestion = question('law-114-01', 'law');
 const environmentQuestion = question('env-114-01', 'env');
+const environmentRef = {
+  id: environmentQuestion.id,
+  format: 'multiple-choice',
+  subject: 'env',
+  year: 114,
+  questionNumber: 1,
+} as const;
 const writtenQuestion: Question = {
   ...question('structure-114-written-01', 'structure'),
   format: 'written',
@@ -106,7 +113,7 @@ describe('ExamsPage question loading', () => {
   it('does not expose a fallback question while a deep link is loading', () => {
     router.query = { question: 'env-114-01' };
 
-    renderPage({ questionBankStatus: 'loading' });
+    renderPage({ questions: [lawQuestion, environmentRef], questionBankStatus: 'loading' });
 
     expect(
       screen.getByRole('heading', { name: '正在載入題目' }),
@@ -125,6 +132,7 @@ describe('ExamsPage question loading', () => {
     router.query = { question: 'env-114-01' };
 
     renderPage({
+      questions: [lawQuestion, environmentRef],
       questionBankStatus: 'error',
       onRetryQuestionBank: retry,
     });
@@ -165,28 +173,10 @@ describe('ExamsPage question loading', () => {
     ).not.toBeInTheDocument();
   });
 
-  it('remembers a subject click while its questions are still loading', () => {
-    const view = renderPage({ questionBankStatus: 'loading' });
+  it('moves to a subject whose paper has not loaded yet', () => {
+    renderPage({ questions: [lawQuestion, environmentRef] });
 
     fireEvent.click(screen.getByRole('button', { name: /建築環境控制/ }));
-    expect(screen.getByRole('button', { name: /建築環境控制/ })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    );
-    expect(router.replace).not.toHaveBeenCalled();
-
-    view.rerender(
-      <ToastProvider>
-        <AppStateProvider>
-          <CloudSyncProvider>
-            <ExamsPage
-              questions={[lawQuestion, environmentQuestion]}
-              questionBankStatus="ready"
-            />
-          </CloudSyncProvider>
-        </AppStateProvider>
-      </ToastProvider>,
-    );
 
     expect(router.replace).toHaveBeenCalledWith(
       { pathname: '/exams', query: { question: environmentQuestion.id } },
@@ -454,12 +444,17 @@ describe('ExamsPage question loading', () => {
     expect(screen.getByRole('button', { name: '分享到考古題討論版' })).toBeInTheDocument();
   });
 
-  it('tells when no other question shares the law question topic', () => {
+  it('tells when no other question shares the law question topic', async () => {
+    vi.stubGlobal('fetch', async () => ({
+      ok: true,
+      json: async () => [[lawQuestion.id, lawQuestion.text]],
+    }));
     renderPage({ questions: [{ ...lawQuestion, fineTopic: '只有這題的考點' }] });
 
     const similar = screen.getByRole('region', { name: '類似題目' });
     expect(similar).toHaveTextContent('類似考題');
-    expect(similar).toHaveTextContent('這個考點目前只有這一題。');
+    expect(await within(similar).findByText('這個考點目前只有這一題。')).toBeInTheDocument();
+    vi.unstubAllGlobals();
     expect(within(similar).queryByRole('link')).not.toBeInTheDocument();
   });
 

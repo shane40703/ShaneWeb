@@ -8,7 +8,6 @@ import {
 import { fixtureImages, fixtureNoteContent } from '../../fixtures/app-state';
 import { fixtureOptions } from '../../fixtures/question';
 import {
-  fixtureSubjectQuestions,
   imageQuestion,
   screenshotQuestion,
 } from '../../fixtures/questions';
@@ -20,9 +19,6 @@ const questionOptions = fixtureOptions(
   },
   '有筆記與圖片（101 年法規第 15 題）',
 );
-
-/** 類似考題從整個範例題庫找。 */
-const bank = fixtureSubjectQuestions();
 
 /**
  * 我的筆記頁與考古題討論版「筆記」分頁共用的筆記編輯器。它自己沒有外框，由頁面的面板
@@ -57,7 +53,6 @@ const meta = {
       options: ['full', 'compact'],
     },
     draft: { control: false, table: { disable: true } },
-    questions: { control: false, table: { disable: true } },
   },
   parameters: {
     appState: {
@@ -88,7 +83,6 @@ const meta = {
       <QuestionNoteEditor
         key={args.question.id}
         {...args}
-        questions={bank}
         draft={drafts[args.question.id]}
         onDraftChange={(draft) => {
           args.onDraftChange(draft);

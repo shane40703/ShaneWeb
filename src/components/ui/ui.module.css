@@ -195,14 +195,18 @@
   border-top: var(--rule);
 }
 
+/* The first row is one text line tall: the radio and letter centre on it, and a long option's
+   text runs on through both rows. The spare height of a one-line row stays split evenly. */
 .option {
   width: 100%;
   min-height: 52px;
   padding: 12px 52px 12px 10px;
   display: grid;
   grid-template-columns: 18px 24px 1fr;
-  gap: 10px;
+  grid-template-rows: 1lh auto;
+  column-gap: 10px;
   align-items: center;
+  align-content: center;
   border: 0;
   border-radius: 0;
   background: transparent;
@@ -231,6 +235,11 @@
 .option[data-eliminated] .optionText {
   text-decoration: line-through;
   text-decoration-thickness: 1.5px;
+}
+
+.optionContent {
+  grid-row: span 2;
+  align-self: start;
 }
 
 .eliminateOption {

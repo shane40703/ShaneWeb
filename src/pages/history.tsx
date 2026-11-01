@@ -2,14 +2,13 @@ import Head from 'next/head';
 import { HistoryPage } from '@/features/history/history-page';
 import { selectHistoryAttempts } from '@/features/history/history-attempts';
 import { PersonalLayout } from '@/features/personal/personal-layout';
-import { useSubjectQuestions } from '@/lib/question-bank-client';
-import { parseQuestionId, subjectsOfQuestionIds } from '@/lib/question-path';
+import { useSubjectFacets } from '@/lib/question-bank-client';
+import { subjectsOfQuestionIds } from '@/lib/question-path';
 import { useAppState } from '@/state/app-state';
 
 /**
- * Attempts are user data, so this page has nothing to prerender. It loads only
- * the subjects the stored attempts refer to instead of shipping the whole bank
- * inside the page payload.
+ * Attempts are user data, so this page has nothing to prerender. Rows are collapsed and their
+ * counts come from facets; a body downloads only when a row is opened.
  */
 export default function HistoryRoute({ dailyOnly = false }: { dailyOnly?: boolean }) {
   const { state, hydrated } = useAppState();
@@ -18,29 +17,13 @@ export default function HistoryRoute({ dailyOnly = false }: { dailyOnly?: boolea
   const attemptedSubjects = hydrated
     ? subjectsOfQuestionIds(attemptedQuestionIds)
     : [];
-  const attemptedYears = (subject: 'law' | 'env' | 'construction' | 'structure') => [
-    ...new Set(
-      attemptedQuestionIds.flatMap((questionId) => {
-        const parsed = parseQuestionId(questionId);
-        return parsed?.subject === subject ? [parsed.year] : [];
-      }),
-    ),
-  ];
-  const lawBank = useSubjectQuestions(
-    attemptedSubjects.includes('law') ? ['law'] : [],
-    attemptedYears('law'),
-  );
-  const environmentBank = useSubjectQuestions(
-    attemptedSubjects.includes('env') ? ['env'] : [],
-    attemptedYears('env'),
-  );
-  const constructionBank = useSubjectQuestions(
+  const lawBank = useSubjectFacets(attemptedSubjects.includes('law') ? ['law'] : []);
+  const environmentBank = useSubjectFacets(attemptedSubjects.includes('env') ? ['env'] : []);
+  const constructionBank = useSubjectFacets(
     attemptedSubjects.includes('construction') ? ['construction'] : [],
-    attemptedYears('construction'),
   );
-  const structureBank = useSubjectQuestions(
+  const structureBank = useSubjectFacets(
     attemptedSubjects.includes('structure') ? ['structure'] : [],
-    attemptedYears('structure'),
   );
   const banks = [lawBank, environmentBank, constructionBank, structureBank];
   const bankBySubject = {

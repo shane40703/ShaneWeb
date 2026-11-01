@@ -7,6 +7,7 @@ import {
   IconX,
 } from '@tabler/icons-react';
 import { ReviewNoteEditor } from '@/components/attempt-review';
+import { QuestionBodyPlaceholder } from '@/components/question-body-placeholder';
 import { QuestionExplanationContent } from '@/components/question-explanation-content';
 import { QuestionReviewDetails } from '@/components/question-review-details';
 import { EmptyState, QuestionCard } from '@/components/content/content';
@@ -15,7 +16,7 @@ import {
   type SelectorYear,
 } from '@/components/question-selector';
 import { Button, OptionGroup } from '@/components/ui/ui';
-import type { QuestionBankStatus } from '@/lib/question-bank-client';
+import { useFilledBodies, type QuestionBankStatus } from '@/lib/question-bank-client';
 import {
   formatCorrectAnswer,
   formatDateTime,
@@ -159,6 +160,7 @@ export function WrongPage({
   const disabledSubjectIds = subjects
     .filter((subject) => !availableSubjects.some((item) => item.id === subject.id))
     .map((subject) => subject.id);
+  const visibleBodies = useFilledBodies(visibleStats.map(({ question }) => question));
 
   function changeYear(nextYear: SelectorYear) {
     if (typeof nextYear === 'number') setYearFilter(nextYear);
@@ -307,12 +309,20 @@ export function WrongPage({
                     </span>
                   </header>
                   <div className={styles.questionList}>
-                    {visibleStats.map(({ question, wrongCount, lastWrongAt }) => (
-                      <article className={styles.wrongItem} key={question.id}>
+                    {visibleStats.map(({ question: stat, wrongCount, lastWrongAt }) => {
+                      const question = visibleBodies.bodyOf(stat);
+                      return (
+                      <article className={styles.wrongItem} key={stat.id}>
                         <div className={styles.wrongMeta}>
                           <strong>累計答錯 {wrongCount} 次</strong>
                           <span>最近答錯：{formatDateTime(lastWrongAt)}</span>
                         </div>
+                        {!question ? (
+                          <QuestionBodyPlaceholder
+                            status={visibleBodies.status}
+                            onRetry={visibleBodies.retry}
+                          />
+                        ) : <>
                         <QuestionCard
                           question={question}
                           difficult={state.difficultQuestionIds.includes(question.id)}
@@ -338,8 +348,10 @@ export function WrongPage({
                             </div>
                           </div>
                         </QuestionReviewDetails>
+                        </>}
                       </article>
-                    ))}
+                      );
+                    })}
                   </div>
                 </section>
               ) : null}

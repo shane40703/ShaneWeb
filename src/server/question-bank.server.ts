@@ -1,5 +1,5 @@
-import { readdir, readFile, stat, writeFile } from 'node:fs/promises';
-import type { Dirent } from 'node:fs';
+import { readdir, readFile, writeFile } from 'node:fs/promises';
+import { watch, type Dirent } from 'node:fs';
 import path from 'node:path';
 import sharp from 'sharp';
 import { subjects } from '@/question-bank/catalog';
@@ -13,7 +13,18 @@ import {
   type SourceAnswerKey,
   type SubjectId,
 } from '@/question-bank/schema';
+import { getLawQuestionFineTopic } from '@/lib/law-question-topics';
 import { getQuestionDisplayCategories } from '@/lib/study';
+import {
+  buildFacets,
+  buildPaperIndex,
+  buildStems,
+  similarRowsOf,
+  type PaperIndex,
+  type SimilarRow,
+  type SubjectFacets,
+  type SubjectStems,
+} from '@/question-bank/derived-data';
 import type { Question, QuestionFormat, QuestionSummary } from '@/lib/types';
 
 const bankRoot = path.join(process.cwd(), 'public/question-bank');
@@ -447,26 +458,25 @@ async function discoverQuestionEntries() {
 }
 
 /**
- * Stats every bank file so `next dev` can reuse a parsed bank until something on
- * disk actually changes. Statting is orders of magnitude cheaper than re-reading
- * every option file and re-probing every image with sharp on each request.
+ * Counts changes on disk, so `next dev` can reuse a parsed bank until something actually
+ * changes. One watcher for the process: this module runs again for every route that compiles.
+ * Checking the 22,000 files on each request instead costs seconds on a server that has been up
+ * for hours, because every file operation walks Turbopack's leaked handles.
  */
-async function bankFingerprint() {
-  const entries = bankEntries(
-    await readdir(bankRoot, { recursive: true, withFileTypes: true }),
-  ).filter((entry) => entry.isFile());
-  const stamps = await Promise.all(
-    entries.map(async (entry) => {
-      const filePath = path.join(entry.parentPath, entry.name);
-      const { mtimeMs, size } = await stat(filePath);
-      return `${filePath}:${mtimeMs}:${size}`;
-    }),
-  );
-  return stamps.sort().join('|');
+function bankVersion() {
+  const store = globalThis as typeof globalThis & { __bankVersion?: { value: number } };
+  if (!store.__bankVersion) {
+    const version = { value: 0 };
+    watch(bankRoot, { recursive: true }, () => {
+      version.value += 1;
+    }).unref();
+    store.__bankVersion = version;
+  }
+  return store.__bankVersion.value;
 }
 
 interface BankCache {
-  fingerprint: string;
+  version: number;
   entries: Promise<QuestionEntry[]>;
   summaries?: Promise<QuestionSummary[]>;
   paperSummaries?: Promise<QuestionSummary[]>;
@@ -478,12 +488,12 @@ let bankCache: BankCache | undefined;
 
 async function getBankCache(): Promise<BankCache> {
   if (!watchesQuestionBank) {
-    bankCache ??= { fingerprint: '', entries: discoverQuestionEntries() };
+    bankCache ??= { version: 0, entries: discoverQuestionEntries() };
     return bankCache;
   }
-  const fingerprint = await bankFingerprint();
-  if (bankCache?.fingerprint !== fingerprint) {
-    bankCache = { fingerprint, entries: discoverQuestionEntries() };
+  const version = bankVersion();
+  if (bankCache?.version !== version) {
+    bankCache = { version, entries: discoverQuestionEntries() };
   }
   return bankCache;
 }
@@ -556,6 +566,58 @@ export async function getMultipleChoiceQuestions(): Promise<Question[]> {
     loadQuestions(entries.filter((entry) => entry.format === 'multiple-choice')),
   );
   return cache.multipleChoice;
+}
+
+/** What a page that navigates the bank prerenders: the index and the first question. */
+export interface QuestionPageProps {
+  paperIndex: PaperIndex;
+  initialQuestion: Question | null;
+  initialSimilar: SimilarRow[];
+}
+
+export async function getQuestionPageProps(): Promise<QuestionPageProps> {
+  const entries = await getQuestionEntries();
+  const refs = entries.map((entry) => ({
+    id: questionId(entry),
+    format: entry.format,
+    subject: entry.subject,
+    year: entry.year,
+    questionNumber: entry.questionNumber,
+  }));
+  const initialQuestion = entries[0] ? await loadQuestion(entries[0]) : null;
+  const topic = initialQuestion ? getLawQuestionFineTopic(initialQuestion) : null;
+  return {
+    paperIndex: buildPaperIndex(refs),
+    initialQuestion,
+    initialSimilar: topic ? similarRowsOf(await getMultipleChoiceQuestions(), topic) : [],
+  };
+}
+
+/** 考題分析: every subject's facets, and the stems of the view it opens on. */
+export interface AnalysisPageProps {
+  facets: Partial<Record<SubjectId, SubjectFacets>>;
+  initialStems: Partial<Record<SubjectId, SubjectStems>>;
+}
+
+export async function getAnalysisPageProps(
+  initialSubject: SubjectId,
+  initialYear: number,
+): Promise<AnalysisPageProps> {
+  const questions = await getMultipleChoiceQuestions();
+  const facets: AnalysisPageProps['facets'] = {};
+  for (const subject of subjects) {
+    const own = questions.filter((question) => question.subject === subject.id);
+    if (own.length) facets[subject.id] = buildFacets(own);
+  }
+  return {
+    facets,
+    initialStems: {
+      [initialSubject]: buildStems(
+        questions.filter((question) => question.subject === initialSubject),
+        initialYear,
+      ),
+    },
+  };
 }
 
 export async function findQuestionEntry(subject: string, year: string, number: string) {

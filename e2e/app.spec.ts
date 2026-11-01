@@ -43,8 +43,9 @@ test('question-bank failures never expose an unrelated editable question', async
 
   await page.goto('/exams?question=env-114-01');
   await expect(
-    page.getByRole('heading', { name: '題庫載入失敗' }),
+    page.getByRole('heading', { name: '題目暫時無法顯示' }),
   ).toBeVisible();
+  await expect(page.getByRole('button', { name: '重新載入' })).toBeVisible();
   await expect(page.getByRole('button', { name: '匿名送出' })).toHaveCount(0);
   await expect(
     page.getByRole('button', { name: '標記為難題' }),
@@ -52,8 +53,9 @@ test('question-bank failures never expose an unrelated editable question', async
 
   await page.goto('/notes?question=env-114-01');
   await expect(
-    page.getByRole('heading', { name: '題庫載入失敗' }),
+    page.getByRole('heading', { name: '題目暫時無法顯示' }),
   ).toBeVisible();
+  await expect(page.getByRole('button', { name: '重新載入' })).toBeVisible();
   await expect(page.getByLabel('我的筆記')).toHaveCount(0);
 });
 
