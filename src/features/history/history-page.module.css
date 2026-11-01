@@ -85,7 +85,7 @@
   color: var(--primary-strong);
 }
 
-/* Kept block-level: the count must read as a separate word in the button name (「建築法規與實務 2」). */
+/* Kept block-level: the count must read as a separate word in the button name (「營建法規與實務 2」). */
 .subjectFilters button span {
   display: inline-block;
   color: var(--muted);

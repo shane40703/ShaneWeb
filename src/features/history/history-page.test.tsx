@@ -149,7 +149,7 @@ describe('HistoryPage', () => {
       .getAllByText('2.50 分')
       .forEach((score) => expect(score).toBeVisible());
     expect(
-      within(subjectFilters).getByRole('button', { name: '建築法規與實務 2' }),
+      within(subjectFilters).getByRole('button', { name: '營建法規與實務 2' }),
     ).toHaveAttribute('aria-pressed', 'true');
     expect(
       within(subjectFilters).queryByRole('button', { name: /全部/ }),
@@ -163,15 +163,15 @@ describe('HistoryPage', () => {
       screen.getByRole('heading', { name: /建築環境控制/ }),
     ).toBeInTheDocument();
     expect(
-      screen.queryByRole('heading', { name: /建築法規與實務・114 年/ }),
+      screen.queryByRole('heading', { name: /營建法規與實務・114 年/ }),
     ).not.toBeInTheDocument();
-    fireEvent.click(within(subjectFilters).getByRole('button', { name: '建築法規與實務 2' }));
+    fireEvent.click(within(subjectFilters).getByRole('button', { name: '營建法規與實務 2' }));
 
     const summaries = await screen.findAllByText('查看完整作答紀錄（2）');
     fireEvent.click(summaries[0]);
 
     const lawGroup = screen
-      .getByRole('heading', { name: '建築法規與實務・114 年' })
+      .getByRole('heading', { name: '營建法規與實務・114 年' })
       .closest('article');
     expect(lawGroup).not.toBeNull();
     expect(screen.getAllByText('共作答 2 次')).toHaveLength(2);
@@ -325,7 +325,7 @@ describe('HistoryPage', () => {
 
     const lawGroup = (
       await screen.findByRole('heading', {
-        name: '建築法規與實務・114 年',
+        name: '營建法規與實務・114 年',
       })
     ).closest('article');
     expect(within(lawGroup!).getByText('查看完整作答紀錄（2）')).toBeInTheDocument();
@@ -505,7 +505,7 @@ describe('HistoryPage', () => {
 
     const lawGroup = (
       await screen.findByRole('heading', {
-        name: '建築法規與實務・114 年',
+        name: '營建法規與實務・114 年',
       })
     ).closest('article');
     expect(
@@ -588,7 +588,7 @@ describe('HistoryPage', () => {
       const group = await screen.findByLabelText('每日抽題練習作答紀錄');
       fireEvent.click(group.querySelector('summary')!);
       const card = within(group)
-        .getByRole('heading', { name: '建築法規與實務・每日抽題練習 3 題' })
+        .getByRole('heading', { name: '營建法規與實務・每日抽題練習 3 題' })
         .closest('article')!;
       expect(within(card).getByText('每日抽題練習')).toBeInTheDocument();
       expect(within(card).getByText('105–112 年')).toBeInTheDocument();

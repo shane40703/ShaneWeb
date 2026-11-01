@@ -5,7 +5,7 @@ export const subjects = [
   {
     id: 'law',
     directory: '法規',
-    name: '建築法規與實務',
+    name: '營建法規與實務',
     shortName: '法規',
     description: '建築法規、都市計畫、建築管理與實務應用',
   },

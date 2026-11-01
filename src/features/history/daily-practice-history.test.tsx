@@ -40,7 +40,7 @@ describe('Daily practice history', () => {
     const user = userEvent.setup();
     renderHistory();
     const filters = await screen.findByRole('group', { name: '每日練習履歷科目分類' });
-    expect(within(filters).getByRole('button', { name: /建築法規與實務/ })).toHaveTextContent('1');
+    expect(within(filters).getByRole('button', { name: /營建法規與實務/ })).toHaveTextContent('1');
     const group = screen.getByLabelText('每日抽題練習作答紀錄');
     await user.click(group.querySelector('summary')!);
     expect(within(group).getByText('正確率 0%')).toBeVisible();
@@ -85,7 +85,7 @@ describe('Daily practice history', () => {
     renderHistory(true, false);
     const before = JSON.parse(localStorage.getItem(STORAGE_KEY)!);
     const filters = await screen.findByRole('group', { name: '歷屆試題作答履歷科目分類' });
-    expect(within(filters).getByRole('button', { name: '建築法規與實務 1' })).toBeVisible();
+    expect(within(filters).getByRole('button', { name: '營建法規與實務 1' })).toBeVisible();
     expect(screen.getByLabelText('114 年作答紀錄')).toHaveTextContent('共作答 1 次');
     expect(screen.queryByLabelText('每日抽題練習作答紀錄')).not.toBeInTheDocument();
     await user.click(screen.getByRole('tab', { name: '跨年度錯題分析' }));

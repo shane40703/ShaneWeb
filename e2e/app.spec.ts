@@ -83,7 +83,7 @@ test('one failed subject does not hide difficult questions from other subjects',
   await page.goto('/difficult');
 
   await expect(
-    page.getByRole('heading', { name: '建築法規與實務' }),
+    page.getByRole('heading', { name: '營建法規與實務' }),
   ).toBeVisible();
   await expect(
     page.getByText(/依建築法規定，下列敘述何者錯誤/).first(),

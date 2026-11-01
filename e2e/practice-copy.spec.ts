@@ -18,10 +18,10 @@ test('practice copy describes the audience and daily subject choices contain nam
   await expect(choices.getByRole('radio')).toHaveCount(4);
   await expect(choices.locator('small')).toHaveCount(0);
   await expect(setup.getByRole('button', { name: '線上作答', exact: true })).toBeDisabled();
-  for (const name of ['建築法規與實務', '建築環境控制', '建築構造與施工', '建築結構']) {
+  for (const name of ['營建法規與實務', '建築環境控制', '建築構造與施工', '建築結構']) {
     await expect(choices.getByRole('radio', { name, exact: true })).toBeVisible();
   }
-  await choices.getByRole('radio', { name: '建築法規與實務', exact: true }).check();
+  await choices.getByRole('radio', { name: '營建法規與實務', exact: true }).check();
   await expect(setup.getByRole('button', { name: '線上作答', exact: true })).toBeEnabled();
   await expect(choices.locator('small')).toHaveCount(0);
   await expect(choices.getByText(/題庫.*題|這次抽/)).toHaveCount(0);

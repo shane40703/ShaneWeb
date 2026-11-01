@@ -24,7 +24,7 @@ export const 全部顏色: StoryObj = {
   render: () => (
     <div className={contentStyles.tagList}>
       <Tag>113 年</Tag>
-      <Tag tone="green">建築法規與實務</Tag>
+      <Tag tone="green">營建法規與實務</Tag>
       <Tag tone="purple">第 15 題</Tag>
       <Tag tone="orange">建築法</Tag>
       <Tag tone="green">113 年・原題第 15 題</Tag>

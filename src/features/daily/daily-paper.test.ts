@@ -40,7 +40,7 @@ describe('daily paper snapshot', () => {
     expect(JSON.stringify(paper)).not.toContain('私人詳解');
     expect(paper.questions[0]).not.toHaveProperty('answerKey');
     expect(JSON.stringify(session)).toBe(original);
-    expect(dailyPaperFilename(paper)).toBe('建築師每日練習-2026-10-15-建築法規與實務.pdf');
+    expect(dailyPaperFilename(paper)).toBe('建築師每日練習-2026-10-15-營建法規與實務.pdf');
   });
 
   it('handles accepted alternatives and all-credit answers, and refuses a set that is not loaded', () => {

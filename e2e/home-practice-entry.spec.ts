@@ -47,7 +47,7 @@ for (const theme of ['light', 'dark'] as const) {
     await expect(setup.getByRole('radio', { checked: true })).toHaveCount(0);
     expect(await page.evaluate(() => JSON.parse(localStorage.getItem('shaneweb:practice-session')!).answers)).toEqual(original.answers);
 
-    await setup.getByRole('radio', { name: /建築法規與實務/ }).check();
+    await setup.getByRole('radio', { name: /營建法規與實務/ }).check();
     page.once('dialog', dialog => dialog.dismiss());
     await setup.getByRole('button', { name: '線上作答', exact: true }).click();
     await expect(setup).toBeVisible();

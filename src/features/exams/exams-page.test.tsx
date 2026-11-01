@@ -498,7 +498,7 @@ describe('ExamsPage question loading', () => {
     renderPage({ questions: [lawQuestion, environmentQuestion] });
 
     const summary = screen.getByRole('button', { name: '展開科目與年度' });
-    expect(summary).toHaveTextContent('建築法規與實務・114 年');
+    expect(summary).toHaveTextContent('營建法規與實務・114 年');
     expect(summary).toHaveAttribute('aria-expanded', 'false');
     const selector = document.getElementById(summary.getAttribute('aria-controls')!)!;
     expect(within(selector).getByRole('group', { name: '科目' })).toBeInTheDocument();

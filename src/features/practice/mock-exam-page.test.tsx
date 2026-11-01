@@ -214,7 +214,7 @@ describe('MockExamPage setup', () => {
 
     const setup = await screen.findByRole('region', { name: '歷屆試題模擬考設定' });
     expect(setup.parentElement).not.toHaveClass(styles.fullWidth);
-    expect(within(setup).getByRole('radio', { name: /建築法規與實務/ })).toBeChecked();
+    expect(within(setup).getByRole('radio', { name: /營建法規與實務/ })).toBeChecked();
     expect(within(setup).getByRole('radio', { name: /114 年/ })).toBeChecked();
     expect(setup).toHaveTextContent('選擇題 5 題，每題 1.25 分，滿分 100 分');
     expect(within(setup).getByRole('button', { name: '開始作答' })).toBeEnabled();

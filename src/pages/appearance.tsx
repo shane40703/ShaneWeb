@@ -586,7 +586,7 @@ export function AppearanceSettings({ embedded = false }: { embedded?: boolean })
               </aside>
               <div className={styles.previewMain}>
                 <div className={styles.previewTopbar}>
-                  <span>建築法規與實務</span>
+                  <span>營建法規與實務</span>
                   <span className={styles.previewPill}>114 年</span>
                 </div>
                 <article className={styles.previewCard}>

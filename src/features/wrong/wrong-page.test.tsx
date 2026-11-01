@@ -123,7 +123,7 @@ describe('WrongPage', () => {
     const filters = screen.getByRole('region', {
       name: '常錯題目科目與年度分類',
     });
-    expect(within(filters).getByRole('button', { name: /建築法規與實務/ }))
+    expect(within(filters).getByRole('button', { name: /營建法規與實務/ }))
       .toHaveAttribute('aria-pressed', 'true');
     expect(within(filters).getByRole('button', { name: '114 年' }))
       .toHaveAttribute('aria-pressed', 'true');

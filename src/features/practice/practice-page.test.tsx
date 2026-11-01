@@ -295,7 +295,7 @@ async function openAdvanced() {
 async function chooseDefaultSubject() {
   await screen.findByRole('region', { name: '每日抽題練習設定' });
   if (!screen.getAllByRole('radio').some(radio => (radio as HTMLInputElement).checked)) {
-    fireEvent.click(screen.getByRole('radio', { name: /建築法規與實務/ }));
+    fireEvent.click(screen.getByRole('radio', { name: /營建法規與實務/ }));
   }
 }
 
@@ -448,7 +448,7 @@ describe('PracticePage setup', () => {
     fireEvent.click(screen.getByRole('button', { name: '製作紙本檔案' }));
     await waitFor(() => expect(paperDownload).toHaveBeenCalledTimes(2));
     const [first, second] = paperDownload.mock.calls.map(([paper]) => paper);
-    expect(first).toMatchObject({ subjectName: '建築法規與實務' });
+    expect(first).toMatchObject({ subjectName: '營建法規與實務' });
     expect(first.answerKeyNote).toBeUndefined();
     expect(first.questions).toHaveLength(50);
     expect(first.referenceAnswers).toHaveLength(50);
@@ -499,7 +499,7 @@ describe('PracticePage arriving from other pages', () => {
       expect(screen.getByRole('radio', { name: /建築環境控制/ })).toBeChecked(),
     );
     await waitFor(() => expect(router.snapshot.asPath).toBe('/practice/quiz'));
-    expect(screen.getByRole('radio', { name: /建築法規與實務/ })).not.toBeChecked();
+    expect(screen.getByRole('radio', { name: /營建法規與實務/ })).not.toBeChecked();
   });
 
   it('opens the setup with 考題分析’s year range and category, and drops them from the URL', async () => {
@@ -556,7 +556,7 @@ describe('PracticePage answering', () => {
     renderAt('/practice/quiz');
     const setup = await screen.findByRole('region', { name: '每日抽題練習設定' });
     const choices = within(setup).getByRole('group', { name: '選擇科目' });
-    const names = ['建築法規與實務', '建築環境控制', '建築構造與施工', '建築結構'];
+    const names = ['營建法規與實務', '建築環境控制', '建築構造與施工', '建築結構'];
     for (const name of names) expect(within(choices).getByRole('radio', { name })).toBeInTheDocument();
     expect(choices.querySelectorAll('small')).toHaveLength(0);
     fireEvent.click(within(choices).getByRole('radio', { name: names[0] }));

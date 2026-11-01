@@ -107,7 +107,7 @@ describe('ResourcesPage', () => {
       within(card).getByText('選科目與年度，查看命題分布、歷年趨勢與對應考古題。'),
     ).toBeInTheDocument();
     expect(
-      within(card).queryByText(/建築法規與實務|建築環境控制|建築構造與施工|建築結構/),
+      within(card).queryByText(/營建法規與實務|建築環境控制|建築構造與施工|建築結構/),
     ).not.toBeInTheDocument();
   });
 

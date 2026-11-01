@@ -416,7 +416,7 @@ describe('createPracticePaper', () => {
     );
     expect(paper).toMatchObject({
       date: '2026-10-22',
-      subjectName: '建築法規與實務',
+      subjectName: '營建法規與實務',
     });
     expect(paper.questions[0].options).toEqual(['選項 D', '選項 C', '選項 B', '選項 A']);
     expect(paper.referenceAnswers).toEqual(['D', '本題一律給分']);

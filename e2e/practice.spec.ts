@@ -52,7 +52,7 @@ async function openSetup(page: Page) {
   await expect(setup).toBeVisible();
   await expect(setup.getByRole('radio', { checked: true })).toHaveCount(0);
   await expect(setup.getByRole('button', { name: '線上作答', exact: true })).toBeDisabled();
-  await setup.getByRole('radio', { name: /建築法規與實務/ }).check();
+  await setup.getByRole('radio', { name: /營建法規與實務/ }).check();
   await expect(setup.getByText(/已選 法規・從 \d+ 題中抽 50 題/)).toBeVisible({
     timeout: 60_000,
   });
@@ -182,7 +182,7 @@ test('paper download from the setup draws its own set without starting online pr
     page.getByRole('button', { name: '製作紙本檔案' }).click(),
   ]);
   expect(download.suggestedFilename()).toMatch(
-    /^建築師每日練習-\d{4}-\d{2}-\d{2}-建築法規與實務\.pdf$/,
+    /^建築師每日練習-\d{4}-\d{2}-\d{2}-營建法規與實務\.pdf$/,
   );
   const pdf = await PDFDocument.load(await readFile((await download.path())!));
   expect(pdf.getPageCount()).toBeGreaterThanOrEqual(2);
@@ -326,7 +326,7 @@ test('the mock exam answers a whole paper, keeps it when leaving, and scores it 
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('歷屆試題模擬考');
 
   const setup = page.getByRole('region', { name: '歷屆試題模擬考設定' });
-  await expect(setup.getByRole('radio', { name: /建築法規與實務/ })).toBeChecked();
+  await expect(setup.getByRole('radio', { name: /營建法規與實務/ })).toBeChecked();
   await setup.getByRole('radio', { name: /建築環境控制/ }).click();
   await expect(page).toHaveURL(/\?subject=env&year=114$/);
   await expect(setup.getByRole('radio', { name: /114 年/ })).toBeChecked();
@@ -445,7 +445,7 @@ test('每日抽題練習 explicit saves appear only in 每日練習履歷, and �
   await group.locator('summary').click();
   const card = group.getByRole('article').first();
   await expect(card.getByRole('heading', { level: 2 })).toHaveText(
-    '建築法規與實務・每日抽題練習 5 題',
+    '營建法規與實務・每日抽題練習 5 題',
   );
   await expect(card.getByText(/^正確率 (0|50|100)%$/)).toBeVisible();
   await expect(card.getByText(/^答對 [012]／2 題$/)).toBeVisible();
@@ -639,7 +639,7 @@ test('the home subject cards, 考題分析 and question cards lead to the new pa
   expect(await page.locator('a[href*="/questions/"], a[href*="mode="]').count()).toBe(0);
   await page.getByRole('button', { name: '到每日抽題練習抽題' }).click();
   await expect(page).toHaveURL(/\/practice\/quiz$/);
-  await expect(page.getByRole('radio', { name: /建築法規與實務/ })).toBeChecked();
+  await expect(page.getByRole('radio', { name: /營建法規與實務/ })).toBeChecked();
   await expect(page.getByRole('button', { name: /進階選項/ })).toContainText(
     '114–114 年',
   );

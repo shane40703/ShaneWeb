@@ -7,7 +7,7 @@ for (const theme of ['light', 'dark'] as const) {
     await page.goto('/practice/quiz');
     const setup = page.getByRole('region', { name: '每日抽題練習設定', exact: true });
     await expect(setup.getByRole('radio', { checked: true })).toHaveCount(0);
-    await setup.getByRole('radio', { name: /建築法規與實務/ }).check();
+    await setup.getByRole('radio', { name: /營建法規與實務/ }).check();
     await expect(setup.getByText(/已選 法規・從 \d+ 題中抽 50 題/)).toBeVisible({ timeout: 20_000 });
     const available = await page.locator('main').evaluate(element => {
       const style = getComputedStyle(element);
