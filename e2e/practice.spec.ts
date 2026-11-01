@@ -192,7 +192,7 @@ test('paper download from the setup draws its own set without starting online pr
   ).toBeNull();
 });
 
-test('the hub uses three desktop cards and daily practice asks for a fresh subject before optional resume', async ({
+test('the hub stacks three cards in one column and daily practice asks for a fresh subject before optional resume', async ({
   page,
   isMobile,
 }, testInfo) => {
@@ -208,7 +208,7 @@ test('the hub uses three desktop cards and daily practice asks for a fresh subje
   await expect(practices.nth(0).getByText(/^4 科・[\d,]+ 題$/)).toBeVisible();
   await expect(practices.nth(2).getByText(/^\d+ 部法規・[\d,]+ 題$/)).toBeVisible();
   await expect(practices.nth(1).getByText(/^\d 科・\d+ 份試卷$/)).toBeVisible();
-  // Same card order: horizontal on desktop, stacked on phones.
+  // Same card order, stacked in one column on desktop and phones alike.
   const list = page.getByRole('list').filter({ has: page.getByRole('article') });
   await expect(list.getByRole('link')).toHaveCount(3);
   await expect(list.getByRole('button')).toHaveCount(0);
@@ -218,14 +218,8 @@ test('the hub uses three desktop cards and daily practice asks for a fresh subje
       return { left, top, bottom };
     }),
   );
-  if (isMobile) {
-    expect(new Set(boxes.map((box) => box.left)).size).toBe(1);
-    boxes.slice(1).forEach((box, index) => expect(box.top).toBeGreaterThan(boxes[index].bottom));
-  } else {
-    expect(new Set(boxes.map((box) => box.top)).size).toBe(1);
-    expect(new Set(boxes.map((box) => box.left)).size).toBe(3);
-    expect(boxes[0].bottom - boxes[0].top).toBeGreaterThanOrEqual(300);
-  }
+  expect(new Set(boxes.map((box) => box.left)).size).toBe(1);
+  boxes.slice(1).forEach((box, index) => expect(box.top).toBeGreaterThan(boxes[index].bottom));
   await expectNoHorizontalOverflow(page);
   await page.screenshot({ path: testInfo.outputPath('hub.png'), fullPage: true });
 
