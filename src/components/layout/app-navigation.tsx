@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import {
-  IconBooks, IconBuildingSkyscraper, IconFileText, IconBrandThreads, IconSettings,
+  IconBooks, IconBuildingSkyscraper, IconFileText, IconBrandThreads, IconSettings, IconShield,
 } from '@tabler/icons-react';
 import { personalHub, personalPages } from '@/features/personal/personal-pages';
 import { practiceHub, practicePages } from '@/features/practice/practice-pages';
@@ -18,6 +18,7 @@ const primaryNavigation: readonly NavigationLinkItem[] = [
 const utilityNavigation: readonly NavigationLinkItem[] = [
   { href: '/settings', label: '設定', icon: IconSettings },
   { href: '/community', label: '社群連結', icon: IconBrandThreads },
+  { href: '/privacy', label: '隱私權政策', icon: IconShield },
 ];
 // Hub pages (statistics, practice and 我的作答存摺) open from their hub instead of the sidebar
 // but still title the topbar; listed first so they win over their hub's shorter prefix.

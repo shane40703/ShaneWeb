@@ -30,8 +30,8 @@ export function useDailyPaperDownload() {
   const [downloading, setDownloading] = useState(false);
   const [error, setError] = useState('');
   const [fontNotice, setFontNotice] = useState('');
-  async function download(getPaper: () => DailyPaper | Promise<DailyPaper>) {
-    if (downloading) return;
+  async function download(getPaper: () => DailyPaper | Promise<DailyPaper>): Promise<boolean> {
+    if (downloading) return false;
     setDownloading(true); setError(''); setFontNotice('');
     try {
       // Start the permission request within the click gesture, before anything is awaited.
@@ -39,8 +39,10 @@ export function useDailyPaperDownload() {
       const paper = await getPaper();
       const { downloadDailyPaperPdf } = await import('./daily-paper-pdf');
       await downloadDailyPaperPdf(paper, await fonts, notice => setFontNotice(`${paper.subjectName}：${notice}`));
+      return true;
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : 'PDF 下載失敗，請稍後再試。');
+      return false;
     } finally { setDownloading(false); }
   }
   return { downloading, error, fontNotice, download };

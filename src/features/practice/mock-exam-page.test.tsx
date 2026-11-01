@@ -72,6 +72,12 @@ vi.mock('@/lib/shared-discussions', () => ({
   useDiscussionPublisher: () => ({ publish: vi.fn(), enabled: false }),
 }));
 
+const analytics = vi.hoisted(() => ({ trackPractice: vi.fn() }));
+vi.mock('@/lib/analytics', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/analytics')>()),
+  trackPractice: analytics.trackPractice,
+}));
+
 function makeQuestion(
   subject: SubjectId,
   year: number,
@@ -157,6 +163,7 @@ beforeEach(() => {
     return true;
   });
   vi.spyOn(window, 'scrollTo').mockImplementation(() => {});
+  analytics.trackPractice.mockClear();
 });
 
 afterEach(() => {
@@ -673,6 +680,68 @@ describe('MockExamPage answering', () => {
 
     expect(router.snapshot.asPath).toBe('/practice/mock-exam?subject=law&year=114');
     expect(screen.getByRole('button', { name: '開始作答' })).toBeInTheDocument();
+  });
+});
+
+describe('MockExamPage usage statistics', () => {
+  it('tracks starting a paper under its own subject', async () => {
+    renderAt('/practice/mock-exam?subject=env&year=114');
+    fireEvent.click(await screen.findByRole('button', { name: '開始作答' }));
+    await flush();
+    expect(analytics.trackPractice.mock.calls).toEqual([['practice_start', 'mock_exam', 'env']]);
+  });
+
+  it('tracks a restart only after confirming it', async () => {
+    seedDraft({ 'law-114-01': answered(0) });
+    const confirm = vi.spyOn(window, 'confirm').mockReturnValueOnce(false);
+    renderAt('/practice/mock-exam?subject=law&year=114');
+    fireEvent.click(await screen.findByRole('button', { name: /重新開始/ }));
+    expect(analytics.trackPractice).not.toHaveBeenCalled();
+
+    confirm.mockReturnValueOnce(true);
+    fireEvent.click(screen.getByRole('button', { name: /重新開始/ }));
+    expect(analytics.trackPractice.mock.calls).toEqual([['practice_start', 'mock_exam', 'law']]);
+  });
+
+  it('tracks the first selection of a question, not a changed one', async () => {
+    seedDraft({ 'law-114-01': { elapsedSeconds: 0, startedAt: '2026-10-20T00:00:00.000Z' } });
+    renderAt('/practice/mock-exam?subject=law&year=114&q=1');
+    await screen.findByText('114 年第 1 題題幹');
+
+    fireEvent.click(option('1-甲'));
+    expect(analytics.trackPractice.mock.calls).toEqual([['question_answered', 'mock_exam', 'law']]);
+
+    fireEvent.click(option('1-乙'));
+    expect(storedDraft()['law-114-01']?.selected).toBe(1);
+    expect(analytics.trackPractice).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not track clearing or marking a question', async () => {
+    seedDraft({ 'law-114-01': answered(0) });
+    renderAt('/practice/mock-exam?subject=law&year=114&q=1');
+    await screen.findByText('114 年第 1 題題幹');
+
+    fireEvent.click(option('1-甲'));
+    expect(storedDraft()['law-114-01']?.selected).toBeUndefined();
+    fireEvent.click(screen.getByRole('button', { name: '刪去選項 C' }));
+
+    expect(analytics.trackPractice).not.toHaveBeenCalled();
+  });
+
+  it('tracks 交卷 once the attempt exists', async () => {
+    seedDraft(
+      Object.fromEntries(
+        [1, 2, 3, 4, 5].map((number) => [`law-114-0${number}`, answered(0)]),
+      ),
+    );
+    renderAt('/practice/mock-exam?subject=law&year=114&q=2');
+
+    const sidebar = await screen.findByRole('complementary', { name: '試卷資訊' });
+    fireEvent.click(within(sidebar).getByRole('button', { name: /交卷/ }));
+    await flush();
+
+    expect(appState.dispatch).toHaveBeenCalledTimes(1);
+    expect(analytics.trackPractice.mock.calls).toEqual([['practice_complete', 'mock_exam', 'law']]);
   });
 });
 

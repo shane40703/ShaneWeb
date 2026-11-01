@@ -175,6 +175,7 @@ test('all retained routes support direct visits and the removed old pages return
     { path: '/practice-history', title: '每日練習履歷' },
     { path: '/settings', title: '設定' },
     { path: '/appearance', title: '設定' },
+    { path: '/privacy', title: '隱私權政策' },
   ] as const;
 
   for (const route of routes) {

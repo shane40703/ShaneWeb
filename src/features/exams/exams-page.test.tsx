@@ -19,6 +19,12 @@ vi.mock('next/router', () => ({
   useRouter: () => router,
 }));
 
+const analytics = vi.hoisted(() => ({ trackPractice: vi.fn() }));
+vi.mock('@/lib/analytics', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/analytics')>()),
+  trackPractice: analytics.trackPractice,
+}));
+
 function question(id: string, subject: SubjectId): Question {
   return {
     id,
@@ -83,6 +89,7 @@ describe('ExamsPage question loading', () => {
     router.isReady = true;
     router.query = {};
     router.replace.mockReset();
+    analytics.trackPractice.mockClear();
   });
 
   it('preserves note-style whitespace when adding and editing explanations', async () => {
@@ -333,6 +340,28 @@ describe('ExamsPage question loading', () => {
     fireEvent.click(screen.getByText('law-114-01 A').closest('label')!);
     fireEvent.click(screen.getByRole('button', { name: '看解答' }));
     expect(screen.getByText('答對了')).toBeInTheDocument();
+  });
+
+  it('tracks 看解答 as revealed without a selection and as answered with one', () => {
+    renderPage();
+
+    fireEvent.click(screen.getByRole('button', { name: '看解答' }));
+    expect(analytics.trackPractice.mock.calls).toEqual([['answer_revealed', 'exams', 'law']]);
+
+    fireEvent.click(screen.getByRole('button', { name: '重新作答' }));
+    fireEvent.click(screen.getByText('law-114-01 B').closest('label')!);
+    expect(analytics.trackPractice).toHaveBeenCalledTimes(1);
+    fireEvent.click(screen.getByRole('button', { name: '看解答' }));
+    expect(analytics.trackPractice).toHaveBeenLastCalledWith('question_answered', 'exams', 'law');
+  });
+
+  it('tracks an essay question as revealed, under its own subject', () => {
+    router.query = { question: writtenQuestion.id };
+    renderPage({ questions: [lawQuestion, writtenQuestion] });
+
+    fireEvent.click(screen.getByRole('button', { name: '看解答' }));
+
+    expect(analytics.trackPractice.mock.calls).toEqual([['answer_revealed', 'exams', 'structure']]);
   });
 
   it('reveals only the explanation for an essay question', () => {

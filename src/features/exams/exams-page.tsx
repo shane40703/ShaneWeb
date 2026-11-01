@@ -31,6 +31,7 @@ import { QuestionBodyPlaceholder } from '@/components/question-body-placeholder'
 import { hasSimilarQuestionsBlock, SimilarQuestions } from '@/components/similar-questions';
 import { RichTextEditor } from '@/components/rich-text-editor-lazy';
 import { Tab, TabList, TabPanel, TabsRoot } from '@/components/tabs';
+import { trackPractice } from '@/lib/analytics';
 import { mergeRichTextValues } from '@/lib/rich-document';
 import {
   QuestionNumberPicker,
@@ -331,6 +332,13 @@ export function ExamsPage({
 
   function reveal() {
     focusVerdictFor.current = activeQuestion.id;
+    trackPractice(
+      practice[activeQuestion.id]?.selected === undefined
+        ? 'answer_revealed'
+        : 'question_answered',
+      'exams',
+      activeQuestion.subject,
+    );
     setPractice((current) => ({
       ...current,
       [activeQuestion.id]: {

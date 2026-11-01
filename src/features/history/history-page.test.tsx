@@ -33,6 +33,12 @@ import {
 const router = vi.hoisted(() => ({ push: vi.fn() }));
 vi.mock('next/router', () => ({ useRouter: () => router }));
 
+const analytics = vi.hoisted(() => ({ trackPractice: vi.fn() }));
+vi.mock('@/lib/analytics', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/analytics')>()),
+  trackPractice: analytics.trackPractice,
+}));
+
 const questions = await loadAllQuestions();
 const paperQuestions = questions
   .filter((question) => question.subject === 'law' && question.year === 114)
@@ -577,6 +583,7 @@ describe('HistoryPage', () => {
 
     beforeEach(() => {
       router.push.mockReset();
+      analytics.trackPractice.mockClear();
       const unsubscribe = subscribeToMockExamDrafts(() => {});
       window.dispatchEvent(new StorageEvent('storage', { key: QUIZ_PROGRESS_STORAGE_KEY }));
       unsubscribe();
@@ -782,6 +789,52 @@ describe('HistoryPage', () => {
         'law-114-01': { elapsedSeconds: 0, startedAt: expect.any(String) },
       });
       spy.mockRestore();
+    });
+
+    it('tracks 再做一次 of a paper only after its confirm', async () => {
+      const paperAttempt = createAttempt({
+        mode: 'paper', source: paperQuestions, answers: {},
+        startedAt: '2026-07-25T00:00:00.000Z', elapsedSeconds: 60,
+      });
+      writeQuizProgress('paper:law:114', {
+        'law-114-02': { selected: 2, elapsedSeconds: 120, startedAt: '2026-10-24T00:00:00.000Z' },
+      });
+      const confirm = vi.spyOn(window, 'confirm').mockReturnValueOnce(false);
+      renderHistory([paperAttempt]);
+      const group = await screen.findByLabelText('114 年作答紀錄');
+      fireEvent.click(group.querySelector('summary')!);
+      const retry = within(group).getByRole('button', { name: '再做一次' });
+
+      fireEvent.click(retry);
+      expect(analytics.trackPractice).not.toHaveBeenCalled();
+
+      confirm.mockReturnValueOnce(true);
+      fireEvent.click(retry);
+      expect(analytics.trackPractice.mock.calls).toEqual([['practice_start', 'mock_exam', 'law']]);
+      confirm.mockRestore();
+    });
+
+    it('tracks 再做一次 of a 每日抽題練習 set only once it is saved', async () => {
+      const setItem = Storage.prototype.setItem;
+      const spy = vi
+        .spyOn(Storage.prototype, 'setItem')
+        .mockImplementation(function (this: Storage, key: string, value: string) {
+          if (key === PRACTICE_SESSION_STORAGE_KEY) {
+            throw new DOMException('full', 'QuotaExceededError');
+          }
+          return setItem.call(this, key, value);
+        });
+      renderHistory([practiceAttempt], questions, true);
+      const group = await screen.findByLabelText('每日抽題練習作答紀錄');
+      fireEvent.click(group.querySelector('summary')!);
+      const retry = within(group).getByRole('button', { name: '再做一次' });
+
+      fireEvent.click(retry);
+      expect(analytics.trackPractice).not.toHaveBeenCalled();
+
+      spy.mockRestore();
+      fireEvent.click(retry);
+      expect(analytics.trackPractice.mock.calls).toEqual([['practice_start', 'daily_quiz', 'law']]);
     });
 
     it('offers only a mock exam before the first paper record', async () => {

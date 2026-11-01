@@ -134,6 +134,12 @@ vi.mock('@/features/daily/daily-paper-pdf', () => ({
   downloadDailyPaperPdf: paperDownload,
 }));
 
+const analytics = vi.hoisted(() => ({ trackPractice: vi.fn() }));
+vi.mock('@/lib/analytics', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/analytics')>()),
+  trackPractice: analytics.trackPractice,
+}));
+
 function makeQuestion(
   subject: SubjectId,
   year: number,
@@ -217,6 +223,7 @@ beforeEach(() => {
   appState.reportPersistence.mockReset();
   appState.state.difficultQuestionIds = [];
   paperDownload.mockReset().mockResolvedValue(undefined);
+  analytics.trackPractice.mockClear();
   vi.spyOn(window, 'scrollTo').mockImplementation(() => {});
 });
 
@@ -474,6 +481,140 @@ describe('PracticePage setup', () => {
     expect(router.push).not.toHaveBeenCalled();
     expect(router.replace).not.toHaveBeenCalled();
     expect(screen.getByRole('region', { name: '每日抽題練習設定' })).toBeInTheDocument();
+  });
+});
+
+describe('PracticePage usage statistics', () => {
+  it('tracks a started set but never a paper draw', async () => {
+    renderAt();
+    await chooseDefaultSubject();
+    fireEvent.click(await screen.findByRole('button', { name: '製作紙本檔案' }));
+    await waitFor(() =>
+      expect(analytics.trackPractice).toHaveBeenCalledWith('paper_download', 'paper', 'law'),
+    );
+    expect(analytics.trackPractice).toHaveBeenCalledTimes(1);
+
+    await startOnline();
+    await screen.findByLabelText(/^第 1 題，共/);
+    expect(analytics.trackPractice).toHaveBeenLastCalledWith('practice_start', 'daily_quiz', 'law');
+  });
+
+  it('does not track a paper that failed to download', async () => {
+    paperDownload.mockRejectedValue(new Error('PDF 失敗'));
+    renderAt();
+    await chooseDefaultSubject();
+    fireEvent.click(await screen.findByRole('button', { name: '製作紙本檔案' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent('PDF 失敗');
+    expect(analytics.trackPractice).not.toHaveBeenCalled();
+  });
+
+  it('requests the local fonts within the click, before anything is awaited', async () => {
+    const queryLocalFonts = vi.fn().mockResolvedValue([]);
+    vi.stubGlobal('queryLocalFonts', queryLocalFonts);
+    renderAt();
+    await chooseDefaultSubject();
+    fireEvent.click(await screen.findByRole('button', { name: '製作紙本檔案' }));
+    expect(queryLocalFonts).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(paperDownload).toHaveBeenCalledTimes(1));
+    vi.unstubAllGlobals();
+  });
+
+  it('tracks a declined start as nothing', async () => {
+    seed({ answers: { [lawQuestions[0].id]: { selected: 0, correct: true } } });
+    vi.spyOn(window, 'confirm').mockReturnValue(false);
+    renderAt();
+    await startOnline();
+    expect(window.confirm).toHaveBeenCalledTimes(1);
+    expect(analytics.trackPractice).not.toHaveBeenCalled();
+  });
+
+  it('tracks a confirmed answer once, even when pressed twice before the page updates', async () => {
+    seed({ drafts: { [lawQuestions[0].id]: 0 } });
+    renderAt('/practice/quiz?q=1');
+    await screen.findByLabelText('第 1 題，共 5 題');
+    const confirm = screen.getByRole('button', { name: '確認答案' });
+
+    act(() => {
+      confirm.click();
+      confirm.click();
+    });
+
+    expect(stored()!.answers[lawQuestions[0].id]).toBeDefined();
+    expect(analytics.trackPractice.mock.calls).toEqual([
+      ['question_answered', 'daily_quiz', 'law'],
+    ]);
+  });
+
+  it.each([
+    ['difficult', 'difficult_retry'],
+    ['wrong', 'wrong_retry'],
+  ] as const)('tracks a %s set as %s from its first answer to its retry', async (reviewSource, mode) => {
+    seed({ reviewSource, subject: 'env', drafts: { [lawQuestions[0].id]: 0 } }, 1);
+    renderAt('/practice/quiz?q=1');
+    await screen.findByLabelText('第 1 題，共 1 題');
+
+    fireEvent.click(screen.getByRole('button', { name: '確認答案' }));
+    expect(analytics.trackPractice).toHaveBeenLastCalledWith('question_answered', mode, 'env');
+
+    submitFromFooter();
+    expect(analytics.trackPractice).toHaveBeenLastCalledWith('practice_complete', mode, 'env');
+
+    fireEvent.click(await screen.findByRole('button', { name: /重做這組題目/ }));
+    expect(analytics.trackPractice).toHaveBeenLastCalledWith('practice_start', mode, 'env');
+    expect(analytics.trackPractice).toHaveBeenCalledTimes(3);
+  });
+
+  it('tracks completion only after the unanswered-questions check passes', async () => {
+    const confirm = vi.spyOn(window, 'confirm').mockReturnValueOnce(false);
+    seed({ answers: { [lawQuestions[4].id]: { selected: 0, correct: true } }, currentIndex: 4 });
+    renderAt('/practice/quiz?q=5');
+    await screen.findByLabelText('第 5 題，共 5 題');
+
+    submitFromFooter();
+    expect(confirm).toHaveBeenCalledTimes(1);
+    expect(analytics.trackPractice).not.toHaveBeenCalled();
+
+    confirm.mockReturnValueOnce(true);
+    submitFromFooter();
+    expect(analytics.trackPractice.mock.calls).toEqual([
+      ['practice_complete', 'daily_quiz', 'law'],
+    ]);
+  });
+
+  it('does not track 重做這組題目 when its confirm is declined', async () => {
+    seed({ answers: allCorrect, currentIndex: 4 });
+    renderAt('/practice/quiz?q=5');
+    await screen.findByLabelText('第 5 題，共 5 題');
+    submitFromFooter();
+    const retry = await screen.findByRole('button', { name: /重做這組題目/ });
+    analytics.trackPractice.mockClear();
+    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
+    const answeredElsewhere = JSON.stringify({ ...stored()!, answers: allCorrect });
+
+    // Another tab's answers arrive in the same instant as the click, so the button is still there.
+    act(() => {
+      window.dispatchEvent(
+        new StorageEvent('storage', {
+          key: PRACTICE_SESSION_STORAGE_KEY,
+          newValue: answeredElsewhere,
+        }),
+      );
+      retry.click();
+    });
+    expect(confirm).toHaveBeenCalledTimes(1);
+    expect(analytics.trackPractice).not.toHaveBeenCalled();
+  });
+
+  it('tracks 重做這組題目 of a daily set as a new start', async () => {
+    seed({ answers: allCorrect, currentIndex: 4 });
+    renderAt('/practice/quiz?q=5');
+    await screen.findByLabelText('第 5 題，共 5 題');
+    submitFromFooter();
+    fireEvent.click(await screen.findByRole('button', { name: /重做這組題目/ }));
+    expect(analytics.trackPractice.mock.calls).toEqual([
+      ['practice_complete', 'daily_quiz', 'law'],
+      ['practice_start', 'daily_quiz', 'law'],
+    ]);
   });
 });
 

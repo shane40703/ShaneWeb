@@ -10,6 +10,12 @@ import { PRACTICE_SESSION_STORAGE_KEY } from '@/features/practice/practice-sessi
 const router = vi.hoisted(() => ({ push: vi.fn(async () => true) }));
 vi.mock('next/router', () => ({ useRouter: () => router }));
 
+const analytics = vi.hoisted(() => ({ trackPractice: vi.fn() }));
+vi.mock('@/lib/analytics', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/analytics')>()),
+  trackPractice: analytics.trackPractice,
+}));
+
 function question(
   id: string,
   subject: SubjectId,
@@ -99,6 +105,7 @@ describe('WrongPage', () => {
   beforeEach(() => {
     window.localStorage.clear();
     router.push.mockClear();
+    analytics.trackPractice.mockClear();
   });
 
   it('does not treat count-only activity as saved wrong-answer history', async () => {
@@ -163,6 +170,18 @@ describe('WrongPage', () => {
       .toBeInTheDocument();
     expect(screen.getByRole('region', { name: '第 1 題詳解' }))
       .toHaveTextContent('law-114-01 詳解');
+  });
+
+  it('tracks a checked answer as a wrong-question retry', async () => {
+    renderPage([attempts[0]]);
+    fireEvent.click(await screen.findByText('查看選項、重新作答與詳解'));
+    const panel = await screen.findByRole('region', { name: '第 1 題重新作答' });
+
+    fireEvent.click(within(panel).getByText('law-114-01 B').closest('label')!);
+    expect(analytics.trackPractice).not.toHaveBeenCalled();
+    fireEvent.click(within(panel).getByRole('button', { name: '檢查答案' }));
+
+    expect(analytics.trackPractice.mock.calls).toEqual([['question_answered', 'wrong_retry', 'law']]);
   });
 
   it('displays shared explanations alongside the built-in explanation', async () => {

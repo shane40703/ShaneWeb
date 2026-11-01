@@ -70,3 +70,27 @@ firebase deploy --only firestore:rules,storage
 - 社群頁不需要登入、不寫入 Firestore；Threads 連結與本機 QR Code 指向同一個公開主頁。
 - 既有 `contentReports` 雲端資料、本機舊回報及其管理介面保留，不因移除表單而刪除使用者資料。
 - 這次不變更 Firestore Rules；歷史雲端回報仍可由有權限的管理者在 Firebase Console 查看。
+
+## 使用統計（Google Analytics）
+
+- 只在 Vercel 的 Production 設定 `NEXT_PUBLIC_GA_MEASUREMENT_ID`；沒有這個變數時網站不會載入 GA，本機與 Preview 都不會送資料。
+- 程式直接使用 gtag，不經過 `firebase/analytics`；評估 ID 來自連結到 Firebase 專案的 GA4 資源（G- 開頭）。所有呼叫都集中在 `src/lib/analytics.ts`。
+- 每個頁面只傳路徑和 `utm_` 參數，`?question=`、`?q=`、`?result=` 不會送出，整頁載入時來自本站的 referrer 也會先清理；同一頁換題不算新的頁面瀏覽。
+
+| 事件 | 送出時機 |
+| --- | --- |
+| `practice_start` | 開始一組練習或一份試卷；法規克漏字在本輪第一次提交或看答案時 |
+| `question_answered` | 確認答案、模擬考第一次選答、考古題討論版選答後看解答 |
+| `answer_revealed` | 沒有作答就看答案（含申論題） |
+| `practice_complete` | 完成練習、交卷、法規克漏字的最後一題 |
+| `paper_download` | 紙本練習卷的 PDF 下載成功 |
+
+| 參數 | 值 |
+| --- | --- |
+| `practice_area` | `daily`、`exams`、`review` |
+| `practice_mode` | `daily_quiz`、`mock_exam`、`law_cloze`、`paper`、`exams`、`wrong_retry`、`difficult_retry` |
+| `subject` | 科目 ID |
+
+- 用網址的 `?ga=off` 可以讓目前瀏覽器不再送出統計（例如作者自己的瀏覽器），設定會記住（還沒設定評估 ID 時也一樣），之後用 `?ga=on` 恢復。
+- Google Search Console 用「HTML 標記」驗證：把標記 `content` 的值設成 Vercel Production 的 `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION`，重新部署後驗證。`vercel.app` 網域無法用 DNS 驗證，GA 代碼也不在 `<head>` 內，所以不能用這兩種方式。
+- GA4 資料串流的「加強型評估」（Enhanced measurement）必須保持關閉：網站自己送頁面瀏覽，開著會重複計算；而且 `?q=` 是題號，會被當成站內搜尋事件。

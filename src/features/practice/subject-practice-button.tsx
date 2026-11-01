@@ -4,6 +4,7 @@ import { Dialog } from '@base-ui/react/dialog';
 import { IconListCheck } from '@tabler/icons-react';
 import { Button, useToast } from '@/components/ui/ui';
 import uiStyles from '@/components/ui/ui.module.css';
+import { quizPracticeMode, trackPractice } from '@/lib/analytics';
 import { readStoredValue, writeStoredValue } from '@/lib/storage';
 import { pickRandomItems } from '@/lib/study';
 import type { Question, SubjectId } from '@/lib/types';
@@ -61,6 +62,7 @@ export function SubjectPracticeButton({
       notify('瀏覽器無法儲存練習進度，暫時無法開始這組題目。', undefined, 'error');
       return;
     }
+    trackPractice('practice_start', quizPracticeMode(source), subject);
     setStarting(true);
     try {
       if (!await router.push(practiceQuestionHref(0))) {

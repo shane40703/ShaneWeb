@@ -4,6 +4,7 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { IconArrowRight, IconBook, IconCheck, IconRefresh, IconX } from '@tabler/icons-react';
 import { Button } from '@/components/ui/ui';
 import { useAppState } from '@/state/app-state';
+import { trackPractice } from '@/lib/analytics';
 import { readStoredValue, writeStoredValue } from '@/lib/storage';
 import { useClientReady } from '@/lib/use-client-ready';
 import { CLOZE_COUNTS, CLOZE_STORAGE_KEY, clozeBank, getClozeCategories, getClozePool, getFullArticleParts, createClozeSession, gradeCloze, parseClozeSession, revealClozeAnswer, type ClozeOptions, type ClozeQuestion, type ClozeSession } from './cloze';
@@ -49,10 +50,26 @@ export function LawClozePage() {
   const poolSize = getClozePool(options).length;
   const changed = options.lawId !== session.lawId || options.category !== session.category || options.count !== session.count;
 
+  // The page opens with a question already drawn, so a round starts at its first answer.
+  const roundStarted = completed.length > 0 || session.revealed.length > 0;
+
+  function trackAnswer(event: 'question_answered' | 'answer_revealed') {
+    if (!roundStarted) trackPractice('practice_start', 'law_cloze', 'law');
+    trackPractice(event, 'law_cloze', 'law');
+    if (last) trackPractice('practice_complete', 'law_cloze', 'law');
+  }
+
   function submit(event: FormEvent) {
     event.preventDefault();
     if (!session || resolved || question.blanks.some((_, i) => !session.answers[i]?.trim())) return;
+    trackAnswer('question_answered');
     setSession({ ...session, submitted: true, results: { ...session.results, [question.id]: [...session.answers] } });
+  }
+
+  function reveal() {
+    if (!session || resolved) return;
+    trackAnswer('answer_revealed');
+    setSession(revealClozeAnswer(session));
   }
 
   return (
@@ -139,7 +156,7 @@ export function LawClozePage() {
               if (last) setSession(createClozeSession({ lawId: session.lawId, category: session.category, count: session.count }));
               else setSession({ ...session, index: session.index + 1, answers: [], submitted: false });
             }}>{last ? '再練一輪' : '下一題'}<IconArrowRight size={17} /></Button>
-          </> : <><span>填完全部 {question.blanks.length} 空後提交；直接看答案不計分。</span><div className={styles.answerActions}><Button type='button' onClick={() => setSession(revealClozeAnswer(session))}>直接看答案</Button><Button type='submit' variant='primary' disabled={question.blanks.some((_, i) => !session.answers[i]?.trim())}>提交答案</Button></div></>}
+          </> : <><span>填完全部 {question.blanks.length} 空後提交；直接看答案不計分。</span><div className={styles.answerActions}><Button type='button' onClick={reveal}>直接看答案</Button><Button type='submit' variant='primary' disabled={question.blanks.some((_, i) => !session.answers[i]?.trim())}>提交答案</Button></div></>}
         </footer>
       </form>
 

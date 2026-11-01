@@ -9,6 +9,11 @@ import { SubjectPracticeButton } from './subject-practice-button';
 const mocks = vi.hoisted(() => ({ push: vi.fn(async () => true), reportPersistence: vi.fn() }));
 vi.mock('next/router', () => ({ useRouter: () => ({ push: mocks.push }) }));
 vi.mock('@/state/app-state', () => ({ useAppState: () => ({ reportPersistence: mocks.reportPersistence }) }));
+const analytics = vi.hoisted(() => ({ trackPractice: vi.fn() }));
+vi.mock('@/lib/analytics', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/analytics')>()),
+  trackPractice: analytics.trackPractice,
+}));
 
 const question: Question = {
   id: 'law-114-01', subject: 'law', year: 114, questionNumber: 1,
@@ -68,6 +73,34 @@ describe('SubjectPracticeButton', () => {
     fireEvent.click(screen.getByRole('button', { name: /^開始練習/ }));
     await waitFor(() => expect(mocks.push).toHaveBeenCalledWith('/practice/quiz?q=1'));
     expect(JSON.parse(localStorage.getItem(PRACTICE_SESSION_STORAGE_KEY)!)).toMatchObject({ reviewSource: 'difficult', drafts: {}, answers: {} });
+  });
+
+  it.each([
+    ['difficult', 'difficult_retry'],
+    ['wrong', 'wrong_retry'],
+  ] as const)('tracks a saved %s set as %s', async (source, mode) => {
+    renderButton({ source, subject: 'law' });
+    await openSettings(source);
+    fireEvent.click(screen.getByRole('button', { name: /^開始練習/ }));
+    await waitFor(() => expect(mocks.push).toHaveBeenCalled());
+    expect(analytics.trackPractice.mock.calls).toEqual([['practice_start', mode, 'law']]);
+  });
+
+  it('tracks nothing when the user declines or the set cannot be saved', async () => {
+    const current = createPracticeSessionFromQuestions([question], 'law', false);
+    current.drafts[question.id] = 1;
+    localStorage.setItem(PRACTICE_SESSION_STORAGE_KEY, JSON.stringify(current));
+    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
+    renderButton();
+    await openSettings();
+    fireEvent.click(screen.getByRole('button', { name: /^開始練習/ }));
+    expect(confirm).toHaveBeenCalledOnce();
+
+    confirm.mockReturnValue(true);
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => { throw new DOMException('Full', 'QuotaExceededError'); });
+    fireEvent.click(screen.getByRole('button', { name: /^開始練習/ }));
+    expect(mocks.reportPersistence).toHaveBeenCalledWith('practice-session', 'quota-exceeded');
+    expect(analytics.trackPractice).not.toHaveBeenCalled();
   });
 
   it('does not navigate when storage is full, preserving the existing saved set', async () => {

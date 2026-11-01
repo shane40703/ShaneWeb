@@ -18,6 +18,12 @@ import { fillRichEditor } from '@/test/rich-editor';
 const router = vi.hoisted(() => ({ push: vi.fn(async () => true) }));
 vi.mock('next/router', () => ({ useRouter: () => router }));
 
+const analytics = vi.hoisted(() => ({ trackPractice: vi.fn() }));
+vi.mock('@/lib/analytics', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/analytics')>()),
+  trackPractice: analytics.trackPractice,
+}));
+
 function question({
   id,
   subject,
@@ -109,6 +115,7 @@ describe('DifficultPage', () => {
   beforeEach(() => {
     window.localStorage.clear();
     router.push.mockClear();
+    analytics.trackPractice.mockClear();
   });
 
   it('starts every marked choice question of the selected subject across years', async () => {
@@ -175,6 +182,19 @@ describe('DifficultPage', () => {
     expect(
       screen.queryByRole('heading', { name: /營建法規與實務/ }),
     ).not.toBeInTheDocument();
+  });
+
+  it('tracks a checked answer as a difficult-question retry', async () => {
+    renderPage(['law-114-01']);
+    await screen.findByRole('heading', { name: '營建法規與實務 · 114 年' });
+    fireEvent.click(screen.getByText('查看選項、作答與詳解'));
+    const panel = await screen.findByRole('region', { name: '第 1 題重新作答' });
+
+    fireEvent.click(within(panel).getByText('law-114-01 B').closest('label')!);
+    expect(analytics.trackPractice).not.toHaveBeenCalled();
+    fireEvent.click(within(panel).getByRole('button', { name: '檢查答案' }));
+
+    expect(analytics.trackPractice.mock.calls).toEqual([['question_answered', 'difficult_retry', 'law']]);
   });
 
   it('retries difficult questions without repeating the prompt', async () => {

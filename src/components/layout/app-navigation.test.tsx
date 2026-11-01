@@ -36,7 +36,15 @@ describe('grouped app navigation', () => {
       within(nav)
         .getAllByRole('link')
         .map((link) => link.getAttribute('href')),
-    ).toEqual(['/practice', '/exams', '/resources', '/personal', '/settings', '/community']);
+    ).toEqual([
+      '/practice',
+      '/exams',
+      '/resources',
+      '/personal',
+      '/settings',
+      '/community',
+      '/privacy',
+    ]);
     expect(within(nav).queryByRole('button')).not.toBeInTheDocument();
   });
 
@@ -126,6 +134,7 @@ describe('grouped app navigation', () => {
     ['/settings', '設定'],
     ['/appearance', '設定'],
     ['/community', '社群連結'],
+    ['/privacy', '隱私權政策'],
     ['/unknown', '建築師考試'],
   ])('preserves the topbar title for %s', (pathname, title) => {
     expect(navigationPageTitle(pathname)).toBe(title);

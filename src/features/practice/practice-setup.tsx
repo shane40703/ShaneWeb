@@ -9,6 +9,7 @@ import {
 import { Button } from '@/components/ui/ui';
 import type { DailyPaper } from '@/features/daily/daily-paper';
 import { useDailyPaperDownload } from '@/features/daily/daily-paper-download';
+import { trackPractice } from '@/lib/analytics';
 import type { SubjectId } from '@/lib/types';
 import { getSubject, subjects } from '@/question-bank/catalog';
 import {
@@ -75,6 +76,12 @@ export function PracticeSetup({
 
   function update(patch: Partial<PracticeSettings>) {
     onSettingsChange({ ...settings, ...patch });
+  }
+
+  // Nothing is awaited before download(): its font request needs the click gesture.
+  async function downloadPaper() {
+    const downloaded = await paperDownload.download(onMakePaper);
+    if (downloaded && subject) trackPractice('paper_download', 'paper', subject);
   }
 
   return (
@@ -304,7 +311,7 @@ export function PracticeSetup({
           )}
         </span>
         <div className={styles.setupActions}>
-          <Button disabled={!canDraw} onClick={() => paperDownload.download(onMakePaper)}>
+          <Button disabled={!canDraw} onClick={() => void downloadPaper()}>
             <IconFileTypePdf size={17} aria-hidden="true" />
             {paperDownload.downloading ? '正在製作 PDF…' : '製作紙本檔案'}
           </Button>

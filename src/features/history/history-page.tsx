@@ -17,6 +17,7 @@ import {
 import { Button, ConfirmDialog, useToast } from '@/components/ui/ui';
 import { WrongCategoryAnalysis } from '@/components/wrong-category-analysis';
 import { getSubject, subjects, years as paperYears } from '@/question-bank/catalog';
+import { trackPractice } from '@/lib/analytics';
 import type { QuestionBankStatus } from '@/lib/question-bank-client';
 import { parseQuestionId } from '@/lib/question-path';
 import { readStoredValue, writeStoredValue } from '@/lib/storage';
@@ -227,6 +228,7 @@ export function HistoryPage({
         startMockExamDraft(mockExamQuestionId(attempt.subject, attempt.year, 1)),
       ),
     );
+    trackPractice('practice_start', 'mock_exam', attempt.subject);
     void router.push(
       mockExamHref({ subject: attempt.subject, year: attempt.year, q: 1 }),
     );
@@ -260,6 +262,7 @@ export function HistoryPage({
       notify('瀏覽器無法儲存練習進度，暫時無法開始這組題目。', undefined, 'error');
       return;
     }
+    trackPractice('practice_start', 'daily_quiz', attempt.subject);
     void router.push(practiceQuestionHref(0));
   }
 

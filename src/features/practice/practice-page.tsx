@@ -9,6 +9,7 @@ import {
 } from 'react';
 import { IconLoader2 } from '@tabler/icons-react';
 import { useToast } from '@/components/ui/ui';
+import { quizPracticeMode, trackPractice } from '@/lib/analytics';
 import {
   loadQuestionBodies,
   useQuestionBodies,
@@ -497,6 +498,7 @@ export function PracticePage() {
     timer.take();
     clearResult();
     commitSession(createPracticeSession(pool, subject, settings.shuffleOptions));
+    trackPractice('practice_start', quizPracticeMode(), subject);
     // The setup entry becomes the set's first: Back from question 1 leaves the page.
     navigate('replace', { q: 1 }, 0);
   }
@@ -530,9 +532,19 @@ export function PracticePage() {
     if (!currentQuestion) return;
     // Counted before grading: an answered question takes no more time.
     const pending = timer.take();
+    const answers = sessionRef.current?.answers;
     changeAnswers((current) =>
       confirmPracticeAnswer(addPracticeTime(current, pending), currentQuestion),
     );
+    // The time alone can replace the session, but only a new answer replaces `answers`.
+    const confirmed = sessionRef.current;
+    if (confirmed && confirmed.answers !== answers) {
+      trackPractice(
+        'question_answered',
+        quizPracticeMode(confirmed.reviewSource),
+        confirmed.subject,
+      );
+    }
   }
 
   function submit() {
@@ -549,6 +561,7 @@ export function PracticePage() {
     ) {
       return;
     }
+    trackPractice('practice_complete', quizPracticeMode(timed.reviewSource), timed.subject);
     // The opt-in applies only to daily draws, not difficult/wrong subject reviews.
     const completed = createRecordablePracticeResult(timed, questionById);
     if (timed.reviewSource) {
@@ -607,6 +620,7 @@ export function PracticePage() {
     timer.take();
     clearResult();
     commitSession(resetPracticeAnswers(current));
+    trackPractice('practice_start', quizPracticeMode(current.reviewSource), current.subject);
     navigate('replace', { q: 1 }, depth.current);
   }
 

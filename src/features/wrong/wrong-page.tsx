@@ -16,6 +16,7 @@ import {
   type SelectorYear,
 } from '@/components/question-selector';
 import { Button, OptionGroup } from '@/components/ui/ui';
+import { trackPractice } from '@/lib/analytics';
 import { useFilledBodies, type QuestionBankStatus } from '@/lib/question-bank-client';
 import {
   formatCorrectAnswer,
@@ -39,6 +40,7 @@ function WrongQuestionPractice({ question }: { question: Question }) {
 
   function checkAnswer() {
     if (selected === undefined) return;
+    trackPractice('question_answered', 'wrong_retry', question.subject);
     dispatch({
       type: 'save-answer',
       questionId: question.id,

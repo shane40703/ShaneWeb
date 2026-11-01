@@ -16,6 +16,7 @@ import {
   quizProgressReducer,
   type QuizProgressAction,
 } from './mock-exam-progress';
+import { trackPractice } from '@/lib/analytics';
 import { useSubjectQuestions } from '@/lib/question-bank-client';
 import { parseQuestionId } from '@/lib/question-path';
 import { isQuestionCorrect, isSubjectId, parseYear } from '@/lib/study';
@@ -340,6 +341,7 @@ export function MockExamPage({ papers }: { papers: MockExamPaper[] }) {
   function start() {
     if (!paper || !scope || !firstQuestionId) return;
     save(scope, startMockExamDraft(firstQuestionId));
+    trackPractice('practice_start', 'mock_exam', paper.subject);
     void navigate(
       'push',
       mockExamHref({ subject: paper.subject, year: paper.year, q: 1 }),
@@ -349,11 +351,19 @@ export function MockExamPage({ papers }: { papers: MockExamPaper[] }) {
 
   function update(action: Extract<QuizProgressAction, { questionId: string }>) {
     // On the way to another question, this render's question is no longer the one meant.
-    if (!scope || ownNavigations.current > 0) return;
+    if (!paper || !scope || ownNavigations.current > 0) return;
     const stored = readMockExamDraft(scope);
     if (!hasMockExamDraft(stored)) return;
     const next = quizProgressReducer(stored, action);
     if (next !== stored) save(scope, touchMockExamQuestion(next, action.questionId));
+    // Changing an answer is still the same question answered.
+    if (
+      action.type === 'select-answer' &&
+      action.selected !== undefined &&
+      stored[action.questionId]?.selected === undefined
+    ) {
+      trackPractice('question_answered', 'mock_exam', paper.subject);
+    }
   }
 
   function goTo(next: number) {
@@ -373,6 +383,7 @@ export function MockExamPage({ papers }: { papers: MockExamPaper[] }) {
     const stored = readMockExamDraft(scope);
     if (!hasMockExamDraft(stored) || questions.length < total) return;
     const submitted = createMockExamAttempt(questions, stored);
+    trackPractice('practice_complete', 'mock_exam', paper.subject);
     dispatch({
       type: 'save-attempt',
       attempt: submitted,

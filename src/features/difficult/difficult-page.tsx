@@ -18,6 +18,7 @@ import {
   IconX,
 } from '@tabler/icons-react';
 import { Button, OptionGroup } from '@/components/ui/ui';
+import { trackPractice } from '@/lib/analytics';
 import { useFilledBodies, type QuestionBankStatus } from '@/lib/question-bank-client';
 import { subjectsOfQuestionIds } from '@/lib/question-path';
 import { formatCorrectAnswer, isQuestionCorrect } from '@/lib/study';
@@ -35,6 +36,7 @@ function DifficultQuestionPractice({ question }: { question: Question }) {
 
   function checkAnswer() {
     if (selected === undefined) return;
+    trackPractice('question_answered', 'difficult_retry', question.subject);
     dispatch({
       type: 'save-answer',
       questionId: question.id,

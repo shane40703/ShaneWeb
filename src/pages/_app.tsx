@@ -1,5 +1,6 @@
 import type { AppProps } from 'next/app';
 import Head from 'next/head';
+import { Analytics } from '@/components/analytics';
 import { AppShell } from '@/components/layout/app-shell';
 import { Providers } from '@/components/providers';
 import '@/styles/globals.css';
@@ -14,6 +15,12 @@ export default function App({ Component, pageProps }: AppProps) {
           content="建築師考試考古題討論版、命題分析、詳解、筆記與難題整理。"
         />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        {process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION ? (
+          <meta
+            name="google-site-verification"
+            content={process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION}
+          />
+        ) : null}
       </Head>
       <Providers>
         <div className="app-root">
@@ -22,6 +29,7 @@ export default function App({ Component, pageProps }: AppProps) {
           </AppShell>
         </div>
       </Providers>
+      <Analytics />
     </>
   );
 }

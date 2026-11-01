@@ -4,7 +4,13 @@ import { CLOZE_STORAGE_KEY, clozeBank, createClozeSession, parseClozeSession } f
 import { LawClozePage } from './law-cloze-page';
 
 vi.mock('@/state/app-state', () => ({ useAppState: () => ({ reportPersistence: vi.fn() }) }));
+const analytics = vi.hoisted(() => ({ trackPractice: vi.fn() }));
+vi.mock('@/lib/analytics', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/analytics')>()),
+  trackPractice: analytics.trackPractice,
+}));
 beforeEach(() => {
+  analytics.trackPractice.mockClear();
   window.localStorage.clear();
   const session = createClozeSession();
   session.order = ['daylight', ...session.order.filter((id) => id !== 'daylight')].slice(0, session.count);
@@ -95,6 +101,80 @@ describe('LawClozePage', () => {
     render(<LawClozePage />);
     fireEvent.click(await screen.findByRole('button', { name: '直接看答案' }));
     expect(screen.getByRole('link', { name, hidden: true })).toHaveAttribute('href', `/exams?question=${evidence.id}`);
+  });
+
+  describe('usage statistics', () => {
+    const start = ['practice_start', 'law_cloze', 'law'];
+    const answered = ['question_answered', 'law_cloze', 'law'];
+    const revealed = ['answer_revealed', 'law_cloze', 'law'];
+    const complete = ['practice_complete', 'law_cloze', 'law'];
+
+    function fillIn(id: string) {
+      clozeBank.questions.find((q) => q.id === id)!.blanks.forEach((blank, index) => fireEvent.change(screen.getAllByRole('textbox', { name: `第 ${index + 1} 空：${blank.label}` })[0], { target: { value: blank.answer } }));
+    }
+
+    it('starts the round at its first submission, and sends nothing for opening or typing', async () => {
+      render(<LawClozePage />);
+      await screen.findAllByRole('textbox');
+      const form = screen.getByRole('button', { name: '提交答案' }).closest('form')!;
+      fireEvent.submit(form);
+      fillIn('daylight');
+      expect(analytics.trackPractice).not.toHaveBeenCalled();
+      fireEvent.click(screen.getByRole('button', { name: '提交答案' }));
+      expect(analytics.trackPractice.mock.calls).toEqual([start, answered]);
+    });
+
+    it('starts the round at its first reveal, and later questions only count as answers', async () => {
+      render(<LawClozePage />);
+      fireEvent.click(await screen.findByRole('button', { name: '直接看答案' }));
+      expect(analytics.trackPractice.mock.calls).toEqual([start, revealed]);
+      fireEvent.click(screen.getByRole('button', { name: '下一題' }));
+      fireEvent.click(screen.getByRole('button', { name: '直接看答案' }));
+      expect(analytics.trackPractice.mock.calls).toEqual([start, revealed, revealed]);
+    });
+
+    it('does not restart a round that was reloaded halfway', async () => {
+      const session = parseClozeSession(window.localStorage.getItem(CLOZE_STORAGE_KEY))!;
+      window.localStorage.setItem(CLOZE_STORAGE_KEY, JSON.stringify({ ...session, index: 1, results: { daylight: ['1/5', '1/8', '75'] } }));
+      render(<LawClozePage />);
+      fireEvent.click(await screen.findByRole('button', { name: '直接看答案' }));
+      expect(analytics.trackPractice.mock.calls).toEqual([revealed]);
+    });
+
+    it('completes a longer round on its last question, without starting it again', async () => {
+      const session = createClozeSession({ count: 5 });
+      window.localStorage.setItem(CLOZE_STORAGE_KEY, JSON.stringify({ ...session, index: 4, revealed: session.order.slice(0, 4) }));
+      render(<LawClozePage />);
+      fireEvent.click(await screen.findByRole('button', { name: '直接看答案' }));
+      expect(analytics.trackPractice.mock.calls).toEqual([revealed, complete]);
+    });
+
+    it('completes a one-question round in order when it is submitted', async () => {
+      window.localStorage.setItem(CLOZE_STORAGE_KEY, JSON.stringify(createClozeSession({ lawId: 'accessibility', category: '無障礙客房', count: 5 })));
+      render(<LawClozePage />);
+      await screen.findAllByRole('textbox');
+      fillIn('a-room');
+      fireEvent.click(screen.getByRole('button', { name: '提交答案' }));
+      expect(analytics.trackPractice.mock.calls).toEqual([start, answered, complete]);
+    });
+
+    it('completes a one-question round in order when it is revealed', async () => {
+      window.localStorage.setItem(CLOZE_STORAGE_KEY, JSON.stringify(createClozeSession({ lawId: 'accessibility', category: '無障礙客房', count: 5 })));
+      render(<LawClozePage />);
+      fireEvent.click(await screen.findByRole('button', { name: '直接看答案' }));
+      expect(analytics.trackPractice.mock.calls).toEqual([start, revealed, complete]);
+    });
+
+    it('starts a new round after 再練一輪, not from opening it', async () => {
+      window.localStorage.setItem(CLOZE_STORAGE_KEY, JSON.stringify(createClozeSession({ lawId: 'accessibility', category: '無障礙客房', count: 5 })));
+      render(<LawClozePage />);
+      fireEvent.click(await screen.findByRole('button', { name: '直接看答案' }));
+      analytics.trackPractice.mockClear();
+      fireEvent.click(screen.getByRole('button', { name: '再練一輪' }));
+      expect(analytics.trackPractice).not.toHaveBeenCalled();
+      fireEvent.click(screen.getByRole('button', { name: '直接看答案' }));
+      expect(analytics.trackPractice.mock.calls).toEqual([start, revealed, complete]);
+    });
   });
 
   it('applies settings only on start and completes a short pool with a summary', async () => {

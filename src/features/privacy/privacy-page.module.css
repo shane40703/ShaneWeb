@@ -1,0 +1,61 @@
+/* 隱私權政策: one framed sheet of text, its sections separated by dashed rules. */
+.page {
+  min-width: 0;
+  container-type: inline-size;
+}
+
+.panel {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 0 32px;
+  border: var(--frame);
+  border-radius: var(--radius-frame);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 16px;
+  line-height: 1.75;
+}
+
+.section {
+  padding: 24px 0;
+  display: grid;
+  gap: 8px;
+}
+
+.section + .section {
+  border-top: var(--rule-dashed);
+}
+
+.section h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.section p,
+.section ul {
+  margin: 0;
+}
+
+.section ul {
+  padding-left: 1.25em;
+}
+
+.updated {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+}
+
+@container (max-width: 640px) {
+  .panel {
+    padding: 0 16px;
+  }
+
+  .section {
+    padding: 20px 0;
+  }
+}
