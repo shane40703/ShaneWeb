@@ -645,24 +645,11 @@ function initializeThemeBeforePaint(
   const root = document.documentElement;
   let mode: ThemeMode = 'light';
 
+  // The site opens light whatever the system prefers; only a saved choice turns it dark.
   try {
-    const savedMode = window.localStorage.getItem(modeStorageKey);
-    const prefersDark = Boolean(
-      window.matchMedia?.('(prefers-color-scheme: dark)').matches,
-    );
-    mode = savedMode === 'light' || savedMode === 'dark'
-      ? savedMode
-      : prefersDark
-        ? 'dark'
-        : 'light';
+    if (window.localStorage.getItem(modeStorageKey) === 'dark') mode = 'dark';
   } catch {
-    try {
-      mode = window.matchMedia?.('(prefers-color-scheme: dark)').matches
-        ? 'dark'
-        : 'light';
-    } catch {
-      mode = 'light';
-    }
+    // Unavailable storage keeps the light default.
   }
 
   for (const property of customProperties) root.style.removeProperty(property);

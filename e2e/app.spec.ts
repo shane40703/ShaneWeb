@@ -205,6 +205,31 @@ test('all retained routes support direct visits and the removed old pages return
   }
 });
 
+test('opens light on a dark system until the user picks dark', async ({
+  page,
+}, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop');
+
+  await page.emulateMedia({ colorScheme: 'dark' });
+  await page.goto('/appearance');
+  await expect(
+    page.getByRole('radio', { name: '淺色模式', exact: true }),
+  ).toBeEnabled();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+
+  await page.getByRole('button', { name: '切換為深色模式' }).click();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+
+  await page.reload();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+
+  await page.getByRole('button', { name: '切換為淺色模式' }).click();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+
+  await page.reload();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+});
+
 test('custom theme colors apply to their mode and survive a reload', async ({
   page,
 }, testInfo) => {

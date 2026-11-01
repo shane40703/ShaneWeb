@@ -464,21 +464,33 @@ describe('pre-paint initialization script', () => {
     );
   });
 
-  it('uses the system mode and leaves baseline CSS unshadowed without custom colors', () => {
+  it('opens light on a dark system and leaves baseline CSS unshadowed without custom colors', () => {
     mockSystemTheme(true);
     document.documentElement.style.setProperty('--primary', 'stale');
 
     runInitializationScript();
 
-    expect(document.documentElement.dataset.theme).toBe('dark');
-    expect(document.documentElement.style.colorScheme).toBe('dark');
+    expect(document.documentElement.dataset.theme).toBe('light');
+    expect(document.documentElement.style.colorScheme).toBe('light');
     for (const property of THEME_CUSTOM_PROPERTIES) {
       expect(document.documentElement.style.getPropertyValue(property)).toBe('');
     }
     expect(document.querySelector('meta[name="theme-color"]')).toHaveAttribute(
       'content',
-      DEFAULT_THEME_PALETTES.dark.background,
+      DEFAULT_THEME_PALETTES.light.background,
     );
+  });
+
+  it('opens light on a dark system when the saved mode cannot be read', () => {
+    mockSystemTheme(true);
+    vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+      throw new DOMException('blocked', 'SecurityError');
+    });
+
+    runInitializationScript();
+
+    expect(document.documentElement.dataset.theme).toBe('light');
+    expect(document.documentElement.style.colorScheme).toBe('light');
   });
 
   it('rejects stored low-contrast and injected values before paint', () => {

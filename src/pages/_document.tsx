@@ -9,7 +9,7 @@ export default function Document() {
       suppressHydrationWarning
     >
       <Head>
-        <meta name="color-scheme" content="light dark" />
+        <meta name="color-scheme" content="light" />
         <meta name="theme-color" content="#eadfc9" />
         <script
           dangerouslySetInnerHTML={{ __html: THEME_INITIALIZATION_SCRIPT }}
