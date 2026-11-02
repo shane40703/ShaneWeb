@@ -113,6 +113,33 @@ test('hovering a heatmap day shows its date and count, also on the first and las
   await expect(tooltip).toHaveCount(0);
 });
 
+test('heatmap fills wide panels and keeps a scrollable square grid on phones', async ({ page }) => {
+  await page.goto('/personal');
+  const panel = page.getByRole('region', { name: /近一年寫了/ });
+  const days = panel.getByRole('img');
+  const cells = days.locator('[data-level]');
+  const scroller = days.locator('..').locator('..').locator('..');
+
+  for (const width of [1280, 1600, 1920]) {
+    await page.setViewportSize({ width, height: 900 });
+    await expect(cells).toHaveCount(53 * 7);
+    const frame = (await panel.boundingBox())!;
+    const grid = (await days.boundingBox())!;
+    const cell = (await cells.first().boundingBox())!;
+    expect(frame.x + frame.width - (grid.x + grid.width)).toBeLessThan(32);
+    expect(Math.abs(cell.width - cell.height)).toBeLessThan(1);
+    expect(await scroller.evaluate(element => element.scrollWidth - element.clientWidth)).toBeLessThanOrEqual(1);
+  }
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect.poll(() => scroller.evaluate(element => element.scrollLeft)).toBeGreaterThan(0);
+  expect(await scroller.evaluate(element => element.scrollWidth - element.clientWidth - element.scrollLeft)).toBeLessThanOrEqual(1);
+  const mobileCell = (await cells.first().boundingBox())!;
+  expect(Math.abs(mobileCell.width - 12)).toBeLessThan(1);
+  expect(Math.abs(mobileCell.width - mobileCell.height)).toBeLessThan(1);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
+});
+
 test('the hub rows open their page anywhere along the row and fit a phone', async ({
   page,
 }, testInfo) => {

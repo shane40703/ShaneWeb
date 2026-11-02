@@ -90,7 +90,7 @@ export function ActivityHeatmap({
                 <span key={row}>{label}</span>
               ))}
             </div>
-            <div>
+            <div className={styles.chartGrid}>
               <div className={styles.months} aria-hidden="true">
                 {heatmap?.monthLabels.map(({ label, column }) => (
                   <span
