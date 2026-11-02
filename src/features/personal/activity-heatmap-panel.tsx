@@ -1,7 +1,7 @@
 import { useLayoutEffect, useMemo, useRef, useState, type PointerEvent } from 'react';
 import type { QuizAttempt } from '@/lib/types';
 import { useOptionalAppState } from '@/state/app-state';
-import { ACTIVITY_LEVELS, activityLevelLabel, buildActivityHeatmap } from './activity-heatmap';
+import { ACTIVITY_LEVELS, buildActivityHeatmap } from './activity-heatmap';
 import styles from './activity-heatmap.module.css';
 
 const weekdayLabels = ['', '一', '', '三', '', '五', ''];
@@ -132,19 +132,13 @@ export function ActivityHeatmap({
             </div>
           </div>
         </div>
-        <div className={styles.legend}>
-          <span>每 20 題一階</span>
-          <div className={styles.legendScale}>
-            <span>0 題</span>
-            <ol aria-label="每日作答題數色階">
-              {ACTIVITY_LEVELS.map((level) => (
-                <li key={level} className={styles.cell} data-level={level}
-                  title={activityLevelLabel(level)} aria-label={activityLevelLabel(level)} />
-              ))}
-            </ol>
-            <span>181 題以上</span>
-          </div>
-        </div>
+        <p className={styles.legend} aria-hidden="true">
+          少
+          {ACTIVITY_LEVELS.map((level) => (
+            <span key={level} className={styles.cell} data-level={level} />
+          ))}
+          多
+        </p>
       </div>
       {tooltip ? (
         <span

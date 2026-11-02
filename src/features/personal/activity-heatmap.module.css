@@ -1,4 +1,4 @@
-/* 活動熱力圖：53 欄連續排列；色階由主色漸變至強調色，跟著網站配色調整。 */
+/* 活動熱力圖：53 欄連續排列；色階全部由使用者選的重點色混出，換配色時一起變。 */
 .panel {
   position: relative;
   min-width: 0;
@@ -6,6 +6,8 @@
   border: var(--frame);
   border-radius: var(--radius-frame);
   background: var(--surface);
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .header {
@@ -128,54 +130,30 @@
   background: color-mix(in srgb, var(--text) 7%, var(--surface));
 }
 
-.cell[data-level='1'] {
-  background: color-mix(in srgb, var(--primary) 35%, var(--surface));
-}
-
-.cell[data-level='2'] {
-  background: color-mix(in srgb, var(--primary) 50%, var(--surface));
-}
-
-.cell[data-level='3'] {
-  background: color-mix(in srgb, var(--primary) 65%, var(--surface));
-}
-
-.cell[data-level='4'] {
-  background: color-mix(in srgb, var(--primary) 82%, var(--surface));
-}
-
-.cell[data-level='5'] { background: var(--primary); }
-.cell[data-level='6'] { background: color-mix(in srgb, var(--primary) 80%, var(--danger)); }
-.cell[data-level='7'] { background: color-mix(in srgb, var(--primary) 60%, var(--danger)); }
-.cell[data-level='8'] { background: color-mix(in srgb, var(--primary) 40%, var(--danger)); }
-.cell[data-level='9'] { background: color-mix(in srgb, var(--primary) 20%, var(--danger)); }
-.cell[data-level='10'] { background: var(--danger); }
+/* 在 oklab 裡混：不管使用者選哪個重點色，相鄰兩階的明度差都差不多，最高階就是重點色本身。 */
+.cell[data-level='1'] { background: color-mix(in oklab, var(--primary) 30%, var(--surface)); }
+.cell[data-level='2'] { background: color-mix(in oklab, var(--primary) 44%, var(--surface)); }
+.cell[data-level='3'] { background: color-mix(in oklab, var(--primary) 58%, var(--surface)); }
+.cell[data-level='4'] { background: color-mix(in oklab, var(--primary) 72%, var(--surface)); }
+.cell[data-level='5'] { background: color-mix(in oklab, var(--primary) 86%, var(--surface)); }
+.cell[data-level='6'] { background: var(--primary); }
 
 .legend {
   margin: 0;
   justify-self: end;
   display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
   align-items: center;
-  gap: 6px 12px;
+  gap: 3px;
   color: var(--muted);
   font: 11px/1.3 var(--font-mono);
 }
 
-.legendScale {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  white-space: nowrap;
+.legend .cell:first-of-type {
+  margin-left: 3px;
 }
 
-.legendScale ol {
-  display: flex;
-  gap: 3px;
-  padding: 0;
-  margin: 0;
-  list-style: none;
+.legend .cell:last-of-type {
+  margin-right: 3px;
 }
 
 /* 全部格子共用一個提示。掛在面板上才不會被 .scroller 裁掉，也不擋住下面的格子。 */

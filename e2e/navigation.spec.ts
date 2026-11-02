@@ -113,23 +113,44 @@ test('hovering a heatmap day shows its date and count, also on the first and las
   await expect(tooltip).toHaveCount(0);
 });
 
-test('heatmap legend distinguishes every 20-question tier in both themes', async ({ page }) => {
+test('heatmap legend distinguishes every tier in both themes and follows the accent colour', async ({ page }) => {
   await page.goto('/personal');
   const panel = page.getByRole('region', { name: /近一年寫了/ });
-  const legend = panel.getByRole('list', { name: '每日作答題數色階' });
-  await expect(panel.getByText('每 20 題一階')).toBeVisible();
-  await expect(panel.getByText('181 題以上', { exact: true })).toBeVisible();
-  const levels = legend.getByRole('listitem');
-  await expect(levels).toHaveCount(11);
-  await expect(levels.nth(1)).toHaveAttribute('title', '1–20 題');
-  await expect(levels.nth(9)).toHaveAttribute('title', '161–180 題');
-  await expect(levels.nth(10)).toHaveAttribute('title', '181 題以上');
+  const legend = panel.getByText('少多');
+  await expect(legend).toBeVisible();
+  const levels = legend.locator('[data-level]');
+  await expect(levels).toHaveCount(7);
+  const levelColors = () => levels.evaluateAll(elements => elements.map(element => getComputedStyle(element).backgroundColor));
   for (const theme of ['light', 'dark']) {
     if (theme === 'dark') await page.getByRole('button', { name: '切換為深色模式' }).click();
-    const colors = await levels.evaluateAll(elements => elements.map(element => getComputedStyle(element).backgroundColor));
-    expect(new Set(colors).size).toBe(11);
+    expect(new Set(await levelColors()).size).toBe(7);
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(page.viewportSize()!.width);
   }
+
+  const before = await levelColors();
+  await page.evaluate(() => document.documentElement.style.setProperty('--primary', '#176b52'));
+  const after = await levelColors();
+  expect(after[0]).toBe(before[0]);
+  expect(after[6]).toBe('rgb(23, 107, 82)');
+  after.slice(1).forEach((color, index) => expect(color).not.toBe(before[index + 1]));
+});
+
+test('heatmap text cannot be selected or copied', async ({ page }) => {
+  await page.goto('/personal');
+  const panel = page.getByRole('region', { name: /近一年寫了/ });
+  await expect(panel.locator('[data-in-range="true"]').first()).toBeVisible();
+  const box = (await panel.getByRole('heading').boundingBox())!;
+  await page.mouse.move(box.x, box.y + box.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width, box.y + box.height / 2, { steps: 5 });
+  await page.mouse.up();
+  expect(await page.evaluate(() => getSelection()!.toString())).toBe('');
+
+  await page.keyboard.press('ControlOrMeta+A');
+  const selected = await page.evaluate(() => getSelection()!.toString());
+  expect(selected).toContain('常錯題目');
+  expect(selected).not.toContain('近一年寫了');
+  expect(selected).not.toContain('最長連續');
 });
 
 test('heatmap fills wide panels and keeps a scrollable square grid on phones', async ({ page }) => {
