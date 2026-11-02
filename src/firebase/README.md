@@ -64,9 +64,9 @@ firebase deploy --only firestore:rules,storage
 - 目前共享投稿只支援文字。圖片應在後續版本上傳至 Firebase Storage，Firestore 僅保存檔案路徑，請勿把 Base64 圖片寫入 Firestore。
 - Firebase 未設定時，開發環境仍會使用既有的本機投稿備援。
 
-## 問題回報
+## 社群連結與歷史回報
 
-- Firebase 已設定時，使用者必須 Google 登入才能送出問題回報。
-- 回報集中寫入 Firestore 的 `contentReports` 集合，包含類型、題號、說明、來源頁面、登入 UID、狀態及建立時間。
-- Firestore Rules 只允許登入者建立格式正確的回報，不允許一般前端讀取、修改或刪除全部回報。
-- 專案管理者與後端工程師可先從 Firebase Console 查看；後續管理介面應透過 Firebase Admin SDK 在伺服器端存取。
+- 問題回報表單已改為 `/community` 社群連結頁；舊 `/report` 網址會重新導向，不再送出回報。
+- 社群頁不需要登入、不寫入 Firestore；Threads 連結與本機 QR Code 指向同一個公開主頁。
+- 既有 `contentReports` 雲端資料、本機舊回報及其管理介面保留，不因移除表單而刪除使用者資料。
+- 這次不變更 Firestore Rules；歷史雲端回報仍可由有權限的管理者在 Firebase Console 查看。

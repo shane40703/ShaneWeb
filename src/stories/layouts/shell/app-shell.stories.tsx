@@ -17,7 +17,7 @@ import HistoryRoute from '@/pages/history';
 import DailyPracticeHistoryRoute from '@/pages/practice-history';
 import HomeRoute from '@/pages/index';
 import PersonalRoute from '@/pages/personal';
-import ReportPage from '@/pages/report';
+import CommunityRoute from '@/pages/community';
 import SettingsPage from '@/pages/settings';
 import WrongRoute from '@/pages/wrong';
 import {
@@ -53,7 +53,7 @@ const pages = {
   '/practice-history': { label: '每日練習履歷', content: <DailyPracticeHistoryRoute /> },
   '/history': { label: '歷屆試題作答履歷', content: <HistoryRoute /> },
   '/settings': { label: '設定', content: <SettingsPage /> },
-  '/report': { label: '問題回報', content: <ReportPage /> },
+  '/community': { label: '社群連結', content: <CommunityRoute /> },
 } satisfies Record<string, { label: string; content: ReactNode }>;
 
 type PagePath = keyof typeof pages;

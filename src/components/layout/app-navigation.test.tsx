@@ -36,7 +36,7 @@ describe('grouped app navigation', () => {
       within(nav)
         .getAllByRole('link')
         .map((link) => link.getAttribute('href')),
-    ).toEqual(['/practice', '/exams', '/resources', '/personal', '/settings', '/report']);
+    ).toEqual(['/practice', '/exams', '/resources', '/personal', '/settings', '/community']);
     expect(within(nav).queryByRole('button')).not.toBeInTheDocument();
   });
 
@@ -125,7 +125,7 @@ describe('grouped app navigation', () => {
     ['/practice-history', '每日練習履歷'],
     ['/settings', '設定'],
     ['/appearance', '設定'],
-    ['/report', '問題回報'],
+    ['/community', '社群連結'],
     ['/unknown', '建築師考試'],
   ])('preserves the topbar title for %s', (pathname, title) => {
     expect(navigationPageTitle(pathname)).toBe(title);
@@ -139,7 +139,7 @@ describe('grouped app navigation', () => {
     '/analysis',
     '/memory-gallery',
     '/laws',
-    '/community',
+    '/report',
     '/questions/law/114/01',
   ])('names no removed page in the topbar: %s', (pathname) => {
     expect(navigationPageTitle(pathname)).toBe('建築師考試');

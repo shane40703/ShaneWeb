@@ -14,6 +14,9 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   allowedDevOrigins: ['127.0.0.1'],
   env: { NEXT_PUBLIC_QUESTION_DATA_VERSION: questionDataVersion() },
+  async redirects() {
+    return [{ source: '/report', destination: '/community', permanent: true }];
+  },
   async headers() {
     return [
       {

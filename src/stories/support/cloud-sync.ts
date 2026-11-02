@@ -5,7 +5,7 @@ import { firebaseConfigurationAvailable } from '@/lib/firebase-client';
 
 /**
  * 工具列「雲端同步」的選項。Storybook 不會連到 Firebase；選了雲端狀態時，只是讓畫面
- * 以為網站有設定 Firebase、使用者在這個登入狀態，看正式網站頂部列與問題回報的樣子。
+ * 以為網站有設定 Firebase、使用者在這個登入狀態，看正式網站頂部列的樣子。
  * 共享投稿在雲端狀態下會一直顯示載入中（沒有真的去讀）。
  */
 export const cloudModes = {
