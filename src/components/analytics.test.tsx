@@ -1,7 +1,12 @@
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-const router = vi.hoisted(() => ({ asPath: '/exams' }));
+const router = vi.hoisted(() => ({
+  asPath: '/exams',
+  isReady: true,
+  pathname: '/',
+  replace: vi.fn(),
+}));
 vi.mock('next/router', () => ({ useRouter: () => router }));
 vi.mock('next/script', () => ({
   default: ({ src, strategy }: { src: string; strategy: string }) => (
@@ -27,6 +32,10 @@ beforeEach(() => {
   delete window.dataLayer;
   window.localStorage.clear();
   router.asPath = '/exams';
+  router.isReady = true;
+  router.pathname = '/';
+  router.replace.mockReset();
+  window.history.replaceState(null, '', '/');
 });
 
 afterEach(() => {
@@ -71,5 +80,80 @@ describe('Analytics', () => {
     router.asPath = '/practice/quiz';
     rerender(<Analytics />);
     expect(pageViews()).toBe(2);
+  });
+
+  it('drops the campaign from the address only after GA has taken it', async () => {
+    window.history.replaceState(
+      null,
+      '',
+      '/?utm_source=threads&utm_content=comment&tab=notes#top',
+    );
+    router.asPath = '/?utm_source=threads&utm_content=comment&tab=notes#top';
+    let queuedFirst = '';
+    router.replace.mockImplementation(() => {
+      queuedFirst = JSON.stringify(
+        (window.dataLayer ?? []).map((entry) => Array.from(entry as ArrayLike<unknown>)),
+      );
+    });
+    const Analytics = await loadAnalytics();
+
+    render(<Analytics />);
+
+    expect(router.replace).toHaveBeenCalledTimes(1);
+    expect(router.replace).toHaveBeenCalledWith('/?tab=notes#top', undefined, {
+      shallow: true,
+      scroll: false,
+    });
+    expect(queuedFirst).toContain('utm_source=threads&utm_content=comment');
+  });
+
+  it('waits for the router, which reads the query after hydration', async () => {
+    window.history.replaceState(null, '', '/?utm_source=threads');
+    router.isReady = false;
+    const Analytics = await loadAnalytics();
+
+    const { rerender } = render(<Analytics />);
+    expect(router.replace).not.toHaveBeenCalled();
+
+    router.isReady = true;
+    rerender(<Analytics />);
+    expect(router.replace).toHaveBeenCalledWith('/', undefined, {
+      shallow: true,
+      scroll: false,
+    });
+  });
+
+  it.each([
+    ['/exams/[[...slug]]', '/exams/law/114/3?tab=notes&utm_source=threads'],
+    ['/practice/quiz', '/practice/quiz?utm_source=threads'],
+  ])('leaves every page but the home page alone: %s', async (pathname, address) => {
+    window.history.replaceState(null, '', address);
+    router.pathname = pathname;
+    const Analytics = await loadAnalytics();
+
+    render(<Analytics />);
+
+    expect(router.replace).not.toHaveBeenCalled();
+  });
+
+  it('leaves an address without a campaign alone', async () => {
+    window.history.replaceState(null, '', '/exams/law/114/3?tab=notes');
+    const Analytics = await loadAnalytics();
+
+    render(<Analytics />);
+
+    expect(router.replace).not.toHaveBeenCalled();
+  });
+
+  it('cleans the address when no ID is set, too', async () => {
+    window.history.replaceState(null, '', '/?utm_source=threads');
+    const Analytics = await loadAnalytics('');
+
+    render(<Analytics />);
+
+    expect(router.replace).toHaveBeenCalledWith('/', undefined, {
+      shallow: true,
+      scroll: false,
+    });
   });
 });

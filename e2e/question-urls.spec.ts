@@ -81,3 +81,48 @@ test('a paper address opens on its first question', async ({ page }) => {
   await expect(page.getByRole('heading', { name: '第 1 題' })).toBeVisible();
   await expect(page).toHaveTitle('112 年營建法規與實務考古題｜建築師考試');
 });
+
+test('a campaign link to the home page leaves a clean address and the way back', async ({
+  page,
+}, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop');
+  await page.goto('/privacy');
+  await expect(page.getByRole('heading', { name: '聯絡方式' })).toBeVisible();
+  const entries = await page.evaluate(() => history.length);
+
+  await page.evaluate(() => {
+    window.location.href =
+      '/?utm_source=threads&utm_medium=social&utm_campaign=launch&utm_content=comment';
+  });
+  await expect(page).toHaveURL(/^http:\/\/[^/]+\/$/);
+
+  expect(await page.evaluate(() => history.length)).toBe(entries + 1);
+  await page.goBack();
+  await expect(page).toHaveURL(/\/privacy$/);
+  await page.goForward();
+  await expect(page).toHaveURL(/^http:\/\/[^/]+\/$/);
+});
+
+test('every other page keeps its address and its choices', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop');
+  await page.goto('/exams/law/114/3?tab=discussion&utm_source=threads');
+  await expect(page.getByRole('tab', { name: /討論區/ })).toHaveAttribute(
+    'aria-selected',
+    'true',
+  );
+  await expect(page).toHaveURL(
+    /\/exams\/law\/114\/3\?tab=discussion&utm_source=threads$/,
+  );
+
+  await page.goto('/practice/quiz?utm_source=threads');
+  const setup = page.getByRole('region', { name: '每日抽題練習設定' });
+  const subject = setup.getByRole('radio', { name: /營建法規與實務/ });
+  await expect(async () => {
+    await subject.click({ timeout: 1000 });
+    await expect(subject).toBeChecked({ timeout: 1000 });
+  }).toPass();
+  await page.waitForTimeout(500);
+
+  await expect(subject).toBeChecked();
+  await expect(page).toHaveURL(/\/practice\/quiz\?utm_source=threads$/);
+});
