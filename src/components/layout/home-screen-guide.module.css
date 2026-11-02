@@ -6,9 +6,11 @@
   gap: 12px;
   list-style: none;
   counter-reset: step;
-  font-size: 15px;
   line-height: 1.7;
   text-align: left;
+  /* Lines end at punctuation, so a label the reader must find stays in one piece. */
+  word-break: keep-all;
+  overflow-wrap: anywhere;
 }
 
 .steps li {
@@ -23,10 +25,6 @@
   left: 0;
   color: var(--primary-strong);
   font-family: var(--font-mono);
-}
-
-.inlineIcon {
-  vertical-align: text-bottom;
 }
 
 .note {

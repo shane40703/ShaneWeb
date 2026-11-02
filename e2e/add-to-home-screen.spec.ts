@@ -77,8 +77,11 @@ test.describe('iPhone Safari', () => {
     await expect(utility.locator(':scope > *').nth(1)).toHaveText('設定');
 
     await openGuide(page);
-    await expect(guide(page).locator('li')).toHaveCount(3);
-    await expect(guide(page)).toContainText('打開為網頁 App');
+    await expect(guide(page).locator('li')).toHaveText([
+      '點「⋯」，再點「分享」。',
+      '往下捲動，點「加入主畫面」。',
+      '有「打開為網頁 App」就關閉，再點「加入」。',
+    ]);
     await page.getByRole('button', { name: '知道了', exact: true }).tap();
     await expect(guide(page)).toHaveCount(0);
 
@@ -97,14 +100,15 @@ test.describe('iPhone Safari', () => {
     await expect(addButton(page)).toBeVisible();
   });
 
-  test('keeps the dialog inside a 320px phone', async ({ page }, testInfo) => {
+  test('fits a 320px phone without scrolling', async ({ page }, testInfo) => {
     mobileOnly(testInfo);
     await page.setViewportSize({ width: 320, height: 568 });
     await page.goto('/');
     await openGuide(page);
     await expect(titleOf(page)).toBeInViewport({ ratio: 1 });
-    const close = await scrollToClose(page);
-    await expect(close).toBeInViewport({ ratio: 1 });
+    await expect(
+      page.getByRole('button', { name: '知道了', exact: true }),
+    ).toBeInViewport({ ratio: 1 });
     const overflow = await page.evaluate(
       () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
     );

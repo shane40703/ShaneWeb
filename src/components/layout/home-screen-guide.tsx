@@ -1,12 +1,10 @@
-import type { ReactNode } from 'react';
-import { IconShare2 } from '@tabler/icons-react';
 import { InfoDialog } from '@/components/ui/ui';
 import type { HomeScreenGuideMode } from '@/lib/home-screen';
 import styles from './home-screen-guide.module.css';
 
 interface Guide {
   description: string;
-  steps: readonly ReactNode[];
+  steps: readonly string[];
   note?: string;
 }
 
@@ -24,22 +22,14 @@ function inAppGuide(browser: 'Safari' | 'Chrome'): Guide {
 
 const guides: Record<HomeScreenGuideMode, Guide> = {
   ios: {
-    description: 'iPhone 和 iPad 不能由網站直接加入，請照下面的步驟操作。',
+    description: 'iPhone 和 iPad 要從瀏覽器自己加入。',
+    // The share sheet covers this dialog, so each step has to be short enough to remember.
     steps: [
-      <>
-        點網址列旁的「⋯」，再點「分享」。畫面上直接有分享圖示
-        <IconShare2
-          className={styles.inlineIcon}
-          size={17}
-          stroke={1.9}
-          aria-hidden="true"
-        />
-        的話，點它就好。
-      </>,
-      '往下捲動，點「加入主畫面」。找不到時，捲到最下面點「編輯動作」把它加進來。',
-      '關閉「打開為網頁 App」，再點「加入」。沒有這個開關就直接點「加入」。',
+      '點「⋯」，再點「分享」。',
+      '往下捲動，點「加入主畫面」。',
+      '有「打開為網頁 App」就關閉，再點「加入」。',
     ],
-    note: '關閉後，圖示會用瀏覽器打開，作答紀錄和登入都和現在一樣。開著的話會變成獨立的 App，看不到瀏覽器裡的作答紀錄，也無法登入同步。',
+    note: '關閉後才看得到現在的作答紀錄。',
   },
   android: {
     description: '請照下面的步驟，從瀏覽器選單加入。',
