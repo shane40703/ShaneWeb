@@ -35,4 +35,12 @@ describe('CommunityPage', () => {
       source: '/report', destination: '/community', permanent: true,
     });
   });
+
+  it('sends the Threads post link to the home page with its campaign', async () => {
+    expect(await nextConfig.redirects?.()).toContainEqual({
+      source: '/threads',
+      destination: '/?utm_source=threads&utm_medium=social&utm_campaign=launch',
+      permanent: false,
+    });
+  });
 });

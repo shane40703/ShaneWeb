@@ -18,6 +18,12 @@ const nextConfig: NextConfig = {
     return [
       { source: '/report', destination: '/community', permanent: true },
       {
+        // The link in Threads posts. Temporary, so that its campaign can change later.
+        source: '/threads',
+        destination: '/?utm_source=threads&utm_medium=social&utm_campaign=launch',
+        permanent: false,
+      },
+      {
         // Links shared before each question had its own address.
         source: '/exams',
         has: [
