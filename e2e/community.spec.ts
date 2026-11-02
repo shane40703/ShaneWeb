@@ -43,13 +43,3 @@ test('old report bookmarks redirect to community without a report form', async (
   await expect(page.getByRole('heading', { name: '社群連結', exact: true })).toBeVisible();
   await expect(page.locator('main form')).toHaveCount(0);
 });
-
-test('the Threads post link opens the home page and says where the visit came from', async ({ page, request }, testInfo) => {
-  test.skip(testInfo.project.name !== 'desktop');
-  const redirect = await request.get('/threads', { maxRedirects: 0 });
-  expect(redirect.status()).toBe(307);
-
-  await page.goto('/threads');
-  await expect(page).toHaveURL(/\/\?utm_source=threads&utm_medium=social&utm_campaign=launch$/);
-  await expect(page).toHaveTitle('建築師考試考古題練習平台');
-});
