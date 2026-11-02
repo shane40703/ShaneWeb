@@ -138,6 +138,17 @@ describe('local state validation', () => {
     expect(parseStoredState(JSON.stringify(state))).toEqual(state);
   });
 
+  it('restores pending mark and unmark operations, ignoring malformed entries', () => {
+    const state = parseStoredState(JSON.stringify({
+      difficultQuestionIds: ['law-114-01'],
+      difficultPendingChanges: { 'law-114-01': true, 'law-113-01': false, bad: 'false' },
+      difficultSyncInitialized: true,
+    }));
+    expect(state.difficultPendingChanges).toEqual({ 'law-114-01': true, 'law-113-01': false });
+    expect(state.difficultSyncInitialized).toBe(true);
+    expect(parseStoredState(JSON.stringify({ difficultQuestionIds: ['law-114-01'] })).difficultSyncInitialized).toBe(false);
+  });
+
   it('keeps 模擬考 and 每日抽題練習 records but drops the retired 隨機出題 ones', () => {
     const question = questions.find((item) => item.id === 'law-114-01');
     expect(question).toBeDefined();

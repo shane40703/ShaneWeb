@@ -116,9 +116,9 @@ describe('appReducer', () => {
     });
   });
 
-  it('replaces difficult questions with the deduplicated cloud list', () => {
+  it('merges and deduplicates the cloud difficult list', () => {
     const state = appReducer(createDefaultState(), {
-      type: 'set-difficult',
+      type: 'merge-cloud-difficult',
       questionIds: ['law-114-01', 'env-114-02', 'law-114-01'],
     });
 
@@ -126,6 +126,58 @@ describe('appReducer', () => {
       'law-114-01',
       'env-114-02',
     ]);
+  });
+
+  it('preserves unsynced local marks and unmarks against stale cloud snapshots', () => {
+    let state = createDefaultState();
+    state.difficultQuestionIds = ['law-114-01', 'env-113-02'];
+    state.difficultSyncInitialized = true;
+    state = appReducer(state, { type: 'toggle-difficult', questionId: 'law-114-01' });
+    state = appReducer(state, { type: 'toggle-difficult', questionId: 'structure-113-03' });
+    state = appReducer(state, {
+      type: 'merge-cloud-difficult',
+      questionIds: ['law-114-01', 'env-113-02', 'construction-113-01'],
+    });
+    expect(state.difficultQuestionIds).toEqual(['env-113-02', 'construction-113-01', 'structure-113-03']);
+    expect(state.difficultPendingChanges).toEqual({ 'law-114-01': false, 'structure-113-03': true });
+    // An older completed request must not clear a newer opposite operation.
+    state = appReducer(state, { type: 'toggle-difficult', questionId: 'structure-113-03' });
+    state = appReducer(state, {
+      type: 'confirm-difficult-changes', changes: { 'law-114-01': false, 'structure-113-03': true },
+    });
+    expect(state.difficultPendingChanges).toEqual({ 'structure-113-03': false });
+    expect(state.difficultQuestionIds).toEqual(['env-113-02', 'construction-113-01']);
+  });
+
+  it('migrates legacy local marks once without resurrecting subsequently removed marks', () => {
+    let state = createDefaultState();
+    state.difficultQuestionIds = ['law-114-01'];
+    state = appReducer(state, { type: 'merge-cloud-difficult', questionIds: ['env-113-02'] });
+    expect(state.difficultQuestionIds).toEqual(['env-113-02', 'law-114-01']);
+    expect(state.difficultPendingChanges).toEqual({ 'law-114-01': true });
+    state = appReducer(state, { type: 'confirm-difficult-changes', changes: { 'law-114-01': true } });
+    state = appReducer(state, { type: 'merge-cloud-difficult', questionIds: ['env-113-02'] });
+    expect(state.difficultQuestionIds).toEqual(['env-113-02']);
+    expect(state.difficultPendingChanges).toEqual({});
+  });
+
+  it('does not drop known marks when an offline cloud cache is stale', () => {
+    let state = createDefaultState();
+    state.difficultSyncInitialized = true;
+    state.difficultQuestionIds = ['law-114-01'];
+    state = appReducer(state, { type: 'merge-cloud-difficult', questionIds: [], authoritative: false });
+    expect(state.difficultQuestionIds).toEqual(['law-114-01']);
+    expect(state.difficultPendingChanges).toEqual({});
+    state = appReducer(state, { type: 'merge-cloud-difficult', questionIds: [], authoritative: true });
+    expect(state.difficultQuestionIds).toEqual([]);
+  });
+
+  it('queues legacy local marks even when the first cloud read came from cache', () => {
+    const state = createDefaultState();
+    state.difficultQuestionIds = ['law-114-01'];
+    const merged = appReducer(state, { type: 'merge-cloud-difficult', questionIds: [], authoritative: false });
+    expect(merged.difficultQuestionIds).toEqual(['law-114-01']);
+    expect(merged.difficultPendingChanges).toEqual({ 'law-114-01': true });
   });
 
   it('merges only newer cloud note versions and keeps deletion tombstones', () => {

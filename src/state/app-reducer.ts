@@ -11,7 +11,8 @@ import type {
 export type AppAction =
   | { type: 'hydrate'; state: AppState }
   | { type: 'toggle-difficult'; questionId: string }
-  | { type: 'set-difficult'; questionIds: string[] }
+  | { type: 'merge-cloud-difficult'; questionIds: string[]; authoritative?: boolean }
+  | { type: 'confirm-difficult-changes'; changes: Record<string, boolean> }
   | {
       type: 'save-answer';
       questionId: string;
@@ -68,13 +69,44 @@ export function appReducer(state: AppState, action: AppAction): AppState {
         difficultQuestionIds: exists
           ? state.difficultQuestionIds.filter((id) => id !== action.questionId)
           : [...state.difficultQuestionIds, action.questionId],
+        difficultPendingChanges: {
+          ...state.difficultPendingChanges,
+          [action.questionId]: !exists,
+        },
       };
     }
-    case 'set-difficult':
+    case 'merge-cloud-difficult': {
+      const changes = { ...state.difficultPendingChanges };
+      const cloudIds = new Set(action.questionIds);
+      const ids = new Set(cloudIds);
+      // An offline cache may be stale; do not remove marks until the server confirms.
+      if (action.authoritative === false) {
+        state.difficultQuestionIds.forEach((id) => ids.add(id));
+      }
+      if (!state.difficultSyncInitialized) {
+        // Preserve legacy marks whose old client never recorded pending operations.
+        for (const id of state.difficultQuestionIds) {
+          if (!(id in changes) && !cloudIds.has(id)) changes[id] = true;
+        }
+      }
+      for (const [id, marked] of Object.entries(changes)) {
+        if (marked) ids.add(id);
+        else ids.delete(id);
+      }
       return {
         ...state,
-        difficultQuestionIds: [...new Set(action.questionIds)],
+        difficultQuestionIds: [...ids],
+        difficultPendingChanges: changes,
+        difficultSyncInitialized: true,
       };
+    }
+    case 'confirm-difficult-changes': {
+      const remaining = { ...state.difficultPendingChanges };
+      for (const [id, marked] of Object.entries(action.changes)) {
+        if (remaining[id] === marked) delete remaining[id];
+      }
+      return { ...state, difficultPendingChanges: remaining };
+    }
     case 'save-answer':
       return {
         ...state,

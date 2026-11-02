@@ -17,6 +17,8 @@ export function createDefaultState(): AppState {
   return {
     answers: {},
     difficultQuestionIds: [],
+    difficultPendingChanges: {},
+    difficultSyncInitialized: false,
     attempts: [],
     deletedAttemptIds: [],
     notes: {},
@@ -172,6 +174,8 @@ export function parseStoredState(raw: string | null): AppState {
   return {
     answers: keepValidEntries(state.answers, isAnswerRecord),
     difficultQuestionIds: keepValidItems(state.difficultQuestionIds, isQuestionId),
+    difficultPendingChanges: keepValidEntries(state.difficultPendingChanges, (value): value is boolean => typeof value === 'boolean'),
+    difficultSyncInitialized: state.difficultSyncInitialized === true,
     // Records of the retired 隨機出題 (mode 'random') stay dropped, as they have been since July.
     attempts: keepValidItems(state.attempts, isQuizAttempt).filter(
       (attempt) => !deletedAttemptIds.includes(attempt.id),

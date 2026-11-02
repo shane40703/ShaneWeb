@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   CloudSyncProvider,
+  applyDifficultChanges,
   getFirebaseSignInErrorMessage,
   parseCloudDifficultSettings,
   parseCloudNote,
@@ -76,6 +77,13 @@ describe('CloudSyncProvider', () => {
       }),
     ).toEqual(['law-114-01', 'law-114-02']);
     expect(parseCloudDifficultSettings({ questionIds: 'law-114-01' })).toBeNull();
+  });
+
+  it('applies only pending mark changes to the latest cloud list', () => {
+    expect(applyDifficultChanges(
+      ['law-114-01', 'env-113-02'],
+      { 'law-114-01': false, 'structure-113-03': true },
+    )).toEqual(['env-113-02', 'structure-113-03']);
   });
 
   it('reports actionable Google sign-in errors', () => {

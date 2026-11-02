@@ -140,13 +140,14 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     if (!store.hydrated || !store.noteImagesHydrated) return;
     const sequence = ++saveSequence.current;
     void writeStoredNoteImages(store.data.noteImages)
-      .then(() => writeStoredValue(
-        STORAGE_KEY,
-        JSON.stringify(stateWithoutNoteImages(store.data)),
-      ))
-      .catch(() => writeStoredValue(STORAGE_KEY, JSON.stringify(store.data)))
+      .then(() => sequence === saveSequence.current
+        ? writeStoredValue(STORAGE_KEY, JSON.stringify(stateWithoutNoteImages(store.data)))
+        : null)
+      .catch(() => sequence === saveSequence.current
+        ? writeStoredValue(STORAGE_KEY, JSON.stringify(store.data))
+        : null)
       .then((result) => {
-        if (sequence === saveSequence.current) {
+        if (result && sequence === saveSequence.current) {
           dispatch({ type: 'persistence-result', source: 'app-state', result });
         }
       });

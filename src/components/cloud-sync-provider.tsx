@@ -22,6 +22,7 @@ import {
   getDoc,
   getDocs,
   onSnapshot,
+  runTransaction,
   serverTimestamp,
   setDoc,
   type DocumentData,
@@ -162,6 +163,16 @@ export function parseCloudDifficultSettings(
   ].sort();
 }
 
+/** Apply individual local changes to the latest server list inside a transaction. */
+export function applyDifficultChanges(questionIds: readonly string[], changes: Record<string, boolean>) {
+  const merged = new Set(questionIds);
+  for (const [id, marked] of Object.entries(changes)) {
+    if (marked) merged.add(id);
+    else merged.delete(id);
+  }
+  return [...merged].sort();
+}
+
 export function CloudSyncProvider({ children }: { children: ReactNode }) {
   const { state, dispatch, hydrated } = useAppState();
   const [user, setUser] = useState<User | null>(null);
@@ -170,15 +181,23 @@ export function CloudSyncProvider({ children }: { children: ReactNode }) {
   );
   const [error, setError] = useState('');
   const [readyUserId, setReadyUserId] = useState<string | null>(null);
+  const [cloudRetryEpoch, setCloudRetryEpoch] = useState(0);
+  const authenticatedUserId = useRef<string | null>(null);
   const syncedAttemptIds = useRef(new Set<string>());
   const syncedNoteVersions = useRef(new Map<string, string>());
-  const syncedDifficultSignature = useRef('');
+  const difficultSyncInFlight = useRef(new Set<string>());
+  const retryDifficultAfterFlight = useRef(new Set<string>());
+  const [difficultSyncEpoch, setDifficultSyncEpoch] = useState(0);
+  const latestDifficultChanges = useRef(state.difficultPendingChanges);
   const localAttempts = useRef(state.attempts);
   const localNotes = useRef({
     notes: state.notes,
     noteUpdatedAt: state.noteUpdatedAt,
   });
-  const localDifficult = useRef(state.difficultQuestionIds);
+
+  useEffect(() => {
+    latestDifficultChanges.current = state.difficultPendingChanges;
+  }, [state.difficultPendingChanges]);
 
   useEffect(() => {
     localAttempts.current = state.attempts;
@@ -192,18 +211,14 @@ export function CloudSyncProvider({ children }: { children: ReactNode }) {
   }, [state.noteUpdatedAt, state.notes]);
 
   useEffect(() => {
-    localDifficult.current = state.difficultQuestionIds;
-  }, [state.difficultQuestionIds]);
-
-  useEffect(() => {
     const firebase = getFirebaseServices();
     if (!firebase) return;
     return onAuthStateChanged(firebase.auth, (nextUser) => {
+      authenticatedUserId.current = nextUser?.uid ?? null;
       setUser(nextUser);
       setReadyUserId(null);
       syncedAttemptIds.current.clear();
       syncedNoteVersions.current.clear();
-      syncedDifficultSignature.current = '';
       setError('');
       setStatus(nextUser ? 'syncing' : 'signed-out');
     });
@@ -248,17 +263,14 @@ export function CloudSyncProvider({ children }: { children: ReactNode }) {
         const difficultSnapshot = await getDoc(difficult);
         if (!active) return;
         const difficultQuestionIds = difficultSnapshot.exists()
-          ? (parseCloudDifficultSettings(difficultSnapshot.data()) ?? [])
-          : [...new Set(localDifficult.current)].sort();
-        dispatch({ type: 'set-difficult', questionIds: difficultQuestionIds });
-        if (!difficultSnapshot.exists()) {
-          await setDoc(difficult, {
-            questionIds: difficultQuestionIds,
-            updatedAt: new Date().toISOString(),
-            syncedAt: serverTimestamp(),
-          });
-        }
-        syncedDifficultSignature.current = JSON.stringify(difficultQuestionIds);
+          ? parseCloudDifficultSettings(difficultSnapshot.data())
+          : [];
+        if (!difficultQuestionIds) throw new Error('Invalid cloud difficult settings');
+        dispatch({
+          type: 'merge-cloud-difficult',
+          questionIds: difficultQuestionIds,
+          authoritative: !difficultSnapshot.metadata?.fromCache,
+        });
 
         // One record the server refuses must not keep notes and 難題標記 from syncing;
         // it stays unsynced and is offered again with the next change.
@@ -361,11 +373,17 @@ export function CloudSyncProvider({ children }: { children: ReactNode }) {
           difficult,
           (snapshot) => {
             if (!snapshot.exists()) return;
-            const questionIds =
-              parseCloudDifficultSettings(snapshot.data()) ?? [];
-            const signature = JSON.stringify(questionIds);
-            syncedDifficultSignature.current = signature;
-            dispatch({ type: 'set-difficult', questionIds });
+            const questionIds = parseCloudDifficultSettings(snapshot.data());
+            if (!questionIds) {
+              setError('雲端難題標記資料異常，本機標記仍保留。');
+              setStatus('error');
+              return;
+            }
+            dispatch({
+              type: 'merge-cloud-difficult',
+              questionIds,
+              authoritative: !snapshot.metadata.fromCache,
+            });
             setStatus('synced');
           },
           () => {
@@ -386,7 +404,7 @@ export function CloudSyncProvider({ children }: { children: ReactNode }) {
       stopListeningToNotes?.();
       stopListeningToDifficult?.();
     };
-  }, [dispatch, hydrated, user]);
+  }, [dispatch, hydrated, user, cloudRetryEpoch]);
 
   useEffect(() => {
     const firebase = getFirebaseServices();
@@ -475,29 +493,60 @@ export function CloudSyncProvider({ children }: { children: ReactNode }) {
   }, [readyUserId, state.noteUpdatedAt, state.notes, user]);
 
   useEffect(() => {
+    if (!user) return;
+    const retry = () => {
+      if (readyUserId === user.uid) {
+        if (difficultSyncInFlight.current.has(user.uid)) retryDifficultAfterFlight.current.add(user.uid);
+        else setDifficultSyncEpoch((value) => value + 1);
+      }
+      else setCloudRetryEpoch((value) => value + 1);
+    };
+    window.addEventListener('online', retry);
+    return () => window.removeEventListener('online', retry);
+  }, [readyUserId, user]);
+
+  useEffect(() => {
     const firebase = getFirebaseServices();
     if (!firebase || !user || readyUserId !== user.uid) return;
-    const questionIds = [...state.difficultQuestionIds].sort();
-    const signature = JSON.stringify(questionIds);
-    if (syncedDifficultSignature.current === signature) return;
+    const changes = state.difficultPendingChanges;
+    if (!Object.keys(changes).length || difficultSyncInFlight.current.has(user.uid)) return;
+    difficultSyncInFlight.current.add(user.uid);
     setStatus('syncing');
-    void setDoc(
-      doc(firebase.db, 'users', user.uid, 'settings', 'difficult'),
-      {
-        questionIds,
+    const difficult = doc(firebase.db, 'users', user.uid, 'settings', 'difficult');
+    void runTransaction(firebase.db, async (transaction) => {
+      const snapshot = await transaction.get(difficult);
+      const cloudIds = snapshot.exists() ? parseCloudDifficultSettings(snapshot.data()) : [];
+      if (!cloudIds) throw new Error('Invalid cloud difficult settings');
+      transaction.set(difficult, {
+        questionIds: applyDifficultChanges(cloudIds, changes),
         updatedAt: new Date().toISOString(),
         syncedAt: serverTimestamp(),
-      },
-    )
+      });
+    })
       .then(() => {
-        syncedDifficultSignature.current = signature;
-        setStatus('synced');
+        if (authenticatedUserId.current === user.uid) {
+          dispatch({ type: 'confirm-difficult-changes', changes });
+          setStatus('synced');
+        }
+        difficultSyncInFlight.current.delete(user.uid);
+        retryDifficultAfterFlight.current.delete(user.uid);
+        // A new mark made while this transaction ran must get its own transaction.
+        setDifficultSyncEpoch((value) => value + 1);
       })
       .catch(() => {
-        setError('最新難題標記仍保存在本機，恢復連線後請重新登入同步。');
-        setStatus('error');
+        difficultSyncInFlight.current.delete(user.uid);
+        const retryRequested = retryDifficultAfterFlight.current.delete(user.uid);
+        if (authenticatedUserId.current === user.uid) {
+          setError('最新難題標記仍保存在本機，恢復連線後會重試同步。');
+          setStatus('error');
+          // If the user changed another mark during the failed transaction, retry it once.
+          const signature = (items: Record<string, boolean>) => JSON.stringify(Object.entries(items).sort(([a], [b]) => a.localeCompare(b)));
+          if (retryRequested || signature(changes) !== signature(latestDifficultChanges.current)) {
+            setDifficultSyncEpoch((value) => value + 1);
+          }
+        }
       });
-  }, [readyUserId, state.difficultQuestionIds, user]);
+  }, [dispatch, readyUserId, state.difficultPendingChanges, user, difficultSyncEpoch]);
 
   const handleSignIn = useCallback(async () => {
     const firebase = getFirebaseServices();

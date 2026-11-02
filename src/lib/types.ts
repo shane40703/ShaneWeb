@@ -145,6 +145,10 @@ export interface ContentReport {
 export interface AppState {
   answers: Record<QuestionId, AnswerRecord>;
   difficultQuestionIds: QuestionId[];
+  /** Local mark/unmark operations awaiting a successful cloud transaction. */
+  difficultPendingChanges: Record<QuestionId, boolean>;
+  /** A legacy local list is merged once instead of being overwritten at first sync. */
+  difficultSyncInitialized: boolean;
   attempts: QuizAttempt[];
   deletedAttemptIds: string[];
   notes: Record<QuestionId, string>;
