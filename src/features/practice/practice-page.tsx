@@ -47,7 +47,7 @@ import {
 } from './practice-session';
 import { readEntryTag, readReloadedDepth, writeEntryTag } from './practice-history';
 import { keepPracticeResult, readKeptPracticeResult } from './practice-result-memory';
-import { createRecordablePracticeResult } from './daily-practice-recording';
+import { createRecordablePracticeResult, dailyActivityRecord } from './daily-practice-recording';
 import { PracticeSetup } from './practice-setup';
 import styles from './practice-page.module.css';
 
@@ -550,12 +550,18 @@ export function PracticePage() {
       return;
     }
     // The opt-in applies only to daily draws, not difficult/wrong subject reviews.
+    const completed = createRecordablePracticeResult(timed, questionById);
     if (timed.reviewSource) {
       for (const record of createPracticeAttempts(timed, questionById)) {
         dispatch({ type: 'save-attempt', ...record });
       }
+    } else {
+      for (const record of completed.recording?.records ?? []) {
+        const activity = dailyActivityRecord(record.attempt);
+        if (activity) dispatch({ type: 'save-attempt', attempt: activity, results: {} });
+      }
     }
-    setResult(createRecordablePracticeResult(timed, questionById));
+    setResult(completed);
     setResultShown(true);
     commitSession(resetPracticeAnswers(timed));
     navigate('push', { view: 'result' }, depth.current + 1);

@@ -2,7 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import type { Question } from '../src/lib/types';
 
-async function seedPractice(page: Page, count: number) {
+async function seedPractice(page: Page, count: number, alreadyAnswered = 0) {
   const questions = (JSON.parse(await readFile('public/question-data/law/114.json', 'utf8')) as Question[])
     .filter(question => question.answerKey.kind === 'accepted' && question.answerKey.options.length > 0 && question.answerKey.options.length < question.options.length)
     .slice(0, count);
@@ -20,7 +20,11 @@ async function seedPractice(page: Page, count: number) {
   };
   const session = {
     version: 1, id: 'daily-history-test-set', subject: 'law', rangeStart: 114, rangeEnd: 114, category: 'all',
-    questionIds: questions.map(question => question.id), optionOrders: {}, answers: {}, drafts: {}, eliminated: {}, elapsedSeconds: {}, currentIndex: count - 1,
+    questionIds: questions.map(question => question.id), optionOrders: {},
+    answers: Object.fromEntries(questions.slice(0, alreadyAnswered).map(question => [
+      question.id, { selected: question.answerKey.kind === 'accepted' ? question.answerKey.options[0] : 0, correct: true },
+    ])),
+    drafts: {}, eliminated: {}, elapsedSeconds: {}, currentIndex: count - 1,
   };
   await page.addInitScript(({ state, session }) => {
     if (localStorage.getItem('shaneweb:state')) return;
@@ -30,36 +34,71 @@ async function seedPractice(page: Page, count: number) {
   return { questions, protectedAttempt, legacy };
 }
 
-async function finish(page: Page, count: number) {
+async function finish(page: Page, count: number, hasUnanswered = count > 1) {
   await page.goto(`/practice/quiz?q=${count}`);
   const quiz = page.getByRole('region', { name: '每日抽題練習作答', exact: true });
   await expect(quiz.getByRole('radio').first()).toBeVisible();
   await quiz.getByRole('radio').first().click();
   await quiz.getByRole('button', { name: '確認答案', exact: true }).click();
-  if (count > 1) page.once('dialog', dialog => dialog.accept());
+  if (hasUnanswered) page.once('dialog', dialog => dialog.accept());
   await quiz.getByRole('button', { name: '完成練習', exact: true }).click();
   await expect(page.getByRole('region', { name: '儲存每日練習履歷', exact: true })).toBeVisible();
+}
+
+test('a completed 50-question daily set counts all 50 without saving the history', async ({ page }) => {
+  const { protectedAttempt, legacy } = await seedPractice(page, 50, 49);
+  await finish(page, 50, false);
+  await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('shaneweb:state')!).attempts.length)).toBe(3);
+  const attempts = await page.evaluate(() => JSON.parse(localStorage.getItem('shaneweb:state')!).attempts);
+  const activity = attempts.find((item: {id: string}) => item.id.startsWith('daily-activity-'));
+  expect(activity).toMatchObject({ questionIds: [], answers: {}, correctCount: 50 });
+  expect(attempts.some((item: {id: string}) => item.id.startsWith('daily-practice-'))).toBe(false);
+  await page.reload();
+  const date = (value: string) => new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Taipei', year: 'numeric', month: '2-digit', day: '2-digit',
+  }).format(new Date(value));
+  const expectedToday = 50 + [protectedAttempt, legacy].filter(item => date(item.submittedAt) === date(activity.submittedAt)).length;
+  await expectActivity(page, activity.submittedAt, expectedToday);
+});
+
+async function expectActivity(page: Page, submittedAt: string, expected: number) {
+  const date = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Taipei', month: 'numeric', day: 'numeric',
+  }).format(new Date(submittedAt));
+  await page.goto('/personal');
+  await expect(page.locator(`[data-in-range="true"][data-tooltip^="${date}, "]`).last())
+    .toHaveAttribute('data-tooltip', `${date}, ${expected}題`);
 }
 
 test('daily practice is opt-in, saves complete content once, and can delete without losing old data', async ({ page }, testInfo) => {
   const { questions, protectedAttempt, legacy } = await seedPractice(page, 3);
   await finish(page, 3);
-  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('shaneweb:state')!).attempts.length)).toBe(2);
+  await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('shaneweb:state')!).attempts.length)).toBe(3);
+  const activity = await page.evaluate(() => JSON.parse(localStorage.getItem('shaneweb:state')!).attempts.find((item: {id: string}) => item.id.startsWith('daily-activity-')));
+  expect(activity).toMatchObject({ questionIds: [], answers: {}, correctCount: 1, wrongCount: 0 });
   await page.getByRole('button', { name: '不記錄此次作答', exact: true }).click();
   await expect(page.getByText(/此次作答未加入履歷/)).toBeVisible();
-  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('shaneweb:state')!).attempts.length)).toBe(2);
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('shaneweb:state')!).attempts.length)).toBe(3);
   await page.screenshot({ path: testInfo.outputPath('recording-choice.png'), fullPage: true });
   await page.getByRole('button', { name: '儲存此次作答', exact: true }).click();
   const historyLink = page.getByRole('link', { name: '查看每日練習履歷', exact: true });
   await expect(historyLink).toBeVisible();
   await expect(page.getByRole('button', { name: '儲存此次作答', exact: true })).toHaveCount(0);
-  await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('shaneweb:state')!).attempts.length)).toBe(3);
+  await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('shaneweb:state')!).attempts.length)).toBe(4);
   const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('shaneweb:state')!));
   const daily = saved.attempts.find((attempt: { id: string }) => attempt.id.startsWith('daily-practice-'));
   expect(daily.questionIds).toEqual(questions.map(question => question.id));
   expect(Object.keys(daily.answers)).toHaveLength(1);
   expect(daily.unansweredCount).toBe(2);
   expect(daily.correctCount + daily.wrongCount).toBe(1);
+  expect(activity.id).toBe('daily-activity-' + daily.id);
+  const sameTaipeiDate = (value: string) => new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Taipei', year: 'numeric', month: '2-digit', day: '2-digit',
+  }).format(new Date(value));
+  const expectedToday = 1 + [protectedAttempt, legacy].filter(item =>
+    sameTaipeiDate(item.submittedAt) === sameTaipeiDate(activity.submittedAt),
+  ).length;
+  await expectActivity(page, activity.submittedAt, expectedToday);
 
   // Paper history must not count or show either opt-in daily saves or legacy practice records.
   await page.goto('/history');
@@ -85,34 +124,45 @@ test('daily practice is opt-in, saves complete content once, and can delete with
   await group.getByRole('button', { name: '刪除第 1 次紀錄', exact: true }).click();
   const confirm = page.getByRole('alertdialog');
   await expect(confirm).toBeVisible();
+  await expect(confirm).toContainText('活動總表題數');
   await confirm.getByRole('button', { name: '取消', exact: true }).click();
   await expect(group.getByRole('button', { name: '刪除第 1 次紀錄', exact: true })).toBeVisible();
   await group.getByRole('button', { name: '刪除第 1 次紀錄', exact: true }).click();
   await confirm.getByRole('button', { name: '確認刪除', exact: true }).click();
   await expect(page.getByRole('heading', { name: '還沒有每日練習履歷', exact: true })).toBeVisible();
-  await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('shaneweb:state')!).attempts.length)).toBe(2);
+  await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('shaneweb:state')!).attempts.length)).toBe(3);
   await page.reload();
   await expect(page.getByRole('heading', { name: '還沒有每日練習履歷', exact: true })).toBeVisible();
   const remaining = await page.evaluate(() => JSON.parse(localStorage.getItem('shaneweb:state')!));
-  expect(remaining.attempts).toEqual([protectedAttempt, legacy]);
+  expect(remaining.attempts).toEqual([activity, protectedAttempt, legacy]);
   expect(remaining.deletedAttemptIds).toContain(daily.id);
   expect(remaining.notes[questions[0].id]).toBe('原有筆記不得刪除');
   expect(remaining.difficultQuestionIds).toEqual([questions[0].id]);
+  await expectActivity(page, activity.submittedAt, expectedToday);
 });
 
 for (const decision of ['skip', 'leave'] as const) {
-  test(`daily practice ${decision} without saving never creates a record after reload`, async ({ page }) => {
+  test(`daily practice ${decision} keeps activity but not detailed history after reload`, async ({ page }) => {
     const { protectedAttempt, legacy } = await seedPractice(page, 1);
     await finish(page, 1);
     if (decision === 'skip') await page.getByRole('button', { name: '不記錄此次作答', exact: true }).click();
     await page.reload();
     await page.goto('/practice-history');
     await expect(page.getByRole('heading', { name: '還沒有每日練習履歷', exact: true })).toBeVisible();
-    expect(await page.evaluate(() => JSON.parse(localStorage.getItem('shaneweb:state')!).attempts)).toEqual([protectedAttempt, legacy]);
+    const attempts = await page.evaluate(() => JSON.parse(localStorage.getItem('shaneweb:state')!).attempts);
+    expect(attempts).toHaveLength(3);
+    const activity = attempts.find((item: {id: string}) => item.id.startsWith('daily-activity-'));
+    expect(activity).toMatchObject({ questionIds: [], answers: {}, correctCount: 1 });
+    expect(attempts.filter((item: {id: string}) => !item.id.startsWith('daily-activity-'))).toEqual([protectedAttempt, legacy]);
     const passbook = page.getByRole('link', { name: '我的作答存摺', exact: true });
     await passbook.isVisible().then(async visible => {
       if (!visible) await page.getByRole('button', { name: '開啟選單', exact: true }).click();
     });
     await expect(passbook).toHaveAttribute('aria-current', 'page');
+    const date = (value: string) => new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Asia/Taipei', year: 'numeric', month: '2-digit', day: '2-digit',
+    }).format(new Date(value));
+    const expectedToday = 1 + [protectedAttempt, legacy].filter(item => date(item.submittedAt) === date(activity.submittedAt)).length;
+    await expectActivity(page, activity.submittedAt, expectedToday);
   });
 }

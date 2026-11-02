@@ -27,6 +27,7 @@ import type { Question, QuizAttempt, SubjectId } from '@/lib/types';
 import { getWrongQuestionStats } from '@/lib/wrong-questions';
 import { subjects, years } from '@/question-bank/catalog';
 import { SubjectPracticeButton } from '@/features/practice/subject-practice-button';
+import { isDailyActivityRecord } from '@/features/practice/daily-practice-recording';
 import { useAppState } from '@/state/app-state';
 import styles from './wrong-page.module.css';
 
@@ -103,7 +104,7 @@ function WrongQuestionPractice({ question }: { question: Question }) {
 }
 
 export function WrongPage({
-  attempts,
+  attempts: allAttempts,
   questions,
   questionBankStatuses = {},
   onRetryQuestionBank,
@@ -114,6 +115,7 @@ export function WrongPage({
   onRetryQuestionBank?: (subject: SubjectId) => void;
 }) {
   const { state, dispatch, hydrated } = useAppState();
+  const attempts = allAttempts.filter((attempt) => !isDailyActivityRecord(attempt));
   const [subjectFilter, setSubjectFilter] = useState<SubjectId>();
   const [yearFilter, setYearFilter] = useState<number>();
   const stats = getWrongQuestionStats(attempts, questions);

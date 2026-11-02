@@ -580,20 +580,23 @@ describe('PracticePage answering', () => {
     await screen.findByLabelText('第 5 題，共 5 題');
     submitFromFooter();
     await screen.findByRole('button', { name: '不記錄此次作答' });
-    expect(appState.dispatch).not.toHaveBeenCalled();
+    expect(appState.dispatch).toHaveBeenCalledTimes(1);
+    expect(appState.dispatch.mock.calls[0][0]).toMatchObject({
+      type: 'save-attempt', attempt: { questionIds: [], answers: {}, correctCount: 5 },
+    });
     fireEvent.click(screen.getByRole('button', { name: '不記錄此次作答' }));
     expect(screen.getByText(/此次作答未加入履歷/)).toBeInTheDocument();
-    expect(appState.dispatch).not.toHaveBeenCalled();
+    expect(appState.dispatch).toHaveBeenCalledTimes(1);
     const save = screen.getByRole('button', { name: '儲存此次作答' });
     fireEvent.click(save);
     fireEvent.click(save);
-    expect(appState.dispatch.mock.calls.filter(([action]) => action.type === 'save-attempt')).toHaveLength(1);
+    expect(appState.dispatch.mock.calls.filter(([action]) => action.type === 'save-attempt')).toHaveLength(2);
     expect(screen.getByRole('link', { name: '查看每日練習履歷' })).toHaveAttribute('href', '/practice-history');
     view.unmount();
     renderAt('/practice/quiz?view=result');
     expect(await screen.findByText('已加入每日練習履歷')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: '儲存此次作答' })).not.toBeInTheDocument();
-    expect(appState.dispatch.mock.calls.filter(([action]) => action.type === 'save-attempt')).toHaveLength(1);
+    expect(appState.dispatch.mock.calls.filter(([action]) => action.type === 'save-attempt')).toHaveLength(2);
   });
 
   it.each(['difficult', 'wrong'] as const)('keeps the existing %s review saving behavior without a daily-history prompt', async source => {
@@ -607,7 +610,7 @@ describe('PracticePage answering', () => {
     expect(record.attempt.id).not.toMatch(/^daily-practice-/);
   });
 
-  it('leaves no record when starting a new draw without choosing to save the result', async () => {
+  it('keeps only the activity count when starting a new draw without saving history', async () => {
     seed({ answers: allCorrect, currentIndex: 4 });
     renderAt('/practice/quiz?q=5');
     await screen.findByLabelText('第 5 題，共 5 題');
@@ -615,7 +618,10 @@ describe('PracticePage answering', () => {
     await screen.findByRole('button', { name: '儲存此次作答' });
     fireEvent.click(screen.getByRole('button', { name: /重新選科／抽題/ }));
     await screen.findByRole('region', { name: '每日抽題練習設定' });
-    expect(appState.dispatch).not.toHaveBeenCalled();
+    expect(appState.dispatch).toHaveBeenCalledTimes(1);
+    expect(appState.dispatch.mock.calls[0][0]).toMatchObject({
+      type: 'save-attempt', attempt: { questionIds: [], answers: {}, correctCount: 5 },
+    });
   });
 
   it('draws a fresh shuffled set every time and replaces the setup URL with the first question', async () => {
@@ -767,11 +773,11 @@ describe('PracticePage answering', () => {
     await finishPractice();
     expect(confirm).toHaveBeenCalled();
     await screen.findByText('100% 正確率');
-    // Finishing also records nothing until the explicit choice to save.
-    expect(appState.dispatch.mock.calls.map(([action]) => action.type)).toEqual(['toggle-difficult']);
+    // Finishing records the count; the detailed history still requires consent.
+    expect(appState.dispatch.mock.calls.map(([action]) => action.type)).toEqual(['toggle-difficult', 'save-attempt']);
     fireEvent.click(screen.getByRole('button', { name: '儲存此次作答' }));
     const recordTypes = appState.dispatch.mock.calls.map(([action]) => action.type);
-    expect(recordTypes).toEqual(['toggle-difficult', 'save-attempt']);
+    expect(recordTypes).toEqual(['toggle-difficult', 'save-attempt', 'save-attempt']);
   });
 
   it('records a submitted set only on consent, with original options and the result page’s numbers', async () => {
@@ -790,10 +796,13 @@ describe('PracticePage answering', () => {
     await finishPractice();
     await screen.findByText('67% 正確率');
 
-    expect(appState.dispatch).not.toHaveBeenCalled();
+    expect(appState.dispatch).toHaveBeenCalledTimes(1);
+    expect(appState.dispatch.mock.calls[0][0]).toMatchObject({
+      attempt: { questionIds: [], answers: {}, correctCount: 3 },
+    });
     fireEvent.click(screen.getByRole('button', { name: '儲存此次作答' }));
     const saved = appState.dispatch.mock.calls.find(
-      ([action]) => action.type === 'save-attempt',
+      ([action]) => action.type === 'save-attempt' && action.attempt.id.startsWith('daily-practice-'),
     )![0];
     expect(saved.attempt).toMatchObject({
       mode: 'practice',
@@ -1161,7 +1170,8 @@ describe('PracticePage result', () => {
     await screen.findByText('100% 正確率');
     expect(confirm).not.toHaveBeenCalled();
     expect(reloaded.container.firstElementChild).toHaveClass(styles.fullWidth);
-    expect(appState.dispatch).not.toHaveBeenCalled();
+    expect(appState.dispatch).toHaveBeenCalledTimes(1);
+    expect(appState.dispatch.mock.calls[0][0].attempt).toMatchObject({ questionIds: [], correctCount: 1 });
     fireEvent.click(screen.getByRole('button', { name: '儲存此次作答' }));
     expect(appState.dispatch).toHaveBeenCalledWith(expect.objectContaining({ type: 'save-attempt' }));
   });

@@ -101,6 +101,15 @@ describe('WrongPage', () => {
     router.push.mockClear();
   });
 
+  it('does not treat count-only activity as saved wrong-answer history', async () => {
+    const activity: QuizAttempt = {
+      ...attempt('daily-activity-daily-practice-example', 'law', 114, '2026-08-01T00:00:00.000Z', {}),
+      mode: 'practice', year: null, correctCount: 50,
+    };
+    renderPage([activity]);
+    expect(await screen.findByRole('heading', { name: '還沒有作答紀錄' })).toBeVisible();
+  });
+
   it('starts all distinct wrong questions of the active subject, including other years', async () => {
     renderPage();
     fireEvent.click(await screen.findByRole('button', { name: '練習本科目常錯題目' }));

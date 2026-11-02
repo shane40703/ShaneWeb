@@ -41,6 +41,7 @@ import {
   saveMockExamDraft,
 } from '@/features/practice/mock-exam-store';
 import { practiceMockExamPage, practiceQuizPage } from '@/features/practice/practice-pages';
+import { DAILY_ACTIVITY_RECORD_PREFIX } from '@/features/practice/daily-practice-recording';
 import {
   createPracticeSessionFromQuestions,
   DEFAULT_PRACTICE_SETTINGS,
@@ -720,7 +721,9 @@ export function HistoryPage({
                                 </Button>
                               }
                               title={`${dailyOnly ? '刪除' : '清除'}第 ${ordinal} 次作答紀錄？`}
-                              description="只會刪除這一次的作答結果，其他紀錄與筆記不受影響。"
+                              description={dailyOnly && state.attempts.some((item) => item.id === DAILY_ACTIVITY_RECORD_PREFIX + attempt.id)
+                                ? '只會刪除這一次的作答履歷，活動總表題數、其他紀錄與筆記仍會保留。'
+                                : '只會刪除這一次的作答結果，其他紀錄與筆記不受影響。'}
                               confirmLabel={dailyOnly ? '確認刪除' : '確認清除'}
                               onConfirm={() => deleteAttempt(attempt.id)}
                             />

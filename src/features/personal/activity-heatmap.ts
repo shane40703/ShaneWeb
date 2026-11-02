@@ -1,5 +1,6 @@
 import type { QuizAttempt } from '@/lib/types';
 import { getTaipeiDate } from '@/features/home/exam-countdown';
+import { DAILY_ACTIVITY_RECORD_PREFIX, isDailyActivityRecord, isDailyPracticeRecord } from '@/features/practice/daily-practice-recording';
 
 const dayMs = 86_400_000;
 
@@ -29,7 +30,10 @@ function levelOf(count: number): ActivityDay['level'] {
 /** 每個臺灣日期實際作答的題數；沒作答的題目不算，分段的作答紀錄會加總在同一天。 */
 function countByTaipeiDate(attempts: QuizAttempt[]) {
   const counts = new Map<string, number>();
+  const activityIds = new Set(attempts.filter(isDailyActivityRecord).map((attempt) => attempt.id));
   attempts.forEach((attempt) => {
+    // New daily completions have a count-only record even when full history is saved later.
+    if (isDailyPracticeRecord(attempt) && activityIds.has(DAILY_ACTIVITY_RECORD_PREFIX + attempt.id)) return;
     const submittedAt = new Date(attempt.submittedAt);
     if (Number.isNaN(submittedAt.getTime())) return;
     const date = getTaipeiDate(submittedAt);

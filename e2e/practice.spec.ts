@@ -430,7 +430,7 @@ test('每日抽題練習 explicit saves appear only in 每日練習履歷, and �
   await expect(page.getByText(/^(0|50|100)% 正確率$/)).toBeVisible();
 
   await page.getByRole('button', { name: '儲存此次作答', exact: true }).click();
-  await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('shaneweb:state')!).attempts.length)).toBe(1);
+  await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('shaneweb:state')!).attempts.length)).toBe(2);
   await page.goto('/history');
   await expect(page.getByRole('heading', { name: '還沒有作答紀錄', exact: true })).toBeVisible();
   await expect(page.getByRole('group', { name: '每日抽題練習作答紀錄' })).toHaveCount(0);

@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { fn } from 'storybook/test';
 import { PracticeResultView } from '@/features/practice/practice-result';
-import { createRecordablePracticeResult } from '@/features/practice/daily-practice-recording';
+import { createRecordablePracticeResult, dailyActivityRecord } from '@/features/practice/daily-practice-recording';
 import { keepPracticeResult } from '@/features/practice/practice-result-memory';
 import {
   createPracticeResult,
@@ -66,10 +66,21 @@ const perfectSession = answerPractice(
 function submitted(session: PracticeSession, appState?: Partial<AppState>): Story {
   const result = createRecordablePracticeResult(session,
     new Map(session.questionIds.map(id => [id, getFixtureQuestion(id)])), FIXTURE_NOW);
+  if (result.recording) {
+    result.recording.records = result.recording.records.map((record, index) => ({
+      ...record,
+      attempt: { ...record.attempt, id: `daily-practice-${session.id}-${index}` },
+    }));
+  }
+  const activity = (result.recording?.records ?? [])
+    .flatMap(record => {
+      const count = dailyActivityRecord(record.attempt);
+      return count ? [count] : [];
+    });
   return {
     parameters: {
       ...practicePageParameters(resetPracticeAnswers(session), { view: 'result' }),
-      ...(appState ? { appState } : {}),
+      appState: { ...appState, attempts: [...(appState?.attempts ?? []), ...activity] },
     },
     beforeEach: () => {
       keepPracticeResult(result);
@@ -83,7 +94,7 @@ function submitted(session: PracticeSession, appState?: Partial<AppState>): Stor
  * 計算，錯題整理從這科的題庫找題目。結果、錯題整理與考題預覽皆使用整個頁面寬度，手機依容器寬度換行。
  *
  * 畫面上可以操作看到：
- * - 「儲存此次作答」才加入每日練習履歷；「不記錄此次作答」不新增任何作答紀錄。
+ * - 完成練習即計入已確認的作答題數；「儲存此次作答」才把題組及答案加入每日練習履歷。
  *   儲存後顯示履歷入口，不會重複新增；決定不記錄後，在離開前仍能改為儲存。
  * - 「本次考題預覽」展開／收合整份題組（題目與選項順序跟這次練習相同）
  * - 錯題的我的筆記：輸入文字、貼上圖片；筆記圖片點開放大

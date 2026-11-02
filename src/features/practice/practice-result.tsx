@@ -87,10 +87,10 @@ export function PracticeResultView({
         {result.recording ? <section className={styles.recordingChoice} aria-label="儲存每日練習履歷">
           <strong>{result.recording.status === 'saved' ? '已加入每日練習履歷' : '是否記錄此次作答？'}</strong>
           <p>{result.recording.status === 'saved'
-            ? '此次題組、作答答案、正確率與時間已記錄，可在履歷查看或刪除。'
+            ? '已確認的作答題數已計入活動總表；此次題組、作答答案、正確率與時間已記錄，可在履歷查看或刪除。'
             : result.recording.status === 'skipped'
-              ? '此次作答未加入履歷。若改變心意，可在離開或重新整理之前選擇儲存。'
-              : '只有選擇儲存才會加入履歷及作答統計；不記錄仍可查看本次結果與詳解。離開或重新整理前未儲存，就不會加入履歷。'}</p>
+              ? '已確認的作答題數已計入活動總表，但此次作答未加入履歷。若改變心意，可在離開或重新整理之前選擇儲存。'
+              : '已確認的作答題數已計入活動總表。只有選擇儲存才會保留題組與答案在履歷中；離開或重新整理前未儲存，就不會加入履歷。'}</p>
           <div className={styles.completionActions}>
             {result.recording.status === 'saved'
               ? <Button role="link" render={<Link href={DAILY_PRACTICE_HISTORY_PATH} />}>查看每日練習履歷</Button>

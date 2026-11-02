@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { QuizAttempt } from '@/lib/types';
 import { buildActivityHeatmap, type ActivityHeatmapData } from './activity-heatmap';
+import { dailyActivityRecord } from '@/features/practice/daily-practice-recording';
 
 const today = '2026-10-20'; // 週二
 
@@ -60,6 +61,19 @@ describe('buildActivityHeatmap', () => {
     expect(dayOf(heatmap, '2026-10-10')?.count).toBe(88);
     expect(heatmap.totalQuestions).toBe(88);
     expect(heatmap.activeDays).toBe(1);
+  });
+
+  it('counts the activity once whether the full daily history arrives before or after the summary', () => {
+    const full = { ...attempt('2026-10-20T03:00:00.000Z', 30, 20, 5), id: 'daily-practice-test' };
+    const activity = dailyActivityRecord(full)!;
+    const legacy = attempt('2026-10-20T04:00:00.000Z', 4);
+    for (const entries of [[activity], [full], [activity, full], [full, activity]]) {
+      const heatmap = buildActivityHeatmap([...entries, legacy], today);
+      expect(dayOf(heatmap, today)?.count).toBe(54);
+      expect(heatmap.totalQuestions).toBe(54);
+    }
+    // Deleting the optional full history leaves the activity summary intact.
+    expect(dayOf(buildActivityHeatmap([activity], today), today)?.count).toBe(50);
   });
 
   it.each([

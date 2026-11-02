@@ -10,6 +10,7 @@ import {
   uploadEach,
   useCloudSync,
 } from '@/components/cloud-sync-provider';
+import { dailyActivityRecord } from '@/features/practice/daily-practice-recording';
 
 vi.mock('@/state/app-state', () => ({
   useAppState: () => ({
@@ -106,6 +107,23 @@ describe('CloudSyncProvider', () => {
       synced: ['paper'],
       failed: false,
     });
+  });
+
+  it('accepts a count-only daily activity record from the cloud without restoring answers', () => {
+    const summary = dailyActivityRecord({
+      id: 'daily-practice-test', mode: 'practice', subject: 'law', year: null,
+      questionIds: ['law-114-01'], answers: { 'law-114-01': 0 },
+      startedAt: '2026-10-20T00:00:00.000Z', submittedAt: '2026-10-20T00:01:00.000Z',
+      elapsedSeconds: 60, correctCount: 1, wrongCount: 0, unansweredCount: 0,
+    })!;
+    const confirmed = new Set<string>();
+    const changes = readAttemptChanges([{
+      type: 'added', id: summary.id, data: { ...summary, syncedAt: {} }, pending: false,
+    }], confirmed);
+    expect(changes).toEqual({ incoming: [summary], removed: [] });
+    expect(confirmed.has(summary.id)).toBe(true);
+    expect(changes.incoming[0].questionIds).toEqual([]);
+    expect(changes.incoming[0].answers).toEqual({});
   });
 
   it('keeps a record the server refused, but removes one deleted on another device', () => {
