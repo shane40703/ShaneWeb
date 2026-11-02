@@ -5,7 +5,7 @@ import type { SubjectId } from '@/lib/types';
  * Google Analytics, and the only file that knows about gtag. Nothing here may carry
  * an account, a question, an answer or a score: events take fixed names and the
  * subject, and every page URL is reduced to its path before it is sent.
- * Events and the GA settings they need are recorded in ANALYTICS.md; keep it in step.
+ * Events and their GA settings are recorded in GOOGLE_ANALYTICS.md; keep it in step.
  */
 export type PracticeEvent =
   | 'question_answered'

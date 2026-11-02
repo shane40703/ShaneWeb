@@ -1,4 +1,4 @@
-# GA 事件紀錄
+# Google Analytics 事件紀錄
 
 記錄網站送到 Google Analytics 4 的事件，看報表或改事件時查這份。事件定義在 [src/lib/analytics.ts](src/lib/analytics.ts)，改事件時要一起更新這裡。
 
