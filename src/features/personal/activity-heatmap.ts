@@ -3,11 +3,20 @@ import { getTaipeiDate } from '@/features/home/exam-countdown';
 import { DAILY_ACTIVITY_RECORD_PREFIX, isDailyActivityRecord, isDailyPracticeRecord } from '@/features/practice/daily-practice-recording';
 
 const dayMs = 86_400_000;
+export const ACTIVITY_LEVELS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as const;
+export type ActivityLevel = (typeof ACTIVITY_LEVELS)[number];
+
+/** Zero is separate; the tenth tier includes 181 and any higher count. */
+export function activityLevelLabel(level: ActivityLevel) {
+  if (level === 0) return '0 題，沒有作答';
+  if (level === 10) return '181 題以上';
+  return `${(level - 1) * 20 + 1}–${level * 20} 題`;
+}
 
 export interface ActivityDay {
   date: string;
   count: number;
-  level: 0 | 1 | 2 | 3 | 4;
+  level: ActivityLevel;
   /** 今天之後的格子為 false：週格子排滿七天，但這些日子還沒到。 */
   inRange: boolean;
 }
@@ -21,10 +30,7 @@ export interface ActivityHeatmapData {
 }
 
 function levelOf(count: number): ActivityDay['level'] {
-  if (count >= 60) return 4;
-  if (count >= 30) return 3;
-  if (count >= 10) return 2;
-  return count > 0 ? 1 : 0;
+  return Math.min(10, Math.ceil(Math.max(0, count) / 20)) as ActivityLevel;
 }
 
 /** 每個臺灣日期實際作答的題數；沒作答的題目不算，分段的作答紀錄會加總在同一天。 */

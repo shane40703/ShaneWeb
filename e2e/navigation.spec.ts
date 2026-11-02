@@ -113,6 +113,25 @@ test('hovering a heatmap day shows its date and count, also on the first and las
   await expect(tooltip).toHaveCount(0);
 });
 
+test('heatmap legend distinguishes every 20-question tier in both themes', async ({ page }) => {
+  await page.goto('/personal');
+  const panel = page.getByRole('region', { name: /近一年寫了/ });
+  const legend = panel.getByRole('list', { name: '每日作答題數色階' });
+  await expect(panel.getByText('每 20 題一階')).toBeVisible();
+  await expect(panel.getByText('181 題以上', { exact: true })).toBeVisible();
+  const levels = legend.getByRole('listitem');
+  await expect(levels).toHaveCount(11);
+  await expect(levels.nth(1)).toHaveAttribute('title', '1–20 題');
+  await expect(levels.nth(9)).toHaveAttribute('title', '161–180 題');
+  await expect(levels.nth(10)).toHaveAttribute('title', '181 題以上');
+  for (const theme of ['light', 'dark']) {
+    if (theme === 'dark') await page.getByRole('button', { name: '切換為深色模式' }).click();
+    const colors = await levels.evaluateAll(elements => elements.map(element => getComputedStyle(element).backgroundColor));
+    expect(new Set(colors).size).toBe(11);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(page.viewportSize()!.width);
+  }
+});
+
 test('heatmap fills wide panels and keeps a scrollable square grid on phones', async ({ page }) => {
   await page.goto('/personal');
   const panel = page.getByRole('region', { name: /近一年寫了/ });

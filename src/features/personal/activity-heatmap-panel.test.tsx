@@ -43,9 +43,15 @@ describe('ActivityHeatmap', () => {
     ['一', '三', '五'].forEach((label) =>
       expect(within(panel).getByText(label)).toBeInTheDocument(),
     );
-    const legend = within(panel).getByText(/少/);
-    expect(legend).toHaveTextContent('少多');
-    expect(legend.querySelectorAll('[data-level]')).toHaveLength(5);
+    expect(within(panel).getByText('每 20 題一階')).toBeVisible();
+    expect(within(panel).getByText('181 題以上')).toBeVisible();
+    const legend = within(panel).getByRole('list', { name: '每日作答題數色階' });
+    const levels = within(legend).getAllByRole('listitem');
+    expect(levels).toHaveLength(11);
+    expect(levels.map((level) => level.getAttribute('aria-label'))).toEqual([
+      '0 題，沒有作答', '1–20 題', '21–40 題', '41–60 題', '61–80 題', '81–100 題',
+      '101–120 題', '121–140 題', '141–160 題', '161–180 題', '181 題以上',
+    ]);
   });
 
   it('labels each day and hides the days that have not happened yet', () => {
@@ -54,7 +60,7 @@ describe('ActivityHeatmap', () => {
     const answered = cells.find(
       (cell) => cell.getAttribute('data-tooltip') === '10/19, 12題',
     );
-    expect(answered).toHaveAttribute('data-level', '2');
+    expect(answered).toHaveAttribute('data-level', '1');
     expect(answered).toHaveAttribute('aria-hidden', 'true');
     expect(cells.some((cell) => cell.getAttribute('data-tooltip') === '10/20, 0題')).toBe(
       true,

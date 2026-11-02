@@ -1,5 +1,4 @@
-/* 活動熱力圖：一層框的奶油紙面板，裡面只有文字與日格。53 欄連續排列，月份之間沒有
-   間距；顏色只用墨線藍混紙色，所以跟著所有配色換色。 */
+/* 活動熱力圖：53 欄連續排列；色階由主色漸變至強調色，跟著網站配色調整。 */
 .panel {
   position: relative;
   min-width: 0;
@@ -130,37 +129,53 @@
 }
 
 .cell[data-level='1'] {
-  background: color-mix(in srgb, var(--primary) 30%, var(--surface));
+  background: color-mix(in srgb, var(--primary) 35%, var(--surface));
 }
 
 .cell[data-level='2'] {
-  background: color-mix(in srgb, var(--primary) 55%, var(--surface));
+  background: color-mix(in srgb, var(--primary) 50%, var(--surface));
 }
 
 .cell[data-level='3'] {
-  background: color-mix(in srgb, var(--primary) 80%, var(--surface));
+  background: color-mix(in srgb, var(--primary) 65%, var(--surface));
 }
 
 .cell[data-level='4'] {
-  background: color-mix(in srgb, var(--primary) 100%, var(--surface));
+  background: color-mix(in srgb, var(--primary) 82%, var(--surface));
 }
+
+.cell[data-level='5'] { background: var(--primary); }
+.cell[data-level='6'] { background: color-mix(in srgb, var(--primary) 80%, var(--danger)); }
+.cell[data-level='7'] { background: color-mix(in srgb, var(--primary) 60%, var(--danger)); }
+.cell[data-level='8'] { background: color-mix(in srgb, var(--primary) 40%, var(--danger)); }
+.cell[data-level='9'] { background: color-mix(in srgb, var(--primary) 20%, var(--danger)); }
+.cell[data-level='10'] { background: var(--danger); }
 
 .legend {
   margin: 0;
   justify-self: end;
   display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   align-items: center;
-  gap: 3px;
+  gap: 6px 12px;
   color: var(--muted);
   font: 11px/1.3 var(--font-mono);
 }
 
-.legend .cell:first-of-type {
-  margin-left: 3px;
+.legendScale {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
 }
 
-.legend .cell:last-of-type {
-  margin-right: 3px;
+.legendScale ol {
+  display: flex;
+  gap: 3px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
 }
 
 /* 全部格子共用一個提示。掛在面板上才不會被 .scroller 裁掉，也不擋住下面的格子。 */

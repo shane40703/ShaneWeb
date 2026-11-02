@@ -417,7 +417,7 @@ export function attemptsAppState(attempts: readonly QuizAttempt[]): Partial<AppS
 
 /** 兩次作答相隔的天數：多半連著幾天，偶爾停一兩週，跟實際讀書的節奏一樣。 */
 const heatmapDayGaps = [1, 1, 1, 2, 3, 4, 7, 10, 14];
-/** 一次作答的題數：涵蓋熱力圖的四種深淺，80 題是整份模擬考。 */
+/** 一次作答的題數：80 題是整份模擬考，較高級距可在元件故事選擇十階範例。 */
 const heatmapQuestionCounts = [4, 7, 12, 20, 25, 35, 45, 80];
 
 /**
