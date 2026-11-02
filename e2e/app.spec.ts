@@ -206,7 +206,6 @@ test('all retained routes support direct visits and the removed old pages return
     '/analysis',
     '/memory-gallery',
     '/laws',
-    '/community',
     '/questions/law/114/01',
     '/quiz',
   ]) {
