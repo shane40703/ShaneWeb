@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import {
-  IconBooks, IconBuildingSkyscraper, IconFileText, IconBrandThreads, IconSettings, IconShield,
+  IconBooks, IconBuildingSkyscraper, IconDeviceMobilePlus, IconFileText, IconBrandThreads, IconSettings, IconShield,
 } from '@tabler/icons-react';
 import { personalHub, personalPages } from '@/features/personal/personal-pages';
 import { practiceHub, practicePages } from '@/features/practice/practice-pages';
@@ -42,6 +42,7 @@ interface NavigationProps {
   pathname: string;
   onNavigate?: () => void;
   onOpenSettings?: () => void;
+  onAddToHomeScreen?: () => void;
 }
 
 function NavigationLink({ item, pathname, onNavigate, onOpenSettings }: NavigationProps & { item: NavigationLinkItem }) {
@@ -60,6 +61,11 @@ function Navigation(props: NavigationProps) {
   return <nav className={styles.navigation} aria-label="主要功能">
     {primaryNavigation.map(item => <NavigationLink key={item.href} {...props} item={item} />)}
     <div className={styles.utilityNavigation}>
+      {props.onAddToHomeScreen ? <button type="button" className={styles.navItem}
+        onClick={() => { props.onAddToHomeScreen?.(); props.onNavigate?.(); }}>
+        <span className={styles.navSymbol} aria-hidden="true"><IconDeviceMobilePlus size={20} stroke={1.9} /></span>
+        <span className={styles.navLabel}>加入主畫面</span>
+      </button> : null}
       {utilityNavigation.map(item => <NavigationLink key={item.href} {...props} item={item} />)}
     </div>
   </nav>;

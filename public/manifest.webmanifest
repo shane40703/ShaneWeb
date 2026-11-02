@@ -1,0 +1,18 @@
+{
+  "id": "/",
+  "name": "建築師考試考古題練習平台",
+  "short_name": "建築師考試",
+  "description": "建築師考試考古題討論版、命題分析、詳解、筆記與難題整理。",
+  "lang": "zh-Hant",
+  "start_url": "/",
+  "scope": "/",
+  "display": "browser",
+  "display_override": ["standalone"],
+  "background_color": "#eadfc9",
+  "theme_color": "#eadfc9",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

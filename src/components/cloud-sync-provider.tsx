@@ -31,6 +31,7 @@ import {
   firebaseConfigurationAvailable,
   getFirebaseServices,
 } from '@/lib/firebase-client';
+import { isIosWebApp } from '@/lib/home-screen';
 import { isQuizAttempt } from '@/lib/study';
 import type { QuizAttempt, SyncedNote } from '@/lib/types';
 import { useAppState } from '@/state/app-state';
@@ -551,6 +552,11 @@ export function CloudSyncProvider({ children }: { children: ReactNode }) {
   const handleSignIn = useCallback(async () => {
     const firebase = getFirebaseServices();
     if (!firebase) return;
+    // Firebase's popup never reports back to a Home Screen web app, so the button would stay on 登入中.
+    if (isIosWebApp()) {
+      setError('從主畫面的網頁 App 無法登入。請用 Safari 打開本站再登入。');
+      return;
+    }
     setStatus('syncing');
     setError('');
     try {

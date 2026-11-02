@@ -38,7 +38,7 @@ test('navigation lists only the top-level pages, and returns home via the brand'
   await expect(links.nth(1)).toHaveAttribute('href', '/exams');
   await expect(links.nth(2)).toHaveAttribute('href', '/resources');
   await expect(links.nth(3)).toHaveAttribute('href', '/personal');
-  await expect(nav.getByRole('button')).toHaveCount(0);
+  await expect(nav.getByRole('button').filter({ hasNotText: '加入主畫面' })).toHaveCount(0);
   const removedPages = personal.links.map(([label]) => label);
   for (const removed of ['詳解與討論', '歷屆試題', '統計分析', ...removedPages])
     await expect(nav.getByText(removed, { exact: true })).toHaveCount(0);

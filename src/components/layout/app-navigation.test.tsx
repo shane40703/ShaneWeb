@@ -99,6 +99,28 @@ describe('grouped app navigation', () => {
     expect(onNavigate).toHaveBeenCalledTimes(2);
   });
 
+  it('shows 加入主畫面 first in the utility group only when it can be used', () => {
+    const { rerender } = render(<SidebarContent pathname="/" />);
+    expect(screen.queryByRole('button', { name: '加入主畫面' })).not.toBeInTheDocument();
+    rerender(<SidebarContent pathname="/" onAddToHomeScreen={vi.fn()} />);
+    const button = screen.getByRole('button', { name: '加入主畫面' });
+    expect(button.parentElement?.firstElementChild).toBe(button);
+    expect(button.nextElementSibling).toHaveTextContent(/^設定$/);
+  });
+
+  it('asks for 加入主畫面 before closing the drawer, while the tap still counts', () => {
+    const calls: string[] = [];
+    render(
+      <SidebarContent
+        pathname="/"
+        onAddToHomeScreen={() => calls.push('add')}
+        onNavigate={() => calls.push('navigate')}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: '加入主畫面' }));
+    expect(calls).toEqual(['add', 'navigate']);
+  });
+
   it.each(['/practice', '/practice/quiz', '/practice/law-cloze', '/practice/mock-exam'])(
     'keeps 每日練習 current on %s',
     (pathname) => {

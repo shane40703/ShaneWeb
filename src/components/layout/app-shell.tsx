@@ -11,10 +11,16 @@ import {
 } from '@tabler/icons-react';
 import { SideDrawer } from '@/components/ui/ui';
 import { useCloudSync } from '@/components/cloud-sync-provider';
+import {
+  type HomeScreenGuideMode,
+  showInstallPrompt,
+  useHomeScreenMode,
+} from '@/lib/home-screen';
 import { SettingsPanel } from '@/features/settings/settings-panel';
 import { useAppState } from '@/state/app-state';
 import { ThemeToggle } from './theme-toggle';
 import { navigationPageTitle, SidebarContent } from './app-navigation';
+import { HomeScreenGuide } from './home-screen-guide';
 import { RouteProgress, RouteSheet, staysOnPage, usePendingRoute } from './route-progress';
 import styles from './app-shell.module.css';
 
@@ -42,6 +48,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const cloud = useCloudSync();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const homeScreenMode = useHomeScreenMode();
+  // A copy of the mode, so a prompt arriving while the steps are open does not close them.
+  const [homeScreenGuide, setHomeScreenGuide] = useState<HomeScreenGuideMode | null>(null);
   const pendingRoute = usePendingRoute();
   const leaving = pendingRoute !== null && !staysOnPage(router.pathname, pendingRoute);
   // The sidebar and title answer the click at once; the page follows when it has arrived.
@@ -49,6 +58,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const navigationPath = pathname === '/appearance' ? '/settings' : pathname;
   const pageTitle = navigationPageTitle(pathname);
   const answeringPaper = pathname === '/practice/mock-exam' && router.query.q !== undefined;
+  const addToHomeScreen = () => {
+    if (homeScreenMode === 'prompt') showInstallPrompt();
+    else setHomeScreenGuide(homeScreenMode);
+  };
 
   useEffect(() => {
     if (!settingsOpen) return;
@@ -79,6 +92,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <SidebarContent
           pathname={navigationPath}
           onOpenSettings={() => setSettingsOpen(true)}
+          onAddToHomeScreen={homeScreenMode ? addToHomeScreen : undefined}
         />
       </aside>
       <div className={styles.workspace}>
@@ -96,6 +110,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 pathname={navigationPath}
                 onNavigate={() => setDrawerOpen(false)}
                 onOpenSettings={() => setSettingsOpen(true)}
+                onAddToHomeScreen={homeScreenMode ? addToHomeScreen : undefined}
               />
             </SideDrawer>
             <h1 className={styles.pageTitle}>{pageTitle}</h1>
@@ -188,6 +203,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </div>
           </section>
         </div>
+      ) : null}
+      {homeScreenGuide ? (
+        <HomeScreenGuide mode={homeScreenGuide} onClose={() => setHomeScreenGuide(null)} />
       ) : null}
     </div>
   );

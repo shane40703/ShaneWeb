@@ -462,6 +462,7 @@
   color: var(--text);
   box-shadow: var(--shadow-lg);
   text-align: center;
+  outline: none;
   /* Never taller than the window: the buttons must stay reachable with a phone on its side. */
   max-height: calc(100vh - 40px);
   max-height: calc(100dvh - 40px);

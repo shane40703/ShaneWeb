@@ -41,6 +41,8 @@ const inSidebar: Decorator = (Story) => (
  *
  * 手機抽屜裡的側欄（項目較高）只在手機寬度出現，看 `Components/基礎 UI/SideDrawer`，或
  * `Layouts/網站外框/側欄與頂部列` 切到手機寬度。
+ *
+ * 「加入主畫面」只在手機、平板出現，這裡固定顯示。
  */
 const meta = {
   title: 'Components/網站外框/SidebarContent',
@@ -52,6 +54,7 @@ const meta = {
     pathname: '/history',
     onNavigate: fn(),
     onOpenSettings: fn(),
+    onAddToHomeScreen: fn(),
   },
   argTypes: {
     pathname: {

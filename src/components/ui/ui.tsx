@@ -1,6 +1,7 @@
 import { type ComponentProps, type ReactNode, createContext, useContext, useId, useRef } from 'react';
 import { AlertDialog } from '@base-ui/react/alert-dialog';
 import { Button as BaseButton } from '@base-ui/react/button';
+import { Dialog } from '@base-ui/react/dialog';
 import { Drawer } from '@base-ui/react/drawer';
 import { Field } from '@base-ui/react/field';
 import { Radio } from '@base-ui/react/radio';
@@ -353,6 +354,45 @@ export function ConfirmDialog({
         </AlertDialog.Viewport>
       </AlertDialog.Portal>
     </AlertDialog.Root>
+  );
+}
+
+export function InfoDialog({
+  open,
+  onOpenChange,
+  title,
+  description,
+  closeLabel = '知道了',
+  children,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  title: string;
+  description: string;
+  closeLabel?: string;
+  /** Goes between the text and the button. */
+  children?: ReactNode;
+}) {
+  const popupRef = useRef<HTMLDivElement>(null);
+  return (
+    <Dialog.Root open={open} onOpenChange={onOpenChange}>
+      <Dialog.Portal>
+        <Dialog.Backdrop className={styles.backdrop} />
+        <Dialog.Viewport className={styles.dialogViewport}>
+          {/* Focus starts on the sheet: on a short phone, focusing the button would scroll past the title. */}
+          <Dialog.Popup ref={popupRef} className={styles.dialogPopup} initialFocus={popupRef}>
+            <Dialog.Title className={styles.dialogTitle}>{title}</Dialog.Title>
+            <Dialog.Description className={styles.dialogDescription}>
+              {description}
+            </Dialog.Description>
+            {children}
+            <div className={styles.dialogActions}>
+              <Dialog.Close className={cx(styles.button, styles.primary)}>{closeLabel}</Dialog.Close>
+            </div>
+          </Dialog.Popup>
+        </Dialog.Viewport>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 }
 

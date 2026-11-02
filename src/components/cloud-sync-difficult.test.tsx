@@ -11,6 +11,7 @@ const mocks = vi.hoisted(() => ({
   listener: null as null | ((snapshot: unknown) => void),
   runTransaction: vi.fn(),
   getDoc: vi.fn(),
+  signInWithPopup: vi.fn(),
 }));
 
 vi.mock('@/lib/firebase-client', () => ({
@@ -23,7 +24,7 @@ vi.mock('firebase/auth', () => ({
     callback({ uid: 'test-user' });
     return () => {};
   },
-  signInWithPopup: vi.fn(), signInWithRedirect: vi.fn(), signOut: vi.fn(),
+  signInWithPopup: mocks.signInWithPopup, signInWithRedirect: vi.fn(), signOut: vi.fn(),
 }));
 vi.mock('firebase/firestore', () => ({
   collection: (_db: unknown, ...path: string[]) => ({ path: path.join('/') }),
@@ -50,11 +51,13 @@ vi.mock('@/lib/note-image-storage', () => ({
 
 function Probe() {
   const { state, dispatch, hydrated } = useAppState();
-  const { status } = useCloudSync();
+  const { status, error, signIn } = useCloudSync();
   return <>
     <output data-testid="marks">{JSON.stringify(state.difficultQuestionIds)}</output>
     <output data-testid="pending">{JSON.stringify(state.difficultPendingChanges)}</output>
     <output data-testid="cloud">{status}</output>
+    <output data-testid="cloud-error">{error}</output>
+    <button onClick={() => void signIn()}>sign in</button>
     <button disabled={!hydrated} onClick={() => dispatch({ type: 'toggle-difficult', questionId: 'law-114-01' })}>
       toggle mark
     </button>
@@ -86,6 +89,36 @@ beforeEach(() => {
   });
 });
 afterEach(cleanup);
+
+describe('signing in from an iPhone Home Screen web app', () => {
+  beforeEach(() => {
+    mocks.signInWithPopup.mockReset();
+    vi.spyOn(navigator, 'userAgent', 'get').mockReturnValue(
+      'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148',
+    );
+    Object.defineProperty(navigator, 'standalone', { configurable: true, value: true });
+  });
+  afterEach(() => {
+    vi.restoreAllMocks();
+    delete (navigator as Navigator & { standalone?: boolean }).standalone;
+  });
+
+  it('shows an error instead of opening a popup that can never report back', async () => {
+    mount();
+    fireEvent.click(await screen.findByRole('button', { name: 'sign in' }));
+    await waitFor(() => expect(screen.getByTestId('cloud-error')).toHaveTextContent(
+      '從主畫面的網頁 App 無法登入。請用 Safari 打開本站再登入。',
+    ));
+    expect(mocks.signInWithPopup).not.toHaveBeenCalled();
+  });
+
+  it('still opens the popup in the browser', async () => {
+    delete (navigator as Navigator & { standalone?: boolean }).standalone;
+    mount();
+    fireEvent.click(await screen.findByRole('button', { name: 'sign in' }));
+    await waitFor(() => expect(mocks.signInWithPopup).toHaveBeenCalledOnce());
+  });
+});
 
 describe('difficult mark cloud synchronization', () => {
   it('keeps marks made while an older initial cloud list is still loading', async () => {
