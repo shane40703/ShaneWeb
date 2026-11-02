@@ -247,7 +247,7 @@ describe('MockExamPage setup', () => {
     expect(setup).toHaveTextContent('另有申論題 3 題，不列入模擬考計分');
     expect(within(setup).getByRole('link', { name: /到考古題討論版閱讀/ })).toHaveAttribute(
       'href',
-      '/exams?question=env-114-written-01',
+      '/exams/env/114/written-1',
     );
     expect(setup).toHaveTextContent('每題 1.5 分，滿分 60 分');
   });

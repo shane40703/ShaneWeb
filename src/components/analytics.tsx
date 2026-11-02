@@ -10,7 +10,7 @@ export function Analytics() {
   const measurementId = ready ? analyticsMeasurementId() : undefined;
   const path = router.asPath.split(/[?#]/)[0];
 
-  // Keyed on the path: changing question only changes the query and is not a page view.
+  // Keyed on the path; trackPageView decides that changing question is not a page view.
   // This component must stay after Providers in the tree: next/head sets document.title in
   // a passive effect, and this effect has to run after that one to read the new title.
   useEffect(() => {

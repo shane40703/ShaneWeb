@@ -1,5 +1,6 @@
 import { type ReactNode } from 'react';
 import { IconCheck } from '@tabler/icons-react';
+import { InPageLink } from '@/components/in-page-link';
 import {
   QuestionNumberButton,
   QuestionNumberGrid,
@@ -23,6 +24,8 @@ export function QuestionSelector({
   yearOptions,
   onSubjectChange,
   onYearChange,
+  subjectHref,
+  yearHref,
   disabledSubjectIds = [],
   questionPicker,
   summary,
@@ -34,6 +37,9 @@ export function QuestionSelector({
   yearOptions: readonly SelectorYearOption[];
   onSubjectChange: (subjectId: SubjectId) => void;
   onYearChange: (year: SelectorYear) => void;
+  /** Gives the choices real addresses, so that search engines can follow them. */
+  subjectHref?: (subjectId: SubjectId) => string;
+  yearHref?: (year: number) => string;
   disabledSubjectIds?: readonly SubjectId[];
   questionPicker?: ReactNode;
   summary?: ReactNode;
@@ -49,16 +55,8 @@ export function QuestionSelector({
             {subjects.map((subject) => {
               const selected = subject.id === subjectId;
               const disabled = disabledSubjectIds.includes(subject.id);
-              return (
-                <button
-                  key={subject.id}
-                  type="button"
-                  className={styles.subjectButton}
-                  data-subject={subject.id}
-                  aria-pressed={selected}
-                  disabled={disabled}
-                  onClick={() => onSubjectChange(subject.id)}
-                >
+              const content = (
+                <>
                   {selected ? (
                     <span className={styles.check} aria-hidden="true">
                       <IconCheck size={11} stroke={3} />
@@ -69,6 +67,30 @@ export function QuestionSelector({
                     <strong>{subject.name}</strong>
                     <small>{subject.shortName}</small>
                   </span>
+                </>
+              );
+              return subjectHref && !disabled ? (
+                <InPageLink
+                  key={subject.id}
+                  className={styles.subjectButton}
+                  data-subject={subject.id}
+                  aria-current={selected || undefined}
+                  href={subjectHref(subject.id)}
+                  onFollow={() => onSubjectChange(subject.id)}
+                >
+                  {content}
+                </InPageLink>
+              ) : (
+                <button
+                  key={subject.id}
+                  type="button"
+                  className={styles.subjectButton}
+                  data-subject={subject.id}
+                  aria-pressed={selected}
+                  disabled={disabled}
+                  onClick={() => onSubjectChange(subject.id)}
+                >
+                  {content}
                 </button>
               );
             })}
@@ -86,7 +108,17 @@ export function QuestionSelector({
                 typeof option.value === 'number'
                   ? `${option.value} 年`
                   : option.label ?? '跨年度';
-              return (
+              return yearHref && typeof option.value === 'number' && !option.disabled ? (
+                <InPageLink
+                  key={option.value}
+                  className={styles.yearButton}
+                  aria-current={selected || undefined}
+                  href={yearHref(option.value)}
+                  onFollow={() => onYearChange(option.value)}
+                >
+                  {label}
+                </InPageLink>
+              ) : (
                 <button
                   key={option.value}
                   type="button"
@@ -119,6 +151,7 @@ export function QuestionNumberPicker({
   questions,
   value,
   onValueChange,
+  hrefFor,
   showStatusLegend = false,
 }: {
   questions: readonly {
@@ -135,6 +168,8 @@ export function QuestionNumberPicker({
   }[];
   value: string;
   onValueChange: (questionId: string) => void;
+  /** Makes the tiles real links, so that search engines can follow them. */
+  hrefFor?: (questionId: string) => string;
   showStatusLegend?: boolean;
 }) {
   return (
@@ -152,6 +187,7 @@ export function QuestionNumberPicker({
             stateLabel={question.stateLabel}
             difficult={question.difficult}
             hasContent={question.hasContent}
+            href={hrefFor?.(question.id)}
             onClick={() => onValueChange(question.id)}
           >
             {question.label ?? question.questionNumber}

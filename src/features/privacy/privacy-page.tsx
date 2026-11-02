@@ -6,7 +6,7 @@ export function PrivacyPage() {
     <div className={styles.page}>
       <article className={styles.panel}>
         <header className={styles.section}>
-          <p className={styles.updated}>最後更新：115 年 11 月 1 日</p>
+          <p className={styles.updated}>最後更新：115 年 11 月 2 日</p>
           <p>這裡說明本站會保存哪些資料、存在哪裡，以及使用統計怎麼運作。</p>
         </header>
 
@@ -55,6 +55,10 @@ export function PrivacyPage() {
           <p>
             這些資料不包含你的帳號、Email、題號、答案、分數、筆記或討論內容。本站沒有開啟
             Google Analytics 的廣告功能。
+          </p>
+          <p>
+            考古題討論版的網址含有科目、年度和題號，本站送出的統計資料一律記成「考古題討論版」這一頁。不過
+            Google 的統計程式偶爾會回傳自己的運作紀錄，裡面可能帶有你打開的頁面網址，這部分由 Google 處理。
           </p>
           <p>
             <a

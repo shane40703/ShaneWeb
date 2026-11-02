@@ -67,7 +67,7 @@ describe('AnalysisPage category quiz', () => {
 
     expect(screen.getByRole('link', { name: /law-114-02 題幹/ })).toHaveAttribute(
       'href',
-      '/exams?question=law-114-02',
+      '/exams/law/114/2',
     );
     fireEvent.click(screen.getByRole('button', { name: '到每日抽題練習抽題' }));
 

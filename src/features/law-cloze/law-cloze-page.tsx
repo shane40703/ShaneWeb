@@ -5,6 +5,7 @@ import { IconArrowRight, IconBook, IconCheck, IconRefresh, IconX } from '@tabler
 import { Button } from '@/components/ui/ui';
 import { useAppState } from '@/state/app-state';
 import { trackPractice } from '@/lib/analytics';
+import { examsQuestionHref } from '@/lib/question-path';
 import { readStoredValue, writeStoredValue } from '@/lib/storage';
 import { useClientReady } from '@/lib/use-client-ready';
 import { CLOZE_COUNTS, CLOZE_STORAGE_KEY, clozeBank, getClozeCategories, getClozePool, getFullArticleParts, createClozeSession, gradeCloze, parseClozeSession, revealClozeAnswer, type ClozeOptions, type ClozeQuestion, type ClozeSession } from './cloze';
@@ -12,7 +13,7 @@ import styles from './law-cloze-page.module.css';
 
 type ClozeEvidence = ClozeQuestion['evidence'][number];
 // Related past questions open in 考古題討論版, which shows the question with its answer.
-const examQuestionHref = (item: ClozeEvidence) => `/exams?question=${item.id}`;
+const examQuestionHref = (item: ClozeEvidence) => examsQuestionHref(item.id);
 
 export function LawClozePage() {
   const ready = useClientReady();

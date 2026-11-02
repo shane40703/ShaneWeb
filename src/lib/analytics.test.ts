@@ -163,6 +163,45 @@ describe('page views', () => {
     },
   );
 
+  it('reports every question address as 考古題討論版, with no 題號 in the URL or title', async () => {
+    document.title = '114 年營建法規與實務考古題第 3 題｜建築師考試';
+    visit('/exams/law/114/3?utm_source=line');
+    const { trackPageView } = await load();
+
+    trackPageView('/exams/law/114/3');
+
+    expect(queue()).toContainEqual([
+      'set',
+      {
+        page_location: location('/exams?utm_source=line'),
+        page_title: '考古題討論版｜建築師考試',
+      },
+    ]);
+    expect(JSON.stringify(queue())).not.toContain('114');
+  });
+
+  it('does not count another question as a page view', async () => {
+    visit('/exams/law/114/3');
+    const { trackPageView } = await load();
+
+    trackPageView('/exams/law/114/3');
+    visit('/exams/law/114/4');
+    trackPageView('/exams/law/114/4');
+    trackPageView('/exams/law/113');
+
+    expect(queue().filter(([, name]) => name === 'page_view')).toHaveLength(1);
+  });
+
+  it('cleans the question out of a first referrer from this site', async () => {
+    referFrom(location('/exams/law/114/3?tab=notes'));
+    visit('/practice');
+    const { trackPageView } = await load();
+
+    trackPageView('/practice');
+
+    expect(JSON.stringify(queue())).toContain(`"page_referrer":"${location('/exams')}"`);
+  });
+
   it('uses the previous page, not the browser, once a page view has been sent', async () => {
     referFrom('https://www.threads.net/');
     const { trackPageView } = await load();

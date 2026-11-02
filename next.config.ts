@@ -15,7 +15,34 @@ const nextConfig: NextConfig = {
   allowedDevOrigins: ['127.0.0.1'],
   env: { NEXT_PUBLIC_QUESTION_DATA_VERSION: questionDataVersion() },
   async redirects() {
-    return [{ source: '/report', destination: '/community', permanent: true }];
+    return [
+      { source: '/report', destination: '/community', permanent: true },
+      {
+        // Links shared before each question had its own address.
+        source: '/exams',
+        has: [
+          {
+            type: 'query',
+            key: 'question',
+            value: '(?<subject>[a-z]+)-(?<year>\\d{3})-written-0*(?<number>\\d+)',
+          },
+        ],
+        destination: '/exams/:subject/:year/written-:number',
+        permanent: true,
+      },
+      {
+        source: '/exams',
+        has: [
+          {
+            type: 'query',
+            key: 'question',
+            value: '(?<subject>[a-z]+)-(?<year>\\d{3})-0*(?<number>\\d+)',
+          },
+        ],
+        destination: '/exams/:subject/:year/:number',
+        permanent: true,
+      },
+    ];
   },
   async headers() {
     return [

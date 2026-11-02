@@ -31,12 +31,12 @@ test('every question stays reachable from a subject that was never loaded', asyn
   test.skip(testInfo.project.name !== 'desktop');
 
   await page.goto('/exams');
-  await page.locator('button[data-subject="structure"]').click();
+  await page.locator('a[data-subject="structure"]').click();
 
-  await expect(page).toHaveURL(/question=structure-114-/);
+  await expect(page).toHaveURL(/\/exams\/structure$/);
   await expect(
-    page.getByRole('group', { name: '年度' }).getByRole('button', { name: '100 年' }),
-  ).toBeEnabled();
+    page.getByRole('group', { name: '年度' }).getByRole('link', { name: '100 年' }),
+  ).toBeVisible();
 });
 
 test('a question page can be read without the discussion editor', async ({

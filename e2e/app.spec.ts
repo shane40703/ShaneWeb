@@ -41,7 +41,16 @@ test('question-bank failures never expose an unrelated editable question', async
     await route.abort();
   });
 
-  await page.goto('/exams?question=env-114-01');
+  // The page's own question comes with the page; another paper has to download.
+  await page.goto('/exams/env/114/1');
+  await expect(page.getByRole('heading', { name: '第 1 題' })).toBeVisible();
+  await expect(async () => {
+    await page
+      .getByRole('group', { name: '年度' })
+      .getByRole('link', { name: '113 年' })
+      .click({ timeout: 1000 });
+    await expect(page).toHaveURL(/\/exams\/env\/113$/, { timeout: 1000 });
+  }).toPass();
   await expect(
     page.getByRole('heading', { name: '題目暫時無法顯示' }),
   ).toBeVisible();

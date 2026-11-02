@@ -15,7 +15,7 @@ import { SettingsPanel } from '@/features/settings/settings-panel';
 import { useAppState } from '@/state/app-state';
 import { ThemeToggle } from './theme-toggle';
 import { navigationPageTitle, SidebarContent } from './app-navigation';
-import { RouteProgress, RouteSheet, usePendingRoute } from './route-progress';
+import { RouteProgress, RouteSheet, staysOnPage, usePendingRoute } from './route-progress';
 import styles from './app-shell.module.css';
 
 const persistenceMessages = {
@@ -43,7 +43,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const pendingRoute = usePendingRoute();
-  const leaving = pendingRoute !== null && pendingRoute !== router.pathname;
+  const leaving = pendingRoute !== null && !staysOnPage(router.pathname, pendingRoute);
   // The sidebar and title answer the click at once; the page follows when it has arrived.
   const pathname = leaving ? pendingRoute : router.pathname;
   const navigationPath = pathname === '/appearance' ? '/settings' : pathname;

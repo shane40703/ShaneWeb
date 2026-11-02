@@ -11,6 +11,7 @@ import {
 import { Button } from '@/components/ui/ui';
 import { subjects, years } from '@/question-bank/catalog';
 import { analysisCategoryCatalog } from '@/question-bank/schema';
+import { examsQuestionHref } from '@/lib/question-path';
 import { getQuestionDisplayCategories } from '@/lib/study';
 import type { Question, QuestionSummary, SubjectId } from '@/lib/types';
 import styles from './category-admin-page.module.css';
@@ -325,7 +326,7 @@ export function CategoryAdminPage({
                   </h2>
                 </div>
                 <Link
-                  href={`/exams?question=${selectedQuestion.id}`}
+                  href={examsQuestionHref(selectedQuestion.id)}
                   target="_blank"
                   rel="noreferrer"
                 >

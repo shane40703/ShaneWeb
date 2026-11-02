@@ -293,7 +293,7 @@ test('law cloze opens from the hub and picks its round up again from there', asy
   await evidence.locator('summary').click();
   await expect(evidence.getByRole('link').first()).toHaveAttribute(
     'href',
-    /^\/exams\?question=law-\d{3}-\d{2}$/,
+    /^\/exams\/law\/\d{3}\/\d+$/,
   );
   await expectNoHorizontalOverflow(page);
   await page.screenshot({ path: testInfo.outputPath('cloze.png'), fullPage: true });
@@ -330,7 +330,7 @@ test('the mock exam answers a whole paper, keeps it when leaving, and scores it 
   await expect(setup).toContainText('選擇題 40 題，每題 1.5 分，滿分 60 分');
   await expect(setup.getByRole('link', { name: /到考古題討論版閱讀/ })).toHaveAttribute(
     'href',
-    '/exams?question=env-113-written-01',
+    '/exams/env/113/written-1',
   );
   await expectNoHorizontalOverflow(page);
   await page.screenshot({ path: testInfo.outputPath('mock-setup.png'), fullPage: true });
@@ -629,7 +629,7 @@ test('the home subject cards, 考題分析 and question cards lead to the new pa
 
   await page.goto('/resources/analysis?subject=law&year=114');
   // Each listed question opens in 考古題討論版; nothing leads to the old 作答頁.
-  await expect(page.locator('a[href^="/exams?question=law-114-"]').first()).toBeVisible();
+  await expect(page.locator('a[href^="/exams/law/114/"]').first()).toBeVisible();
   expect(await page.locator('a[href*="/questions/"], a[href*="mode="]').count()).toBe(0);
   await page.getByRole('button', { name: '到每日抽題練習抽題' }).click();
   await expect(page).toHaveURL(/\/practice\/quiz$/);
@@ -647,5 +647,5 @@ test('the home subject cards, 考題分析 and question cards lead to the new pa
   });
   await page.goto('/difficult');
   await page.getByRole('button', { name: '查看詳解' }).first().click();
-  await expect(page).toHaveURL(/\/exams\?question=law-114-01$/);
+  await expect(page).toHaveURL(/\/exams\/law\/114\/1$/);
 });

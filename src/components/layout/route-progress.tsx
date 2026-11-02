@@ -13,6 +13,13 @@ function pathOf(url: string) {
   return url.split(/[?#]/)[0] || '/';
 }
 
+/** A catch-all route such as /exams/[[...slug]] is one page for every address under it. */
+export function staysOnPage(route: string, path: string) {
+  const [base, catchAll] = route.split('/[[...');
+  if (path === route) return true;
+  return catchAll !== undefined && (path === base || path.startsWith(`${base}/`));
+}
+
 /** The page a click is on its way to, from the moment of the click. */
 export function usePendingRoute() {
   const router = useRouter();

@@ -14,6 +14,7 @@ import {
   type SubjectId,
 } from '@/question-bank/schema';
 import { getLawQuestionFineTopic } from '@/lib/law-question-topics';
+import { examsQuestionId, examsSlugs } from '@/lib/question-path';
 import { getQuestionDisplayCategories } from '@/lib/study';
 import {
   buildFacets,
@@ -568,23 +569,36 @@ export async function getMultipleChoiceQuestions(): Promise<Question[]> {
   return cache.multipleChoice;
 }
 
-/** What a page that navigates the bank prerenders: the index and the first question. */
+function questionRefOf(entry: QuestionEntry) {
+  return {
+    id: questionId(entry),
+    format: entry.format,
+    subject: entry.subject,
+    year: entry.year,
+    questionNumber: entry.questionNumber,
+  };
+}
+
+/** Every address under /exams that gets its own prerendered page. */
+export async function getExamsSlugs() {
+  return examsSlugs((await getQuestionEntries()).map(questionRefOf));
+}
+
+/** What a page that navigates the bank prerenders: the index and one question. */
 export interface QuestionPageProps {
   paperIndex: PaperIndex;
   initialQuestion: Question | null;
   initialSimilar: SimilarRow[];
 }
 
-export async function getQuestionPageProps(): Promise<QuestionPageProps> {
+export async function getQuestionPageProps(
+  slug?: readonly string[],
+): Promise<QuestionPageProps> {
   const entries = await getQuestionEntries();
-  const refs = entries.map((entry) => ({
-    id: questionId(entry),
-    format: entry.format,
-    subject: entry.subject,
-    year: entry.year,
-    questionNumber: entry.questionNumber,
-  }));
-  const initialQuestion = entries[0] ? await loadQuestion(entries[0]) : null;
+  const refs = entries.map(questionRefOf);
+  const wanted = examsQuestionId(slug ? [...slug] : undefined, refs);
+  const entry = wanted ? entries.find((item) => questionId(item) === wanted) : entries[0];
+  const initialQuestion = entry ? await loadQuestion(entry) : null;
   const topic = initialQuestion ? getLawQuestionFineTopic(initialQuestion) : null;
   return {
     paperIndex: buildPaperIndex(refs),

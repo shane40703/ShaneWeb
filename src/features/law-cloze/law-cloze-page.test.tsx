@@ -1,6 +1,7 @@
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CLOZE_STORAGE_KEY, clozeBank, createClozeSession, parseClozeSession } from './cloze';
+import { examsQuestionHref } from '@/lib/question-path';
 import { LawClozePage } from './law-cloze-page';
 
 vi.mock('@/state/app-state', () => ({ useAppState: () => ({ reportPersistence: vi.fn() }) }));
@@ -100,7 +101,7 @@ describe('LawClozePage', () => {
     const name = `${evidence.year} 年・第 ${evidence.number} 題`;
     render(<LawClozePage />);
     fireEvent.click(await screen.findByRole('button', { name: '直接看答案' }));
-    expect(screen.getByRole('link', { name, hidden: true })).toHaveAttribute('href', `/exams?question=${evidence.id}`);
+    expect(screen.getByRole('link', { name, hidden: true })).toHaveAttribute('href', examsQuestionHref(evidence.id));
   });
 
   describe('usage statistics', () => {

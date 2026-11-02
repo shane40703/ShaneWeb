@@ -11,6 +11,7 @@ import { CloudSyncProvider } from '@/components/cloud-sync-provider';
 import { ToastProvider } from '@/components/ui/ui';
 import { ExamsPage } from '@/features/exams/exams-page';
 import type { QuestionBankStatus } from '@/lib/question-bank-client';
+import { examsSlug } from '@/lib/question-path';
 import { STORAGE_KEY } from '@/lib/study';
 import type { Question } from '@/lib/types';
 import type { QuestionEntry, QuestionRef } from '@/question-bank/derived-data';
@@ -18,6 +19,7 @@ import { AppStateProvider } from '@/state/app-state';
 
 const router = vi.hoisted(() => ({
   isReady: true,
+  pathname: '/exams/[[...slug]]',
   query: {} as Record<string, string | string[] | undefined>,
   replace: vi.fn(),
 }));
@@ -76,9 +78,9 @@ function page(
 /** Opens the shown question, then moves on while the next paper is not here. */
 function crossPapers(status: QuestionBankStatus, onRetry?: () => void, tab?: string) {
   const query = tab ? { tab } : {};
-  router.query = { question: shown.id, ...query };
+  router.query = { slug: examsSlug(shown.id), ...query };
   const view = render(page('ready', [shown, next]));
-  router.query = { question: next.id, ...query };
+  router.query = { slug: examsSlug(next.id), ...query };
   view.rerender(page(status, [shown, next], onRetry));
   return view;
 }

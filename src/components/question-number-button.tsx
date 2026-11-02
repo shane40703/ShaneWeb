@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
+import { InPageLink } from '@/components/in-page-link';
 import styles from './question-number-button.module.css';
 
 export function QuestionNumberGrid({ children }: { children: ReactNode }) {
@@ -97,6 +98,19 @@ export function QuestionNumberButton({
   ) : (
     children
   );
+
+  if (href && onClick) {
+    return (
+      <InPageLink
+        {...commonProps}
+        href={href}
+        aria-current={active ? 'step' : undefined}
+        onFollow={onClick}
+      >
+        {label}
+      </InPageLink>
+    );
+  }
 
   if (href) {
     return (

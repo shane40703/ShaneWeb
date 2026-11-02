@@ -21,6 +21,7 @@ import {
   isSubjectId,
   parseYear,
 } from '@/lib/study';
+import { examsQuestionHref } from '@/lib/question-path';
 import type { QuestionSummary, SubjectId } from '@/lib/types';
 import { readStoredValue } from '@/lib/storage';
 import { practiceQuizPage } from '@/features/practice/practice-pages';
@@ -349,7 +350,7 @@ export function AnalysisPage({
                 <div>
                   {selectedCategoryQuestions.map((question) => (
                     <Link
-                      href={`/exams?question=${question.id}`}
+                      href={examsQuestionHref(question.id)}
                       prefetch={false}
                       key={question.id}
                     >

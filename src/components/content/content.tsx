@@ -6,6 +6,7 @@ import { DifficultButton } from '@/components/difficult-button';
 import { Button } from '@/components/ui/ui';
 import { ImageLightbox } from '@/components/image-lightbox';
 import { getSubject } from '@/question-bank/catalog';
+import { examsQuestionHref } from '@/lib/question-path';
 import { getQuestionDisplayCategories } from '@/lib/study';
 import type { Question } from '@/lib/types';
 import styles from './content.module.css';
@@ -123,7 +124,7 @@ export function QuestionCard({
         {action ?? (
           <Button
             variant="primary"
-            render={<Link href={`/exams?question=${question.id}`} prefetch={false} />}
+            render={<Link href={examsQuestionHref(question.id)} prefetch={false} />}
           >
             查看詳解
           </Button>

@@ -10,6 +10,7 @@ test-results/
 .env*
 !.env.example
 public/question-data/
+public/sitemap.xml
 
 # Storybook
 storybook-static/

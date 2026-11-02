@@ -51,7 +51,7 @@ test('下一題 keeps the keyboard in place while the next paper downloads', asy
   await next.focus();
   await page.keyboard.press('Enter');
 
-  await expect(page).toHaveURL(/question=law-113-01/);
+  await expect(page).toHaveURL(/\/exams\/law\/113\/1$/);
   await expect(next).toBeFocused();
   await expect(page.getByText('正在載入題目內容…')).toBeVisible();
 

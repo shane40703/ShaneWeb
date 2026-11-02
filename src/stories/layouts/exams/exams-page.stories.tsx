@@ -7,11 +7,12 @@ import {
 } from '../../fixtures/exams';
 import { withStatefulRouter } from '../../support/stateful-router';
 import { pageParameters, withPageFrame } from '../../support/story-environment';
+import { examsSlug } from '@/lib/question-path';
 import { ExamsRoute } from './exams-route';
 
-/** 打開 /exams?question=<id> 的畫面。 */
+/** 打開這一題的畫面；網站的網址是 /exams/law/114/3，故事用 slug 參數代替路徑。 */
 function at(questionId: string) {
-  return pageParameters('/exams', { question: questionId });
+  return pageParameters('/exams', { slug: examsSlug(questionId) });
 }
 
 /**

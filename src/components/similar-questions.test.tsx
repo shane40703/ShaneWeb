@@ -65,8 +65,8 @@ describe('SimilarQuestions', () => {
     const links = within(region).getAllByRole('link');
     expect(links).toHaveLength(8);
     expect(links[0]).toHaveAccessibleName(/112 年・第 2 題/);
-    expect(links[0]).toHaveAttribute('href', '/exams?question=law-112-02');
-    expect(links[7]).toHaveAttribute('href', '/exams?question=law-105-02');
+    expect(links[0]).toHaveAttribute('href', '/exams/law/112/2');
+    expect(links[7]).toHaveAttribute('href', '/exams/law/105/2');
 
     fireEvent.click(screen.getByRole('button', { name: '顯示全部 10 題' }));
     expect(within(region).getAllByRole('link')).toHaveLength(10);

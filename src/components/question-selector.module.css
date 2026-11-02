@@ -41,6 +41,7 @@
   background: var(--surface);
   color: var(--text);
   text-align: left;
+  text-decoration: none;
   cursor: pointer;
 }
 
@@ -54,7 +55,8 @@
   opacity: 0.55;
 }
 
-.subjectButton[aria-pressed='true'] {
+.subjectButton[aria-pressed='true'],
+.subjectButton[aria-current='true'] {
   border-color: var(--primary);
   background: var(--primary-soft);
 }
@@ -158,12 +160,16 @@
 .yearButton {
   min-height: 36px;
   padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   border: var(--frame);
   border-radius: var(--radius-control);
   background: var(--surface);
   color: var(--text-soft);
   font-size: 14px;
   font-weight: 500;
+  text-decoration: none;
   cursor: pointer;
 }
 
@@ -172,7 +178,8 @@
   background: var(--surface-2);
 }
 
-.yearButton[aria-pressed='true'] {
+.yearButton[aria-pressed='true'],
+.yearButton[aria-current='true'] {
   border-color: var(--primary);
   background: var(--primary-soft);
   color: var(--primary-strong);

@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/ui';
 import { getLawQuestionFineTopic } from '@/lib/law-question-topics';
 import { useSimilarRows } from '@/lib/question-bank-client';
-import { parseQuestionId } from '@/lib/question-path';
+import { examsQuestionHref, parseQuestionId } from '@/lib/question-path';
 import type { Question } from '@/lib/types';
 import type { SimilarRow } from '@/question-bank/derived-data';
 import styles from './similar-questions.module.css';
@@ -81,7 +81,15 @@ export function SimilarQuestions({
           <ol className={styles.rows}>
             {shown.map((candidate) => (
               <li key={candidate.id}>
-                <Link href={`${basePath}?question=${candidate.id}`} prefetch={false}>
+                <Link
+                  href={
+                    basePath === '/exams'
+                      ? examsQuestionHref(candidate.id)
+                      : `${basePath}?question=${candidate.id}`
+                  }
+                  shallow={basePath === '/exams'}
+                  prefetch={false}
+                >
                   <span>
                     {candidate.year} 年・第 {candidate.questionNumber} 題
                   </span>

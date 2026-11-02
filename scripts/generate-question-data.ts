@@ -9,10 +9,42 @@ import {
   buildSimilarFiles,
   buildStems,
 } from '@/question-bank/derived-data';
+import { MEMORY_GALLERY_CATEGORIES } from '@/lib/memory-gallery';
+import { examsHref, examsSlugs } from '@/lib/question-path';
+import { SITE_URL } from '@/lib/site';
 import { loadSubjectQuestions } from '@/server/question-bank.server';
 import type { Question } from '@/lib/types';
 
 const outputRoot = path.join(process.cwd(), 'public', 'question-data');
+const sitemapFile = path.join(process.cwd(), 'public', 'sitemap.xml');
+
+/** The public pages besides 考古題討論版's; everything personal is left to robots.txt. */
+const publicPages = [
+  '/',
+  '/community',
+  '/exams',
+  '/practice',
+  '/practice/law-cloze',
+  '/privacy',
+  '/resources',
+  '/resources/analysis',
+  '/resources/laws',
+  '/resources/memory-gallery',
+  ...MEMORY_GALLERY_CATEGORIES.slice(1).map(
+    (category) => `/resources/memory-gallery/${category.id}`,
+  ),
+];
+
+function sitemapOf(paths: readonly string[]) {
+  const urls = paths.map((page) => `  <url><loc>${SITE_URL}${page}</loc></url>`);
+  return [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+    ...urls,
+    '</urlset>',
+    '',
+  ].join('\n');
+}
 
 async function main() {
   const hash = createHash('sha256');
@@ -48,6 +80,11 @@ async function main() {
   for (const [key, rows] of similar) {
     await write(path.join('law', 'similar', `${key}.json`), rows);
   }
+
+  await writeFile(
+    sitemapFile,
+    sitemapOf([...publicPages, ...examsSlugs(bank).map(examsHref)]),
+  );
 
   // next.config.ts reads this: it versions every question-data URL of the build.
   await writeFile(path.join(outputRoot, 'version.txt'), hash.digest('hex').slice(0, 12));

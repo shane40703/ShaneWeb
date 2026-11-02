@@ -23,6 +23,16 @@ async function questionTiles(page: Page) {
     .getByRole('group', { name: '題號' });
 }
 
+/** A tile is a link in the aside, for search engines, and a button in the phone drawer. */
+function questionTile(tiles: Locator, name: string) {
+  return tiles.getByLabel(name);
+}
+
+async function expectCurrentTile(tile: Locator) {
+  if (onPhone()) await expect(tile).toHaveAttribute('aria-pressed', 'true');
+  else await expect(tile).toHaveAttribute('aria-current', 'step');
+}
+
 async function closeQuestionTiles(page: Page) {
   if (!onPhone()) return;
   await page.keyboard.press('Escape');
@@ -58,23 +68,20 @@ test('past exams opens from the navigation and keeps browsing on /exams', async 
   }
 
   const numbers = await questionTiles(page);
-  await expect(numbers.getByRole('button', { name: '第 1 題' })).toHaveAttribute(
-    'aria-pressed',
-    'true',
-  );
+  await expectCurrentTile(questionTile(numbers, '第 1 題'));
   await closeQuestionTiles(page);
   // On phones the compact bar above the tabs and the panel footer both offer 上一題／下一題;
   // the first match is the bar's icon button (on desktop the bar is hidden, so the footer's).
   await page.getByRole('button', { name: '下一題' }).first().click();
-  await expect(page).toHaveURL(/\/exams\?question=law-114-02$/);
+  await expect(page).toHaveURL(/\/exams\/law\/114\/2$/);
   await page.getByRole('button', { name: '上一題' }).first().click();
-  await expect(page).toHaveURL(/\/exams\?question=law-114-01$/);
+  await expect(page).toHaveURL(/\/exams\/law\/114\/1$/);
   await expandSelector(page);
   await page
     .getByRole('group', { name: '年度' })
-    .getByRole('button', { name: '112 年' })
+    .getByRole('link', { name: '112 年' })
     .click();
-  await expect(page).toHaveURL(/\/exams\?question=law-112-01$/);
+  await expect(page).toHaveURL(/\/exams\/law\/112$/);
   if (onPhone())
     await expect(page.getByRole('button', { name: '展開科目與年度' })).toHaveAttribute(
       'aria-expanded',
@@ -83,9 +90,9 @@ test('past exams opens from the navigation and keeps browsing on /exams', async 
   await expandSelector(page);
   await page
     .getByRole('group', { name: '科目' })
-    .getByRole('button', { name: /建築環境控制/ })
+    .getByRole('link', { name: /建築環境控制/ })
     .click();
-  await expect(page).toHaveURL(/\/exams\?question=env-/);
+  await expect(page).toHaveURL(/\/exams\/env$/);
 
   await page.goto('/exams?question=law-114-01');
   const similar = page.getByRole('region', { name: '類似題目' }).getByRole('link');
@@ -93,10 +100,10 @@ test('past exams opens from the navigation and keeps browsing on /exams', async 
   for (const href of await similar.evaluateAll((links) =>
     links.map((link) => link.getAttribute('href')),
   ))
-    expect(href).toMatch(/^\/exams\?question=/);
+    expect(href).toMatch(/^\/exams\/law\/\d{3}\/\d+$/);
   const target = await similar.first().getAttribute('href');
   await similar.first().click();
-  await expect(page).toHaveURL(new RegExp(`${target!.replace('?', '\\?')}$`));
+  await expect(page).toHaveURL(new RegExp(`${target}$`));
 
   expect(
     await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth),
@@ -117,7 +124,7 @@ test('the compact bar scrolls with the page and the footer returns to it', async
   // The footer can render before hydration, so retry until the question changes.
   await expect(async () => {
     await page.getByRole('button', { name: '下一題' }).last().click({ timeout: 1000 });
-    await expect(page).toHaveURL(/\/exams\?question=law-114-02$/, { timeout: 1000 });
+    await expect(page).toHaveURL(/\/exams\/law\/114\/2$/, { timeout: 1000 });
   }).toPass();
 
   const nextPosition = page.getByText('2 / 80', { exact: true });
@@ -149,10 +156,12 @@ async function expectMarkerOnFirstLine(rows: Locator, marker: string) {
 }
 
 test('a long option keeps its letter on the first line', async ({ page }) => {
-  await page.goto('/exams?question=law-114-39');
+  await page.goto('/exams/law/114/39');
   const choices = page.getByRole('radiogroup', { name: '題目選項' }).locator('label');
-  // The page can show another question until the URL's question is read.
   await expect(choices.first()).toContainText('電氣設備配電場所應設置於地面');
+  // The dev server keeps the page hidden until its styles load, and hidden rows measure nothing.
+  await expect(choices.first()).toBeVisible();
+  await page.evaluate(() => document.fonts.ready);
   await expectMarkerOnFirstLine(choices, ':scope > span:nth-last-of-type(2)');
   await expectMarkerOnFirstLine(choices, '[role="radio"]');
 
@@ -173,23 +182,21 @@ test('posts on past exams stay with the question', async ({ page }) => {
   const content = `考古題討論版頁的共享投稿 ${test.info().project.name}`;
   await page.goto('/exams?question=law-114-03');
   await page.getByRole('tab', { name: /討論區/ }).click();
-  await expect(page).toHaveURL(/\/exams\?question=law-114-03&tab=discussion$/);
+  await expect(page).toHaveURL(/\/exams\/law\/114\/3\?tab=discussion$/);
   await page.getByLabel('內容').fill(content);
   await page.getByRole('button', { name: '送出共享投稿' }).click();
   await expect(page.locator('article').filter({ hasText: content })).toBeVisible();
 
   // Moving within the page keeps the loaded posts, so their absence on the next question counts;
   // the open tab follows the question, and the 題目 tab drops the parameter again.
-  await (await questionTiles(page)).getByRole('button', { name: '第 4 題' }).click();
-  await expect(page).toHaveURL(/\/exams\?question=law-114-04&tab=discussion$/);
+  await questionTile(await questionTiles(page), '第 4 題').click();
+  await expect(page).toHaveURL(/\/exams\/law\/114\/4\?tab=discussion$/);
   // Choosing a tile closes the phone drawer, so it is opened again to read the state.
-  await expect(
-    (await questionTiles(page)).getByRole('button', { name: '第 4 題' }),
-  ).toHaveAttribute('aria-pressed', 'true');
+  await expectCurrentTile(questionTile(await questionTiles(page), '第 4 題'));
   await closeQuestionTiles(page);
   await expect(page.locator('article').filter({ hasText: content })).toHaveCount(0);
   await page.getByRole('tab', { name: /^題目$/ }).click();
-  await expect(page).toHaveURL(/\/exams\?question=law-114-04$/);
+  await expect(page).toHaveURL(/\/exams\/law\/114\/4$/);
   await page.goto('/exams?question=law-114-03&tab=discussion');
   await expect(page.getByRole('tab', { name: /討論區/ })).toHaveAttribute(
     'aria-selected',

@@ -1,0 +1,14 @@
+User-agent: *
+Disallow: /admin/
+Disallow: /appearance
+Disallow: /difficult
+Disallow: /history
+Disallow: /notes
+Disallow: /personal
+Disallow: /practice-history
+Disallow: /practice/mock-exam
+Disallow: /practice/quiz
+Disallow: /settings
+Disallow: /wrong
+
+Sitemap: https://exam-tw.vercel.app/sitemap.xml

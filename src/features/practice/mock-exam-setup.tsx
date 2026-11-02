@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { IconArrowRight, IconFileText, IconRotate } from '@tabler/icons-react';
 import { Button } from '@/components/ui/ui';
+import { examsQuestionHref } from '@/lib/question-path';
 import { formatDateTime, getSubjectScoreConfig } from '@/lib/study';
 import type { QuizAttempt, SubjectId } from '@/lib/types';
 import { getSubject, subjects } from '@/question-bank/catalog';
@@ -124,7 +125,7 @@ export function MockExamSetup({
         {paper.writtenCount && paper.firstWrittenId ? (
           <p>
             這份試卷另有申論題 {paper.writtenCount} 題，不列入模擬考計分，
-            <Link href={`/exams?question=${paper.firstWrittenId}`}>
+            <Link href={examsQuestionHref(paper.firstWrittenId)}>
               到考古題討論版閱讀
               <IconFileText size={14} aria-hidden="true" />
             </Link>

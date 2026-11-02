@@ -29,6 +29,8 @@ declare global {
 }
 
 const OPT_OUT_STORAGE_KEY = 'shaneweb:ga-opt-out';
+const EXAMS_PATH = '/exams';
+const EXAMS_TITLE = '考古題討論版｜建築師考試';
 
 const practiceAreas: Record<PracticeMode, 'daily' | 'exams' | 'review'> = {
   daily_quiz: 'daily',
@@ -76,12 +78,20 @@ export function analyticsMeasurementId() {
   return measurementId ?? undefined;
 }
 
+/**
+ * Each question has its own address for search engines. GA still sees 考古題討論版 as one page,
+ * so changing question is no page view and no 題號 reaches it through a URL or a title.
+ */
+function reportedPath(path: string) {
+  return path.startsWith(`${EXAMS_PATH}/`) ? EXAMS_PATH : path;
+}
+
 /** The URL GA may see: campaign parameters survive, ?question=, ?q= and ?result= do not. */
 function pageLocation(href: string) {
   const url = new URL(href);
   const campaign = [...url.searchParams].filter(([name]) => name.startsWith('utm_'));
   const query = new URLSearchParams(campaign).toString();
-  return `${url.origin}${url.pathname}${query ? `?${query}` : ''}`;
+  return `${url.origin}${reportedPath(url.pathname)}${query ? `?${query}` : ''}`;
 }
 
 /** A full load from one of our pages: the browser would hand GA that page's whole URL. */
@@ -92,8 +102,9 @@ function internalReferrer() {
     : undefined;
 }
 
-export function trackPageView(path: string) {
+export function trackPageView(fullPath: string) {
   const id = analyticsMeasurementId();
+  const path = reportedPath(fullPath);
   if (!id || path === lastPath) return;
   const location = pageLocation(window.location.href);
   const referrer = lastLocation ?? internalReferrer();
@@ -102,7 +113,7 @@ export function trackPageView(path: string) {
   // An external first referrer stays the browser's: it is where the visit came from.
   gtag('set', {
     page_location: location,
-    page_title: document.title,
+    page_title: path === EXAMS_PATH ? EXAMS_TITLE : document.title,
     ...(referrer ? { page_referrer: referrer } : {}),
   });
   if (!lastPath) {

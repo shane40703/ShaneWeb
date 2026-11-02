@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ToastProvider } from '@/components/ui/ui';
 import { CloudSyncProvider } from '@/components/cloud-sync-provider';
 import { ExamsPage } from '@/features/exams/exams-page';
+import { examsSlug } from '@/lib/question-path';
 import { STORAGE_KEY } from '@/lib/study';
 import type { Question, SubjectId } from '@/lib/types';
 import { AppStateProvider } from '@/state/app-state';
@@ -11,6 +12,7 @@ import { fillRichEditor, selectRichEditor } from '@/test/rich-editor';
 
 const router = vi.hoisted(() => ({
   isReady: true,
+  pathname: '/exams/[[...slug]]',
   query: {} as Record<string, string | string[] | undefined>,
   replace: vi.fn(),
 }));
@@ -79,6 +81,8 @@ function openTab(name: RegExp) {
   fireEvent.click(screen.getByRole('tab', { name }));
 }
 
+const secondLawQuestion = { ...lawQuestion, id: 'law-114-02', questionNumber: 2 };
+
 describe('ExamsPage question loading', () => {
   beforeEach(() => {
     vi.stubEnv('NEXT_PUBLIC_FIREBASE_API_KEY', '');
@@ -118,7 +122,7 @@ describe('ExamsPage question loading', () => {
   });
 
   it('does not expose a fallback question while a deep link is loading', () => {
-    router.query = { question: 'env-114-01' };
+    router.query = { slug: examsSlug('env-114-01') };
 
     renderPage({ questions: [lawQuestion, environmentRef], questionBankStatus: 'loading' });
 
@@ -136,7 +140,7 @@ describe('ExamsPage question loading', () => {
 
   it('shows a retry action when the requested question fails to load', () => {
     const retry = vi.fn();
-    router.query = { question: 'env-114-01' };
+    router.query = { slug: examsSlug('env-114-01') };
 
     renderPage({
       questions: [lawQuestion, environmentRef],
@@ -162,7 +166,7 @@ describe('ExamsPage question loading', () => {
   });
 
   it('uses a matching prerendered law question while the rest of the bank loads', () => {
-    router.query = { question: lawQuestion.id };
+    router.query = { slug: examsSlug(lawQuestion.id) };
 
     renderPage({ questionBankStatus: 'loading' });
 
@@ -180,13 +184,63 @@ describe('ExamsPage question loading', () => {
     ).not.toBeInTheDocument();
   });
 
+  it('gives subjects, papers and tiles real addresses, and stays on the page for a plain click', () => {
+    renderPage({ questions: [lawQuestion, secondLawQuestion] });
+
+    expect(screen.getByRole('link', { name: /建築環境控制/ })).toHaveAttribute('href', '/exams/env');
+    expect(screen.getByRole('link', { name: '114 年' })).toHaveAttribute('href', '/exams/law/114');
+    const tile = within(screen.getByRole('group', { name: '題號' })).getByRole('link', {
+      name: '第 2 題',
+    });
+    expect(tile).toHaveAttribute('href', '/exams/law/114/2');
+
+    expect(fireEvent.click(tile)).toBe(false);
+    expect(router.replace).toHaveBeenLastCalledWith(
+      { pathname: '/exams/[[...slug]]', query: { slug: ['law', '114', '2'] } },
+      undefined,
+      { shallow: true, scroll: false },
+    );
+  });
+
+  it('leaves a click with a modifier key to the browser, for a new tab', () => {
+    renderPage({ questions: [lawQuestion, secondLawQuestion] });
+
+    const tile = within(screen.getByRole('group', { name: '題號' })).getByRole('link', {
+      name: '第 2 題',
+    });
+    expect(fireEvent.click(tile, { metaKey: true })).toBe(true);
+    expect(router.replace).not.toHaveBeenCalled();
+  });
+
+  it('drops the query string an old link arrives with', () => {
+    router.query = { slug: examsSlug('law-114-02'), question: 'law-114-02', tab: 'discussion' };
+    renderPage({ questions: [lawQuestion, secondLawQuestion] });
+
+    expect(router.replace).toHaveBeenCalledWith(
+      {
+        pathname: '/exams/[[...slug]]',
+        query: { slug: ['law', '114', '2'], tab: 'discussion' },
+      },
+      undefined,
+      { shallow: true, scroll: false },
+    );
+  });
+
+  it('opens a paper on its first question', () => {
+    router.query = { slug: ['law', '114'] };
+    renderPage();
+
+    expect(screen.getByRole('heading', { name: '第 1 題' })).toBeInTheDocument();
+    expect(router.replace).not.toHaveBeenCalled();
+  });
+
   it('moves to a subject whose paper has not loaded yet', () => {
     renderPage({ questions: [lawQuestion, environmentRef] });
 
-    fireEvent.click(screen.getByRole('button', { name: /建築環境控制/ }));
+    fireEvent.click(screen.getByRole('link', { name: /建築環境控制/ }));
 
     expect(router.replace).toHaveBeenCalledWith(
-      { pathname: '/exams', query: { question: environmentQuestion.id } },
+      { pathname: '/exams/[[...slug]]', query: { slug: ['env'] } },
       undefined,
       { shallow: true, scroll: false },
     );
@@ -243,7 +297,7 @@ describe('ExamsPage question loading', () => {
   });
 
   it('allows essay discussion without answer choices or difficult marking', () => {
-    router.query = { question: writtenQuestion.id };
+    router.query = { slug: examsSlug(writtenQuestion.id) };
     renderPage({ questions: [lawQuestion, writtenQuestion] });
 
     expect(screen.getByRole('heading', { name: '申論第 1 題' })).toBeInTheDocument();
@@ -356,7 +410,7 @@ describe('ExamsPage question loading', () => {
   });
 
   it('tracks an essay question as revealed, under its own subject', () => {
-    router.query = { question: writtenQuestion.id };
+    router.query = { slug: examsSlug(writtenQuestion.id) };
     renderPage({ questions: [lawQuestion, writtenQuestion] });
 
     fireEvent.click(screen.getByRole('button', { name: '看解答' }));
@@ -365,7 +419,7 @@ describe('ExamsPage question loading', () => {
   });
 
   it('reveals only the explanation for an essay question', () => {
-    router.query = { question: writtenQuestion.id };
+    router.query = { slug: examsSlug(writtenQuestion.id) };
     renderPage({ questions: [lawQuestion, writtenQuestion] });
 
     expect(screen.queryByRole('radiogroup')).not.toBeInTheDocument();
@@ -383,7 +437,7 @@ describe('ExamsPage question loading', () => {
     fireEvent.click(screen.getByRole('button', { name: '到討論區看看' }));
     expect(screen.getByRole('button', { name: '送出共享投稿' })).toBeInTheDocument();
     expect(router.replace).toHaveBeenCalledWith(
-      { pathname: '/exams', query: { question: writtenQuestion.id, tab: 'discussion' } },
+      { pathname: '/exams/[[...slug]]', query: { slug: examsSlug(writtenQuestion.id), tab: 'discussion' } },
       undefined,
       { shallow: true, scroll: false },
     );
@@ -414,36 +468,36 @@ describe('ExamsPage question loading', () => {
     openTab(/討論區/);
     expect(screen.getByRole('tab', { name: /討論區/ })).toHaveAttribute('aria-selected', 'true');
     expect(router.replace).toHaveBeenLastCalledWith(
-      { pathname: '/exams', query: { question: lawQuestion.id, tab: 'discussion' } },
+      { pathname: '/exams/[[...slug]]', query: { slug: examsSlug(lawQuestion.id), tab: 'discussion' } },
       undefined,
       { shallow: true, scroll: false },
     );
 
     fireEvent.click(
-      within(screen.getByRole('group', { name: '題號' })).getByRole('button', { name: '第 2 題' }),
+      within(screen.getByRole('group', { name: '題號' })).getByRole('link', { name: '第 2 題' }),
     );
     expect(router.replace).toHaveBeenLastCalledWith(
-      { pathname: '/exams', query: { question: 'law-114-02', tab: 'discussion' } },
+      { pathname: '/exams/[[...slug]]', query: { slug: examsSlug('law-114-02'), tab: 'discussion' } },
       undefined,
       { shallow: true, scroll: false },
     );
 
     openTab(/筆記/);
     expect(router.replace).toHaveBeenLastCalledWith(
-      { pathname: '/exams', query: { question: lawQuestion.id, tab: 'notes' } },
+      { pathname: '/exams/[[...slug]]', query: { slug: examsSlug(lawQuestion.id), tab: 'notes' } },
       undefined,
       { shallow: true, scroll: false },
     );
     openTab(/^題目$/);
     expect(router.replace).toHaveBeenLastCalledWith(
-      { pathname: '/exams', query: { question: lawQuestion.id } },
+      { pathname: '/exams/[[...slug]]', query: { slug: examsSlug(lawQuestion.id) } },
       undefined,
       { shallow: true, scroll: false },
     );
   });
 
   it('opens the tab named in the URL', () => {
-    router.query = { question: lawQuestion.id, tab: 'notes' };
+    router.query = { slug: examsSlug(lawQuestion.id), tab: 'notes' };
     renderPage();
 
     expect(screen.getByRole('tab', { name: '筆記' })).toHaveAttribute('aria-selected', 'true');
@@ -488,7 +542,7 @@ describe('ExamsPage question loading', () => {
   });
 
   it('shows no similar-question panel for other subjects', () => {
-    router.query = { question: environmentQuestion.id };
+    router.query = { slug: examsSlug(environmentQuestion.id) };
     renderPage({ questions: [lawQuestion, environmentQuestion] });
 
     expect(screen.getByText('env-114-01 題幹')).toBeInTheDocument();
@@ -509,7 +563,7 @@ describe('ExamsPage question loading', () => {
 
     await user.click(tile);
     expect(router.replace).toHaveBeenLastCalledWith(
-      { pathname: '/exams', query: { question: lawQuestion.id } },
+      { pathname: '/exams/[[...slug]]', query: { slug: examsSlug(lawQuestion.id) } },
       undefined,
       { shallow: true, scroll: false },
     );
@@ -533,10 +587,10 @@ describe('ExamsPage question loading', () => {
     expect(summary).toHaveAttribute('aria-expanded', 'false');
 
     fireEvent.click(summary);
-    fireEvent.click(within(selector).getByRole('button', { name: /建築環境控制/ }));
+    fireEvent.click(within(selector).getByRole('link', { name: /建築環境控制/ }));
     expect(summary).toHaveAttribute('aria-expanded', 'false');
     expect(router.replace).toHaveBeenLastCalledWith(
-      { pathname: '/exams', query: { question: environmentQuestion.id } },
+      { pathname: '/exams/[[...slug]]', query: { slug: ['env'] } },
       undefined,
       { shallow: true, scroll: false },
     );

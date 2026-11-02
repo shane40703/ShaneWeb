@@ -32,6 +32,13 @@ import { hasSimilarQuestionsBlock, SimilarQuestions } from '@/components/similar
 import { RichTextEditor } from '@/components/rich-text-editor-lazy';
 import { Tab, TabList, TabPanel, TabsRoot } from '@/components/tabs';
 import { trackPractice } from '@/lib/analytics';
+import {
+  examsHref,
+  examsQuestionHref,
+  examsQuestionId,
+  examsSlug,
+  examsSlugParts,
+} from '@/lib/question-path';
 import { mergeRichTextValues } from '@/lib/rich-document';
 import {
   QuestionNumberPicker,
@@ -110,9 +117,9 @@ function tabOf(value: string | string[] | undefined): ExamsTab {
   return tab === 'discussion' || tab === 'notes' ? tab : 'question';
 }
 
-/** The 題目 tab keeps the URL as before (`?question=` only). */
-function queryFor(questionId: string, tab: ExamsTab) {
-  return tab === 'question' ? { question: questionId } : { question: questionId, tab };
+/** The path says where; only a tab other than 題目 adds `?tab=`. */
+function queryFor(slug: readonly string[], tab: ExamsTab) {
+  return tab === 'question' ? { slug: [...slug] } : { slug: [...slug], tab };
 }
 
 function BodyPending({
@@ -144,7 +151,8 @@ export function ExamsPage({
   const { notify } = useToast();
   const routeHydrated = useClientReady();
   const routeReady = routeHydrated && router.isReady !== false;
-  const requestedQuestionId = routeReady ? valueOf(router.query.question) : undefined;
+  // In the path, so the prerendered page already shows it and search engines can read it.
+  const requestedQuestionId = examsQuestionId(router.query.slug, questions);
   const queryTab = routeReady ? tabOf(router.query.tab) : undefined;
   const requestedQuestion = requestedQuestionId
     ? questions.find((question) => question.id === requestedQuestionId)
@@ -184,6 +192,19 @@ export function ExamsPage({
   );
   const currentPractice = currentQuestionId ? practice[currentQuestionId] : undefined;
   const revealed = currentPractice?.revealed ?? false;
+
+  // An old link arrives through a redirect, and a redirect keeps the query string.
+  useEffect(() => {
+    if (!routeReady || router.query.question === undefined) return;
+    void router.replace(
+      {
+        pathname: router.pathname,
+        query: queryFor(examsSlugParts(router.query.slug), tabOf(router.query.tab)),
+      },
+      undefined,
+      { shallow: true, scroll: false },
+    );
+  }, [routeReady, router]);
 
   // 看解答 disappears with the reveal, so focus moves to the verdict line.
   useEffect(() => {
@@ -280,12 +301,16 @@ export function ExamsPage({
       discussionQuestionIds.has(question.id),
   }));
 
-  function navigateTo(questionId: string) {
+  function navigateToPlace(slug: readonly string[]) {
     void router.replace(
-      { pathname: '/exams', query: queryFor(questionId, tab) },
+      { pathname: router.pathname, query: queryFor(slug, tab) },
       undefined,
       { shallow: true, scroll: false },
     );
+  }
+
+  function navigateTo(questionId: string) {
+    navigateToPlace(examsSlug(questionId));
   }
 
   // The compact bar scrolls with the page, so the footer's 上一題／下一題 comes back to it and
@@ -298,7 +323,7 @@ export function ExamsPage({
   function setTab(nextTab: ExamsTab) {
     setTabOverride({ tab: nextTab, queryTab });
     void router.replace(
-      { pathname: '/exams', query: queryFor(activeEntry.id, nextTab) },
+      { pathname: router.pathname, query: queryFor(examsSlug(activeEntry.id), nextTab) },
       undefined,
       { shallow: true, scroll: false },
     );
@@ -306,21 +331,18 @@ export function ExamsPage({
 
   function selectSubject(subjectId: SubjectId) {
     setSelectorExpanded(false);
-    const first = questions
-      .filter((question) => question.subject === subjectId)
-      .sort(
-        (left, right) => right.year - left.year || comparePaperQuestionOrder(left, right),
-      )[0];
-    if (first) navigateTo(first.id);
+    if (questions.some((question) => question.subject === subjectId)) {
+      navigateToPlace([subjectId]);
+    }
   }
 
   function selectYear(year: SelectorYear) {
     if (typeof year !== 'number') return;
     setSelectorExpanded(false);
-    const first = questions.find(
+    const paper = questions.some(
       (question) => question.subject === activeEntry.subject && question.year === year,
     );
-    if (first) navigateTo(first.id);
+    if (paper) navigateToPlace([activeEntry.subject, String(year)]);
   }
 
   function selectOption(value: number | undefined) {
@@ -482,6 +504,8 @@ export function ExamsPage({
             }))}
             onSubjectChange={selectSubject}
             onYearChange={selectYear}
+            subjectHref={(subjectId) => examsHref([subjectId])}
+            yearHref={(value) => examsHref([currentEntry.subject, String(value)])}
             ariaLabel="題目選擇"
           />
         </div>
@@ -980,6 +1004,7 @@ export function ExamsPage({
             questions={pickerQuestions}
             value={currentEntry.id}
             onValueChange={navigateTo}
+            hrefFor={examsQuestionHref}
             showStatusLegend
           />
         </aside>

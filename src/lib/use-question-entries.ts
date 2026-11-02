@@ -1,7 +1,7 @@
 import { useRouter } from 'next/router';
 import { useEffect, useMemo } from 'react';
 import { preloadPaper, useQuestionBodies } from '@/lib/question-bank-client';
-import { parseQuestionId } from '@/lib/question-path';
+import { examsQuestionId, parseQuestionId } from '@/lib/question-path';
 import type { Question } from '@/lib/types';
 import {
   questionRefs,
@@ -20,8 +20,9 @@ function valueOf(value: string | string[] | undefined) {
  */
 export function useQuestionEntries(paperIndex: PaperIndex, initialQuestion?: Question) {
   const router = useRouter();
-  const requestedId = valueOf(router.query.question);
   const refs = useMemo(() => questionRefs(paperIndex), [paperIndex]);
+  const requestedId =
+    examsQuestionId(router.query.slug, refs) ?? valueOf(router.query.question);
   // A static page reads its query after hydration; asking earlier fetches the wrong paper.
   const currentId = router.isReady ? (requestedId ?? initialQuestion?.id) : undefined;
   const wanted = useMemo(() => (currentId ? [currentId] : []), [currentId]);
