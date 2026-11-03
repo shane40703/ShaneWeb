@@ -1511,6 +1511,8 @@
     min-height: 36px;
     padding: 6px;
     font-size: 0;
+    /* The zero-sized label remains a flex item: remove its gap so the icon is centered. */
+    gap: 0;
   }
 
   /* The time alone; the label stays in the clock's aria-label. */

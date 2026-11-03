@@ -59,6 +59,31 @@ async function openSetup(page: Page) {
   return setup;
 }
 
+test('the narrow practice difficult icon stays centered when toggled', async ({ page, isMobile }) => {
+  if (isMobile) await page.setViewportSize({ width: 320, height: 700 });
+  const setup = await openSetup(page);
+  await setup.getByRole('button', { name: '線上作答' }).click();
+  const button = page.getByRole('button', { name: '標記為難題', exact: true });
+  await expect(button).toBeVisible();
+  if (!isMobile) {
+    await expect(button).toHaveText('標記為難題');
+    await expect(button).toHaveCSS('font-size', '14px');
+    return;
+  }
+  for (const width of [320, 390]) {
+    await page.setViewportSize({ width, height: 700 });
+    for (const active of [false, true]) {
+      const toggle = page.getByRole('button', { name: active ? '取消難題標記' : '標記為難題', exact: true });
+      await expect(toggle).toHaveAttribute('aria-pressed', String(active));
+      const bounds = (await toggle.boundingBox())!;
+      const icon = (await toggle.locator('svg').boundingBox())!;
+      expect(Math.abs((bounds.x + bounds.width / 2) - (icon.x + icon.width / 2))).toBeLessThan(1);
+      expect(Math.abs((bounds.y + bounds.height / 2) - (icon.y + icon.height / 2))).toBeLessThan(1);
+      await toggle.click();
+    }
+  }
+});
+
 test('new daily practice keeps the daily defaults, hides the random options, and answers one question per URL', async ({
   page,
   isMobile,
