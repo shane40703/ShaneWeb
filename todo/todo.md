@@ -84,5 +84,5 @@
 ### ai agent 實作時的決定
 
 - 上線前要先在 Google Cloud Console 加一個登入用的網址，步驟寫在 1.103。沒加就推上去的話，所有人按「同步作答」都會停在 Google 的錯誤頁。
-- 登入用的頁面改放在本站網址下，由網站在背後轉給 Firebase。放在 Firebase 的網址時，瀏覽器會擋掉從 Google 帶回來的登入結果，回來後還是沒登入。附帶的改變是 Google 登入畫面顯示的網站會從 shaneweb.firebaseapp.com 變成本站網址。
+- Google 選帳號的畫面還是在 Google；登入前後經過的 Firebase 中繼頁改放在本站網址下，由網站在背後轉給 Firebase。中繼頁放在 Firebase 的網址時，瀏覽器會擋掉從 Google 帶回來的登入結果，回來後還是沒登入。附帶的改變是 Google 選帳號畫面上顯示的網站會從 shaneweb.firebaseapp.com 變成本站網址。
 - iPhone 加入主畫面的步驟沒有改，還是請用戶關閉「打開為網頁 App」。主畫面 App 的資料和 Safari 分開，登入後同步的資料會回來，但沒登入時存的作答紀錄在 App 裡看不到。

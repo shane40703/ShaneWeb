@@ -46,8 +46,8 @@ firebase deploy --only firestore:rules,storage
 ### Google 登入的方式
 
 - 登入不開彈出視窗，整個頁面轉到 Google，登入完回到原本那一頁。iPhone 主畫面 App 的彈出視窗關掉時網站無從得知，按鈕會一直停在「登入中」，所以全站改用轉導。
-- 轉導回來後，Firebase 要從它的登入頁讀結果。登入頁若在 `firebaseapp.com`，就是嵌在本站裡的第三方頁面，Safari、Chrome 都會把它的儲存空間隔開，結果會遺失。所以網站在 https 下把自己的網域當成 `authDomain`（`resolveFirebaseAuthDomain`），`next.config.ts` 再把 `/__/auth/` 轉給 `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`。這個變數要維持 `<project>.firebaseapp.com`，改成本站網域會變成轉給自己。
-- 本機用 http 開發時，Firebase 只能組出 https 的登入頁網址，所以仍用 `firebaseapp.com`，轉導回來不會登入。要在本機測登入，需改用 https，並把本機的 `/__/auth/handler` 網址也加進 Authorized redirect URIs。
+- Google 選帳號的畫面一直在 Google，搬到本站的是 Firebase 的中繼頁（`/__/auth/`）。轉導回來後，Firebase 要透過中繼頁讀結果。中繼頁若在 `firebaseapp.com`，就是嵌在本站裡的第三方頁面，Safari、Chrome 都會把它的儲存空間隔開，結果會遺失。所以網站在 https 下把自己的網域當成 `authDomain`（`resolveFirebaseAuthDomain`），`next.config.ts` 再把 `/__/auth/` 轉給 `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`。這個變數要維持 `<project>.firebaseapp.com`，改成本站網域會變成轉給自己。
+- 本機用 http 開發時，Firebase 只能組出 https 的中繼頁網址，所以仍用 `firebaseapp.com`，轉導回來不會登入。要在本機測登入，需改用 https，並把本機的 `/__/auth/handler` 網址也加進 Authorized redirect URIs。
 
 ## 同步範圍
 
