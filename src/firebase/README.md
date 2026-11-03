@@ -41,7 +41,7 @@ firebase deploy --only firestore:rules,storage
 
 - 在 Authentication > Settings > Authorized domains 加入正式網站網域。
 - 在 Vercel 專案的 Environment Variables 加入與 `.env.local` 相同的六個變數，然後重新部署。
-- 在 Google Cloud Console 的 APIs & Services > Credentials，打開 OAuth 2.0 Client「Web client (auto created by Google Service)」，在 Authorized redirect URIs 加入 `https://<正式網站網域>/__/auth/handler`。換網域時也要加新的一筆；沒加的話，按「同步作答」會停在 Google 的 `redirect_uri_mismatch` 錯誤頁。
+- 在 Google Cloud Console 的 APIs & Services > Credentials，打開 OAuth 2.0 Client「Web client (auto created by Google Service)」，在 Authorized redirect URIs 加入 `https://<正式網站網域>/__/auth/handler`。目前 `exam-tw.vercel.app` 和 `shane-web.vercel.app` 都開得到本站，兩個都要加；換網域時也要加新的一筆；沒加的話，按「同步作答」會停在 Google 的 `redirect_uri_mismatch` 錯誤頁。
 
 ### Google 登入的方式
 
