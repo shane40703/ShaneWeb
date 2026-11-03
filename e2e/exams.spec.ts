@@ -44,6 +44,45 @@ async function expandSelector(page: Page) {
   if (onPhone()) await page.getByRole('button', { name: '展開科目與年度' }).click();
 }
 
+test('copy stays below the choices and aligned right before and after revealing the answer', async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, 'clipboard', { configurable: true, value: {
+      writeText: async (value: string) => { (window as Window & { copiedQuestion?: string }).copiedQuestion = value; },
+    } });
+  });
+  await page.goto('/exams/law/114/1');
+  const choices = page.getByRole('radiogroup', { name: '題目選項' });
+  const copy = page.getByRole('button', { name: '複製題目' });
+  const reveal = page.getByRole('button', { name: '看解答' });
+  await expect(choices).toBeVisible();
+  const choiceBox = (await choices.boundingBox())!;
+  const copyBox = (await copy.boundingBox())!;
+  const revealBox = (await reveal.boundingBox())!;
+  expect(copyBox.y).toBeGreaterThanOrEqual(choiceBox.y + choiceBox.height);
+  expect(copyBox.x).toBeGreaterThan(revealBox.x + revealBox.width);
+  await copy.click();
+  expect(await page.evaluate(() => (window as Window & { copiedQuestion?: string }).copiedQuestion)).toContain('A.');
+  await reveal.click();
+  await expect(copy).toBeVisible();
+  expect((await copy.boundingBox())!.x).toBeGreaterThan((await page.getByRole('button', { name: '重新作答' }).boundingBox())!.x);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(page.viewportSize()!.width);
+});
+
+test('loading indicators rotate unless reduced motion is requested', async ({ page }) => {
+  await page.goto('/');
+  await page.evaluate(() => {
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('class', 'tabler-icon tabler-icon-loader-2');
+    svg.setAttribute('data-testid', 'test-loader');
+    document.body.appendChild(svg);
+  });
+  const loader = page.getByTestId('test-loader');
+  await expect(loader).toHaveCSS('animation-name', 'loading-indicator-spin');
+  await expect(loader).toHaveCSS('animation-iteration-count', 'infinite');
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await expect(loader).toHaveCSS('animation-name', 'none');
+});
+
 test('past exams opens from the navigation and keeps browsing on /exams', async ({
   page,
   isMobile,

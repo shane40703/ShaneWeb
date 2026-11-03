@@ -606,7 +606,6 @@ export function ExamsPage({
                 </h2>
                 <QuestionPrompt question={currentQuestion} />
                 <div className={styles.practice}>
-                  <CopyQuestionButton key={currentQuestion.id} question={currentQuestion} />
                   {written ? null : revealed ? (
                     <>
                       <QuestionAnswerPanel
@@ -662,6 +661,9 @@ export function ExamsPage({
                         看解答
                       </Button>
                     )}
+                    <div className={styles.copyAction}>
+                      <CopyQuestionButton key={currentQuestion.id} question={currentQuestion} />
+                    </div>
                   </div>
                   {revealed ? (
                     <div className={styles.explanation}>

@@ -215,8 +215,14 @@
 .answerActions {
   margin-top: 16px;
   display: flex;
+  align-items: center;
   gap: 10px;
   flex-wrap: wrap;
+}
+
+.copyAction {
+  margin-left: auto;
+  max-width: 100%;
 }
 
 /* The verdict: a plain line under the answer rows; green when right, red when wrong, ink

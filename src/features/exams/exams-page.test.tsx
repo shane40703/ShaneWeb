@@ -96,6 +96,17 @@ describe('ExamsPage question loading', () => {
     analytics.trackPractice.mockClear();
   });
 
+  it('keeps copying after the choices beside the answer action', async () => {
+    renderPage();
+    const choices = await screen.findByRole('radiogroup', { name: '題目選項' });
+    const reveal = screen.getByRole('button', { name: '看解答' });
+    const copy = screen.getByRole('button', { name: '複製題目' });
+    expect(choices.compareDocumentPosition(copy) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(reveal.parentElement).toContainElement(copy);
+    fireEvent.click(reveal);
+    expect(screen.getByRole('button', { name: '重新作答' }).parentElement).toContainElement(copy);
+  });
+
   it('preserves note-style whitespace when adding and editing explanations', async () => {
     const content = '  第一行\n\n\t第二行 格式重點  對齊\n';
     renderPage();

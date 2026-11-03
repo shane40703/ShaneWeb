@@ -190,6 +190,20 @@ a,
 button { -webkit-tap-highlight-color: transparent; }
 ::selection { background: color-mix(in srgb, var(--primary) 26%, transparent); }
 .app-root { min-height: 100vh; isolation: isolate; }
+
+/* Loader icons indicate work in progress throughout the app. */
+@media (prefers-reduced-motion: no-preference) {
+  svg.tabler-icon-loader-2 {
+    animation: loading-indicator-spin 1s linear infinite;
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+}
+
+@keyframes loading-indicator-spin {
+  to { transform: rotate(360deg); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
 }
