@@ -32,8 +32,8 @@
 
 ### Google Search Console
 
-- [ ] 新增「網址前置字元」資源 `https://exam-tw.vercel.app/`，驗證方式選 HTML 標記，複製 `content` 的值。先不要按驗證。
-- [ ] 到 Vercel 新增 `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION`，值是上一步的內容，只勾 Production。
+- [x] 新增「網址前置字元」資源 `https://exam-tw.vercel.app/`，驗證方式選 HTML 標記，複製 `content` 的值。先不要按驗證。
+- [x] 到 Vercel 新增 `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION`，值是上一步的內容，只勾 Production。
 - [ ] 到 Vercel 的 Deployments，對最新一筆按 Redeploy。這個設定要重新部署才會生效，目前正式網站還沒有。
 - [ ] 部署完成後回到 Search Console 按驗證。
 - [ ] 到 Sitemaps 提交 `sitemap.xml`。
