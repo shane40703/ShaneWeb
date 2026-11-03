@@ -25,10 +25,10 @@
 
 ### Threads
 
-- [ ] 如果貼文或自介用了 `https://exam-tw.vercel.app/threads`，要換掉，這個網址已經打不開了。
+- [x] 如果貼文或自介用了 `https://exam-tw.vercel.app/threads`，要換掉，這個網址已經打不開了。
   - 自介：`https://exam-tw.vercel.app/?utm_source=threads&utm_medium=social&utm_campaign=launch&utm_content=bio`
   - 留言：`https://exam-tw.vercel.app/?utm_source=threads&utm_medium=social&utm_campaign=launch&utm_content=comment`
-- [ ] 用 Threads App 點一次自介和留言的連結，確認能打開網站。進站後網址列會自動拿掉後面的參數，這是正常的，來源要隔天才看得到。
+- [x] 用 Threads App 點一次自介和留言的連結，確認能打開網站。進站後網址列會自動拿掉後面的參數，這是正常的，來源要隔天才看得到。
 
 ### Google Search Console
 
@@ -42,10 +42,10 @@
 
 ### Google Analytics
 
-- [ ] 到考古題討論版選答案、按「看解答」，確認 Realtime 的 Event count by Event name 出現 `question_answered`。
-- [ ] 把 `question_answered` 設成重要事件：到 Admin > Events 的 Recent events 點它旁邊的星號，計算方式改成 Once per session。清單最多要等 24 小時才會出現，目前重要事件只有預設的 `purchase`。
-- [ ] 到 Admin > Data retention 確認 Event data 是 14 個月，並按過 Save。
-- [ ] 手機和電腦常用的瀏覽器各開一次 `https://exam-tw.vercel.app/?ga=off`，排除自己的使用紀錄。要等上面的 `question_answered` 確認完才做。
+- [x] 到考古題討論版選答案、按「看解答」，確認 Realtime 的 Event count by Event name 出現 `question_answered`。
+- [x] 把 `question_answered` 設成重要事件：到 Admin > Events 的 Recent events 點它旁邊的星號，計算方式改成 Once per session。清單最多要等 24 小時才會出現，目前重要事件只有預設的 `purchase`。
+- [x] 到 Admin > Data retention 確認 Event data 是 14 個月，並按過 Save。
+- [x] 手機和電腦常用的瀏覽器各開一次 `https://exam-tw.vercel.app/?ga=off`，排除自己的使用紀錄。要等上面的 `question_answered` 確認完才做。
 
 ### 手機實測加入主畫面
 
@@ -54,13 +54,14 @@
 
 ### 審核
 
-- [ ] 讀一次「隱私權政策」頁，這是對外公開的文字。
-- [ ] 審核 1.99、1.100、1.101，這三項都還是已實作待審核。
+- [x] 讀一次「隱私權政策」頁，這是對外公開的文字。
 
 ### 隔天以後
 
-- [ ] 到 Traffic acquisition 確認有 `threads / social`，有就代表 Threads 保留了連結後面的參數。
-- [ ] 到 Acquisition > Overview > View Manual campaigns，維度換成 Session manual ad content，比較自介 `bio` 和留言 `comment`。
+- [x] 到 Traffic acquisition 確認有 `threads / social`，有就代表 Threads 保留了連結後面的參數。
+- [ ] 比較自介和留言的連結各帶來多少人：
+  - 只看點擊次數：到 Threads App 的洞察報告看各連結被點了幾次。
+  - 看點進來的人有沒有留下來：到 Google Analytics 的 Explore 開 Free form，Rows 只放 Session manual ad content，Values 放 Sessions 和 Engaged sessions，篩選 Session source / medium 包含 `threads`，日期選 Last 28 days，再把這頁加入書籤。`bio` 和 `link_in_bio` 都算自介，`comment` 是留言。
 - [ ] 到 Explore 建表，篩選 `question_answered`，列放 `practice_area` 或 `practice_mode`，值放活躍使用者和事件數。
 
 ### Google 登入（1.104）
