@@ -128,7 +128,17 @@ test('new daily practice keeps the daily defaults, hides the random options, and
   await question.getByRole('radio').first().click();
   await confirm.click();
   await expect(question.getByRole('status')).toContainText(/答對了|答錯了/);
-  await question.getByRole('button', { name: '複製題目' }).click();
+  const copyButton = question.getByRole('button', { name: '複製題目' });
+  const explanation = page.getByRole('region', { name: /原題第 \d+ 題詳解/ });
+  await expect(explanation).toBeVisible();
+  const gap = await question.evaluate((area) => {
+    const copy = area.querySelector<HTMLButtonElement>('button[aria-label="複製題目"]')
+      ?? [...area.querySelectorAll('button')].find(button => button.textContent?.includes('複製題目'))!;
+    const section = area.querySelector<HTMLElement>('section[aria-label^="原題第"]')!;
+    return section.getBoundingClientRect().top - copy.getBoundingClientRect().bottom;
+  });
+  expect(gap).toBeGreaterThanOrEqual(12);
+  await copyButton.click();
   const copied = await page.evaluate(() => (window as Window & { copiedQuestion?: string }).copiedQuestion ?? '');
   expect(copied).toMatch(/\nA\. .+\nB\. /);
   expect(copied).not.toContain('原選項');

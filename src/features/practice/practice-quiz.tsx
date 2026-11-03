@@ -216,7 +216,9 @@ export function PracticeQuiz({
               ) : null}
               {answer ? (
                 <div className={styles.instantExplanation}>
-                  <CopyQuestionButton key={question.id} question={question} />
+                  <div className={styles.copyQuestionAction}>
+                    <CopyQuestionButton key={question.id} question={question} />
+                  </div>
                   <PracticeExplanation
                     question={question}
                     selectedIndex={answer.selected}

@@ -666,6 +666,10 @@
   display: grid;
 }
 
+.copyQuestionAction {
+  padding-bottom: 12px;
+}
+
 /* The explanation: a plain section under a rule, wherever it appears. */
 .explanation {
   min-width: 0;
