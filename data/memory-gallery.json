@@ -204,6 +204,42 @@
       "height": 1491,
       "createdAt": "2026-11-03T08:27:41.524Z",
       "updatedAt": "2026-11-03T08:27:41.524Z"
+    },
+    {
+      "id": "822e5900-d379-4562-8876-bff9134dad75",
+      "title": "2026年版 EEWH 綠建築評估重點",
+      "description": "2026年版六大指標、三軌整合與新舊版比較",
+      "category": "env",
+      "src": "/memory-gallery/assets/822e5900-d379-4562-8876-bff9134dad75.webp",
+      "thumbnailSrc": "/memory-gallery/assets/822e5900-d379-4562-8876-bff9134dad75-thumb.webp",
+      "width": 1086,
+      "height": 1448,
+      "createdAt": "2026-11-03T08:56:54.934Z",
+      "updatedAt": "2026-11-03T08:56:54.934Z"
+    },
+    {
+      "id": "9d1a66b2-b37c-410f-8dda-c3b55fcd9d08",
+      "title": "空調冷凍循環 P-h 線圖整理",
+      "description": "蒸氣壓縮式冷凍循環、P-h 線圖與性能係數",
+      "category": "env",
+      "src": "/memory-gallery/assets/9d1a66b2-b37c-410f-8dda-c3b55fcd9d08.webp",
+      "thumbnailSrc": "/memory-gallery/assets/9d1a66b2-b37c-410f-8dda-c3b55fcd9d08-thumb.webp",
+      "width": 1536,
+      "height": 1024,
+      "createdAt": "2026-11-03T08:56:55.093Z",
+      "updatedAt": "2026-11-03T08:56:55.093Z"
+    },
+    {
+      "id": "f2dfc0f5-090e-4037-8b0e-86a9e2f47e8d",
+      "title": "濕空氣線圖與空調循環",
+      "description": "濕空氣線圖、空氣狀態與空調處理重點",
+      "category": "env",
+      "src": "/memory-gallery/assets/f2dfc0f5-090e-4037-8b0e-86a9e2f47e8d.webp",
+      "thumbnailSrc": "/memory-gallery/assets/f2dfc0f5-090e-4037-8b0e-86a9e2f47e8d-thumb.webp",
+      "width": 1199,
+      "height": 1312,
+      "createdAt": "2026-11-03T08:56:55.264Z",
+      "updatedAt": "2026-11-03T08:56:55.264Z"
     }
   ]
 }
