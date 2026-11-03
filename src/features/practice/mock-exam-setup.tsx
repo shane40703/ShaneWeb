@@ -13,6 +13,7 @@ import {
   type MockExamDraft,
   type MockExamPaper,
 } from './mock-exam';
+import { TitledFieldset } from './titled-fieldset';
 import styles from './practice-page.module.css';
 import examStyles from './mock-exam.module.css';
 
@@ -50,8 +51,7 @@ export function MockExamSetup({
 
   return (
     <section className={styles.setup} aria-label="歷屆試題模擬考設定">
-      <fieldset className={styles.subjectChoices}>
-        <legend>選擇科目</legend>
+      <TitledFieldset title="選擇科目" className={styles.subjectChoices}>
         {subjects.map((item) => {
           const checked = item.id === paper.subject;
           const count = papers.filter(
@@ -73,10 +73,9 @@ export function MockExamSetup({
             </label>
           );
         })}
-      </fieldset>
+      </TitledFieldset>
 
-      <fieldset className={examStyles.years}>
-        <legend>選擇年度</legend>
+      <TitledFieldset title="選擇年度" className={examStyles.years}>
         <div className={examStyles.yearGrid}>
           {subjectPapers.map((item) => {
             const checked = item.year === paper.year;
@@ -112,7 +111,7 @@ export function MockExamSetup({
             );
           })}
         </div>
-      </fieldset>
+      </TitledFieldset>
 
       <div className={examStyles.paperSummary}>
         <h2>

@@ -19,6 +19,7 @@ import {
   type PracticePool,
   type PracticeSettings,
 } from './practice-session';
+import { TitledFieldset } from './titled-fieldset';
 import styles from './practice-page.module.css';
 
 const ADVANCED_ID = 'practice-advanced-options';
@@ -90,8 +91,12 @@ export function PracticeSetup({
         <span>未完成題組：{getSubject(resume.subject)?.shortName}・第 {resume.index}／{resume.total} 題</span>
         <Button onClick={resume.onResume}>繼續未完成練習</Button>
       </div> : null}
-      <fieldset className={styles.subjectChoices} data-compact disabled={paperDownload.downloading}>
-        <legend>選擇科目</legend>
+      <TitledFieldset
+        title="選擇科目"
+        className={styles.subjectChoices}
+        data-compact
+        disabled={paperDownload.downloading}
+      >
         {subjects.map((item) => {
           const checked = item.id === subject;
           return (
@@ -108,7 +113,7 @@ export function PracticeSetup({
             </label>
           );
         })}
-      </fieldset>
+      </TitledFieldset>
 
       {loadFailed ? (
         <div className={styles.notice} role="alert">
@@ -141,8 +146,7 @@ export function PracticeSetup({
           />
         </button>
         <div id={ADVANCED_ID} className={styles.advancedBody} hidden={!advancedOpen}>
-          <fieldset className={styles.advancedGroup} disabled={busy}>
-            <legend>年度範圍</legend>
+          <TitledFieldset title="年度範圍" className={styles.advancedGroup} disabled={busy}>
             <p>起訖年度都包含在抽題範圍內。</p>
             <div className={styles.yearRange}>
               <label>
@@ -182,10 +186,9 @@ export function PracticeSetup({
                 <b>{pool.rangeCandidates.length}</b> 題符合年度
               </strong>
             </div>
-          </fieldset>
+          </TitledFieldset>
 
-          <fieldset className={styles.advancedGroup} disabled={busy}>
-            <legend>題目類別</legend>
+          <TitledFieldset title="題目類別" className={styles.advancedGroup} disabled={busy}>
             <p>可從跨年度的相同類別集中抽題。</p>
             <label className={styles.categorySelect}>
               <span>題目類別</span>
@@ -204,10 +207,9 @@ export function PracticeSetup({
             <small className={styles.groupNote}>
               目前選擇 <strong>{categoryLabel}</strong>，共 {pool.candidates.length} 題
             </small>
-          </fieldset>
+          </TitledFieldset>
 
-          <fieldset className={styles.advancedGroup} disabled={busy}>
-            <legend>題數</legend>
+          <TitledFieldset title="題數" className={styles.advancedGroup} disabled={busy}>
             <p>從符合年度與類別的題目中隨機抽取，每次抽題都重新抽。</p>
             {pool.countOptions.length ? (
               <div className={styles.countChoices}>
@@ -231,10 +233,9 @@ export function PracticeSetup({
                 {loading ? '正在準備題庫…' : '目前條件沒有可抽的題目。'}
               </small>
             )}
-          </fieldset>
+          </TitledFieldset>
 
-          <fieldset className={styles.advancedGroup} disabled={busy}>
-            <legend>選項與題目</legend>
+          <TitledFieldset title="選項與題目" className={styles.advancedGroup} disabled={busy}>
             <label className={styles.checkChoice}>
               <input
                 type="checkbox"
@@ -261,7 +262,7 @@ export function PracticeSetup({
                 </small>
               </span>
             </label>
-          </fieldset>
+          </TitledFieldset>
 
           <div className={styles.advancedFooter}>
             <small>預設：50 題、全部年度與類別、打亂選項、不含一律給分。</small>

@@ -17,15 +17,6 @@
   border-top: var(--rule-dashed);
 }
 
-.years legend {
-  float: left;
-  width: 100%;
-  padding: 0;
-  color: var(--text);
-  font-size: 15px;
-  font-weight: 600;
-}
-
 .yearGrid {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
