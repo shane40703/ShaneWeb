@@ -36,8 +36,8 @@
 - [x] 到 Vercel 新增 `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION`，值是上一步的內容，只勾 Production。
 - [x] 到 Vercel 的 Deployments，對最新一筆按 Redeploy。這個設定要重新部署才會生效，目前正式網站還沒有。
 - [x] 部署完成後回到 Search Console 按驗證。
-- [ ] 到 Sitemaps 提交 `sitemap.xml`。
-- [ ] 到 URL Inspection，對首頁、`/exams` 和幾份試卷（例如 `/exams/law/114`）按 Request indexing。
+- [x] 到 Sitemaps 提交 `sitemap.xml`。
+- [x] 到 URL Inspection，對首頁、`/exams` 和幾份試卷（例如 `/exams/law/114`）按 Request indexing。
 - [ ] 到 Google Analytics 的 Admin > Product links 連結 Search Console。
 
 ### Google Analytics
