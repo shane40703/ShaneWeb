@@ -66,8 +66,8 @@
 
 ### Google 登入（1.104）
 
-- [ ] 1.104 推上去之前：到 Google Cloud Console 的 APIs & Services > Credentials，打開 OAuth 2.0 Client「Web client (auto created by Google Service)」，在 Authorized redirect URIs 加上 `https://exam-tw.vercel.app/__/auth/handler` 和 `https://shane-web.vercel.app/__/auth/handler` 兩筆，按 Save。舊網址 shane-web.vercel.app 也開得到本站，少了那一筆，從那裡按「同步作答」會停在 Google 的錯誤頁。存檔後可能要等幾分鐘才生效。
-- [ ] 1.104 上線後，用電腦和 iPhone 各按一次「同步作答」，iPhone 也要從主畫面打開的 App 試一次。確認登入完會回到原本那一頁並開始同步；在 Google 畫面按返回或左上角 ✕，按鈕要恢復成「同步作答」。
+- [x] 1.104 推上去之前：到 Google Cloud Console 的 APIs & Services > Credentials，打開 OAuth 2.0 Client「Web client (auto created by Google Service)」，在 Authorized redirect URIs 加上 `https://exam-tw.vercel.app/__/auth/handler` 和 `https://shane-web.vercel.app/__/auth/handler` 兩筆，按 Save。舊網址 shane-web.vercel.app 也開得到本站，少了那一筆，從那裡按「同步作答」會停在 Google 的錯誤頁。存檔後可能要等幾分鐘才生效。
+- [x] 1.104 上線後，用電腦和 iPhone 各按一次「同步作答」，iPhone 也要從主畫面打開的 App 試一次。確認登入完會回到原本那一頁並開始同步；在 Google 畫面按返回或左上角 ✕，按鈕要恢復成「同步作答」。
 
 ## 1.104 - 2026-11-03
 
