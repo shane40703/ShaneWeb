@@ -111,7 +111,8 @@
   background: var(--surface);
 }
 
-.yearGroup > summary {
+.yearGroup > summary,
+.dailyGroupHeader {
   min-height: 60px;
   padding: 16px 24px;
   display: grid;
@@ -122,11 +123,17 @@
   list-style: none;
 }
 
+.dailyGroupHeader {
+  cursor: default;
+  border-bottom: var(--rule);
+}
+
 .yearGroup > summary::-webkit-details-marker {
   display: none;
 }
 
-.yearGroup > summary > strong {
+.yearGroup > summary > strong,
+.dailyGroupHeader > strong {
   color: var(--text);
   font-family: var(--font-mono);
   font-size: 16px;
@@ -138,7 +145,8 @@
   color: var(--primary-strong);
 }
 
-.yearGroup > summary > span {
+.yearGroup > summary > span,
+.dailyGroupHeader > span {
   color: var(--muted);
   font-family: var(--font-mono);
   font-size: 12px;

@@ -20,6 +20,7 @@ import {
   Tag,
 } from '@/components/content/content';
 import { DifficultButton } from '@/components/difficult-button';
+import { CopyQuestionButton } from '@/components/copy-question-button';
 import { QuestionAnswerPanel } from '@/components/question-answer-panel';
 import { QuestionMapDrawer } from '@/components/question-map-drawer';
 import {
@@ -605,6 +606,7 @@ export function ExamsPage({
                 </h2>
                 <QuestionPrompt question={currentQuestion} />
                 <div className={styles.practice}>
+                  <CopyQuestionButton key={currentQuestion.id} question={currentQuestion} />
                   {written ? null : revealed ? (
                     <>
                       <QuestionAnswerPanel

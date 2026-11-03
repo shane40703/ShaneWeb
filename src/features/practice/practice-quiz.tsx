@@ -13,6 +13,7 @@ import {
 import { ReviewNoteEditor } from '@/components/attempt-review';
 import { QuestionPrompt, Tag } from '@/components/content/content';
 import { DifficultButton } from '@/components/difficult-button';
+import { CopyQuestionButton } from '@/components/copy-question-button';
 import {
   QuestionNumberButton,
   QuestionNumberGrid,
@@ -215,6 +216,7 @@ export function PracticeQuiz({
               ) : null}
               {answer ? (
                 <div className={styles.instantExplanation}>
+                  <CopyQuestionButton key={question.id} question={question} />
                   <PracticeExplanation
                     question={question}
                     selectedIndex={answer.selected}

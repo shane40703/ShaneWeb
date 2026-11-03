@@ -95,6 +95,8 @@
 }
 
 .questionPromptImage {
+  -webkit-touch-callout: none;
+  user-select: none;
   width: fit-content;
   max-width: min(100%, 820px);
   margin: 0;

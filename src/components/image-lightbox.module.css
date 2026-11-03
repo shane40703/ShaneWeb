@@ -87,6 +87,11 @@
   object-fit: contain;
 }
 
+.image[data-protected] {
+  -webkit-touch-callout: none;
+  user-select: none;
+}
+
 .close {
   width: 40px;
   height: 40px;

@@ -275,21 +275,12 @@ export function PracticeSetup({
         </div>
       </section>
 
-      <div className={styles.paperHelp}>
-        <p>
-          每次按「製作紙本檔案」或「線上作答」都會重新抽題，所以紙本和線上作答是不同的題組。紙本附獨立參考答案，不會開始線上作答。
-        </p>
-        <p>
-          下載時優先讀取本機新細明體／Times New Roman；未提供時使用開源明體／Times
-          風格字型並提示。
-        </p>
-      </div>
       {paperDownload.error ? (
         <p className={styles.paperNotice} role="alert">
           {paperDownload.error} 可以重新點選製作。
         </p>
       ) : null}
-      {paperDownload.fontNotice ? (
+      {paperDownload.fontNotice && !paperDownload.fontNotice.includes('：本次使用 ') ? (
         <p className={styles.paperNotice} role="status">
           {paperDownload.fontNotice}
         </p>

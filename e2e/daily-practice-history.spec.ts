@@ -114,7 +114,7 @@ test('daily practice is opt-in, saves complete content once, and can delete with
   await expect(page).toHaveURL(/\/practice-history$/);
   await expect(page.getByRole('heading', { name: '每日練習履歷', exact: true })).toBeVisible();
   const group = page.getByLabel('每日抽題練習作答紀錄', { exact: true });
-  await group.locator('summary').click();
+  await expect(group.locator(':scope > summary')).toHaveCount(0);
   await expect(group.getByText(/共 3 題・作答 1 題・未作答 2 題/)).toBeVisible();
   await group.getByRole('button', { name: '查看完整作答紀錄（3）', exact: true }).click();
   await expect(group.getByText(questions[0].text, { exact: true })).toBeVisible();

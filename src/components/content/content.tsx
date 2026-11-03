@@ -3,6 +3,7 @@ import Image from 'next/image';
 import type { ReactNode } from 'react';
 import { IconExternalLink } from '@tabler/icons-react';
 import { DifficultButton } from '@/components/difficult-button';
+import { CopyQuestionButton } from '@/components/copy-question-button';
 import { Button } from '@/components/ui/ui';
 import { ImageLightbox } from '@/components/image-lightbox';
 import { getSubject } from '@/question-bank/catalog';
@@ -52,12 +53,13 @@ export function QuestionPrompt({
             {block.text}
           </p>
         ) : (
-          <figure className={styles.questionPromptImage} key={`image-${index}`}>
+          <figure className={styles.questionPromptImage} key={`image-${index}`} onContextMenu={event => event.preventDefault()} onDragStart={event => event.preventDefault()}>
             <Image
               src={block.src}
               alt={block.alt}
               width={block.width}
               height={block.height}
+              draggable={false}
               loading={compact ? 'lazy' : 'eager'}
               sizes={compact ? '(max-width: 720px) 100vw, 560px' : '(max-width: 900px) 100vw, 820px'}
             />
@@ -66,6 +68,7 @@ export function QuestionPrompt({
               alt={block.alt}
               triggerClassName={styles.questionImageZoom}
               triggerLabel={`放大題目圖片 ${block.alt}`}
+              protect
             />
           </figure>
         ),
@@ -120,6 +123,7 @@ export function QuestionCard({
         <QuestionPrompt question={question} compact />
       </div>
       <div className={styles.questionActions}>
+        <CopyQuestionButton question={question} />
         <DifficultButton active={difficult} onClick={onToggleDifficult} />
         {action ?? (
           <Button

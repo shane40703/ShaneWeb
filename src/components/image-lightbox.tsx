@@ -9,11 +9,13 @@ export function ImageLightbox({
   alt,
   triggerClassName,
   triggerLabel,
+  protect = false,
 }: {
   src: string;
   alt: string;
   triggerClassName?: string;
   triggerLabel?: string;
+  protect?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -72,7 +74,9 @@ export function ImageLightbox({
                 >
                   <IconX size={22} stroke={2} aria-hidden="true" />
                 </button>
-                <div className={styles.image}>
+                <div className={styles.image} data-protected={protect || undefined}
+                  onContextMenu={protect ? event => event.preventDefault() : undefined}
+                  onDragStart={protect ? event => event.preventDefault() : undefined}>
                   <Image
                     src={src}
                     alt={alt}
@@ -80,6 +84,7 @@ export function ImageLightbox({
                     unoptimized={src.startsWith('data:')}
                     sizes="94vw"
                     priority
+                    draggable={!protect}
                   />
                 </div>
                 <span>{alt}</span>

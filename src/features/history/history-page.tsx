@@ -403,19 +403,24 @@ export function HistoryPage({
             />
           ) : yearGroups.length ? (
             <div className={styles.list}>
-              {yearGroups.map((yearGroup) => (
-                <details
+              {yearGroups.map((yearGroup) => {
+                const Group = dailyOnly ? 'section' : 'details';
+                return <Group
                   className={styles.yearGroup}
                   key={yearGroup.key}
+                  role={dailyOnly ? 'group' : undefined}
                   aria-label={`${yearGroup.year ? `${yearGroup.year} 年` : dailyOnly ? '每日抽題練習' : '跨年度試題'}作答紀錄`}
                 >
-                  <summary>
+                  {dailyOnly ? <header className={styles.dailyGroupHeader}>
+                    <strong>每日抽題練習</strong>
+                    <span>共作答 {yearGroup.entries.length} 次</span>
+                  </header> : <summary>
                     <strong>
                       {yearGroup.year ? `${yearGroup.year} 年` : dailyOnly ? '每日抽題練習' : '跨年度試題'}
                     </strong>
                     <span>共作答 {yearGroup.entries.length} 次</span>
                     <IconChevronDown size={20} stroke={2} aria-hidden="true" />
-                  </summary>
+                  </summary>}
                   <div className={styles.yearGroupContent}>
               {yearGroup.scopeGroups.map(({ key, entries, ordinalById }) => {
               const first = entries[0];
@@ -739,8 +744,8 @@ export function HistoryPage({
               );
               })}
                   </div>
-                </details>
-              ))}
+                </Group>;
+              })}
               {!dailyOnly && activeSubjectFilter &&
               activeSubjectFilter !== 'mixed' &&
               continuationYear ? (
@@ -765,9 +770,18 @@ export function HistoryPage({
                         href={mockExamHref({
                           subject: activeSubjectFilter,
                           year: continuationYear,
+                          q: 1,
                         })}
                       />
                     }
+                    onClick={() => {
+                      const scope = mockExamScope(activeSubjectFilter, continuationYear);
+                      if (!Object.keys(readMockExamDraft(scope)).length) {
+                        reportPersistence('quiz-progress', saveMockExamDraft(scope,
+                          startMockExamDraft(mockExamQuestionId(activeSubjectFilter, continuationYear, 1))));
+                        trackPractice('practice_start', 'mock_exam', activeSubjectFilter);
+                      }
+                    }}
                   >
                     {nextPaperYear
                       ? `繼續作答 ${continuationYear} 年`

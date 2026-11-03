@@ -8,6 +8,7 @@ import {
   IconX,
 } from '@tabler/icons-react';
 import { QuestionPrompt } from '@/components/content/content';
+import { CopyQuestionButton } from '@/components/copy-question-button';
 import {
   appendImageFiles,
   ImageAttachments,
@@ -132,6 +133,7 @@ export function AttemptReview({
                   {wrongAttemptCount >= 2 ? (
                     <strong className={styles.repeatWrong}>已答錯 {wrongAttemptCount} 次</strong>
                   ) : null}
+                  <CopyQuestionButton question={question} />
                   {showDifficultActions ? (
                     <DifficultButton
                       active={state.difficultQuestionIds.includes(question.id)}

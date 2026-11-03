@@ -42,7 +42,7 @@ describe('Daily practice history', () => {
     const filters = await screen.findByRole('group', { name: '每日練習履歷科目分類' });
     expect(within(filters).getByRole('button', { name: /營建法規與實務/ })).toHaveTextContent('1');
     const group = screen.getByLabelText('每日抽題練習作答紀錄');
-    await user.click(group.querySelector('summary')!);
+    expect(group.querySelector(':scope > summary')).toBeNull();
     expect(within(group).getByText('正確率 0%')).toBeVisible();
     expect(within(group).getByText(/作答時間 00:00:42/)).toBeVisible();
     expect(screen.queryByText('繼續作答 114 年')).not.toBeInTheDocument();
@@ -55,7 +55,6 @@ describe('Daily practice history', () => {
     const user = userEvent.setup();
     renderHistory();
     await screen.findByRole('group', { name: '每日練習履歷科目分類' });
-    await user.click(screen.getByLabelText('每日抽題練習作答紀錄').querySelector('summary')!);
     await user.click(screen.getByRole('button', { name: '刪除第 1 次紀錄' }));
     const cancel = await screen.findByRole('alertdialog');
     await user.click(within(cancel).getByRole('button', { name: '取消' }));

@@ -29,7 +29,7 @@ const questionOptions = fixtureOptions(
  * 錯題統計等列表用精簡版（compact，間距與圖片較小）。
  *
  * 畫面上可以操作看到：滑過圖片出現放大按鈕，點了全螢幕放大題目圖片（按背景、右上角或 Esc
- * 關閉）。用 Controls 換題目（一般、含圖片、長題幹、申論題）、精簡版、字級。
+ * 關閉）。題目圖片阻擋一般右鍵另存與拖曳；用 Controls 換題目、精簡版、字級。
  */
 const meta = {
   title: 'Components/題目/QuestionPrompt',

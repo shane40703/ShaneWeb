@@ -91,12 +91,22 @@ test('new daily practice keeps the daily defaults, hides the random options, and
   await page.getByRole('button', { name: '線上作答' }).click();
   await expect(page).toHaveURL(/\/practice\/quiz\?q=1$/);
   const question = page.getByRole('region', { name: '題目與選項' });
+  await page.evaluate(() => {
+    Object.defineProperty(navigator, 'clipboard', { configurable: true, value: {
+      writeText: async (value: string) => { (window as Window & { copiedQuestion?: string }).copiedQuestion = value; },
+    } });
+  });
+  await expect(question.getByRole('button', { name: '複製題目' })).toHaveCount(0);
   await expect(page.getByLabel('第 1 題，共 5 題')).toBeVisible();
   const confirm = page.getByRole('button', { name: '確認答案' });
   await expect(confirm).toBeDisabled();
   await question.getByRole('radio').first().click();
   await confirm.click();
   await expect(question.getByRole('status')).toContainText(/答對了|答錯了/);
+  await question.getByRole('button', { name: '複製題目' }).click();
+  const copied = await page.evaluate(() => (window as Window & { copiedQuestion?: string }).copiedQuestion ?? '');
+  expect(copied).toMatch(/\nA\. .+\nB\. /);
+  expect(copied).not.toContain('原選項');
   await expect(page.getByRole('region', { name: /原題第 \d+ 題詳解/ })).toBeVisible();
   await expect(page.getByText('我的筆記')).toBeVisible();
   await expect(question.getByRole('radio').first()).toHaveAttribute(
@@ -436,7 +446,7 @@ test('每日抽題練習 explicit saves appear only in 每日練習履歷, and �
   await expect(page.getByRole('group', { name: '每日抽題練習作答紀錄' })).toHaveCount(0);
   await page.goto('/practice-history');
   const group = page.getByRole('group', { name: '每日抽題練習作答紀錄' });
-  await group.locator('summary').click();
+  await expect(group.locator(':scope > summary')).toHaveCount(0);
   const card = group.getByRole('article').first();
   await expect(card.getByRole('heading', { level: 2 })).toHaveText(
     '營建法規與實務・每日抽題練習 5 題',

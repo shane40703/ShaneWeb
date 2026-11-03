@@ -237,7 +237,7 @@ describe('HistoryPage', () => {
     ).not.toBeInTheDocument();
     expect(
       screen.getByRole('button', { name: /繼續作答 113 年/ }),
-    ).toHaveAttribute('href', '/practice/mock-exam?subject=law&year=113');
+    ).toHaveAttribute('href', '/practice/mock-exam?subject=law&year=113&q=1');
   });
 
   it('continues with unattempted catalog years even when only attempted banks are loaded', async () => {
@@ -271,8 +271,34 @@ describe('HistoryPage', () => {
 
     expect(
       await screen.findByRole('button', { name: /繼續作答 104 年/ }),
-    ).toHaveAttribute('href', '/practice/mock-exam?subject=law&year=104');
+    ).toHaveAttribute('href', '/practice/mock-exam?subject=law&year=104&q=1');
     expect(screen.queryByText('已完成所有年度')).not.toBeInTheDocument();
+  });
+
+  it('opens the next paper directly without replacing an existing draft', async () => {
+    const attempt = createAttempt({ mode: 'paper', source: paperQuestions, answers: {},
+      startedAt: '2026-10-24T00:00:00.000Z', elapsedSeconds: 60 });
+    const draft = { 'law-113-02': { selected: 2, elapsedSeconds: 42, startedAt: '2026-10-24T00:00:00.000Z' } };
+    writeQuizProgress('paper:law:113', draft);
+    const state = createDefaultState();
+    state.attempts = [attempt];
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    render(<ToastProvider><AppStateProvider><HistoryPage questions={paperQuestions} /></AppStateProvider></ToastProvider>);
+    const link = await screen.findByRole('button', { name: /繼續作答 113 年/ });
+    expect(link).toHaveAttribute('href', '/practice/mock-exam?subject=law&year=113&q=1');
+    fireEvent.click(link);
+    expect(readMockExamDraft('paper:law:113')).toEqual(draft);
+  });
+
+  it('creates the next paper draft before opening its first question', async () => {
+    const attempt = createAttempt({ mode: 'paper', source: paperQuestions, answers: {},
+      startedAt: '2026-10-24T00:00:00.000Z', elapsedSeconds: 60 });
+    const state = createDefaultState();
+    state.attempts = [attempt];
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    render(<ToastProvider><AppStateProvider><HistoryPage questions={paperQuestions} /></AppStateProvider></ToastProvider>);
+    fireEvent.click(await screen.findByRole('button', { name: /繼續作答 113 年/ }));
+    expect(readMockExamDraft('paper:law:113')).toHaveProperty('law-113-01');
   });
 
   it('keeps local history usable when one subject bank fails to load', async () => {
@@ -593,7 +619,6 @@ describe('HistoryPage', () => {
       renderHistory([practiceAttempt], questions, true);
 
       const group = await screen.findByLabelText('每日抽題練習作答紀錄');
-      fireEvent.click(group.querySelector('summary')!);
       const card = within(group)
         .getByRole('heading', { name: '營建法規與實務・每日抽題練習 3 題' })
         .closest('article')!;
@@ -632,7 +657,6 @@ describe('HistoryPage', () => {
       const confirm = vi.spyOn(window, 'confirm').mockReturnValueOnce(false);
       renderHistory([practiceAttempt], questions, true);
       const group = await screen.findByLabelText('每日抽題練習作答紀錄');
-      fireEvent.click(group.querySelector('summary')!);
       const retry = within(group).getByRole('button', { name: '再做一次' });
 
       fireEvent.click(retry);
@@ -674,7 +698,6 @@ describe('HistoryPage', () => {
         });
       renderHistory([practiceAttempt], questions, true);
       const group = await screen.findByLabelText('每日抽題練習作答紀錄');
-      fireEvent.click(group.querySelector('summary')!);
       fireEvent.click(within(group).getByRole('button', { name: '再做一次' }));
 
       expect(router.push).not.toHaveBeenCalled();
@@ -687,7 +710,6 @@ describe('HistoryPage', () => {
     it('waits for the set’s questions before starting it again', async () => {
       renderHistory([practiceAttempt], [], true);
       const group = await screen.findByLabelText('每日抽題練習作答紀錄');
-      fireEvent.click(group.querySelector('summary')!);
 
       const retry = within(group).getByRole('button', { name: '再做一次' });
       expect(retry).toBeDisabled();
@@ -826,7 +848,6 @@ describe('HistoryPage', () => {
         });
       renderHistory([practiceAttempt], questions, true);
       const group = await screen.findByLabelText('每日抽題練習作答紀錄');
-      fireEvent.click(group.querySelector('summary')!);
       const retry = within(group).getByRole('button', { name: '再做一次' });
 
       fireEvent.click(retry);

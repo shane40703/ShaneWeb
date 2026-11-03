@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   QuestionCard,
@@ -32,6 +32,8 @@ describe('question content renderer', () => {
     expect(container.querySelectorAll('img')).toHaveLength(1);
     expect(image).toHaveAttribute('width', '299');
     expect(image).toHaveAttribute('height', '278');
+    expect(image).toHaveAttribute('draggable', 'false');
+    expect(fireEvent.contextMenu(image)).toBe(false);
 
     fireEvent.click(
       screen.getByRole('button', {
@@ -43,6 +45,9 @@ describe('question content renderer', () => {
         name: /放大檢視.*第 1 題附圖/,
       }),
     ).toBeInTheDocument();
+    const zoomedImage = within(screen.getByRole('dialog')).getByRole('img');
+    expect(zoomedImage).toHaveAttribute('draggable', 'false');
+    expect(fireEvent.contextMenu(zoomedImage)).toBe(false);
     fireEvent.click(
       screen.getAllByRole('button', { name: '關閉放大圖片' })[1],
     );
