@@ -5,7 +5,8 @@ import { pageParameters, withPageFrame } from '../../support/story-environment';
 
 /**
  * 首頁（/）：最上方為大型建築師考試倒數與官方日程，下方依序是每日抽題捷徑及四個科目卡片。
- * 倒數固定使用範例日期；Controls 的 today 可切換考前、考試期間與考後，不會出現負天數。
+ * 倒數固定使用範例日期；Controls 的 today 可切換考前、考試期間祝福、考後自動切至下一年、
+ * 未公告年度的預估日期。整個倒數框不可選取文字，但官方連結仍可操作。
  * 科目卡片點選後進入該科的歷屆試題模擬考選年份（換到其他頁，
  * 在故事裡只記錄在 Actions 面板）。
  *
@@ -15,7 +16,7 @@ const meta = {
   title: 'Layouts/首頁/選擇科目',
   component: HomePage,
   args: { today: FIXTURE_NOW.slice(0, 10) },
-  argTypes: { today: { options: ['2026-10-20', '2026-11-13', '2026-11-14', '2026-11-16', '2026-11-17'], control: 'select' } },
+  argTypes: { today: { options: ['2026-10-20', '2026-11-13', '2026-11-14', '2026-11-16', '2026-11-17', '2027-11-20', '2027-11-22', '2027-11-23', '2028-01-01', '2028-11-11'], control: 'select' } },
   decorators: [withPageFrame],
   parameters: { ...pageParameters('/') },
 } satisfies Meta<typeof HomePage>;

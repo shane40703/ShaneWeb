@@ -12,6 +12,8 @@
 
 .examCountdown {
   min-width: 0;
+  user-select: none;
+  -webkit-user-select: none;
   padding: 32px 40px;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -24,6 +26,7 @@
 .eyebrow { display: flex; align-items: center; gap: 8px; color: var(--primary-strong); font: 12px var(--font-mono); letter-spacing: .08em; }
 .examIntro h2 { margin: 0; font-size: clamp(24px, 3cqi, 36px); font-weight: 600; }
 .examIntro p { margin: 0; color: var(--text-soft); line-height: 1.7; }
+.estimate { display: block; color: var(--muted); font-size: 12px; }
 .examIntro a { width: fit-content; color: var(--muted); font-size: 13px; }
 .examIntro a:focus-visible, .practiceShortcut:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
 .countdownValue { display: grid; justify-items: center; gap: 4px; color: var(--primary-strong); }
@@ -32,7 +35,8 @@
 .countdownValue p strong { font: 600 clamp(72px, 10cqi, 128px)/1.1 var(--font-mono); font-variant-numeric: tabular-nums; }
 .countdownValue p span { font-size: 22px; }
 .countdownValue small { color: var(--muted); font-size: 12px; }
-.examStatus { max-width: 240px; font-size: 26px; font-weight: 600; }
+.examStatus { max-width: 240px; font-size: clamp(32px, 4cqi, 48px); font-weight: 600; }
+.countdownValue .examWish { max-width: 240px; text-align: center; line-height: 1.6; font-size: 14px; }
 .practiceShortcut {
   min-width: 0; padding: 20px 24px; display: flex; flex-wrap: wrap; align-items: center;
   justify-content: space-between; gap: 16px; border: var(--frame); background: var(--surface);

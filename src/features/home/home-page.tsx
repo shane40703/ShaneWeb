@@ -4,28 +4,40 @@ import { SubjectIconBadge } from '@/components/subject-icon';
 import { mockExamHref } from '@/features/practice/mock-exam';
 import { practiceQuizPage } from '@/features/practice/practice-pages';
 import { subjects } from '@/question-bank/catalog';
-import { ARCHITECT_EXAM, getExamCountdown, useTaipeiDate } from './exam-countdown';
+import { getExamCountdown, useTaipeiDate } from './exam-countdown';
 import styles from './home-page.module.css';
+
+function examDate(value: string, includeYear = false) {
+  const [year, month, day] = value.split('-').map(Number);
+  return `${includeYear ? `${year} 年 ` : ''}${month} 月 ${day} 日`;
+}
 
 export function HomePage({ today }: { today?: string }) {
   const currentDate = useTaipeiDate();
   const date = today ?? currentDate;
   const countdown = date ? getExamCountdown(date) : null;
+  const exam = countdown?.exam;
   return (
     <section className={styles.home} aria-label="選擇練習科目">
       <section className={styles.examCountdown} aria-labelledby="exam-countdown-title">
         <div className={styles.examIntro}>
           <span className={styles.eyebrow}><IconCalendarEvent size={18} aria-hidden="true" /> EXAM COUNTDOWN</span>
-          <h2 id="exam-countdown-title">{ARCHITECT_EXAM.name}</h2>
-          <p><time dateTime={ARCHITECT_EXAM.startsOn}>2026 年 11 月 14 日</time> 至 <time dateTime={ARCHITECT_EXAM.endsOn}>11 月 16 日</time></p>
-          <a href={ARCHITECT_EXAM.source} target="_blank" rel="noreferrer">考選部考試日程 ↗</a>
+          <h2 id="exam-countdown-title">{exam?.name ?? '建築師考試'}</h2>
+          {exam ? <p>
+            <time dateTime={exam.startsOn}>{examDate(exam.startsOn, true)}</time> 至 <time dateTime={exam.endsOn}>{examDate(exam.endsOn)}</time>
+            {exam.estimated ? <span className={styles.estimate}>預估日期，請以考選部公告為準</span> : null}
+          </p> : <p>正在讀取考試日期…</p>}
+          {exam ? <a href={exam.source} target="_blank" rel="noreferrer">考選部考試日程 ↗</a> : null}
         </div>
         <div className={styles.countdownValue} aria-live="polite" aria-atomic="true">
-          {countdown?.phase === 'finished' ? <strong className={styles.examStatus}>本次考試已結束</strong> : <>
-            <span>{countdown?.phase === 'ongoing' ? '考試進行中・第' : '距離考試還有'}</span>
+          {countdown?.phase === 'ongoing' ? <>
+            <strong className={styles.examStatus}>{exam?.estimated ? '預估考期' : '舉行中'}</strong>
+            <span className={styles.examWish}>願你沉著應試，發揮實力，順利上榜！</span>
+          </> : <>
+            <span>距離考試還有</span>
             <p><strong>{countdown?.days ?? '—'}</strong><span>天</span></p>
           </>}
-          <small>以臺灣日期計算{countdown?.phase === 'before' ? '・倒數至第一天' : ''}</small>
+          <small>以臺灣日期計算{countdown?.phase === 'before' ? '・倒數至第一天' : countdown?.phase === 'ongoing' ? `・第 ${countdown.days} 天` : ''}</small>
         </div>
       </section>
       <Link href={practiceQuizPage.href} className={styles.practiceShortcut}>
