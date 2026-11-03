@@ -38,7 +38,7 @@
 - [x] 部署完成後回到 Search Console 按驗證。
 - [x] 到 Sitemaps 提交 `sitemap.xml`。
 - [x] 到 URL Inspection，對首頁、`/exams` 和幾份試卷（例如 `/exams/law/114`）按 Request indexing。
-- [ ] 到 Google Analytics 的 Admin > Product links 連結 Search Console。
+- [x] 到 Google Analytics 的 Admin > Product links 連結 Search Console。
 
 ### Google Analytics
 
