@@ -47,11 +47,6 @@
 - [x] 到 Admin > Data retention 確認 Event data 是 14 個月，並按過 Save。
 - [x] 手機和電腦常用的瀏覽器各開一次 `https://exam-tw.vercel.app/?ga=off`，排除自己的使用紀錄。要等上面的 `question_answered` 確認完才做。
 
-### 手機實測加入主畫面
-
-- [ ] iPhone：點手機選單的「加入主畫面」，照三步加入，確認能走到「打開為網頁 App」開關，從圖示打開後作答紀錄還在。
-- [ ] Android：用 Chrome 點「加入主畫面」，確認跳出安裝視窗，安裝後能從主畫面打開。
-
 ### 審核
 
 - [x] 讀一次「隱私權政策」頁，這是對外公開的文字。
@@ -59,7 +54,7 @@
 ### 隔天以後
 
 - [x] 到 Traffic acquisition 確認有 `threads / social`，有就代表 Threads 保留了連結後面的參數。
-- [ ] 比較自介和留言的連結各帶來多少人：
+- [x] 比較自介和留言的連結各帶來多少人：
   - 只看點擊次數：到 Threads App 的洞察報告看各連結被點了幾次。
   - 看點進來的人有沒有留下來：到 Google Analytics 的 Explore 開 Free form，Rows 只放 Session manual ad content，Values 放 Sessions 和 Engaged sessions，篩選 Session source / medium 包含 `threads`，日期選 Last 28 days，再把這頁加入書籤。`bio` 和 `link_in_bio` 都算自介，`comment` 是留言。
 - [ ] 到 Explore 建表，篩選 `question_answered`，列放 `practice_area` 或 `practice_mode`，值放活躍使用者和事件數。
