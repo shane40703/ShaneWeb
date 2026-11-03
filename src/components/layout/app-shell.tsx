@@ -17,6 +17,7 @@ import {
   useHomeScreenMode,
 } from '@/lib/home-screen';
 import { SettingsPanel } from '@/features/settings/settings-panel';
+import { usePageScrollLock } from '@/lib/use-page-scroll-lock';
 import { useAppState } from '@/state/app-state';
 import { ThemeToggle } from './theme-toggle';
 import { navigationPageTitle, SidebarContent } from './app-navigation';
@@ -63,18 +64,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     else setHomeScreenGuide(homeScreenMode);
   };
 
+  usePageScrollLock(settingsOpen);
+
   useEffect(() => {
     if (!settingsOpen) return;
-    const previousOverflow = document.body.style.overflow;
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape') setSettingsOpen(false);
     };
-    document.body.style.overflow = 'hidden';
     window.addEventListener('keydown', closeOnEscape);
-    return () => {
-      document.body.style.overflow = previousOverflow;
-      window.removeEventListener('keydown', closeOnEscape);
-    };
+    return () => window.removeEventListener('keydown', closeOnEscape);
   }, [settingsOpen]);
 
   return (

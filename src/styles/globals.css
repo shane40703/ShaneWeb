@@ -190,6 +190,7 @@ a,
 button { -webkit-tap-highlight-color: transparent; }
 ::selection { background: color-mix(in srgb, var(--primary) 26%, transparent); }
 .app-root { min-height: 100vh; isolation: isolate; }
+html[data-page-scroll-locked] body { overflow: hidden; }
 
 /* Loader icons indicate work in progress throughout the app. */
 @media (prefers-reduced-motion: no-preference) {

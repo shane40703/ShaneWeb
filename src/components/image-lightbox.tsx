@@ -2,6 +2,7 @@ import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { IconX, IconZoomIn } from '@tabler/icons-react';
+import { usePageScrollLock } from '@/lib/use-page-scroll-lock';
 import styles from './image-lightbox.module.css';
 
 export function ImageLightbox({
@@ -19,18 +20,16 @@ export function ImageLightbox({
 }) {
   const [open, setOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
+  usePageScrollLock(open);
 
   useEffect(() => {
     if (!open) return;
     const trigger = triggerRef.current;
-    const previousOverflow = document.body.style.overflow;
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape') setOpen(false);
     };
-    document.body.style.overflow = 'hidden';
     window.addEventListener('keydown', closeOnEscape);
     return () => {
-      document.body.style.overflow = previousOverflow;
       window.removeEventListener('keydown', closeOnEscape);
       // The close button goes with the dialog; without this, focus falls to the page.
       trigger?.focus({ preventScroll: true });
