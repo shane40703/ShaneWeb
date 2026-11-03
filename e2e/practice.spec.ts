@@ -329,8 +329,9 @@ test('law cloze opens from the hub and picks its round up again from there', asy
   await expect(page).toHaveURL(/\/practice\/law-cloze$/);
   await expect(page).toHaveTitle('法規克漏字｜建築師考試');
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('法規克漏字');
+  await expect(page.getByLabel('填空完整條文')).toHaveCount(0);
   await page.getByRole('combobox', { name: '每次測驗題數' }).selectOption('5');
-  await page.getByRole('button', { name: '開始新測驗' }).click();
+  await page.getByRole('button', { name: '開始測驗', exact: true }).click();
   await expect(page.getByText(/^1 \/ 5$/)).toBeVisible();
 
   await page.getByRole('button', { name: '直接看答案' }).click();
@@ -346,11 +347,15 @@ test('law cloze opens from the hub and picks its round up again from there', asy
   // The round survives a reload, and a trip to the hub and back.
   const title = await page.locator('form h3').textContent();
   await page.reload();
+  await expect(page.getByLabel('填空完整條文')).toHaveCount(0);
+  await page.getByRole('button', { name: '繼續上次測驗' }).click();
   await expect(page.locator('form h3')).toHaveText(title!);
   await page.getByRole('link', { name: '返回每日練習' }).click();
   await expect(page).toHaveURL(/\/practice$/);
   await cloze.getByRole('link').click();
   await expect(page).toHaveURL(/\/practice\/law-cloze$/);
+  await expect(page.getByLabel('填空完整條文')).toHaveCount(0);
+  await page.getByRole('button', { name: '繼續上次測驗' }).click();
   await expect(page.locator('form h3')).toHaveText(title!);
   await expect(page.getByText(/^1 \/ 5$/)).toBeVisible();
 });

@@ -19,40 +19,56 @@ export function LawClozePage() {
   const ready = useClientReady();
   const { reportPersistence } = useAppState();
   const [session, setSession] = useState<ClozeSession | null>(null);
+  const [loaded, setLoaded] = useState(false);
+  const [started, setStarted] = useState(false);
   const [options, setOptions] = useState<ClozeOptions>({ lawId: '全部', category: '全部', count: 10 });
   useEffect(() => {
     if (!ready) return;
     let active = true;
     void Promise.resolve().then(() => {
       if (!active) return;
-      const restored = parseClozeSession(readStoredValue(CLOZE_STORAGE_KEY)) ?? createClozeSession();
+      const restored = parseClozeSession(readStoredValue(CLOZE_STORAGE_KEY));
       setSession(restored);
-      setOptions({ lawId: restored.lawId, category: restored.category, count: restored.count });
+      if (restored) setOptions({ lawId: restored.lawId, category: restored.category, count: restored.count });
+      setLoaded(true);
     });
     return () => { active = false; };
   }, [ready]);
   useEffect(() => {
-    if (session) reportPersistence('law-cloze', writeStoredValue(CLOZE_STORAGE_KEY, JSON.stringify(session)));
-  }, [session, reportPersistence]);
+    if (session && started) reportPersistence('law-cloze', writeStoredValue(CLOZE_STORAGE_KEY, JSON.stringify(session)));
+  }, [session, started, reportPersistence]);
 
-  if (!session) return <p role='status'>正在準備法規克漏字…</p>;
-  const question = clozeBank.questions.find((q) => q.id === session.order[session.index])!;
-  const law = clozeBank.laws.find((law) => law.id === question.lawId)!;
-  const grades = gradeCloze(question, session.answers);
-  const completed = Object.entries(session.results);
+  if (!loaded) return <p role='status'>正在準備法規克漏字…</p>;
+  const question = session ? clozeBank.questions.find((q) => q.id === session.order[session.index]) : undefined;
+  const law = question ? clozeBank.laws.find((item) => item.id === question.lawId) : undefined;
+  const grades = question && session ? gradeCloze(question, session.answers) : [];
+  const completed = Object.entries(session?.results ?? {});
   const resultGrades = completed.map(([id, answers]) => gradeCloze(clozeBank.questions.find((q) => q.id === id)!, answers));
   const correctQuestions = resultGrades.filter((result) => result.every(Boolean)).length;
   const correctBlanks = resultGrades.flat().filter(Boolean).length;
   const totalBlanks = resultGrades.flat().length;
-  const last = session.index === session.order.length - 1;
-  const revealed = session.revealed.includes(question.id);
-  const resolved = session.submitted || revealed;
+  const last = Boolean(session && session.index === session.order.length - 1);
+  const revealed = Boolean(session && question && session.revealed.includes(question.id));
+  const resolved = Boolean(session?.submitted || revealed);
   const complete = last && resolved;
   const poolSize = getClozePool(options).length;
-  const changed = options.lawId !== session.lawId || options.category !== session.category || options.count !== session.count;
+  const changed = Boolean(session && (options.lawId !== session.lawId || options.category !== session.category || options.count !== session.count));
 
-  // The page opens with a question already drawn, so a round starts at its first answer.
-  const roundStarted = completed.length > 0 || session.revealed.length > 0;
+  // Analytics counts a round from its first answer, not when the setup is opened.
+  const roundStarted = completed.length > 0 || Boolean(session?.revealed.length);
+
+  function startNew() {
+    const hasProgress = session && (session.index > 0 || session.answers.some(answer => answer.trim()) || session.submitted || session.revealed.length > 0 || completed.length > 0);
+    if (hasProgress && !window.confirm('開始新測驗會取代本機保存的這一輪作答、草稿與成績。確定要開始嗎？')) return;
+    setSession(createClozeSession(options));
+    setStarted(true);
+  }
+
+  function resume() {
+    if (!session) return;
+    setOptions({ lawId: session.lawId, category: session.category, count: session.count });
+    setStarted(true);
+  }
 
   function trackAnswer(event: 'question_answered' | 'answer_revealed') {
     if (!roundStarted) trackPractice('practice_start', 'law_cloze', 'law');
@@ -62,7 +78,7 @@ export function LawClozePage() {
 
   function submit(event: FormEvent) {
     event.preventDefault();
-    if (!session || resolved || question.blanks.some((_, i) => !session.answers[i]?.trim())) return;
+    if (!session || !question || resolved || question.blanks.some((_, i) => !session.answers[i]?.trim())) return;
     trackAnswer('question_answered');
     setSession({ ...session, submitted: true, results: { ...session.results, [question.id]: [...session.answers] } });
   }
@@ -95,13 +111,17 @@ export function LawClozePage() {
           <label>每次測驗題數<select value={options.count} onChange={(event) => setOptions({ ...options, count: Number(event.target.value) })}>
             {CLOZE_COUNTS.map((count) => <option key={count} value={count}>{count} 題</option>)}
           </select></label>
-          <Button onClick={() => setSession(createClozeSession(options))} disabled={!poolSize}><IconRefresh size={16} />開始新測驗</Button>
+          <div className={styles.startActions}>
+            {session && !started ? <Button onClick={resume}>繼續上次測驗</Button> : null}
+            <Button variant='primary' onClick={startNew} disabled={!poolSize}><IconRefresh size={16} />{session ? '開始新測驗' : '開始測驗'}</Button>
+          </div>
         </div>
-        <p className={styles.instruction}>可用題型 {poolSize} 題；新測驗將抽 {Math.min(options.count, poolSize)} 題。{poolSize < options.count ? '此考點題數不足，使用全部可用題型，不重複湊題。' : ''} 設定調整後按「開始新測驗」才會取代目前進度。{changed ? '（有尚未套用的設定）' : ''}</p>
-        {session.version !== clozeBank.version ? <p className={styles.instruction} role='note'>題庫已擴充，保留先前的 {session.order.length} 題順序、草稿與成績；按「開始新測驗」即可抽取擴充後的題庫。</p> : null}
-        <div className={styles.score}>本輪已提交 {completed.length} / {session.order.length} 題・全對 {correctQuestions} 題・答對 {correctBlanks} / {totalBlanks} 空{session.revealed.length ? `・直接看答案 ${session.revealed.length} 題（不計分）` : ''}</div>
+        <p className={styles.instruction}>可用題型 {poolSize} 題；新測驗將抽 {Math.min(options.count, poolSize)} 題。{poolSize < options.count ? '此考點題數不足，使用全部可用題型，不重複湊題。' : ''}{session ? ' 開始新測驗會取代本機保存的這一輪進度。' : ' 選好設定後按「開始測驗」出題。'}{started && changed ? '（有尚未套用的設定）' : ''}</p>
+        {session && session.version !== clozeBank.version ? <p className={styles.instruction} role='note'>題庫已擴充，保留先前的 {session.order.length} 題順序、草稿與成績；按「開始新測驗」即可抽取擴充後的題庫。</p> : null}
+        {session && started ? <div className={styles.score}>本輪已提交 {completed.length} / {session.order.length} 題・全對 {correctQuestions} 題・答對 {correctBlanks} / {totalBlanks} 空{session.revealed.length ? `・直接看答案 ${session.revealed.length} 題（不計分）` : ''}</div> : null}
       </section>
 
+      {session && started && question && law ? <>
       {complete ? <section className={styles.summary} aria-labelledby='cloze-summary-title'>
         <h3 id='cloze-summary-title'>本輪測驗完成</h3>
         <p>{completed.length} 題中 {correctQuestions} 題全對；{totalBlanks ? `${totalBlanks} 空中答對 ${correctBlanks} 空（${Math.round(correctBlanks / totalBlanks * 100)}%）。` : '本輪未提交作答，不計答對率。'}{session.revealed.length ? `另 ${session.revealed.length} 題直接看答案，不納入成績。` : ''}</p>
@@ -177,6 +197,7 @@ export function LawClozePage() {
           <div>{question.evidence.map((item) => <Link href={examQuestionHref(item)} key={item.id}>{item.year} 年・第 {item.number} 題</Link>)}</div>
         </details>
       </section> : null}
+      </> : null}
       <p className={styles.storageNote}>本輪抽題順序、設定、草稿與成績保存在目前瀏覽器，不同步雲端；開始新測驗或再練一輪會重新抽題。</p>
     </div>
   );

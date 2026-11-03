@@ -95,6 +95,12 @@
   font-weight: 500;
 }
 
+.startActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 .controls select {
   width: 100%;
   min-width: 0;

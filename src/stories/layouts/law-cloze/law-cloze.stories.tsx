@@ -8,9 +8,9 @@ import {
 import { pageParameters, withPageFrame } from '../../support/story-environment';
 
 /**
- * /practice/law-cloze 的練習畫面。頁面從瀏覽器讀這一輪的抽題與作答，沒有存檔會隨機抽題，
- * 所以故事一律給固定的一輪：10 題做到第 7 題，前面有全對、答錯與直接看答案，目前這題剛
- * 提交、有一空答錯。
+ * /practice/law-cloze 的練習畫面。進入時先選法規、考點與題數，按「開始測驗」才出題；
+ * 若有存檔可按「繼續上次測驗」。有進度時開始新測驗會先確認，不會自動覆蓋。
+ * 練習中故事使用固定的一輪：10 題做到第 7 題，前面有全對、答錯與直接看答案，目前這題剛提交。
  *
  * 畫面上可以操作看到：
  * - 下一題：無障礙規範題（4 空，附官方 PDF；填 90、80、80、1/50 提交就是全對）→ 建築法的
@@ -37,14 +37,15 @@ const meta = {
   ],
   parameters: {
     ...pageParameters('/practice/law-cloze'),
-    localStorage: clozeInProgressStorage,
   },
 } satisfies Meta<typeof LawClozePage>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const 練習中: Story = {};
+export const 尚未開始: Story = {};
+
+export const 練習中: Story = { parameters: { localStorage: clozeInProgressStorage } };
 
 /** 題庫擴充前開始的同一輪：保留原本的抽題順序，提示可以開始新測驗抽擴充後的題庫。 */
 export const 題庫已擴充: Story = {

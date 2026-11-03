@@ -3,6 +3,25 @@ import { clozeBank, CLOZE_STORAGE_KEY, createClozeSession } from '../src/feature
 
 test.use({ channel: process.env.PLAYWRIGHT_BROWSER_CHANNEL });
 
+test('entry shows only settings and protects a saved draft until the user chooses', async ({ page }) => {
+  const saved = createClozeSession({ lawId: 'accessibility', category: '無障礙客房', count: 5 });
+  saved.answers = clozeBank.questions.find(q => q.id === saved.order[0])!.blanks.map((_, index) => index ? '' : '90');
+  await page.addInitScript(({ key, value }) => {
+    if (!localStorage.getItem(key)) localStorage.setItem(key, JSON.stringify(value));
+  }, { key: CLOZE_STORAGE_KEY, value: saved });
+  await page.goto('/practice/law-cloze');
+  await expect(page.getByRole('button', { name: '繼續上次測驗' })).toBeVisible();
+  await expect(page.getByLabel('填空完整條文')).toHaveCount(0);
+  await page.getByRole('combobox', { name: '法規', exact: true }).selectOption('building-act');
+  await expect(page.getByLabel('填空完整條文')).toHaveCount(0);
+  page.once('dialog', dialog => dialog.dismiss());
+  await page.getByRole('button', { name: '開始新測驗' }).click();
+  expect(await page.evaluate(key => JSON.parse(localStorage.getItem(key)!), CLOZE_STORAGE_KEY)).toEqual(saved);
+  await page.getByRole('button', { name: '繼續上次測驗' }).click();
+  await expect(page.getByRole('combobox', { name: '法規', exact: true })).toHaveValue('accessibility');
+  await expect(page.getByRole('textbox').first()).toHaveValue('90');
+});
+
 test('every question presents its complete article before submission with only reviewed ranges masked', async ({ page }, testInfo) => {
   const session = createClozeSession({ count: 5 });
   session.order = ['ar-suspension', 'co-resolution', 'nu-investment', 'pr-progress-payment', 'ci-upgrade-a'];
@@ -10,6 +29,7 @@ test('every question presents its complete article before submission with only r
     if (!localStorage.getItem(key)) localStorage.setItem(key, JSON.stringify(value));
   }, { key: CLOZE_STORAGE_KEY, value: session });
   await page.goto('/practice/law-cloze');
+  await page.getByRole('button', { name: '繼續上次測驗' }).click();
   for (const id of session.order) {
     const q = clozeBank.questions.find((q) => q.id === id)!;
     const passage = page.getByLabel('填空完整條文', { exact: true });
@@ -37,6 +57,7 @@ test('every question presents its complete article before submission with only r
     await page.getByRole('button', { name: '提交答案' }).click();
     await expect(page.locator('pre')).toHaveText(q.fullText);
     await page.reload();
+    await page.getByRole('button', { name: '繼續上次測驗' }).click();
     await expect(page.getByRole('status')).toContainText(`本題答對 ${q.blanks.length} / ${q.blanks.length} 空`);
     if (id !== 'ci-upgrade-a') await page.getByRole('button', { name: '下一題' }).click();
   }
@@ -52,6 +73,7 @@ test('four added statutes support answer-only reading and mixed scores across re
     if (!localStorage.getItem(key)) localStorage.setItem(key, JSON.stringify(value));
   }, { key: CLOZE_STORAGE_KEY, value: session });
   await page.goto('/practice/law-cloze');
+  await page.getByRole('button', { name: '繼續上次測驗' }).click();
   for (const [index, id] of session.order.entries()) {
     const q = clozeBank.questions.find((q) => q.id === id)!;
     await expect(page.getByRole('heading', { name: q.title, exact: true })).toBeVisible();
@@ -68,6 +90,7 @@ test('four added statutes support answer-only reading and mixed scores across re
     }
     await expect(page.locator('pre')).toHaveText(q.fullText);
     await page.reload();
+    await page.getByRole('button', { name: '繼續上次測驗' }).click();
     await expect(page.locator('pre')).toHaveText(q.fullText);
     if (index === 0) {
       const stored = await page.evaluate((key) => JSON.parse(localStorage.getItem(key)!), CLOZE_STORAGE_KEY);
@@ -94,7 +117,7 @@ test('new-law selections disclose capped counts and only draw from that law', as
     await page.getByRole('combobox', { name: '每次測驗題數' }).selectOption('30');
     const expected = clozeBank.questions.filter((q) => q.lawId === lawId).length;
     await expect(page.getByText(/此考點題數不足/)).toContainText(`新測驗將抽 ${expected} 題`);
-    await page.getByRole('button', { name: '開始新測驗' }).click();
+    await page.getByRole('button', { name: /^開始(?:新)?測驗$/ }).click();
     await expect.poll(async () => page.evaluate((key) => JSON.parse(localStorage.getItem(key)!).lawId, CLOZE_STORAGE_KEY)).toBe(lawId);
     const stored = await page.evaluate((key) => JSON.parse(localStorage.getItem(key)!), CLOZE_STORAGE_KEY);
     expect(stored.order.length).toBe(expected);
@@ -110,6 +133,7 @@ test('law cloze preserves statute notation, shows full articles and saves progre
     if (!localStorage.getItem(key)) localStorage.setItem(key, JSON.stringify(value));
   }, { key: CLOZE_STORAGE_KEY, value: session });
   await page.goto('/practice/law-cloze');
+  await page.getByRole('button', { name: '繼續上次測驗' }).click();
   const inputs = page.getByRole('textbox');
   await expect(inputs).toHaveCount(3);
   await expect(page.locator('[aria-label="填空完整條文"] input')).toHaveCount(3);
@@ -118,6 +142,7 @@ test('law cloze preserves statute notation, shows full articles and saves progre
   // Fill a later blank first to exercise partial-draft restoration.
   await inputs.nth(2).fill('75');
   await page.reload();
+  await page.getByRole('button', { name: '繼續上次測驗' }).click();
   await expect(inputs.nth(2)).toHaveValue('75');
   await inputs.nth(0).fill('1/5');
   await inputs.nth(1).fill('0.125');
@@ -126,6 +151,7 @@ test('law cloze preserves statute notation, shows full articles and saves progre
   const question = clozeBank.questions.find((q) => q.id === 'daylight')!;
   await expect(page.locator('pre')).toHaveText(question.fullText);
   await page.reload();
+  await page.getByRole('button', { name: '繼續上次測驗' }).click();
   await expect(page.getByRole('status')).toHaveText('本題答對 2 / 3 空');
   await expect(inputs.nth(1)).toHaveValue('0.125');
   const width = await page.evaluate(() => ({ scroll: document.documentElement.scrollWidth, viewport: innerWidth }));
@@ -150,6 +176,7 @@ test('law cloze preserves statute notation, shows full articles and saves progre
   await expect(page.getByRole('heading', { name: '本輪測驗完成' })).toBeVisible();
   await expect(page.getByText(/5 題中 4 題全對/)).toBeVisible();
   await page.reload();
+  await page.getByRole('button', { name: '繼續上次測驗' }).click();
   await expect(page.getByRole('heading', { name: '本輪測驗完成' })).toBeVisible();
   await page.getByRole('button', { name: '再練一輪' }).click();
   await expect(page.getByRole('heading', { name: '本輪測驗完成' })).toHaveCount(0);
@@ -159,7 +186,7 @@ test('law/count/category selections start a new round and disclose small pools',
   await page.goto('/practice/law-cloze');
   await page.getByRole('combobox', { name: '法規', exact: true }).selectOption('accessibility');
   await page.getByRole('combobox', { name: '每次測驗題數' }).selectOption('30');
-  await page.getByRole('button', { name: '開始新測驗' }).click();
+  await page.getByRole('button', { name: '開始測驗', exact: true }).click();
   await expect.poll(async () => page.evaluate((key) => JSON.parse(localStorage.getItem(key)!).order.length, CLOZE_STORAGE_KEY)).toBe(30);
   const state = await page.evaluate((key) => JSON.parse(localStorage.getItem(key)!), CLOZE_STORAGE_KEY);
   expect(new Set(state.order).size).toBe(30);
@@ -180,6 +207,7 @@ test('repeated thresholds synchronize the same inline blank', async ({ page }) =
   session.order = ['fire-area', ...session.order.filter((id) => id !== 'fire-area')].slice(0, 5);
   await page.addInitScript(({ key, value }) => localStorage.setItem(key, JSON.stringify(value)), { key: CLOZE_STORAGE_KEY, value: session });
   await page.goto('/practice/law-cloze');
+  await page.getByRole('button', { name: '繼續上次測驗' }).click();
   const q = clozeBank.questions.find((q) => q.id === 'fire-area')!;
   for (const [i, blank] of q.blanks.entries()) {
     const fields = page.getByRole('textbox', { name: `第 ${i + 1} 空：${blank.label}`, exact: true });
@@ -201,14 +229,17 @@ test('bank expansion keeps the previous saved two-question underground round', a
     if (!localStorage.getItem(key)) localStorage.setItem(key, JSON.stringify(value));
   }, { key: CLOZE_STORAGE_KEY, value: session });
   await page.goto('/practice/law-cloze');
+  await page.getByRole('button', { name: '繼續上次測驗' }).click();
   await expect(page.getByRole('heading', { name: '地下通道尺寸' })).toBeVisible();
   await expect(page.getByRole('status')).toHaveText('本題答對 3 / 3 空');
   await expect(page.getByRole('note')).toContainText('保留先前的 2 題順序、草稿與成績');
   await page.reload();
+  await page.getByRole('button', { name: '繼續上次測驗' }).click();
   await expect(page.getByRole('status')).toHaveText('本題答對 3 / 3 空');
   const before = await page.evaluate((key) => JSON.parse(localStorage.getItem(key)!), CLOZE_STORAGE_KEY);
   expect(before.order).toEqual(session.order);
   expect(before.answers).toEqual(session.answers);
+  page.once('dialog', dialog => dialog.accept());
   await page.getByRole('button', { name: '開始新測驗' }).click();
   await expect.poll(async () => page.evaluate((key) => JSON.parse(localStorage.getItem(key)!).version, CLOZE_STORAGE_KEY)).toBe(clozeBank.version);
   const after = await page.evaluate((key) => JSON.parse(localStorage.getItem(key)!), CLOZE_STORAGE_KEY);
@@ -223,6 +254,7 @@ test('expanded construction topics support inline notation and exact red origina
   session.order = ['d-windowless-definition', 'd-shadow-height', 'd-slope-retaining', 'd-highrise-drift', 'd-detention'];
   await page.addInitScript(({ key, value }) => localStorage.setItem(key, JSON.stringify(value)), { key: CLOZE_STORAGE_KEY, value: session });
   await page.goto('/practice/law-cloze');
+  await page.getByRole('button', { name: '繼續上次測驗' }).click();
   for (const id of session.order) {
     const q = clozeBank.questions.find((q) => q.id === id)!;
     await expect(page.getByRole('heading', { name: q.title, exact: true })).toBeVisible();
