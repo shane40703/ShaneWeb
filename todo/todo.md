@@ -57,7 +57,7 @@
 - [x] 比較自介和留言的連結各帶來多少人：
   - 只看點擊次數：到 Threads App 的洞察報告看各連結被點了幾次。
   - 看點進來的人有沒有留下來：到 Google Analytics 的 Explore 開 Free form，Rows 只放 Session manual ad content，Values 放 Sessions 和 Engaged sessions，篩選 Session source / medium 包含 `threads`，日期選 Last 28 days，再把這頁加入書籤。`bio` 和 `link_in_bio` 都算自介，`comment` 是留言。
-- [ ] 到 Explore 建表，篩選 `question_answered`，列放 `practice_area` 或 `practice_mode`，值放活躍使用者和事件數。
+- [x] 到 Explore 建表，篩選 `question_answered`，列放 `practice_area` 或 `practice_mode`，值放活躍使用者和事件數。
 
 ### Google 登入（1.104）
 
