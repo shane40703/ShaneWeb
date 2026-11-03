@@ -192,6 +192,18 @@
       "height": 1199,
       "createdAt": "2026-10-27T08:22:13.746Z",
       "updatedAt": "2026-10-27T08:22:13.746Z"
+    },
+    {
+      "id": "eba1bc28-1882-403f-9439-9777256d1f39",
+      "title": "碳排放評估整理",
+      "description": "建築使用碳排與蘊含碳排：BERS 與 LEBR 評估方法比較",
+      "category": "env",
+      "src": "/memory-gallery/assets/eba1bc28-1882-403f-9439-9777256d1f39.webp",
+      "thumbnailSrc": "/memory-gallery/assets/eba1bc28-1882-403f-9439-9777256d1f39-thumb.webp",
+      "width": 1055,
+      "height": 1491,
+      "createdAt": "2026-11-03T08:27:41.524Z",
+      "updatedAt": "2026-11-03T08:27:41.524Z"
     }
   ]
 }
