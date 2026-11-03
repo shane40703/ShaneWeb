@@ -44,6 +44,19 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  async rewrites() {
+    // Google sign-in's helper pages, served from this site: see resolveFirebaseAuthDomain.
+    // The variable must stay <project>.firebaseapp.com, or this would forward to itself.
+    const firebaseAuthDomain = process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN;
+    return firebaseAuthDomain
+      ? [
+          {
+            source: '/__/auth/:path*',
+            destination: `https://${firebaseAuthDomain}/__/auth/:path*`,
+          },
+        ]
+      : [];
+  },
   async headers() {
     return [
       {

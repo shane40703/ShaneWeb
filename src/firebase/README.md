@@ -41,6 +41,13 @@ firebase deploy --only firestore:rules,storage
 
 - 在 Authentication > Settings > Authorized domains 加入正式網站網域。
 - 在 Vercel 專案的 Environment Variables 加入與 `.env.local` 相同的六個變數，然後重新部署。
+- 在 Google Cloud Console 的 APIs & Services > Credentials，打開 OAuth 2.0 Client「Web client (auto created by Google Service)」，在 Authorized redirect URIs 加入 `https://<正式網站網域>/__/auth/handler`。換網域時也要加新的一筆；沒加的話，按「同步作答」會停在 Google 的 `redirect_uri_mismatch` 錯誤頁。
+
+### Google 登入的方式
+
+- 登入不開彈出視窗，整個頁面轉到 Google，登入完回到原本那一頁。iPhone 主畫面 App 的彈出視窗關掉時網站無從得知，按鈕會一直停在「登入中」，所以全站改用轉導。
+- 轉導回來後，Firebase 要從它的登入頁讀結果。登入頁若在 `firebaseapp.com`，就是嵌在本站裡的第三方頁面，Safari、Chrome 都會把它的儲存空間隔開，結果會遺失。所以網站在 https 下把自己的網域當成 `authDomain`（`resolveFirebaseAuthDomain`），`next.config.ts` 再把 `/__/auth/` 轉給 `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`。這個變數要維持 `<project>.firebaseapp.com`，改成本站網域會變成轉給自己。
+- 本機用 http 開發時，Firebase 只能組出 https 的登入頁網址，所以仍用 `firebaseapp.com`，轉導回來不會登入。要在本機測登入，需改用 https，並把本機的 `/__/auth/handler` 網址也加進 Authorized redirect URIs。
 
 ## 同步範圍
 

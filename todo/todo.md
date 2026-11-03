@@ -62,3 +62,27 @@
 - [ ] 到 Traffic acquisition 確認有 `threads / social`，有就代表 Threads 保留了連結後面的參數。
 - [ ] 到 Acquisition > Overview > View Manual campaigns，維度換成 Session manual ad content，比較自介 `bio` 和留言 `comment`。
 - [ ] 到 Explore 建表，篩選 `question_answered`，列放 `practice_area` 或 `practice_mode`，值放活躍使用者和事件數。
+
+### Google 登入（1.104）
+
+- [ ] 1.104 推上去之前：到 Google Cloud Console 的 APIs & Services > Credentials，打開 OAuth 2.0 Client「Web client (auto created by Google Service)」，在 Authorized redirect URIs 加上 `https://exam-tw.vercel.app/__/auth/handler`，按 Save。沒加的話，按「同步作答」會停在 Google 的錯誤頁。存檔後可能要等幾分鐘才生效。
+- [ ] 1.104 上線後，用電腦和 iPhone 各按一次「同步作答」，iPhone 也要從主畫面打開的 App 試一次。確認登入完會回到原本那一頁並開始同步；在 Google 畫面按返回或左上角 ✕，按鈕要恢復成「同步作答」。
+
+## 1.104 - 2026-11-03
+
+狀態：已實作待審核
+
+原始需求：我想要全面移除登入彈出視窗
+
+- [x] 按「同步作答」不再跳出 Google 登入小視窗，整個頁面會換到 Google 登入畫面，登入完自動回到原本那一頁。
+- [x] 從主畫面打開的 iPhone App 裡也能登入，不會再出現「請用 Safari 打開本站再登入」。
+- [x] 在 Google 登入畫面按返回或左上角 ✕ 取消，會回到原本那一頁，按鈕恢復成「同步作答」。
+- [x] 從 Google 回來、網站還在確認登入時，按鈕顯示「登入中」。
+
+使用方式：點右上角的「同步作答」（手機是雲朵圖示），在 Google 畫面選帳號，回到原本那一頁後就開始同步。
+
+### ai agent 實作時的決定
+
+- 上線前要先在 Google Cloud Console 加一個登入用的網址，步驟寫在 1.103。沒加就推上去的話，所有人按「同步作答」都會停在 Google 的錯誤頁。
+- 登入用的頁面改放在本站網址下，由網站在背後轉給 Firebase。放在 Firebase 的網址時，瀏覽器會擋掉從 Google 帶回來的登入結果，回來後還是沒登入。附帶的改變是 Google 登入畫面顯示的網站會從 shaneweb.firebaseapp.com 變成本站網址。
+- iPhone 加入主畫面的步驟沒有改，還是請用戶關閉「打開為網頁 App」。主畫面 App 的資料和 Safari 分開，登入後同步的資料會回來，但沒登入時存的作答紀錄在 App 裡看不到。

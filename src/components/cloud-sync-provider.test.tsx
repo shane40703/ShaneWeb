@@ -7,7 +7,6 @@ import {
   parseCloudDifficultSettings,
   parseCloudNote,
   readAttemptChanges,
-  shouldRetrySignInWithRedirect,
   uploadEach,
   useCloudSync,
 } from '@/components/cloud-sync-provider';
@@ -93,11 +92,6 @@ describe('CloudSyncProvider', () => {
       .toContain('啟用 Google 登入');
     expect(getFirebaseSignInErrorMessage({ code: 'auth/network-request-failed' }))
       .toContain('檢查網路');
-  });
-
-  it('falls back to redirect for environments that cannot open a popup', () => {
-    expect(shouldRetrySignInWithRedirect({ code: 'auth/popup-blocked' })).toBe(true);
-    expect(shouldRetrySignInWithRedirect({ code: 'auth/popup-closed-by-user' })).toBe(false);
   });
 
   it('keeps uploading the other records when the server refuses one', async () => {

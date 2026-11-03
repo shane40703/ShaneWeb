@@ -9,8 +9,8 @@ import {
 } from 'react';
 import {
   GoogleAuthProvider,
+  getRedirectResult,
   onAuthStateChanged,
-  signInWithPopup,
   signInWithRedirect,
   signOut,
   type User,
@@ -31,7 +31,6 @@ import {
   firebaseConfigurationAvailable,
   getFirebaseServices,
 } from '@/lib/firebase-client';
-import { isIosWebApp } from '@/lib/home-screen';
 import { isQuizAttempt } from '@/lib/study';
 import type { QuizAttempt, SyncedNote } from '@/lib/types';
 import { useAppState } from '@/state/app-state';
@@ -60,12 +59,24 @@ function firebaseAuthErrorCode(reason: unknown) {
     : '';
 }
 
-export function shouldRetrySignInWithRedirect(reason: unknown) {
-  return [
-    'auth/popup-blocked',
-    'auth/operation-not-supported-in-this-environment',
-    'auth/web-storage-unsupported',
-  ].includes(firebaseAuthErrorCode(reason));
+/** Set while the page is away at Google, so the way back says 登入中 until Firebase answers. */
+const SIGN_IN_PENDING_KEY = 'shaneweb:sign-in-pending';
+
+function signInPending() {
+  try {
+    return sessionStorage.getItem(SIGN_IN_PENDING_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
+function setSignInPending(pending: boolean) {
+  try {
+    if (pending) sessionStorage.setItem(SIGN_IN_PENDING_KEY, '1');
+    else sessionStorage.removeItem(SIGN_IN_PENDING_KEY);
+  } catch {
+    // Without storage the way back shows 同步作答 until Firebase answers.
+  }
 }
 
 export function getFirebaseSignInErrorMessage(reason: unknown) {
@@ -74,16 +85,13 @@ export function getFirebaseSignInErrorMessage(reason: unknown) {
       return '目前網域尚未加入 Firebase Authorized domains。';
     case 'auth/operation-not-allowed':
       return 'Firebase 尚未啟用 Google 登入方式。';
-    case 'auth/popup-closed-by-user':
-    case 'auth/cancelled-popup-request':
-      return 'Google 登入視窗已關閉，尚未完成登入。';
     case 'auth/network-request-failed':
       return '無法連線至 Google 登入服務，請檢查網路後重試。';
     case 'auth/invalid-api-key':
     case 'auth/api-key-not-valid.-please-pass-a-valid-api-key.':
       return 'Firebase API Key 設定無效，請檢查正式環境變數。';
     default:
-      return 'Google 登入未完成，請允許彈出式視窗後重試。';
+      return 'Google 登入未完成，請稍後重試。';
   }
 }
 
@@ -214,7 +222,11 @@ export function CloudSyncProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const firebase = getFirebaseServices();
     if (!firebase) return;
-    return onAuthStateChanged(firebase.auth, (nextUser) => {
+    let active = true;
+    // Back from Google: Firebase reads the result before it reports the user.
+    if (signInPending()) void Promise.resolve().then(() => active && setStatus('syncing'));
+    const stopListening = onAuthStateChanged(firebase.auth, (nextUser) => {
+      setSignInPending(false);
       authenticatedUserId.current = nextUser?.uid ?? null;
       setUser(nextUser);
       setReadyUserId(null);
@@ -223,6 +235,25 @@ export function CloudSyncProvider({ children }: { children: ReactNode }) {
       setError('');
       setStatus(nextUser ? 'syncing' : 'signed-out');
     });
+    // Why a trip to Google came back without a user; the listener above has already run.
+    getRedirectResult(firebase.auth).catch((reason) => {
+      if (active && !authenticatedUserId.current) setError(getFirebaseSignInErrorMessage(reason));
+    });
+    return () => {
+      active = false;
+      stopListening();
+    };
+  }, []);
+
+  useEffect(() => {
+    // Leaving Google with Back or ✕ can bring this page back exactly as it was left, on 登入中.
+    const restored = (event: PageTransitionEvent) => {
+      if (!event.persisted || authenticatedUserId.current) return;
+      setSignInPending(false);
+      setStatus((current) => (current === 'syncing' ? 'signed-out' : current));
+    };
+    window.addEventListener('pageshow', restored);
+    return () => window.removeEventListener('pageshow', restored);
   }, []);
 
   useEffect(() => {
@@ -552,26 +583,15 @@ export function CloudSyncProvider({ children }: { children: ReactNode }) {
   const handleSignIn = useCallback(async () => {
     const firebase = getFirebaseServices();
     if (!firebase) return;
-    // Firebase's popup never reports back to a Home Screen web app, so the button would stay on 登入中.
-    if (isIosWebApp()) {
-      setError('從主畫面的網頁 App 無法登入。請用 Safari 打開本站再登入。');
-      return;
-    }
     setStatus('syncing');
     setError('');
+    setSignInPending(true);
     try {
-      await signInWithPopup(firebase.auth, new GoogleAuthProvider());
+      // The whole page goes to Google and back. In an iPhone Home Screen web app a popup
+      // cannot report being closed, so the button would stay on 登入中.
+      await signInWithRedirect(firebase.auth, new GoogleAuthProvider());
     } catch (reason) {
-      if (shouldRetrySignInWithRedirect(reason)) {
-        try {
-          await signInWithRedirect(firebase.auth, new GoogleAuthProvider());
-          return;
-        } catch (redirectReason) {
-          setStatus('signed-out');
-          setError(getFirebaseSignInErrorMessage(redirectReason));
-          return;
-        }
-      }
+      setSignInPending(false);
       setStatus('signed-out');
       setError(getFirebaseSignInErrorMessage(reason));
     }

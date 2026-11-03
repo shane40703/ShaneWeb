@@ -19,6 +19,21 @@ export function resolveFirebaseStorageBucket(
   return configuredBucket?.trim() || (projectId ? `${projectId}.firebasestorage.app` : undefined);
 }
 
+/**
+ * Google sign-in runs on this site's own /__/auth/, which next.config.ts forwards to Firebase.
+ * The frame that reads the result is then not a third-party one whose storage the browser
+ * partitions, which loses every redirect sign-in in Safari and Chrome. Firebase only builds
+ * https helper addresses, so plain-http development keeps the configured domain.
+ */
+export function resolveFirebaseAuthDomain(
+  configuredDomain: string | undefined,
+  location: Pick<Location, 'protocol' | 'host'> | undefined = typeof window === 'undefined'
+    ? undefined
+    : window.location,
+) {
+  return location?.protocol === 'https:' ? location.host : configuredDomain;
+}
+
 export function firebaseConfigurationAvailable() {
   return Boolean(
     process.env.NEXT_PUBLIC_FIREBASE_API_KEY &&
@@ -39,7 +54,7 @@ export function getFirebaseServices(): FirebaseServices | null {
     ? getApp()
     : initializeApp({
         apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-        authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+        authDomain: resolveFirebaseAuthDomain(process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN),
         projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
         storageBucket: resolveFirebaseStorageBucket(
           process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,

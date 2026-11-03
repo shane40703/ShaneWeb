@@ -81,10 +81,3 @@ export function showInstallPrompt() {
   installPrompt = null;
   notify();
 }
-
-/** Macs also have navigator.standalone, for Dock web apps, and popups work there. */
-export function isIosWebApp() {
-  return (
-    isIosDevice(navigator.userAgent, navigator.maxTouchPoints) && navigatorStandalone()
-  );
-}

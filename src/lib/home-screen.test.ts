@@ -153,19 +153,4 @@ describe('home screen state', () => {
     });
     expect(mode.current).toBeNull();
   });
-
-  it.each([
-    ['a web app on an iPhone', { userAgent: iPhoneWebApp, standalone: true }, true],
-    ['Safari on an iPhone', { userAgent: iPhoneSafari, standalone: false }, false],
-    ['a web app on an iPad', { userAgent: macSafari, standalone: true }, true],
-    [
-      'a Mac Dock web app, where popups work',
-      { userAgent: macSafari, maxTouchPoints: 0, standalone: true },
-      false,
-    ],
-    ['Android', {}, false],
-  ])('isIosWebApp in %s', async (_name, device, expected) => {
-    const { isIosWebApp } = await load(device);
-    expect(isIosWebApp()).toBe(expected);
-  });
 });
