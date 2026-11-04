@@ -166,3 +166,14 @@ for (const decision of ['skip', 'leave'] as const) {
     await expectActivity(page, activity.submittedAt, expectedToday);
   });
 }
+
+test('both history pages name the tab before any script runs', async ({ request }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop', 'the server sends every device the same page');
+  for (const [path, title] of [
+    ['/history', '歷屆試題作答履歷｜建築師考試'],
+    ['/practice-history', '每日練習履歷｜建築師考試'],
+  ]) {
+    const html = await (await request.get(path)).text();
+    expect(html).toMatch(new RegExp(`<title[^>]*>${title}</title>`));
+  }
+});
