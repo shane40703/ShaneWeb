@@ -6,6 +6,7 @@ import {
   createPracticeSession,
   DEFAULT_PRACTICE_SETTINGS,
   resolvePracticePool,
+  type PracticeSettings,
 } from '@/features/practice/practice-session';
 import { PracticeSetup } from '@/features/practice/practice-setup';
 import type { Question, SubjectId } from '@/lib/types';
@@ -47,7 +48,7 @@ function LoadingBankSetup({
   onRetry: () => void;
 }) {
   const [subject, setSubject] = useState<SubjectId>('law');
-  const [settings, setSettings] = useState(DEFAULT_PRACTICE_SETTINGS);
+  const [settings, setSettings] = useState<PracticeSettings>(DEFAULT_PRACTICE_SETTINGS);
   const questions = useMemo(() => loadedQuestions(bank, subject), [bank, subject]);
   const pool = useMemo(
     () => resolvePracticePool(questions, subject, settings),
@@ -105,7 +106,7 @@ function useHeldPaperFonts(hold: boolean) {
  * 未完成題組不會自動刪除；有保存進度時可選「繼續未完成練習」，開始新題組前會先確認取代。
  *
  * 畫面上可以操作看到：
- * - 選科目（環控等題庫不到 50 題的科目，題數多一個「全部」選項）
+ * - 選科目、年度與類別後可選「作答該類別所有題目」；更換條件時題數跟著更新
  * - 還沒選科時四科皆未勾選、紙本與線上作答停用；作答中的重新整理仍保留原題
  * - 展開「進階選項」調整年度、類別、題數、打亂選項、一律給分題：摘要旁出現「已調整」，
  *   可以「恢復預設」

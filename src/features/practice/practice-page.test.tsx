@@ -366,6 +366,28 @@ function writeFromOtherTab(value: PracticeSession | null) {
 }
 
 describe('PracticePage setup', () => {
+  it('selects every matching question and follows category, year and subject changes', async () => {
+    renderAt();
+    await openAdvanced();
+    const all = () => screen.getByRole('button', { name: /作答該類別所有題目/ });
+    fireEvent.click(all());
+    expect(all()).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByText('已選 法規・從 60 題中抽 60 題')).toBeInTheDocument();
+    fireEvent.change(screen.getByRole('combobox', { name: '題目類別' }), { target: { value: '建築法' } });
+    expect(screen.getByText('已選 法規・從 15 題中抽 15 題')).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText('起始年度'), { target: { value: '113' } });
+    expect(screen.getByText('已選 法規・從 40 題中抽 40 題')).toBeInTheDocument();
+    fireEvent.change(screen.getByRole('combobox', { name: '題目類別' }), { target: { value: '建築法' } });
+    expect(screen.getByText('已選 法規・從 10 題中抽 10 題')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('radio', { name: /建築環境控制/ }));
+    expect(all()).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByText('已選 環控・從 12 題中抽 12 題')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: '線上作答' }));
+    await screen.findByRole('region', { name: '題目與選項' });
+    expect(stored()!.questionIds).toHaveLength(12);
+    expect(new Set(stored()!.questionIds).size).toBe(12);
+  });
+
   it('starts from the daily defaults and keeps everything but the subject in the advanced options', async () => {
     renderAt();
     const setup = await screen.findByRole('region', { name: '每日抽題練習設定' });

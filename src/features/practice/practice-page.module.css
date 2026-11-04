@@ -356,6 +356,16 @@
   font-weight: 600;
 }
 
+.countChoices button.allCountChoice {
+  grid-column: span 2;
+}
+
+.countChoices button.allCountChoice strong {
+  grid-column: 1 / -1;
+  font-family: inherit;
+  font-size: 13px;
+}
+
 .countChoices button small {
   grid-column: 1 / -1;
   margin-top: 2px;

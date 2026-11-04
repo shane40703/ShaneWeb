@@ -247,6 +247,17 @@ describe('resolvePracticePool', () => {
     expect(none.countOptions).toEqual([]);
     expect(none.count).toBe(0);
   });
+
+  it('follows all eligible questions as category, year and credit settings change', () => {
+    const all = { ...DEFAULT_PRACTICE_SETTINGS, count: 'all' as const, category: '建築法' };
+    expect(resolvePracticePool(bank, 'law', all).count).toBe(2);
+    expect(resolvePracticePool(bank, 'law', { ...all, fromYear: 113 }).count).toBe(1);
+    expect(resolvePracticePool(bank, 'law', { ...all, includeAllCredit: true }).count).toBe(3);
+    expect(resolvePracticePool(bank, 'law', { ...all, category: 'all' }).count).toBe(4);
+    expect(resolvePracticePool(bank, 'env', all).count).toBe(1);
+    expect(resolvePracticePool([], 'law', all).count).toBe(0);
+    expect(isDefaultPracticeSettings(all)).toBe(false);
+  });
 });
 
 describe('createPracticeSession', () => {
@@ -278,6 +289,19 @@ describe('createPracticeSession', () => {
     expect(first.questionIds).not.toEqual(second.questionIds);
     expect(first.optionOrders).toEqual({});
     expect(first.id).not.toBe(second.id);
+  });
+
+  it('draws every matching question beyond 50 without duplicates and can restore a large set', () => {
+    const largeBank = range(240, (index) => makeQuestion(`law-114-${index + 1}`));
+    const allPool = resolvePracticePool(largeBank, 'law', { ...DEFAULT_PRACTICE_SETTINGS, count: 'all' });
+    const session = createPracticeSession(allPool, 'law', true, seeded(1));
+    expect(session.questionIds).toHaveLength(240);
+    expect(new Set(session.questionIds).size).toBe(240);
+    expect(parsePracticeSession(JSON.stringify(session))?.questionIds).toEqual(session.questionIds);
+    const byId = new Map(largeBank.map(q => [q.id, q]));
+    expect(createPracticePaper(session, byId).questions).toHaveLength(240);
+    const records = createPracticeAttempts(session, byId, undefined, true);
+    expect(records.map(record => record.attempt.questionIds.length)).toEqual([200, 40]);
   });
 });
 

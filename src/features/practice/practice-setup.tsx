@@ -15,7 +15,6 @@ import { getSubject, subjects } from '@/question-bank/catalog';
 import {
   DEFAULT_PRACTICE_SETTINGS,
   isDefaultPracticeSettings,
-  PRACTICE_COUNT_OPTIONS,
   type PracticePool,
   type PracticeSettings,
 } from './practice-session';
@@ -26,14 +25,6 @@ const ADVANCED_ID = 'practice-advanced-options';
 
 function estimatedMinutes(count: number) {
   return Math.max(1, Math.round(count * 1.4));
-}
-
-/** The extra option a small pool offers, so 50 can still mean "up to 50". */
-function isAllOption(count: number, pool: PracticePool) {
-  return (
-    count === pool.candidates.length &&
-    !(PRACTICE_COUNT_OPTIONS as readonly number[]).includes(count)
-  );
 }
 
 export function PracticeSetup({
@@ -217,16 +208,24 @@ export function PracticeSetup({
                   <button
                     type="button"
                     key={count}
-                    aria-pressed={count === pool.count}
+                    aria-pressed={settings.count !== 'all' && count === pool.count}
                     onClick={() => update({ count })}
                   >
                     <strong>{count}</strong> 題
                     <small>
-                      {isAllOption(count, pool) ? '全部・' : ''}約{' '}
-                      {estimatedMinutes(count)} 分鐘
+                      約 {estimatedMinutes(count)} 分鐘
                     </small>
                   </button>
                 ))}
+                <button
+                  type="button"
+                  className={styles.allCountChoice}
+                  aria-pressed={settings.count === 'all'}
+                  onClick={() => update({ count: 'all' })}
+                >
+                  <strong>作答該類別所有題目</strong>
+                  <small>{pool.candidates.length} 題・約 {estimatedMinutes(pool.candidates.length)} 分鐘</small>
+                </button>
               </div>
             ) : (
               <small className={styles.groupNote}>

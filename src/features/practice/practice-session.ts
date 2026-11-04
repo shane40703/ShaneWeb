@@ -27,12 +27,13 @@ export interface PracticeSettings {
   /** Unset means the latest year that has questions. */
   toYear?: number;
   category: string;
-  count: number;
+  /** 'all' follows the filtered pool when the subject, range or category changes. */
+  count: number | 'all';
   shuffleOptions: boolean;
   includeAllCredit: boolean;
 }
 
-export const DEFAULT_PRACTICE_SETTINGS: PracticeSettings = {
+export const DEFAULT_PRACTICE_SETTINGS: PracticeSettings & { count: number } = {
   category: 'all',
   count: MAX_PRACTICE_COUNT,
   shuffleOptions: true,
@@ -212,11 +213,14 @@ export function resolvePracticePool(
   ) {
     countOptions.push(candidates.length);
   }
-  const count = countOptions.includes(settings.count)
-    ? settings.count
-    : (countOptions.filter((option) => option <= settings.count).at(-1) ??
-      countOptions.at(-1) ??
-      0);
+  const selectedCount = settings.count;
+  const count = selectedCount === 'all'
+    ? candidates.length
+    : countOptions.includes(selectedCount)
+      ? selectedCount
+      : (countOptions.filter((option) => option <= selectedCount).at(-1) ??
+        countOptions.at(-1) ??
+        0);
 
   return {
     eligibleCount: eligible.length,
@@ -259,7 +263,7 @@ export interface PracticeSession {
   eliminated: Record<string, number[]>;
   elapsedSeconds: Record<string, number>;
   currentIndex: number;
-  /** A whole-subject review uses the same quiz, without the random draw's count cap. */
+  /** A whole-subject review uses the same quiz as daily practice. */
   reviewSource?: 'difficult' | 'wrong';
 }
 
