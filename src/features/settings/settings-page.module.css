@@ -2,8 +2,15 @@
    frame), separated by dashed rules. Each section is a title, a description and plain controls;
    nothing inside is a card. */
 .page {
+  -webkit-user-select: none;
+  user-select: none;
   min-width: 0;
   display: grid;
+}
+
+.page :is(input, textarea, [contenteditable='true']) {
+  -webkit-user-select: text;
+  user-select: text;
 }
 
 .settingSection {

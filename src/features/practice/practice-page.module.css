@@ -50,6 +50,8 @@
 /* ---- Setup: one framed panel; subjects, options and help are rule-separated sections ---- */
 
 .setup {
+  -webkit-user-select: none;
+  user-select: none;
   display: grid;
   border: var(--frame);
   border-radius: var(--radius-frame);

@@ -8,6 +8,7 @@ import { pageParameters, withPageFrame } from '../../support/story-environment';
  * 每張卡片說明抽題／模擬考方式與適合對象；長說明會隨卡片寬度換行。
  * 三張卡片使用整頁寬度、一欄直排，手機不會橫向溢出。統計數字照 getStaticProps 用範例題庫
  * 計算，所以比實際網站少。卡片會換到其他頁，在故事裡只記錄在 Actions 面板。
+ * 入口卡片文字不可拖曳反白。
  */
 const meta = {
   title: 'Layouts/每日練習/總覽',

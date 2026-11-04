@@ -29,6 +29,8 @@
 }
 
 .card {
+  -webkit-user-select: none;
+  user-select: none;
   position: relative;
   min-width: 0;
   padding: 22px 24px;

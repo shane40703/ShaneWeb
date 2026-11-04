@@ -15,6 +15,8 @@
 }
 
 .sidebarInner {
+  -webkit-user-select: none;
+  user-select: none;
   height: 100%;
   padding: 18px 20px 20px;
   display: flex;
@@ -172,6 +174,11 @@
   gap: 10px;
 }
 
+.topbarLeft {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
 /* A long page title wraps instead of squeezing the menu button. */
 .topbarLeft > button {
   flex: none;
@@ -287,6 +294,8 @@
 }
 
 .settingsPopup {
+  -webkit-user-select: none;
+  user-select: none;
   width: min(1120px, 96vw);
   max-height: min(900px, 92vh);
   position: relative;
@@ -296,6 +305,11 @@
   border-radius: var(--radius-popup);
   background: var(--surface);
   box-shadow: var(--shadow-lg);
+}
+
+.settingsPopup :is(input, textarea, [contenteditable='true']) {
+  -webkit-user-select: text;
+  user-select: text;
 }
 
 .settingsPopup > header {

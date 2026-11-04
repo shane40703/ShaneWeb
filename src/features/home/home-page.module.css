@@ -38,6 +38,8 @@
 .examStatus { max-width: 240px; font-size: clamp(32px, 4cqi, 48px); font-weight: 600; }
 .countdownValue .examWish { max-width: 240px; text-align: center; line-height: 1.6; font-size: 14px; }
 .practiceShortcut {
+  -webkit-user-select: none;
+  user-select: none;
   min-width: 0; padding: 20px 24px; display: flex; flex-wrap: wrap; align-items: center;
   justify-content: space-between; gap: 16px; border: var(--frame); background: var(--surface);
   color: var(--text); text-decoration: none;
@@ -61,6 +63,8 @@
 }
 
 .subjectCard {
+  -webkit-user-select: none;
+  user-select: none;
   min-width: 0;
   min-height: 300px;
   padding: 22px 24px;

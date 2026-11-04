@@ -24,6 +24,7 @@ function overviewChoice(name: keyof typeof overviews) {
  * 歷屆試題資料集成總覽（/resources）：考題分析、速記圖庫、法規資料庫三張卡片。
  * 統計數字照 getStaticProps 用範例題庫計算，所以比實際網站少；
  * 速記圖庫的縮圖是網站實際的整理圖。卡片會換到其他頁，在故事裡只記錄在 Actions 面板。
+ * 卡片標題不可拖曳反白，內文資料仍可選取。
  *
  * Controls 的 overview 可以切換：
  * - 「只有一個年度」：題庫只有 113 年時，年度範圍只顯示一個年份。

@@ -37,3 +37,14 @@
   - `https://exam-tw.vercel.app/exams/construction/114`
   - `https://exam-tw.vercel.app/exams/structure/114`
 - [ ] 到 Performance 看 Total clicks 和 Total impressions 有沒有開始出現，以及別人搜尋哪些字找到本站。
+
+
+## 1.106 - 2026-11-04
+
+狀態：已實作待審核
+
+![alt text](image.png) 這個區塊讓字無法選取(不可反白)
+![alt text](image-1.png) 這個區塊讓字無法選取(不可反白)，連帶設定內都一樣
+![alt text](image-2.png) ![alt text](image-3.png)討論版、考古題選擇、每日練習、法規克漏字選擇葉面讓字無法選取(不可反白)
+
+實作說明：指定的社群區塊、設定視窗與設定頁、科目年度選擇及練習設定區不反白；另處理側欄、頁面標題與首頁／功能入口卡片。題目、條文、詳解、筆記與輸入欄位維持原有選取及編輯功能。

@@ -3,6 +3,8 @@
    The panel is its own container: the breakpoints at the end follow its width, not the
    viewport's (beside the sidebar an 820px window leaves it about 500px). */
 .panel {
+  -webkit-user-select: none;
+  user-select: none;
   width: 100%;
   margin-bottom: 24px;
   container-type: inline-size;

@@ -1,4 +1,6 @@
 .page {
+  -webkit-user-select: none;
+  user-select: none;
   container-type: inline-size;
   display: grid;
   gap: 24px;

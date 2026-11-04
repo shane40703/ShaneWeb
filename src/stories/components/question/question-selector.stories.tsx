@@ -29,6 +29,7 @@ const yearOptions = fixtureOptions(
  * 畫面上可以操作看到：點科目、點年度切換（Controls 的 subjectId、year 跟著變）。
  * 用 Controls 換年度選項（我的難題的停用年度、歷屆試題資料集成的跨年度）、勾選停用的科目
  * （disabledSubjectIds）。
+ * 選題面板文字不可拖曳反白，不影響下方題目內容。
  */
 const meta = {
   title: 'Components/題目/QuestionSelector',

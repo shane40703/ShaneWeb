@@ -32,6 +32,7 @@ function loadedQuestions(bank: BankState, subject: SubjectId): Question[] {
  * 題庫還沒載入好時的設定畫面。選科列只顯示科目名稱，不顯示介紹或題庫數字。
  * 整頁故事的題庫一定載入得到，所以這裡用 PracticePage 的算法
  * 自己準備 PracticeSetup：選科、調整進階選項一樣照網站的規則重算抽題範圍。
+ * 設定面板文字不可拖曳反白。
  */
 function LoadingBankSetup({
   bank,

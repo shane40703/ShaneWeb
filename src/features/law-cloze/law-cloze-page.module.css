@@ -5,6 +5,11 @@
   gap: 20px;
 }
 
+.intro {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
 /* Each block is one framed panel on the paper; inside, sections are separated by rules. */
 .intro,
 .card,
