@@ -290,6 +290,11 @@ export function useToast() {
   return context;
 }
 
+/** Like useToast, but null outside ToastProvider: for components that also render alone. */
+export function useOptionalToast() {
+  return useContext(ToastContext);
+}
+
 export function ConfirmDialog({
   trigger,
   open,

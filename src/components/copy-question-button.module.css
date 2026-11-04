@@ -1,0 +1,58 @@
+/* The copy button is its own confirmation: its icon and label swap in place. Each state
+   is one face (icon + label), and all three faces share one grid cell, so the widest one
+   (複製題目 / 複製失敗) sets the width and nothing beside the button moves. A shorter face
+   stays centred, its icon next to its label. */
+.faces {
+  display: grid;
+  justify-items: center;
+  align-items: center;
+  gap: inherit;
+}
+
+.face {
+  grid-area: 1 / 1;
+  display: inline-flex;
+  align-items: center;
+  /* The shared Button's icon-to-label gap. */
+  gap: inherit;
+}
+
+.inactive {
+  visibility: hidden;
+}
+
+/* Copied stays ink: green beside a question would read as 答對了. Only a failure is red. */
+.failed {
+  color: var(--danger);
+}
+
+/* The one moment: the check arrives; the label swaps instantly. */
+.arrive {
+  transform-origin: center;
+  animation: copy-check-arrive 160ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes copy-check-arrive {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .arrive {
+    animation: none;
+  }
+}
+
+.status {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
