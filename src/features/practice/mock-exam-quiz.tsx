@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import {
   IconAlertTriangle,
+  IconArrowDown,
   IconArrowLeft,
   IconArrowRight,
+  IconArrowUp,
   IconBookmark,
   IconFlag,
   IconLoader2,
@@ -31,6 +33,26 @@ import { ElapsedClock } from './practice-quiz';
 import type { PracticeQuestionStatus } from './practice-quiz';
 import { getPracticeCategories, type PracticeTimer } from './practice-session';
 import styles from './practice-page.module.css';
+
+const ARROW_KEYS = new Set(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight']);
+
+/**
+ * Where ↑ or ↓ moves the answer: from no answer, ↓ starts at the top and ↑ at the bottom.
+ * Struck-out options are stepped over, and the ends stop instead of wrapping round, so a
+ * press too many never jumps from D back to A. Undefined when there is nowhere to go.
+ */
+function stepOption(
+  count: number,
+  eliminated: readonly number[],
+  from: number | undefined,
+  step: 1 | -1,
+) {
+  let next = from === undefined ? (step > 0 ? 0 : count - 1) : from + step;
+  for (; next >= 0 && next < count; next += step) {
+    if (!eliminated.includes(next)) return next;
+  }
+  return undefined;
+}
 
 /** One question of a paper at a time, answered like the real exam: no verdict until 交卷. */
 export function MockExamQuiz({
@@ -71,6 +93,7 @@ export function MockExamQuiz({
 }) {
   const { state, dispatch } = useAppState();
   const headingRef = useRef<HTMLHeadingElement>(null);
+  const optionsRef = useRef<HTMLDivElement>(null);
   const numbersRef = useRef<HTMLDivElement>(null);
   const [checkingBlanks, setCheckingBlanks] = useState(false);
   const total = paper.questionCount;
@@ -132,37 +155,73 @@ export function MockExamQuiz({
     }
   }, [index, status, current?.selected]);
 
-  /** Active only with focus in the paper, and never on a dialog or the browser's keys. */
-  function handleShortcut(event: KeyboardEvent<HTMLElement>) {
-    if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
-    if (event.repeat || !(event.target instanceof Element)) return;
-    if (event.target.closest('[role="dialog"], [role="alertdialog"]')) return;
-    // event.code: with 注音 on, event.key is ㄙ instead of n.
-    const digit = /^(?:Digit|Numpad)([1-9])$/.exec(event.code)?.[1];
-    if (digit && question) {
-      const option = Number(digit) - 1;
-      const eliminated = current?.eliminatedOptions?.includes(option);
-      if (
-        option < question.options.length &&
-        !eliminated &&
-        current?.selected !== option
-      ) {
-        onSelect(option);
-      }
-    } else if (event.code === 'KeyN' && !isLast) {
-      onGoTo(index + 1);
-    } else if (event.code === 'KeyP' && index > 0) {
-      onGoTo(index - 1);
+  // A focused option keeps its place when the question changes, where its ring would mark
+  // an answer the new question does not have; the new question's heading takes focus.
+  useEffect(() => {
+    if (optionsRef.current?.contains(document.activeElement)) {
+      headingRef.current?.focus({ preventScroll: true });
     }
+  }, [index]);
+
+  /**
+   * ↑↓ move the answer and ←→ change the question, wherever focus is in the paper. Caught
+   * on the way in: on a focused option, the option list's own arrows would change the
+   * answer on ←→ and come round from D to A.
+   */
+  function handleArrowKey(event: KeyboardEvent<HTMLElement>) {
+    const target = event.target;
+    if (!ARROW_KEYS.has(event.key) || !(target instanceof HTMLElement)) return;
+    if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+    // A dialog over the paper, or a field to type in, keeps its own arrows.
+    if (
+      target.closest('[role="dialog"], [role="alertdialog"], input, textarea, select') ||
+      target.isContentEditable
+    ) {
+      return;
+    }
+    // Not the page's either: a held key would scroll it once the first step is taken.
+    event.preventDefault();
+    event.stopPropagation();
+    // One press, one step: holding → does not run through the paper.
+    if (event.repeat) return;
+    if (event.key === 'ArrowLeft') {
+      if (index > 0) onGoTo(index - 1);
+      return;
+    }
+    if (event.key === 'ArrowRight') {
+      // On the last question too: 交卷 is only ever a button.
+      if (!isLast) onGoTo(index + 1);
+      return;
+    }
+    if (!question) return;
+    const radios = Array.from(
+      optionsRef.current?.querySelectorAll<HTMLElement>('[role="radio"]') ?? [],
+    );
+    const focusedRadio = target.closest<HTMLElement>('[role="radio"]');
+    const focusedIndex = focusedRadio ? radios.indexOf(focusedRadio) : -1;
+    const next = stepOption(
+      question.options.length,
+      current?.eliminatedOptions ?? [],
+      // From the option under focus, like any radio list; otherwise from the answer.
+      focusedIndex >= 0 ? focusedIndex : current?.selected,
+      event.key === 'ArrowDown' ? 1 : -1,
+    );
+    if (next === undefined) return;
+    if (next !== current?.selected) onSelect(next);
+    const radio = radios[next];
+    // Focus on an option goes along, so a screen reader reads the new answer.
+    if (focusedIndex >= 0) radio?.focus({ preventScroll: true });
+    // The new answer in sight, clear of the sticky bars by the page's scroll padding.
+    radio?.closest('label')?.scrollIntoView?.({ block: 'nearest', behavior: 'instant' });
   }
 
   return (
     <section
       className={`${styles.practice} ${styles.paperQuiz}`}
       aria-label="歷屆試題模擬考作答"
-      // Takes focus from a click anywhere in the paper, so the shortcuts never go quiet.
+      // Takes focus from a click anywhere in the paper, so the arrow keys never go quiet.
       tabIndex={-1}
-      onKeyDown={handleShortcut}
+      onKeyDownCapture={handleArrowKey}
     >
       <h2
         ref={headingRef}
@@ -235,7 +294,7 @@ export function MockExamQuiz({
               <div className={styles.prompt}>
                 <QuestionPrompt question={question} />
               </div>
-              <div className={styles.optionsArea}>
+              <div className={styles.optionsArea} ref={optionsRef}>
                 <OptionGroup
                   label={`第 ${index + 1} 題請選擇答案`}
                   options={question.options}
@@ -248,10 +307,26 @@ export function MockExamQuiz({
             </div>
             <footer>
               <ElapsedClock timer={timer} savedSeconds={summary.elapsedSeconds} />
+              {/* Read out as 上 下 選答案・左 右 換題. */}
               <p className={styles.shortcutHint}>
-                <kbd>1</kbd>～<kbd>{question.options.length}</kbd> 選答・<kbd>N</kbd>{' '}
-                下一題・
-                <kbd>P</kbd> 上一題
+                <kbd>
+                  <IconArrowUp size={12} stroke={2} aria-hidden="true" />
+                  <span className={styles.visuallyHidden}>上</span>
+                </kbd>
+                <kbd>
+                  <IconArrowDown size={12} stroke={2} aria-hidden="true" />
+                  <span className={styles.visuallyHidden}>下</span>
+                </kbd>
+                <span>選答案・</span>
+                <kbd>
+                  <IconArrowLeft size={12} stroke={2} aria-hidden="true" />
+                  <span className={styles.visuallyHidden}>左</span>
+                </kbd>
+                <kbd>
+                  <IconArrowRight size={12} stroke={2} aria-hidden="true" />
+                  <span className={styles.visuallyHidden}>右</span>
+                </kbd>
+                <span>換題</span>
               </p>
               <div className={styles.navButtons}>
                 <QuestionMapDrawer
@@ -311,7 +386,11 @@ export function MockExamQuiz({
                     </>
                   )}
                 />
-                <Button disabled={index === 0} onClick={() => onGoTo(index - 1)}>
+                <Button
+                  disabled={index === 0}
+                  aria-keyshortcuts="ArrowLeft"
+                  onClick={() => onGoTo(index - 1)}
+                >
                   <IconArrowLeft size={17} aria-hidden="true" /> 上一題
                 </Button>
                 {/* Keyed: reaching the last question must not turn the focused 下一題 into 交卷. */}
@@ -325,7 +404,12 @@ export function MockExamQuiz({
                     <IconFlag size={17} aria-hidden="true" /> 交卷
                   </Button>
                 ) : (
-                  <Button key="next" variant="primary" onClick={() => onGoTo(index + 1)}>
+                  <Button
+                    key="next"
+                    variant="primary"
+                    aria-keyshortcuts="ArrowRight"
+                    onClick={() => onGoTo(index + 1)}
+                  >
                     下一題 <IconArrowRight size={17} aria-hidden="true" />
                   </Button>
                 )}

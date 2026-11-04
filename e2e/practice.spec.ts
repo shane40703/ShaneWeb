@@ -562,7 +562,7 @@ test('the mock exam marks answers on a sheet, not as right or wrong, and checks 
   await expect(quiz.getByRole('heading', { name: '第 7 題，共 40 題' })).toBeAttached();
 });
 
-test('the paper keeps its shortcuts wherever a click or a closed dialog leaves focus', async ({
+test('the paper keeps its arrow keys wherever a click or a closed dialog leaves focus', async ({
   page,
   isMobile,
 }) => {
@@ -578,20 +578,35 @@ test('the paper keeps its shortcuts wherever a click or a closed dialog leaves f
     await page.waitForTimeout(150);
   };
 
+  const radios = question.getByRole('radio');
+
   // A click on the question's text.
   await question.locator('p').first().click();
-  await page.keyboard.press('n');
+  await page.keyboard.press('ArrowRight');
   await expectQuestion(2);
-  // A double-click on an option keeps the answer and the shortcuts.
+  // A double-click on an option keeps the answer and the keys. On that option, → is the
+  // next question, not the next option, and ← comes back to the same answer.
   await question.getByRole('radiogroup').locator('label').nth(1).dblclick();
-  await expect(question.getByRole('radio').nth(1)).toHaveAttribute('aria-checked', 'true');
-  await page.keyboard.press('n');
+  await expect(radios.nth(1)).toHaveAttribute('aria-checked', 'true');
+  await page.keyboard.press('ArrowRight');
+  await expectQuestion(3);
+  await page.keyboard.press('ArrowLeft');
+  await expectQuestion(2);
+  await expect(radios.nth(1)).toHaveAttribute('aria-checked', 'true');
+  // From a clicked D, ↓ stays on D instead of coming round to A, and ↑ takes focus to C.
+  await question.getByRole('radiogroup').locator('label').nth(3).click();
+  await page.keyboard.press('ArrowDown');
+  await expect(radios.nth(3)).toHaveAttribute('aria-checked', 'true');
+  await page.keyboard.press('ArrowUp');
+  await expect(radios.nth(2)).toHaveAttribute('aria-checked', 'true');
+  await expect(radios.nth(2)).toBeFocused();
+  await page.keyboard.press('ArrowRight');
   await expectQuestion(3);
   // The strike-out button under focus turns off once its option is chosen.
   await question.getByRole('button', { name: '刪去選項 A' }).focus();
-  await page.keyboard.press('1');
+  await page.keyboard.press('ArrowDown');
   await expect(question.getByRole('button', { name: '刪去選項 A' })).toBeDisabled();
-  await page.keyboard.press('n');
+  await page.keyboard.press('ArrowRight');
   await expectQuestion(4);
 
   // Back from the 交卷 check to a blank, with the button that opened it gone.
@@ -602,7 +617,7 @@ test('the paper keeps its shortcuts wherever a click or a closed dialog leaves f
   await check.getByRole('button', { name: '回到第 7 題' }).click();
   await expectQuestion(7);
   await expect(check).toBeHidden();
-  await page.keyboard.press('n');
+  await page.keyboard.press('ArrowRight');
   await expectQuestion(8);
 });
 

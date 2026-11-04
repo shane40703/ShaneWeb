@@ -768,7 +768,9 @@
   @media (hover: hover) {
     .shortcutHint {
       margin: 0 auto 0 8px;
-      display: block;
+      display: flex;
+      align-items: center;
+      gap: 3px;
       color: var(--muted);
       font-size: 12px;
       white-space: nowrap;
@@ -776,12 +778,19 @@
   }
 }
 
+/* Key caps for the arrow keys, drawn with the same arrows as 上一題 and 下一題. */
 .shortcutHint kbd {
-  padding: 0 4px;
+  width: 18px;
+  height: 18px;
+  display: grid;
+  place-items: center;
   border: 1px solid var(--control-line);
   border-radius: var(--radius-frame);
-  font-family: var(--font-mono);
-  font-size: 11px;
+  color: var(--text-soft);
+}
+
+.shortcutHint kbd + span {
+  margin-left: 3px;
 }
 
 .navButtons {

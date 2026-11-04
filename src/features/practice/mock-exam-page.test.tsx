@@ -1,5 +1,5 @@
 import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from 'vitest';
 import { ToastProvider } from '@/components/ui/ui';
 import {
   QUIZ_PROGRESS_STORAGE_KEY,
@@ -443,31 +443,107 @@ describe('MockExamPage answering', () => {
     );
   });
 
-  it('answers and moves by key while focus is in the paper, whatever the input method', async () => {
+  it('moves the answer with ↑↓ and the question with ←→ while focus is in the paper', async () => {
     seedDraft({ 'law-114-01': { ...answered(1), eliminatedOptions: [2] } });
     renderAt('/practice/mock-exam?subject=law&year=114&q=1');
     await screen.findByRole('region', { name: '題目與選項' });
     const heading = screen.getByRole('heading', { name: '第 1 題，共 5 題' });
     expect(document.activeElement).toBe(heading);
+    const selected = () => storedDraft()['law-114-01']?.selected;
 
-    fireEvent.keyDown(heading, { code: 'Digit1', key: 'ㄅ' });
-    expect(storedDraft()['law-114-01']?.selected).toBe(0);
-    // A struck-out option stays out, the chosen answer's key does not take it back,
-    // and keys held with a modifier are the browser's.
-    fireEvent.keyDown(heading, { code: 'Digit3' });
-    fireEvent.keyDown(heading, { code: 'Digit1' });
-    fireEvent.keyDown(heading, { code: 'Digit2', ctrlKey: true });
-    fireEvent.keyDown(heading, { code: 'Digit4', metaKey: true });
-    expect(storedDraft()['law-114-01']?.selected).toBe(0);
+    // Down from B steps over the struck-out C, and stops at D instead of coming round to A.
+    // The page does not scroll under the keys.
+    expect(fireEvent.keyDown(heading, { key: 'ArrowDown' })).toBe(false);
+    expect(selected()).toBe(3);
+    fireEvent.keyDown(heading, { key: 'ArrowDown' });
+    expect(selected()).toBe(3);
+    fireEvent.keyDown(heading, { key: 'ArrowUp' });
+    expect(selected()).toBe(1);
+    fireEvent.keyDown(heading, { key: 'ArrowUp' });
+    fireEvent.keyDown(heading, { key: 'ArrowUp' });
+    expect(selected()).toBe(0);
+    expect(optionRadio('1-甲')).toHaveAttribute('aria-checked', 'true');
+    // The answer row shows the choice; focus stays on the question.
+    expect(document.activeElement).toBe(heading);
+    // Arrows held with a modifier are the browser's: Alt+← is Back, ⌘↓ the page's end.
+    expect(fireEvent.keyDown(heading, { key: 'ArrowDown', metaKey: true })).toBe(true);
+    fireEvent.keyDown(heading, { key: 'ArrowDown', ctrlKey: true });
+    fireEvent.keyDown(heading, { key: 'ArrowDown', shiftKey: true });
+    expect(selected()).toBe(0);
 
-    fireEvent.keyDown(heading, { code: 'KeyP' });
+    fireEvent.keyDown(heading, { key: 'ArrowLeft' });
+    fireEvent.keyDown(heading, { key: 'ArrowRight', altKey: true });
+    await flush();
     expect(router.snapshot.asPath).toBe('/practice/mock-exam?subject=law&year=114&q=1');
-    fireEvent.keyDown(heading, { code: 'KeyN', key: 'ㄙ' });
+    fireEvent.keyDown(heading, { key: 'ArrowRight' });
     await flush();
     expect(router.snapshot.asPath).toBe('/practice/mock-exam?subject=law&year=114&q=2');
-    fireEvent.keyDown(document.activeElement!, { code: 'KeyP' });
+    fireEvent.keyDown(document.activeElement!, { key: 'ArrowLeft' });
     await flush();
     expect(router.snapshot.asPath).toBe('/practice/mock-exam?subject=law&year=114&q=1');
+  });
+
+  it('enters a blank question from the top with ↓ and from the bottom with ↑', async () => {
+    seedDraft({ 'law-114-01': answered(0) });
+    renderAt('/practice/mock-exam?subject=law&year=114&q=2');
+    await screen.findByRole('region', { name: '題目與選項' });
+    const heading = screen.getByRole('heading', { name: '第 2 題，共 5 題' });
+
+    fireEvent.keyDown(heading, { key: 'ArrowUp' });
+    expect(storedDraft()['law-114-02']?.selected).toBe(3);
+
+    // The 3rd question, blank, with A struck out: ↓ starts at the first one left.
+    fireEvent.keyDown(heading, { key: 'ArrowRight' });
+    await flush();
+    fireEvent.click(screen.getByRole('button', { name: '刪去選項 A' }));
+    fireEvent.keyDown(document.activeElement!, { key: 'ArrowDown' });
+    expect(storedDraft()['law-114-03']?.selected).toBe(1);
+  });
+
+  it('takes one step for a key held down, and never scrolls the page under it', async () => {
+    seedDraft({ 'law-114-01': answered(0), 'law-114-02': answered(0) });
+    renderAt('/practice/mock-exam?subject=law&year=114&q=1');
+    await screen.findByRole('region', { name: '題目與選項' });
+    const heading = screen.getByRole('heading', { name: '第 1 題，共 5 題' });
+
+    fireEvent.keyDown(heading, { key: 'ArrowDown' });
+    expect(fireEvent.keyDown(heading, { key: 'ArrowDown', repeat: true })).toBe(false);
+    expect(storedDraft()['law-114-01']?.selected).toBe(1);
+
+    fireEvent.keyDown(heading, { key: 'ArrowRight' });
+    expect(fireEvent.keyDown(heading, { key: 'ArrowRight', repeat: true })).toBe(false);
+    await flush();
+    expect(router.snapshot.asPath).toBe('/practice/mock-exam?subject=law&year=114&q=2');
+  });
+
+  it('on a focused option, takes focus along with ↑↓ and changes the question on ←→', async () => {
+    seedDraft({ 'law-114-01': answered(1), 'law-114-02': answered(2) });
+    renderAt('/practice/mock-exam?subject=law&year=114&q=1');
+    await screen.findByRole('region', { name: '題目與選項' });
+    // jsdom does not scroll; the paper asks for it only where the browser can.
+    const scrolled = vi.fn();
+    Element.prototype.scrollIntoView = scrolled;
+    onTestFinished(() => {
+      delete (Element.prototype as Partial<Element>).scrollIntoView;
+    });
+
+    const second = optionRadio('1-乙') as HTMLElement;
+    second.focus();
+    fireEvent.keyDown(second, { key: 'ArrowDown' });
+    expect(storedDraft()['law-114-01']?.selected).toBe(2);
+    expect(document.activeElement).toBe(optionRadio('1-丙'));
+    expect(scrolled).toHaveBeenCalledWith({ block: 'nearest', behavior: 'instant' });
+
+    // Not the option list's own → that would answer D: the next question, answers kept.
+    fireEvent.keyDown(document.activeElement!, { key: 'ArrowRight' });
+    await flush();
+    expect(router.snapshot.asPath).toBe('/practice/mock-exam?subject=law&year=114&q=2');
+    expect(storedDraft()['law-114-01']?.selected).toBe(2);
+    expect(storedDraft()['law-114-02']?.selected).toBe(2);
+    // The ring does not stay on an option of the new question.
+    expect(document.activeElement).toBe(
+      screen.getByRole('heading', { name: '第 2 題，共 5 題' }),
+    );
   });
 
   it('does not take a key pressed on the way to the next question as an answer to this one', async () => {
@@ -476,8 +552,8 @@ describe('MockExamPage answering', () => {
     await screen.findByRole('region', { name: '題目與選項' });
     const heading = screen.getByRole('heading', { name: '第 1 題，共 5 題' });
 
-    fireEvent.keyDown(heading, { code: 'KeyN' });
-    fireEvent.keyDown(heading, { code: 'Digit3' });
+    fireEvent.keyDown(heading, { key: 'ArrowRight' });
+    fireEvent.keyDown(heading, { key: 'ArrowDown' });
     await flush();
 
     expect(router.snapshot.asPath).toBe('/practice/mock-exam?subject=law&year=114&q=2');
@@ -485,8 +561,8 @@ describe('MockExamPage answering', () => {
     expect(storedDraft()['law-114-02']?.selected).toBeUndefined();
 
     // Once the question is there, the same key answers it.
-    fireEvent.keyDown(document.activeElement!, { code: 'Digit3' });
-    expect(storedDraft()['law-114-02']?.selected).toBe(2);
+    fireEvent.keyDown(document.activeElement!, { key: 'ArrowDown' });
+    expect(storedDraft()['law-114-02']?.selected).toBe(0);
   });
 
   it('never submits from the keyboard shortcut on the last question', async () => {
@@ -499,7 +575,7 @@ describe('MockExamPage answering', () => {
     await screen.findByRole('region', { name: '題目與選項' });
 
     fireEvent.keyDown(screen.getByRole('heading', { name: '第 5 題，共 5 題' }), {
-      code: 'KeyN',
+      key: 'ArrowRight',
     });
     await flush();
 
