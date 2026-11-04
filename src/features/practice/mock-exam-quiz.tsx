@@ -5,7 +5,6 @@ import {
   IconArrowLeft,
   IconArrowRight,
   IconArrowUp,
-  IconBookmark,
   IconFlag,
   IconLoader2,
   IconPlayerPause,
@@ -67,7 +66,6 @@ export function MockExamQuiz({
   onRetry,
   onSelect,
   onToggleEliminated,
-  onToggleReview,
   onGoTo,
   onSubmit,
   onLeave,
@@ -86,7 +84,6 @@ export function MockExamQuiz({
   onRetry: () => void;
   onSelect: (selected: number | undefined) => void;
   onToggleEliminated: (option: number) => void;
-  onToggleReview: () => void;
   onGoTo: (index: number) => void;
   onSubmit: () => void;
   onLeave: () => void;
@@ -122,7 +119,6 @@ export function MockExamQuiz({
     return {
       sheet: true,
       answer,
-      review: progress[id]?.review === true,
       stateLabel: answer ? `已作答 ${answer}` : '未作答',
       difficult: state.difficultQuestionIds.includes(id),
     };
@@ -276,15 +272,6 @@ export function MockExamQuiz({
                     dispatch({ type: 'toggle-difficult', questionId: question.id })
                   }
                 />
-                <Button
-                  className={styles.reviewButton}
-                  aria-pressed={current?.review === true}
-                  aria-label="待檢查"
-                  onClick={onToggleReview}
-                >
-                  <IconBookmark size={18} stroke={2} aria-hidden="true" />
-                  待檢查
-                </Button>
                 <strong aria-label={`第 ${index + 1} 題，共 ${total} 題`}>
                   {index + 1} / {total}
                 </strong>

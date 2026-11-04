@@ -100,8 +100,8 @@
 }
 
 /* An answer sheet: nothing is marked right or wrong yet, so no status colours. A filled tile is
-   shaded like a pencilled box and shows the letter chosen; marks are folded page corners, which
-   stay readable on the solid current tile. */
+   shaded like a pencilled box and shows the letter chosen; the 難題 mark is a folded page corner,
+   which stays readable on the solid current tile. */
 .button[data-sheet='true'][data-difficult='true']:not(
     [aria-current='step'],
     [aria-pressed='true']
@@ -141,31 +141,19 @@
   font-weight: 600;
 }
 
-.button[data-sheet='true'][data-difficult='true']::after,
-.button[data-sheet='true'][data-review='true']::before {
+.button[data-sheet='true'][data-difficult='true']::after {
   content: '';
   width: 11px;
   height: 11px;
   position: absolute;
   top: -1px;
-  border-radius: 0;
-}
-
-.button[data-sheet='true'][data-difficult='true']::after {
   right: -1px;
+  border-radius: 0;
   background: var(--warning);
   clip-path: polygon(0 0, 100% 0, 100% 100%);
 }
 
-.button[data-sheet='true'][data-review='true']::before {
-  left: -1px;
-  background: var(--text);
-  clip-path: polygon(0 0, 100% 0, 0 100%);
-}
-
-.button[data-sheet='true'][aria-current='step']::before,
 .button[data-sheet='true'][aria-current='step']::after,
-.button[data-sheet='true'][aria-pressed='true']::before,
 .button[data-sheet='true'][aria-pressed='true']::after {
   background: var(--on-primary);
 }
@@ -205,25 +193,15 @@
   color: var(--text);
 }
 
-.legend i[data-mark='difficult']::after,
-.legend i[data-mark='review']::before {
+.legend i[data-mark='difficult']::after {
   content: '';
   width: 8px;
   height: 8px;
   position: absolute;
   top: -1px;
-}
-
-.legend i[data-mark='difficult']::after {
   right: -1px;
   background: var(--warning);
   clip-path: polygon(0 0, 100% 0, 100% 100%);
-}
-
-.legend i[data-mark='review']::before {
-  left: -1px;
-  background: var(--text);
-  clip-path: polygon(0 0, 100% 0, 0 100%);
 }
 
 .button:focus-visible {

@@ -1054,21 +1054,6 @@
   justify-content: center;
 }
 
-/* Pressed = the paper's own note, in ink: amber stays with the lasting 難題 mark. */
-.challenge .challengeActions > .reviewButton {
-  flex: none;
-  white-space: nowrap;
-}
-
-.challenge .challengeActions > .reviewButton[aria-pressed='true'],
-.challenge
-  .challengeActions
-  > .reviewButton[aria-pressed='true']:hover:not([data-disabled]) {
-  border-color: var(--line-strong);
-  background: var(--surface-3);
-  color: var(--text);
-}
-
 /* ---- Result: framed panels stacked on the paper ---- */
 
 .resultArea {

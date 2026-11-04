@@ -949,7 +949,7 @@ describe('MockExamPage submitting', () => {
     expect(appState.dispatch).toHaveBeenCalledTimes(1);
   });
 
-  it('marks a question 待檢查 for this paper only, and steps to the next blank', async () => {
+  it('steps to the next blank from the 題號導覽', async () => {
     seedDraft({
       'law-114-01': answered(1),
       'law-114-02': answered(0),
@@ -958,16 +958,8 @@ describe('MockExamPage submitting', () => {
     renderAt('/practice/mock-exam?subject=law&year=114&q=2');
     await screen.findByRole('region', { name: '題目與選項' });
 
-    const review = screen.getByRole('button', { name: '待檢查' });
-    expect(review).toHaveAttribute('aria-pressed', 'false');
-    fireEvent.click(review);
-    expect(storedDraft()['law-114-02']).toMatchObject({ selected: 0, review: true });
-    expect(appState.dispatch).not.toHaveBeenCalled();
-    expect(review).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.queryByRole('button', { name: '待檢查' })).not.toBeInTheDocument();
     const navigator = screen.getByRole('region', { name: '題號導覽' });
-    expect(
-      within(navigator).getByRole('link', { name: '前往第 2 題（已作答 A、待檢查）' }),
-    ).toHaveAttribute('data-review', 'true');
 
     fireEvent.click(within(navigator).getByRole('button', { name: '下一個未作答' }));
     await flush();

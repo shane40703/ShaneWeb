@@ -527,22 +527,13 @@ test('the mock exam marks answers on a sheet, not as right or wrong, and checks 
   const question = page.getByRole('region', { name: '題目與選項' });
   await question.getByRole('radio').nth(1).click();
   const quiz = page.getByRole('region', { name: '歷屆試題模擬考作答', exact: true });
-  await quiz.getByRole('button', { name: '待檢查', exact: true }).click();
-  await expect(quiz.getByRole('button', { name: '待檢查', exact: true })).toHaveAttribute(
-    'aria-pressed',
-    'true',
-  );
-  await page.reload();
-  await expect(quiz.getByRole('button', { name: '待檢查', exact: true })).toHaveAttribute(
-    'aria-pressed',
-    'true',
-  );
+  await expect(quiz.getByRole('button', { name: '待檢查', exact: true })).toHaveCount(0);
 
   await quiz.getByRole('button', { name: /下一題/ }).click();
   await expect(page).toHaveURL(/q=2$/);
   const actions = await paperActions(page);
   await expect(
-    actions.locator('[aria-label="前往第 1 題（已作答 B、待檢查）"]'),
+    actions.locator('[aria-label="前往第 1 題（已作答 B）"]'),
   ).toHaveCSS('background-color', await page.evaluate(() => {
     const probe = document.createElement('i');
     probe.style.background = 'var(--surface-3)';

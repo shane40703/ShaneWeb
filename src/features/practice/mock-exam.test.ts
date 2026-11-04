@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { QUIZ_PROGRESS_STORAGE_KEY, writeQuizProgress } from './mock-exam-progress';
+import {
+  parseStoredQuizProgress,
+  QUIZ_PROGRESS_STORAGE_KEY,
+  writeQuizProgress,
+} from './mock-exam-progress';
 import { readStoredValue } from '@/lib/storage';
 import type { Question, SubjectId } from '@/lib/types';
 import {
@@ -325,10 +329,23 @@ describe('mock exam results', () => {
     expect(mockExamSubmitWarning(questions.slice(0, 1), progress)).toBeNull();
   });
 
-  it('treats a paper with only 待檢查 marks as started, so leaving keeps them', () => {
-    const opened = { elapsedSeconds: 0, startedAt: '2026-10-20T00:00:00.000Z' };
-    expect(isMockExamStarted({ 'law-114-01': opened })).toBe(false);
-    expect(isMockExamStarted({ 'law-114-01': { ...opened, review: true } })).toBe(true);
+  it('still opens a draft saved with the retired 待檢查 marks, which no longer count', () => {
+    const scope = mockExamScope('law', 114);
+    const startedAt = '2026-10-20T00:00:00.000Z';
+    const raw = JSON.stringify({
+      version: 2,
+      scopes: {
+        [scope]: {
+          'law-114-01': { selected: 1, review: true, elapsedSeconds: 5, startedAt },
+          'law-114-02': { review: true, elapsedSeconds: 0, startedAt },
+        },
+      },
+    });
+    const draft = parseStoredQuizProgress(raw)[scope];
+    expect(Object.keys(draft)).toEqual(['law-114-01', 'law-114-02']);
+    expect(draft['law-114-01']?.selected).toBe(1);
+    // A leftover mark alone is not a paper in progress.
+    expect(isMockExamStarted({ 'law-114-02': draft['law-114-02'] })).toBe(false);
   });
 
   it('counts the blanks of a record, telling 一律給分 apart', () => {

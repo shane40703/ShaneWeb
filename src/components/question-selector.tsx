@@ -161,7 +161,6 @@ export function QuestionNumberPicker({
     ariaLabel?: string;
     sheet?: boolean;
     answer?: string;
-    review?: boolean;
     stateLabel?: string;
     difficult?: boolean;
     hasContent?: boolean;
@@ -183,7 +182,6 @@ export function QuestionNumberPicker({
             active={question.id === value}
             sheet={question.sheet}
             answer={question.answer}
-            review={question.review}
             stateLabel={question.stateLabel}
             difficult={question.difficult}
             hasContent={question.hasContent}

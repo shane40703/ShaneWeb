@@ -504,14 +504,6 @@ export function MockExamPage({ papers }: { papers: MockExamPaper[] }) {
             startedAt: new Date().toISOString(),
           })
         }
-        onToggleReview={() =>
-          currentId &&
-          update({
-            type: 'toggle-review',
-            questionId: currentId,
-            startedAt: new Date().toISOString(),
-          })
-        }
         onGoTo={goTo}
         onSubmit={submit}
         onLeave={() => void navigate('push', setupHref)}

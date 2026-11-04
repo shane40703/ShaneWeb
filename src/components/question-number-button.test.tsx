@@ -45,7 +45,6 @@ describe('QuestionNumberButton', () => {
           active={false}
           sheet
           answer="B"
-          review
           difficult
           stateLabel="已作答 B"
           href="/practice/mock-exam?q=3"
@@ -57,12 +56,12 @@ describe('QuestionNumberButton', () => {
     );
 
     const tile = screen.getByRole('link', {
-      name: '前往第 3 題（已作答 B、已標記難題、待檢查）',
+      name: '前往第 3 題（已作答 B、已標記難題）',
     });
     expect(tile).toHaveTextContent('3B');
     expect(tile).toHaveAttribute('data-sheet', 'true');
     expect(tile).toHaveAttribute('data-filled', 'true');
-    expect(tile).toHaveAttribute('data-review', 'true');
+    expect(tile).not.toHaveAttribute('data-review');
     expect(tile).not.toHaveAttribute('data-answered');
   });
 });
