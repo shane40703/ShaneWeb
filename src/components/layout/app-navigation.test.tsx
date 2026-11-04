@@ -157,6 +157,7 @@ describe('grouped app navigation', () => {
     ['/appearance', '設定'],
     ['/community', '社群連結'],
     ['/privacy', '隱私權政策'],
+    ['/404', '找不到頁面'],
     ['/unknown', '建築師考試'],
   ])('preserves the topbar title for %s', (pathname, title) => {
     expect(navigationPageTitle(pathname)).toBe(title);

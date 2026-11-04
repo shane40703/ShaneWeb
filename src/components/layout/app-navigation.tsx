@@ -34,6 +34,8 @@ function isCurrent(pathname: string, item: NavigationLinkItem) {
 
 export function navigationPageTitle(pathname: string) {
   if (pathname === '/') return '首頁';
+  // The page for any address the site does not have, named like its tab.
+  if (pathname === '/404') return '找不到頁面';
   const path = pathname === '/appearance' ? '/settings' : pathname;
   return titledPages.find(item => isActive(path, item.href))?.label ?? '建築師考試';
 }
