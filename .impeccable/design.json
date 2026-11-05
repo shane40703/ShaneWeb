@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-30T19:56:34.365Z",
+  "generatedAt": "2026-11-05T01:01:05.000Z",
   "title": "Design System: 建築師考試練習平台",
   "extensions": {
     "colorMeta": {
@@ -871,7 +871,7 @@
       "name": "側欄項目",
       "kind": "nav",
       "refersTo": "nav-item",
-      "description": "40px 高、15px 字、左側 18px 墨線藍線條圖示；滑過淡灰底，目前頁用側欄目前底與深墨線藍 600 字。",
+      "description": "40px 高、15px 字、左側 18px 墨線藍線條圖示；滑過淡灰底，目前頁用側欄目前底與深墨線藍 600 字。工具區包含設定、社群連結及隱私權政策；手機與平板另有加入主畫面。",
       "html": "<nav class=\"ds-nav\"><a class=\"ds-nav-item\" href=\"#\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><rect x=\"4\" y=\"5\" width=\"16\" height=\"16\" rx=\"1\"/><path d=\"M16 3v4M8 3v4M4 11h16\"/></svg><span>每日練習</span></a><a class=\"ds-nav-item\" href=\"#\" aria-current=\"page\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><rect x=\"4\" y=\"5\" width=\"16\" height=\"16\" rx=\"1\"/><path d=\"M16 3v4M8 3v4M4 11h16\"/></svg><span>考古題討論版</span></a><a class=\"ds-nav-item\" href=\"#\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><rect x=\"4\" y=\"5\" width=\"16\" height=\"16\" rx=\"1\"/><path d=\"M16 3v4M8 3v4M4 11h16\"/></svg><span>歷屆試題資料集成</span></a></nav>",
       "css": ".ds-nav { width: 220px; display: grid; gap: 2px; padding: 8px; background: var(--sidebar-surface, var(--surface, #fef9f1)); border-right: 1px solid var(--control-line, #a39b8c); font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, \"Segoe UI\", \"Helvetica Neue\", \"Noto Sans TC\", \"PingFang TC\", \"Microsoft JhengHei\", sans-serif); } .ds-nav-item { min-height: 40px; padding: 3px 6px; display: flex; align-items: center; gap: 8px; border-radius: 2px; color: var(--sidebar-text, var(--text, #373737)); font-size: 15px; line-height: 1.35; text-decoration: none; } .ds-nav-item svg { width: 18px; height: 18px; margin: 0 3px; color: var(--primary, #3157ba); flex: none; } .ds-nav-item:hover { background: var(--sidebar-hover, rgb(55 55 55 / 6%)); } .ds-nav-item[aria-current=\"page\"] { background: var(--sidebar-active, rgb(40 63 125 / 10%)); color: var(--primary-strong, #283f7d); font-weight: 600; } .ds-nav-item:focus-visible { outline: 2px solid var(--primary, #3157ba); outline-offset: 1px; }"
     },
