@@ -37,13 +37,21 @@ import {
   buildStems,
   facetQuestions,
   facetSummaries,
+  paperFacts,
+  paperTopicsOf,
   questionRefs,
   similarFileKey,
+  topLabels,
 } from '@/question-bank/derived-data';
-import { loadSubjectQuestions } from '@/server/question-bank.server';
+import {
+  getPaperQuestionSummaries,
+  loadSubjectQuestions,
+} from '@/server/question-bank.server';
 
 let bank: Question[] = [];
 const bySubject = {} as Record<SubjectId, Question[]>;
+/** Each paper as its file in public/question-data reaches the browser. */
+const paperFiles = new Map<string, Question[]>();
 const facets = {} as Record<SubjectId, ReturnType<typeof buildFacets>>;
 
 beforeAll(async () => {
@@ -52,6 +60,13 @@ beforeAll(async () => {
       years.map((year) => loadSubjectQuestions(subject.id, year)),
     );
     bySubject[subject.id] = papers.flat();
+    // The generator writes each paper exactly so (scripts/generate-question-data.ts).
+    papers.forEach((paper, index) => {
+      paperFiles.set(
+        `${subject.id}/${years[index]}`,
+        JSON.parse(JSON.stringify(paper)) as Question[],
+      );
+    });
     // Through JSON, as a file would arrive.
     facets[subject.id] = JSON.parse(JSON.stringify(buildFacets(bySubject[subject.id])));
   }
@@ -261,5 +276,95 @@ describe('the real bank survives the split', () => {
         (rows ?? []).filter(([id]) => id !== question.id).map(([id, text]) => [id, text]),
       ).toEqual(expected.map((item) => [item.id, item.text]));
     }
+  });
+});
+
+describe('the paper pages of 考古題討論版', () => {
+  it('lists the same topics from the build and from the downloaded paper, for every paper', async () => {
+    const summaries = await getPaperQuestionSummaries();
+    let papers = 0;
+    for (const subject of subjects) {
+      for (const year of years) {
+        const file = paperFiles.get(`${subject.id}/${year}`) ?? [];
+        if (!file.length) continue;
+        papers += 1;
+        const built = paperTopicsOf(
+          summaries.filter(
+            (summary) => summary.subject === subject.id && summary.year === year,
+          ),
+        );
+        expect(built).toEqual(paperTopicsOf(file));
+        expect(built.map(([id]) => id)).toEqual(
+          [...file].sort(comparePaperQuestionOrder).map((question) => question.id),
+        );
+      }
+    }
+    expect(papers).toBe(60);
+  });
+
+  it('counts the whole bank, one subject and one paper', () => {
+    const index = buildPaperIndex(bank);
+    const all = paperFacts(index);
+    expect(all.subjects).toEqual(subjects.map((subject) => subject.id));
+    expect(all.papers).toBe(60);
+    expect(all.multipleChoice + all.written).toBe(bank.length);
+    expect(all.written).toBe(
+      bank.filter((question) => question.format === 'written').length,
+    );
+    expect([all.firstYear, all.lastYear]).toEqual([100, 114]);
+    expect(paperFacts(index, 'env', 114)).toMatchObject({
+      papers: 1,
+      multipleChoice: 40,
+      written: 3,
+      firstYear: 114,
+      lastYear: 114,
+    });
+    expect(paperFacts(index, 'law').papers).toBe(15);
+  });
+});
+
+describe('topLabels', () => {
+  const rows = [
+    ['law-114-01', ['建築法']],
+    ['law-114-02', ['建築技術規則']],
+    ['law-114-03', ['建築技術規則', '建築法']],
+    ['law-114-04', ['都市計畫法']],
+    ['law-114-05', ['建築技術規則']],
+    ['law-114-06', ['都市計畫法']],
+  ] as const;
+
+  it('ranks by questions, a tie in paper order, and counts a question for each of its laws', () => {
+    expect(topLabels(rows, 3)).toEqual([
+      ['建築技術規則', 3],
+      ['建築法', 2],
+      ['都市計畫法', 2],
+    ]);
+    expect(topLabels(rows, 1)).toEqual([['建築技術規則', 3]]);
+    expect(topLabels([], 3)).toEqual([]);
+  });
+
+  it('puts written questions first and keeps a question once', () => {
+    const written = {
+      id: 'env-114-written-01',
+      format: 'written',
+      questionNumber: 1,
+      subject: 'env',
+      topic: '熱',
+      primaryCategory: '熱環境',
+    } as const;
+    const choice = { ...written, id: 'env-114-01', format: 'multiple-choice' } as const;
+    expect(paperTopicsOf([choice, written]).map(([id]) => id)).toEqual([
+      'env-114-written-01',
+      'env-114-01',
+    ]);
+    expect(
+      paperTopicsOf([
+        {
+          ...choice,
+          subject: 'law',
+          relatedLaws: ['建築法', '建築法', '建築技術規則'],
+        },
+      ]),
+    ).toEqual([['env-114-01', ['建築法', '建築技術規則']]]);
   });
 });

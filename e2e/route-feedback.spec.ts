@@ -28,7 +28,10 @@ test('the sidebar answers a click before the page arrives', async ({
 
   await expect(page).toHaveURL(/\/exams$/);
   await expect(placeholder).toHaveCount(0);
-  await expect(page.getByRole('heading', { name: '第 1 題' })).toBeVisible();
+  // 考古題討論版 lists its subjects.
+  await expect(
+    page.getByRole('link', { name: '營建法規與實務', exact: true }),
+  ).toBeVisible();
 });
 
 test('下一題 keeps the keyboard in place while the next paper downloads', async ({

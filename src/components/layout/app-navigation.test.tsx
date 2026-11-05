@@ -142,6 +142,10 @@ describe('grouped app navigation', () => {
     ['/practice/law-cloze', '法規克漏字'],
     ['/practice/mock-exam', '歷屆試題模擬考'],
     ['/exams', '考古題討論版'],
+    ['/exams/law', '營建法規與實務考古題'],
+    ['/exams/law/114', '114 年營建法規與實務考古題'],
+    ['/exams/env/100/written-1', '考古題討論版'],
+    ['/exams/law/114/3', '考古題討論版'],
     ['/resources', '歷屆試題資料集成'],
     ['/resources/analysis', '考題分析'],
     ['/resources/memory-gallery', '速記圖庫'],
@@ -161,6 +165,16 @@ describe('grouped app navigation', () => {
     ['/unknown', '建築師考試'],
   ])('preserves the topbar title for %s', (pathname, title) => {
     expect(navigationPageTitle(pathname)).toBe(title);
+  });
+
+  it.each([
+    [[], '考古題討論版'],
+    [['law'], '營建法規與實務考古題'],
+    [['env', '114'], '114 年建築環境控制考古題'],
+    [['law', '114', '3'], '考古題討論版'],
+  ])('names the 考古題討論版 page at %j like its tab', (slug, title) => {
+    expect(navigationPageTitle('/exams/[[...slug]]', { slug })).toBe(title);
+    expect(navigationPageTitle('/exams', { slug })).toBe(title);
   });
 
   it.each([

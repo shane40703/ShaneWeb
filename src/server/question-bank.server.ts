@@ -14,14 +14,16 @@ import {
   type SubjectId,
 } from '@/question-bank/schema';
 import { getLawQuestionFineTopic } from '@/lib/law-question-topics';
-import { examsQuestionId, examsSlugs } from '@/lib/question-path';
+import { examsPlace, examsSlugs } from '@/lib/question-path';
 import { getQuestionDisplayCategories } from '@/lib/study';
 import {
   buildFacets,
   buildPaperIndex,
   buildStems,
+  paperTopicsOf,
   similarRowsOf,
   type PaperIndex,
+  type PaperTopics,
   type SimilarRow,
   type SubjectFacets,
   type SubjectStems,
@@ -591,19 +593,58 @@ export interface QuestionPageProps {
   initialSimilar: SimilarRow[];
 }
 
-export async function getQuestionPageProps(
-  slug?: readonly string[],
+async function questionPageProps(
+  entries: readonly QuestionEntry[],
+  entry: QuestionEntry | undefined,
 ): Promise<QuestionPageProps> {
-  const entries = await getQuestionEntries();
-  const refs = entries.map(questionRefOf);
-  const wanted = examsQuestionId(slug ? [...slug] : undefined, refs);
-  const entry = wanted ? entries.find((item) => questionId(item) === wanted) : entries[0];
   const initialQuestion = entry ? await loadQuestion(entry) : null;
   const topic = initialQuestion ? getLawQuestionFineTopic(initialQuestion) : null;
   return {
-    paperIndex: buildPaperIndex(refs),
+    paperIndex: buildPaperIndex(entries.map(questionRefOf)),
     initialQuestion,
     initialSimilar: topic ? similarRowsOf(await getMultipleChoiceQuestions(), topic) : [],
+  };
+}
+
+/** 我的筆記: it opens on the bank's first question until the reader picks one. */
+export async function getQuestionPageProps(): Promise<QuestionPageProps> {
+  const entries = await getQuestionEntries();
+  return questionPageProps(entries, entries[0]);
+}
+
+/**
+ * 考古題討論版: a question's address prerenders that question. A paper's page gets its topic
+ * words instead, and 考古題討論版 itself and a subject only the index: no overview carries
+ * any question's text.
+ */
+export interface ExamsPageProps extends QuestionPageProps {
+  paperTopics: PaperTopics | null;
+}
+
+export async function getExamsPageProps(slug?: readonly string[]): Promise<ExamsPageProps> {
+  const entries = await getQuestionEntries();
+  const place = examsPlace(slug ? [...slug] : undefined);
+  if (place.kind === 'question') {
+    const entry = entries.find((item) => questionId(item) === place.questionId);
+    return { ...(await questionPageProps(entries, entry)), paperTopics: null };
+  }
+  const paperTopics =
+    place.kind === 'paper'
+      ? {
+          subject: place.subject,
+          year: place.year,
+          rows: paperTopicsOf(
+            (await getPaperQuestionSummaries()).filter(
+              (summary) => summary.subject === place.subject && summary.year === place.year,
+            ),
+          ),
+        }
+      : null;
+  return {
+    paperIndex: buildPaperIndex(entries.map(questionRefOf)),
+    initialQuestion: null,
+    initialSimilar: [],
+    paperTopics,
   };
 }
 

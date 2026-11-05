@@ -1,4 +1,5 @@
 import { getLawQuestionFineTopic } from '@/lib/law-question-topics';
+import { comparePaperQuestionOrder, getQuestionDisplayCategories } from '@/lib/study';
 import type { Question, QuestionSummary, SubjectId } from '@/lib/types';
 import { subjects } from '@/question-bank/catalog';
 
@@ -80,6 +81,103 @@ export function questionRefs(index: PaperIndex): QuestionRef[] {
     }
   }
   return refs;
+}
+
+/** What a set of papers holds, for the overview pages' sentences and figures. */
+export interface PaperFacts {
+  /** Subjects with at least one paper, in catalog order. */
+  subjects: SubjectId[];
+  papers: number;
+  multipleChoice: number;
+  written: number;
+  firstYear?: number;
+  lastYear?: number;
+}
+
+/** The whole bank, one subject or one paper of it. */
+export function paperFacts(
+  index: PaperIndex,
+  subject?: SubjectId,
+  year?: number,
+): PaperFacts {
+  const facts: PaperFacts = { subjects: [], papers: 0, multipleChoice: 0, written: 0 };
+  for (const { id } of subjects) {
+    if (subject && id !== subject) continue;
+    const rows = (index[id] ?? []).filter(([paperYear]) => !year || paperYear === year);
+    if (!rows.length) continue;
+    facts.subjects.push(id);
+    for (const [paperYear, multipleChoice, written] of rows) {
+      facts.papers += 1;
+      facts.multipleChoice += multipleChoice;
+      facts.written += written;
+      facts.firstYear = Math.min(facts.firstYear ?? paperYear, paperYear);
+      facts.lastYear = Math.max(facts.lastYear ?? paperYear, paperYear);
+    }
+  }
+  return facts;
+}
+
+/** [question id, the topic words its page shows as tags], in paper order. */
+export type PaperTopicRow = readonly [id: string, labels: readonly string[]];
+
+/** One paper's topic words: all a paper's overview page needs of its questions. */
+export interface PaperTopics {
+  subject: SubjectId;
+  year: number;
+  rows: readonly PaperTopicRow[];
+}
+
+type TopicFields = Pick<
+  Question,
+  | 'id'
+  | 'format'
+  | 'questionNumber'
+  | 'subject'
+  | 'topic'
+  | 'primaryCategory'
+  | 'relatedLaws'
+>;
+
+/**
+ * The same words the question page shows as tags, written questions first. The build reads
+ * them from the summaries and the browser from the paper file, so both must give the same rows.
+ */
+export function paperTopicsOf(questions: readonly TopicFields[]): PaperTopicRow[] {
+  return [...questions]
+    .sort(comparePaperQuestionOrder)
+    .map((question) => [question.id, getQuestionDisplayCategories(question)] as const);
+}
+
+/**
+ * The paper's most tested topics with their question counts: most questions first, a tie in
+ * paper order. A question with two laws counts for both.
+ */
+export function topLabels(rows: readonly PaperTopicRow[], count: number) {
+  const counts = new Map<string, number>();
+  for (const [, labels] of rows) {
+    for (const label of labels) counts.set(label, (counts.get(label) ?? 0) + 1);
+  }
+  // A Map keeps first-appearance order and the sort is stable, so ties stay in paper order.
+  return [...counts.entries()].sort((left, right) => right[1] - left[1]).slice(0, count);
+}
+
+/**
+ * A paper's topics: the prerendered ones when they are this paper's, otherwise from its loaded
+ * questions, or null while the paper is still on its way.
+ */
+export function paperTopicsFor(
+  subject: SubjectId,
+  year: number,
+  seed: PaperTopics | null | undefined,
+  entries: readonly QuestionEntry[],
+): PaperTopics | null {
+  if (seed?.subject === subject && seed.year === year) return seed;
+  const paper = entries.filter(
+    (entry) => entry.subject === subject && entry.year === year,
+  );
+  const bodies = paper.filter(hasBody);
+  if (!paper.length || bodies.length !== paper.length) return null;
+  return { subject, year, rows: paperTopicsOf(bodies) };
 }
 
 /** Fails the build rather than publish ids that do not exist. */

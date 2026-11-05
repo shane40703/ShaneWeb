@@ -106,6 +106,16 @@ test('past exams opens from the navigation and keeps browsing on /exams', async 
     );
   }
 
+  // Each overview lists the level below it, and a row leads one level down.
+  await page.getByRole('link', { name: '營建法規與實務', exact: true }).click();
+  await expect(page).toHaveURL(/\/exams\/law$/);
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('營建法規與實務考古題');
+  await page.getByRole('link', { name: '114 年', exact: true }).click();
+  await expect(page).toHaveURL(/\/exams\/law\/114$/);
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('114 年營建法規與實務考古題');
+  await page.getByRole('link', { name: /^第 1 題( |$)/ }).click();
+  await expect(page).toHaveURL(/\/exams\/law\/114\/1$/);
+
   const numbers = await questionTiles(page);
   await expectCurrentTile(questionTile(numbers, '第 1 題'));
   await closeQuestionTiles(page);
@@ -115,12 +125,17 @@ test('past exams opens from the navigation and keeps browsing on /exams', async 
   await expect(page).toHaveURL(/\/exams\/law\/114\/2$/);
   await page.getByRole('button', { name: '上一題' }).first().click();
   await expect(page).toHaveURL(/\/exams\/law\/114\/1$/);
+  // The year and subject tiles open those overviews, and the browser's back button returns.
   await expandSelector(page);
   await page
     .getByRole('group', { name: '年度' })
     .getByRole('link', { name: '112 年' })
     .click();
   await expect(page).toHaveURL(/\/exams\/law\/112$/);
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('112 年營建法規與實務考古題');
+  await page.goBack();
+  await expect(page).toHaveURL(/\/exams\/law\/114\/1$/);
+  // The selector folded after the choice.
   if (onPhone())
     await expect(page.getByRole('button', { name: '展開科目與年度' })).toHaveAttribute(
       'aria-expanded',
@@ -132,6 +147,10 @@ test('past exams opens from the navigation and keeps browsing on /exams', async 
     .getByRole('link', { name: /建築環境控制/ })
     .click();
   await expect(page).toHaveURL(/\/exams\/env$/);
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('建築環境控制考古題');
+  await page.getByRole('link', { name: '返回考古題討論版', exact: true }).click();
+  await expect(page).toHaveURL(/\/exams$/);
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('考古題討論版');
 
   await page.goto('/exams?question=law-114-01');
   const similar = page.getByRole('region', { name: '類似題目' }).getByRole('link');
@@ -246,7 +265,14 @@ test('posts on past exams stay with the question', async ({ page }) => {
 
 test('past exams questions are in the static HTML', async ({ request }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop');
-  const response = await request.get('/exams');
-  expect(response.ok()).toBe(true);
-  expect(await response.text()).toContain('依建築法規定，下列敘述何者錯誤？');
+  const prompt = '依建築法規定，下列敘述何者錯誤？';
+  const [board, question] = await Promise.all([
+    request.get('/exams'),
+    request.get('/exams/law/114/1'),
+  ]);
+  expect(board.ok()).toBe(true);
+  expect(question.ok()).toBe(true);
+  // Only the question's own address carries it; 考古題討論版 lists the subjects.
+  expect(await board.text()).not.toContain(prompt);
+  expect(await question.text()).toContain(prompt);
 });

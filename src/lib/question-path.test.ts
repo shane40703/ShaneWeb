@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
   examsHref,
+  examsParent,
+  examsPlace,
+  examsQuery,
   examsQuestionHref,
   examsQuestionId,
   examsSlug,
@@ -46,7 +49,7 @@ describe('考古題討論版 addresses', () => {
     expect(examsQuestionHref('law-114-80')).toBe('/exams/law/114/80');
     expect(examsQuestionHref('env-100-written-01')).toBe('/exams/env/100/written-1');
     for (const id of ['law-114-03', 'law-114-80', 'env-100-written-01']) {
-      expect(examsQuestionId(examsSlug(id), [])).toBe(id);
+      expect(examsQuestionId(examsSlug(id))).toBe(id);
     }
   });
 
@@ -54,12 +57,50 @@ describe('考古題討論版 addresses', () => {
     expect(examsQuestionHref('nonsense')).toBe('/exams');
   });
 
-  it('opens a paper or a subject on its first question, newest paper first', () => {
-    expect(examsQuestionId(['env', '113'], refs)).toBe('env-113-01');
-    expect(examsQuestionId(['env', '114'], refs)).toBe('env-114-written-01');
-    expect(examsQuestionId('env', refs)).toBe('env-114-written-01');
-    expect(examsQuestionId(undefined, refs)).toBeUndefined();
-    expect(examsQuestionId([], refs)).toBeUndefined();
+  it('tells the four kinds of address apart', () => {
+    expect(examsPlace([])).toEqual({ kind: 'bank' });
+    expect(examsPlace(undefined)).toEqual({ kind: 'bank' });
+    expect(examsPlace(['law'])).toEqual({ kind: 'subject', subject: 'law' });
+    expect(examsPlace('law')).toEqual({ kind: 'subject', subject: 'law' });
+    expect(examsPlace(['law', '114'])).toEqual({ kind: 'paper', subject: 'law', year: 114 });
+    expect(examsPlace(['law', '114', '3'])).toEqual({
+      kind: 'question',
+      subject: 'law',
+      year: 114,
+      questionId: 'law-114-03',
+    });
+    expect(examsPlace(['env', '100', 'written-1'])).toEqual({
+      kind: 'question',
+      subject: 'env',
+      year: 100,
+      questionId: 'env-100-written-01',
+    });
+  });
+
+  it('shows a question only at an address that names one', () => {
+    expect(examsQuestionId(['env', '113'])).toBeUndefined();
+    expect(examsQuestionId('env')).toBeUndefined();
+    expect(examsQuestionId(undefined)).toBeUndefined();
+    expect(examsQuestionId([])).toBeUndefined();
+  });
+
+  it('leads each level back to the one above it, and /exams to nothing', () => {
+    expect(examsParent({ kind: 'bank' })).toBeNull();
+    expect(examsParent(examsPlace(['law']))).toEqual({ kind: 'bank' });
+    expect(examsParent(examsPlace(['law', '114']))).toEqual({
+      kind: 'subject',
+      subject: 'law',
+    });
+    expect(examsParent(examsPlace(['env', '100', 'written-1']))).toEqual({
+      kind: 'paper',
+      subject: 'env',
+      year: 100,
+    });
+  });
+
+  it('leaves the slug out of the query for /exams itself', () => {
+    expect(examsQuery([])).toEqual({});
+    expect(examsQuery(['law', '114'])).toEqual({ slug: ['law', '114'] });
   });
 
   it('lists every subject, paper and question once', () => {

@@ -15,9 +15,17 @@ function at(questionId: string) {
   return pageParameters('/exams', { slug: examsSlug(questionId) });
 }
 
+/** 打開總覽頁：[] 是考古題討論版本身、['law'] 是一科、['law', '114'] 是一份試卷。 */
+function atPlace(slug: string[]) {
+  return pageParameters('/exams', { slug });
+}
+
 /**
- * 考古題討論版（/exams）：題目選擇列，接著「題目／討論區／筆記」三個分頁與右側的題號導覽。
+ * 考古題討論版的題目頁（/exams/law/114/3）：最上面是「返回 114 年營建法規與實務考古題」，
+ * 接著題目選擇列、「題目／討論區／筆記」三個分頁與右側的題號導覽。
  * 分頁記在網址的 `&tab=discussion|notes`（題目分頁沒有參數），換題時留在同一個分頁。
+ * 只有指名某一題的網址才顯示題目；考古題討論版本身、各科、各年度是總覽頁（見下方「總覽」
+ * 「科目」「試卷」等故事），一列一個下一層的頁面，不放任何題目的內容。
  *
  * 畫面上可以操作看到：
  * - 題目分頁：先作答再看解答。選項可以選、再點一次取消；「看解答」不用先選答案，按下後
@@ -33,7 +41,9 @@ function at(questionId: string) {
  *   字色、字級與文字格式後送出；由筆記分享過來的格式可繼續編輯並保留。
  * - 筆記分頁：跟我的筆記頁同一個編輯器（精簡的題號與題幹）。第 15 題已有筆記與圖片：
  *   編輯、儲存、刪除（有確認視窗）、分享到考古題討論版（分享後留在筆記分頁）。
- * - 換題：點題號導覽、上一題／下一題、類似考題，或切換科目、年度（換到那一份的第 1 題）。
+ * - 換題：點題號導覽、上一題／下一題、類似考題。切換科目、年度（或再點目前的年度）會打開
+ *   那一科或那一年的總覽頁，「返回」回到這一份試卷的總覽；從總覽點一題再回到題目頁。換層會
+ *   多一筆瀏覽紀錄並回到頁首，換題不會；作答、筆記草稿與還沒送出的投稿在來回之間都會保留。
  *   法規 101 年第 8 題題幹含圖片（點圖片放大），有只有圖片的投稿；第 11 題有兩個相關法規；
  *   第 80 題是最後一題（下一題停用）。法規 113 年第 1 題是示範題、第 13 題有 5 題類似考題。
  *   環控、結構先列申論題（結構的申論題含圖片）；構造第 2 題題目與選項最長。沒有投稿的題目
@@ -54,7 +64,7 @@ const meta = {
   title: 'Layouts/考古題討論版/題目與討論',
   component: ExamsRoute,
   decorators: [withStatefulRouter, withPageFrame],
-  parameters: { ...pageParameters('/exams') },
+  parameters: { ...at('law-114-01') },
   args: { bank: 'loaded', onRetryQuestionBank: fn() },
   argTypes: {
     bank: {
@@ -99,4 +109,48 @@ export const 題庫載入中或失敗: Story = {
 export const 找不到指定題目: Story = { parameters: { ...at('law-099-01') } };
 
 /** 完全沒有題目，連預先產生的法規題目也沒有。 */
-export const 題庫尚無資料: Story = { args: { bank: 'empty' } };
+export const 題庫尚無資料: Story = {
+  args: { bank: 'empty' },
+  parameters: { ...at('law-114-01') },
+};
+
+/**
+ * 考古題討論版本身（/exams）：一段說明，下面一塊面板一列一科（圖示、科目名稱、說明、年份
+ * 範圍與題數）。點一列打開那一科的總覽，滑過時標題變色加底線。頂部列標題是「考古題討論版」。
+ */
+export const 總覽: Story = { parameters: { ...atPlace([]) } };
+
+/**
+ * 一科（/exams/law）：「返回考古題討論版」、這一科的說明，與十五份試卷（新到舊，各自的題數）。
+ * 範例題庫只有法規 101、113、114 年；頂部列標題是「營建法規與實務考古題」。
+ */
+export const 科目: Story = { parameters: { ...atPlace(['law']) } };
+
+/**
+ * 一份試卷（/exams/law/114）：「返回營建法規與實務考古題」、考得最多的三個考點，與每一題
+ * 一列「第幾題＋考點」（題目頁上橘色標籤的同一組字）。寬頁面選擇題排兩欄，1 到 40 在左、
+ * 41 到 80 在右；窄頁面一欄。點一題打開那一題，「返回」回到這一頁。
+ */
+export const 試卷: Story = { parameters: { ...atPlace(['law', '114']) } };
+
+/**
+ * 有申論題的試卷（範例題庫沒有環控 114 年，用 113 年）：申論題排在選擇題前面，各有一個小標
+ * 與題數，中間是虛線。
+ */
+export const 試卷有申論題: Story = { parameters: { ...atPlace(['env', '113']) } };
+
+/**
+ * 從別頁換到一份還沒下載的試卷：題號已經可以點，考點還沒來，說明下方是「正在載入考點…」。
+ */
+export const 試卷考點載入中: Story = {
+  args: { bank: 'loading' },
+  argTypes: { bank: { options: ['loading'] } },
+  parameters: { ...atPlace(['env', '113']) },
+};
+
+/** 試卷下載失敗：「考點暫時無法載入。」與「重新載入」（記在 Actions），題號照樣可以點。 */
+export const 試卷考點載入失敗: Story = {
+  args: { bank: 'error' },
+  argTypes: { bank: { options: ['error'] } },
+  parameters: { ...atPlace(['env', '113']) },
+};

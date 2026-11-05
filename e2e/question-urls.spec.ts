@@ -21,6 +21,58 @@ test.describe('what a search engine reads', () => {
     expect(html).toContain('href="/exams/law/114/4"');
     expect(html).toContain('href="/exams/env"');
     expect(html).toContain('href="/exams/law/113"');
+    // The way up to its paper.
+    expect(html).toContain('href="/exams/law/114"');
+    expect(html).toMatch(
+      /<a [^>]*href="\/exams\/law\/114"[^>]*>(?:(?!<\/a>)[\s\S])*返回 114 年營建法規與實務考古題<\/a>/,
+    );
+  });
+
+  test('no directory address carries a question', async ({ request }) => {
+    // The paper these addresses lead to, as the site serves it to the browser.
+    const paper: { id: string; text: string }[] = await (
+      await request.get('/question-data/law/114.json')
+    ).json();
+    const stems = paper
+      .map(({ text }) => text)
+      .filter((text) => text.length >= 12)
+      .map((text) => text.slice(0, 20));
+    expect(stems.length).toBeGreaterThan(70);
+    // As the text would appear in the page, in the markup and in the page's data.
+    const forms = (stem: string) => [
+      stem,
+      stem.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'),
+      JSON.stringify(stem).slice(1, -1),
+    ];
+    const carried = (html: string) =>
+      stems.filter((stem) => forms(stem).some((form) => html.includes(form)));
+
+    // The check finds a question where one is.
+    const third = paper.find(({ id }) => id === 'law-114-03')!.text.slice(0, 20);
+    expect(carried(await (await request.get('/exams/law/114/3')).text())).toContain(
+      third,
+    );
+
+    const pages: Record<string, string> = {};
+    for (const path of ['/exams', '/exams/law', '/exams/law/114']) {
+      const response = await request.get(path);
+      expect(response.ok(), path).toBe(true);
+      pages[path] = await response.text();
+      expect(carried(pages[path]), path).toEqual([]);
+      expect(pages[path], path).toContain('"initialQuestion":null');
+    }
+
+    expect(pages['/exams']).toContain('href="/exams/law"');
+    expect(pages['/exams']).toMatch(/name="description" content="[^"]+"/);
+    expect(pages['/exams/law']).toContain('href="/exams/law/100"');
+    expect(pages['/exams/law']).toContain('返回考古題討論版');
+    expect(pages['/exams/law/114']).toContain('href="/exams/law/114/1"');
+    expect(pages['/exams/law/114']).toContain('href="/exams/law/114/80"');
+    expect(pages['/exams/law/114']).toContain('建築技術規則');
+    expect(pages['/exams/law/114']).toContain('href="/exams/law"');
+    expect(pages['/exams/law/114']).toMatch(
+      /name="description" content="[^"]*考得最多[^"]*"/,
+    );
   });
 
   test('robots.txt points at a sitemap listing every question, and no personal page', async ({
@@ -75,11 +127,52 @@ test('the title follows the question without leaving the page', async ({
   await expect(page.getByRole('heading', { name: '第 4 題' })).toBeVisible();
 });
 
-test('a paper address opens on its first question', async ({ page }) => {
+test('a paper address lists its questions and a row opens one', async ({ page }) => {
   await page.goto('/exams/law/112');
 
-  await expect(page.getByRole('heading', { name: '第 1 題' })).toBeVisible();
   await expect(page).toHaveTitle('112 年營建法規與實務考古題｜建築師考試');
+  await expect(page.locator('header h1')).toHaveText('112 年營建法規與實務考古題');
+  await expect(page.getByRole('link', { name: /^第 80 題( |$)/ })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '第 1 題' })).toHaveCount(0);
+
+  await page.getByRole('link', { name: /^第 1 題( |$)/ }).click();
+  await expect(page).toHaveURL(/\/exams\/law\/112\/1$/);
+  await expect(page).toHaveTitle('112 年營建法規與實務考古題第 1 題｜建築師考試');
+  await expect(page.getByRole('heading', { name: '第 1 題' })).toBeVisible();
+
+  await page.goBack();
+  await expect(page).toHaveURL(/\/exams\/law\/112$/);
+  await expect(page.locator('header h1')).toHaveText('112 年營建法規與實務考古題');
+});
+
+test('Back from a question returns to its row on the paper list', async ({ page }) => {
+  const scrollY = () => page.evaluate(() => window.scrollY);
+  await page.goto('/exams/law/114');
+
+  // Twice: the second trip starts from an entry that Back has already returned to.
+  for (const number of [60, 79]) {
+    const row = page.getByRole('link', { name: new RegExp(`^第 ${number} 題( |$)`) });
+    await row.evaluate((link) =>
+      link.scrollIntoView({ block: 'center', behavior: 'instant' }),
+    );
+    const top = await scrollY();
+    expect(top).toBeGreaterThan(200);
+
+    await row.click();
+    await expect(page).toHaveURL(new RegExp(`/exams/law/114/${number}$`));
+    await expect(page.getByRole('heading', { name: `第 ${number} 題` })).toBeVisible();
+    // A new level starts at the top.
+    await expect.poll(scrollY).toBe(0);
+
+    await page.goBack();
+    await expect(page).toHaveURL(/\/exams\/law\/114$/);
+    await expect(row).toBeVisible();
+    // There at once, not by an animation from the question's place, and it stays there.
+    expect(Math.abs((await scrollY()) - top)).toBeLessThanOrEqual(1);
+    await page.waitForTimeout(800);
+    expect(Math.abs((await scrollY()) - top)).toBeLessThanOrEqual(1);
+    await expect(row).toBeInViewport();
+  }
 });
 
 test('a campaign link to the home page leaves a clean address and the way back', async ({

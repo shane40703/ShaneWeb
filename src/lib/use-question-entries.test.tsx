@@ -6,7 +6,7 @@ import type { PaperIndex } from '@/question-bank/derived-data';
 import { useQuestionEntries } from './use-question-entries';
 
 const mocks = vi.hoisted(() => ({
-  router: { isReady: true, query: {} as Record<string, string> },
+  router: { isReady: true, query: {} as Record<string, string | string[]> },
   useQuestionBodies: vi.fn(),
   preloadPaper: vi.fn(),
 }));
@@ -88,6 +88,40 @@ describe('useQuestionEntries', () => {
     renderHook(() => useQuestionEntries(index, initial));
 
     expect(preloadPaper).not.toHaveBeenCalled();
+  });
+
+  it('asks for the question at a question address', () => {
+    mocks.router.query = { slug: ['law', '113', '2'] };
+    renderHook(() => useQuestionEntries(index, initial));
+
+    expect(asked()).toEqual(['law-113-02']);
+  });
+
+  it('downloads a paper for its own page, and nothing next to it', () => {
+    mocks.router.query = { slug: ['law', '113'] };
+    renderHook(() => useQuestionEntries(index));
+
+    expect(asked()).toEqual(['law-113-01']);
+    expect(preloadPaper).not.toHaveBeenCalled();
+  });
+
+  it('downloads no question for 考古題討論版 itself or a subject', () => {
+    for (const slug of [[], ['law'], ['env']]) {
+      mocks.router.query = { slug };
+      renderHook(() => useQuestionEntries(index));
+      expect(asked()).toEqual([]);
+    }
+    mocks.router.query = {};
+    renderHook(() => useQuestionEntries(index));
+    expect(asked()).toEqual([]);
+    expect(preloadPaper).not.toHaveBeenCalled();
+  });
+
+  it('keeps a subject page quiet even after a question was prerendered', () => {
+    mocks.router.query = { slug: ['law'] };
+    renderHook(() => useQuestionEntries(index, initial));
+
+    expect(asked()).toEqual([]);
   });
 
   it('stays quiet in the middle of a paper', () => {

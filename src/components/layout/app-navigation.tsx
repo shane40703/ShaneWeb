@@ -3,6 +3,7 @@ import {
   IconBooks, IconBuildingSkyscraper, IconDeviceMobilePlus, IconFileText, IconBrandThreads, IconSettings, IconShield,
 } from '@tabler/icons-react';
 import { personalHub, personalPages } from '@/features/personal/personal-pages';
+import { examsHubName, examsPlace } from '@/lib/question-path';
 import { practiceHub, practicePages } from '@/features/practice/practice-pages';
 import { resourcePages, resourcesHub } from '@/features/resources/resource-pages';
 import styles from './app-shell.module.css';
@@ -32,10 +33,22 @@ function isCurrent(pathname: string, item: NavigationLinkItem) {
   return [item, ...(item.pages ?? [])].some(({ href }) => isActive(pathname, href));
 }
 
-export function navigationPageTitle(pathname: string) {
+const EXAMS_ROUTE = '/exams/[[...slug]]';
+
+/** 考古題討論版 names its subject and paper pages like their tabs; itself and a question keep its name. */
+function examsPageTitle(slug: string | string[] | undefined) {
+  const place = examsPlace(slug);
+  return place.kind === 'subject' || place.kind === 'paper' ? examsHubName(place) : '考古題討論版';
+}
+
+export function navigationPageTitle(pathname: string, query?: { slug?: string | string[] }) {
   if (pathname === '/') return '首頁';
   // The page for any address the site does not have, named like its tab.
   if (pathname === '/404') return '找不到頁面';
+  // The route reads its place from the query (so do stories, on /exams?slug=); an address the
+  // click is still on its way to, from its path.
+  if (pathname === EXAMS_ROUTE || (pathname === '/exams' && query?.slug)) return examsPageTitle(query?.slug);
+  if (pathname === '/exams' || pathname.startsWith('/exams/')) return examsPageTitle(pathname.split('/').slice(2));
   const path = pathname === '/appearance' ? '/settings' : pathname;
   return titledPages.find(item => isActive(path, item.href))?.label ?? '建築師考試';
 }

@@ -59,7 +59,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   // The sidebar and title answer the click at once; the page follows when it has arrived.
   const pathname = leaving ? pendingRoute : router.pathname;
   const navigationPath = pathname === '/appearance' ? '/settings' : pathname;
-  const pageTitle = navigationPageTitle(pathname);
+  const pageTitle = navigationPageTitle(pathname, router.query);
   const answeringPaper = pathname === '/practice/mock-exam' && router.query.q !== undefined;
   const addToHomeScreen = () => {
     if (homeScreenMode === 'prompt') showInstallPrompt();

@@ -16,6 +16,8 @@ const titles: Record<string, string> = {
   '/exams/law': '營建法規與實務考古題｜建築師考試',
   '/exams/law/114': '114 年營建法規與實務考古題｜建築師考試',
   '/exams/law/114/3': '114 年營建法規與實務考古題第 3 題｜建築師考試',
+  '/exams/env/114': '114 年建築環境控制考古題｜建築師考試',
+  '/exams/env/114/written-1': '114 年建築環境控制考古題申論第 1 題｜建築師考試',
   '/resources': '歷屆試題資料集成｜建築師考試',
   '/resources/analysis': '考題分析｜建築師考試',
   '/resources/memory-gallery': '速記圖庫・法規｜建築師考試',

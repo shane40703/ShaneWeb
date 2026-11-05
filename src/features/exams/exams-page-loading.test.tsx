@@ -22,6 +22,8 @@ const router = vi.hoisted(() => ({
   pathname: '/exams/[[...slug]]',
   query: {} as Record<string, string | string[] | undefined>,
   replace: vi.fn(),
+  // Next's push settles once the new place has rendered.
+  push: vi.fn(() => Promise.resolve(true)),
 }));
 vi.mock('next/router', () => ({ useRouter: () => router }));
 
@@ -75,7 +77,10 @@ function page(
   );
 }
 
-/** Opens the shown question, then moves on while the next paper is not here. */
+/**
+ * Opens the shown question, then moves on while the next paper is not here. Every case sets a
+ * question's address: only such an address shows a question.
+ */
 function crossPapers(status: QuestionBankStatus, onRetry?: () => void, tab?: string) {
   const query = tab ? { tab } : {};
   router.query = { slug: examsSlug(shown.id), ...query };
@@ -94,6 +99,7 @@ describe('ExamsPage while another paper downloads', () => {
     window.localStorage.clear();
     router.isReady = true;
     router.replace.mockClear();
+    router.push.mockClear();
   });
 
   afterEach(() => {
@@ -138,6 +144,20 @@ describe('ExamsPage while another paper downloads', () => {
     crossPapers('ready');
 
     expect(screen.getByRole('heading', { name: '找不到指定題目' })).toBeInTheDocument();
+  });
+
+  it('crosses into the next paper with 下一題 without a new history entry', () => {
+    router.query = { slug: examsSlug(shown.id) };
+    render(page('ready', [shown, next]));
+
+    // The compact bar's button; the footer's also scrolls, which jsdom cannot.
+    fireEvent.click(screen.getAllByRole('button', { name: '下一題' })[0]);
+    expect(router.replace).toHaveBeenLastCalledWith(
+      { pathname: '/exams/[[...slug]]', query: { slug: ['law', '113', '1'] } },
+      undefined,
+      { shallow: true, scroll: false },
+    );
+    expect(router.push).not.toHaveBeenCalled();
   });
 
   it('saves a post of the question in the URL to that question', async () => {

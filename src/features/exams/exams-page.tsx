@@ -35,6 +35,8 @@ import { Tab, TabList, TabPanel, TabsRoot } from '@/components/tabs';
 import { trackPractice } from '@/lib/analytics';
 import {
   examsHref,
+  examsPlace,
+  examsQuery,
   examsQuestionHref,
   examsQuestionId,
   examsSlug,
@@ -54,7 +56,7 @@ import {
   useToast,
 } from '@/components/ui/ui';
 import { getSubject, years } from '@/question-bank/catalog';
-import { hasBody, type QuestionEntry } from '@/question-bank/derived-data';
+import { hasBody, type PaperTopics, type QuestionEntry } from '@/question-bank/derived-data';
 import type {
   DiscussionPost,
   DiscussionPostType,
@@ -72,6 +74,8 @@ import {
 import { useDiscussionQuestionIds, useSharedDiscussions } from '@/lib/shared-discussions';
 import { useClientReady } from '@/lib/use-client-ready';
 import { useAppState } from '@/state/app-state';
+import { ExamsHub } from './exams-hub';
+import { pushExamsPlace } from './exams-layout';
 import styles from './exams-page.module.css';
 
 const postTypeLabels: Record<DiscussionPostType, string> = {
@@ -120,7 +124,7 @@ function tabOf(value: string | string[] | undefined): ExamsTab {
 
 /** The path says where; only a tab other than 題目 adds `?tab=`. */
 function queryFor(slug: readonly string[], tab: ExamsTab) {
-  return tab === 'question' ? { slug: [...slug] } : { slug: [...slug], tab };
+  return tab === 'question' ? examsQuery(slug) : { ...examsQuery(slug), tab };
 }
 
 function BodyPending({
@@ -137,15 +141,24 @@ function BodyPending({
   );
 }
 
+/**
+ * 考古題討論版 at every address under /exams. A question's address shows that question; the
+ * board itself, a subject and a paper list the level below them (ExamsHub) and show no question.
+ * The component stays mounted for every move between them, so answers, 筆記 drafts and
+ * unsent posts survive a trip up to an overview and back.
+ */
 export function ExamsPage({
   questions,
   questionBankStatus = 'ready',
   onRetryQuestionBank,
+  paperTopics,
 }: {
   /** The bank to navigate over; a question has a body once its paper has loaded. */
   questions: readonly QuestionEntry[];
   questionBankStatus?: QuestionBankStatus;
   onRetryQuestionBank?: () => void;
+  /** The topic words of the prerendered paper page. */
+  paperTopics?: PaperTopics | null;
 }) {
   const router = useRouter();
   const { state, dispatch, hydrated } = useAppState();
@@ -153,12 +166,14 @@ export function ExamsPage({
   const routeHydrated = useClientReady();
   const routeReady = routeHydrated && router.isReady !== false;
   // In the path, so the prerendered page already shows it and search engines can read it.
-  const requestedQuestionId = examsQuestionId(router.query.slug, questions);
+  // Only an address that names a question shows one.
+  const place = examsPlace(router.query.slug);
+  const requestedQuestionId = examsQuestionId(router.query.slug);
   const queryTab = routeReady ? tabOf(router.query.tab) : undefined;
   const requestedQuestion = requestedQuestionId
     ? questions.find((question) => question.id === requestedQuestionId)
     : undefined;
-  const currentEntry = requestedQuestionId ? requestedQuestion : questions[0];
+  const currentEntry = requestedQuestion;
   const currentBody = currentEntry && hasBody(currentEntry) ? currentEntry : undefined;
   // While another paper downloads, the card keeps its size: the number, tiles and selector
   // have already moved on, and nothing else jumps.
@@ -187,7 +202,14 @@ export function ExamsPage({
   const compactNavRef = useRef<HTMLDivElement>(null);
   const verdictRef = useRef<HTMLParagraphElement>(null);
   const focusVerdictFor = useRef<string | null>(null);
-  const shared = useSharedDiscussions(currentQuestionId ?? 'unavailable');
+  // Arriving at an overview by a move inside the page (not by loading it) starts the keyboard
+  // and screen readers at its lead, as a full load starts them at the top.
+  const placeKey = examsHref(examsSlugParts(router.query.slug));
+  const [loadedAt] = useState(placeKey);
+  const [moved, setMoved] = useState(false);
+  if (!moved && placeKey !== loadedAt) setMoved(true);
+  // An overview has no question, so it listens to no discussion.
+  const shared = useSharedDiscussions(currentQuestionId ?? null);
   const discussionQuestionIds = useDiscussionQuestionIds(
     currentEntry ? `${currentEntry.subject}-${currentEntry.year}-` : null,
   );
@@ -213,6 +235,36 @@ export function ExamsPage({
     focusVerdictFor.current = null;
     verdictRef.current?.focus();
   }, [revealed, currentQuestionId]);
+
+  // A change of level (an overview's rows, 返回, the subject and year tiles) is a new history
+  // entry from the top of the page, and leaves the tab behind. Moving between questions and
+  // tabs replaces the entry and keeps the scroll, so reading a paper adds no history.
+  function navigateToPlace(slug: readonly string[], mode: 'push' | 'replace' = 'replace') {
+    if (mode === 'push') {
+      pushExamsPlace(router, slug);
+      return;
+    }
+    void router.replace(
+      { pathname: router.pathname, query: queryFor(slug, tab) },
+      undefined,
+      { shallow: true, scroll: false },
+    );
+  }
+
+  // After every hook, so the page keeps its state on the way to an overview and back.
+  if (place.kind !== 'question') {
+    return (
+      <ExamsHub
+        place={place}
+        questions={questions}
+        paperTopics={paperTopics}
+        status={questionBankStatus}
+        onRetry={onRetryQuestionBank}
+        onNavigate={(slug) => navigateToPlace(slug, 'push')}
+        focusLead={moved}
+      />
+    );
+  }
 
   if (
     routeHydrated &&
@@ -243,9 +295,9 @@ export function ExamsPage({
   if (!currentEntry || !currentQuestion || (!currentBody && !bodyPending)) {
     return (
       <EmptyState
-        title={requestedQuestionId ? '找不到指定題目' : '題庫尚無資料'}
+        title={questions.length ? '找不到指定題目' : '題庫尚無資料'}
         description={
-          requestedQuestionId
+          questions.length
             ? '這個題目可能已移除，請從題庫重新選擇。'
             : '加入題目後即可使用詳解與討論。'
         }
@@ -302,14 +354,6 @@ export function ExamsPage({
       discussionQuestionIds.has(question.id),
   }));
 
-  function navigateToPlace(slug: readonly string[]) {
-    void router.replace(
-      { pathname: router.pathname, query: queryFor(slug, tab) },
-      undefined,
-      { shallow: true, scroll: false },
-    );
-  }
-
   function navigateTo(questionId: string) {
     navigateToPlace(examsSlug(questionId));
   }
@@ -330,10 +374,12 @@ export function ExamsPage({
     );
   }
 
+  // The subject and year tiles open that subject's or that year's overview, as their
+  // addresses say; the current year's tile is a way up to its paper.
   function selectSubject(subjectId: SubjectId) {
     setSelectorExpanded(false);
     if (questions.some((question) => question.subject === subjectId)) {
-      navigateToPlace([subjectId]);
+      navigateToPlace([subjectId], 'push');
     }
   }
 
@@ -343,7 +389,7 @@ export function ExamsPage({
     const paper = questions.some(
       (question) => question.subject === activeEntry.subject && question.year === year,
     );
-    if (paper) navigateToPlace([activeEntry.subject, String(year)]);
+    if (paper) navigateToPlace([activeEntry.subject, String(year)], 'push');
   }
 
   function selectOption(value: number | undefined) {

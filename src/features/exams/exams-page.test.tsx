@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ToastProvider } from '@/components/ui/ui';
 import { CloudSyncProvider } from '@/components/cloud-sync-provider';
+import { ExamsLayout } from '@/features/exams/exams-layout';
 import { ExamsPage } from '@/features/exams/exams-page';
 import { examsSlug } from '@/lib/question-path';
 import { STORAGE_KEY } from '@/lib/study';
@@ -15,6 +16,8 @@ const router = vi.hoisted(() => ({
   pathname: '/exams/[[...slug]]',
   query: {} as Record<string, string | string[] | undefined>,
   replace: vi.fn(),
+  // Next's push settles once the new place has rendered.
+  push: vi.fn(() => Promise.resolve(true)),
 }));
 
 vi.mock('next/router', () => ({
@@ -45,6 +48,8 @@ function question(id: string, subject: SubjectId): Question {
 }
 
 const lawQuestion = question('law-114-01', 'law');
+/** A level change: a new history entry; the page scrolls itself to the top once it shows. */
+const levelMove = { shallow: true, scroll: false } as const;
 const environmentQuestion = question('env-114-01', 'env');
 const environmentRef = {
   id: environmentQuestion.id,
@@ -75,6 +80,8 @@ function renderPage(
 }
 
 afterEach(cleanup);
+// jsdom does not scroll; a level move asks it to once the new place shows.
+vi.spyOn(window, 'scrollTo').mockImplementation(() => {});
 
 /** The discussion and note panels sit behind tabs; the 題目 tab is the default. */
 function openTab(name: RegExp) {
@@ -91,8 +98,10 @@ describe('ExamsPage question loading', () => {
     vi.stubEnv('NEXT_PUBLIC_FIREBASE_APP_ID', '');
     window.localStorage.clear();
     router.isReady = true;
-    router.query = {};
+    // Only an address that names a question shows one.
+    router.query = { slug: examsSlug(lawQuestion.id) };
     router.replace.mockReset();
+    router.push.mockReset();
     analytics.trackPractice.mockClear();
   });
 
@@ -211,6 +220,22 @@ describe('ExamsPage question loading', () => {
       undefined,
       { shallow: true, scroll: false },
     );
+    expect(router.push).not.toHaveBeenCalled();
+
+    // The subject and year tiles open their overviews, as their addresses say.
+    expect(fireEvent.click(screen.getByRole('link', { name: '114 年' }))).toBe(false);
+    expect(router.push).toHaveBeenLastCalledWith(
+      { pathname: '/exams/[[...slug]]', query: { slug: ['law', '114'] } },
+      undefined,
+      levelMove,
+    );
+    fireEvent.click(screen.getByRole('link', { name: /營建法規與實務/ }));
+    expect(router.push).toHaveBeenLastCalledWith(
+      { pathname: '/exams/[[...slug]]', query: { slug: ['law'] } },
+      undefined,
+      levelMove,
+    );
+    expect(router.replace).toHaveBeenCalledOnce();
   });
 
   it('leaves a click with a modifier key to the browser, for a new tab', () => {
@@ -237,12 +262,105 @@ describe('ExamsPage question loading', () => {
     );
   });
 
-  it('opens a paper on its first question', () => {
+  it('a paper lists its questions and no 題幹', () => {
     router.query = { slug: ['law', '114'] };
-    renderPage();
+    renderPage({ questions: [lawQuestion, secondLawQuestion] });
 
-    expect(screen.getByRole('heading', { name: '第 1 題' })).toBeInTheDocument();
+    const first = screen.getByRole('link', { name: /^第 1 題/ });
+    expect(first).toHaveAttribute('href', '/exams/law/114/1');
+    expect(first).toHaveTextContent('測試分類');
+    expect(screen.getByRole('link', { name: /^第 2 題/ })).toHaveAttribute(
+      'href',
+      '/exams/law/114/2',
+    );
+    expect(screen.queryByText('law-114-01 題幹')).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: '第 1 題' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('radiogroup')).not.toBeInTheDocument();
+    expect(screen.queryByRole('tablist')).not.toBeInTheDocument();
+    expect(screen.queryByRole('group', { name: '科目' })).not.toBeInTheDocument();
     expect(router.replace).not.toHaveBeenCalled();
+
+    fireEvent.click(first);
+    expect(router.push).toHaveBeenLastCalledWith(
+      { pathname: '/exams/[[...slug]]', query: { slug: ['law', '114', '1'] } },
+      undefined,
+      levelMove,
+    );
+  });
+
+  it('shows no question at the board itself or at a subject', () => {
+    for (const slug of [undefined, ['law']]) {
+      router.query = slug ? { slug } : {};
+      const view = renderPage({ questions: [lawQuestion, environmentQuestion] });
+      expect(screen.queryByText('law-114-01 題幹')).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: '看解答' })).not.toBeInTheDocument();
+      view.unmount();
+    }
+  });
+
+  it('leads a question back to its paper, and a plain click stays on the page', () => {
+    render(
+      <ToastProvider>
+        <AppStateProvider>
+          <CloudSyncProvider>
+            <ExamsLayout>
+              <ExamsPage questions={[lawQuestion, secondLawQuestion]} />
+            </ExamsLayout>
+          </CloudSyncProvider>
+        </AppStateProvider>
+      </ToastProvider>,
+    );
+
+    const back = screen.getByRole('link', { name: '返回 114 年營建法規與實務考古題' });
+    expect(back).toHaveAttribute('href', '/exams/law/114');
+    expect(
+      back.compareDocumentPosition(screen.getByRole('button', { name: '展開科目與年度' })) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(fireEvent.click(back)).toBe(false);
+    expect(router.push).toHaveBeenLastCalledWith(
+      { pathname: '/exams/[[...slug]]', query: { slug: ['law', '114'] } },
+      undefined,
+      levelMove,
+    );
+    expect(fireEvent.click(back, { ctrlKey: true })).toBe(true);
+    expect(router.push).toHaveBeenCalledOnce();
+  });
+
+  it('keeps an unsent post and a chosen answer through a trip to the paper and back', () => {
+    const view = renderPage({ questions: [lawQuestion, secondLawQuestion] });
+    fireEvent.click(screen.getByText('law-114-01 B').closest('label')!);
+    openTab(/討論區/);
+    fillRichEditor(screen.getByLabelText('內容'), '還沒送出的詳解');
+
+    router.query = { slug: ['law', '114'] };
+    view.rerender(
+      <ToastProvider>
+        <AppStateProvider>
+          <CloudSyncProvider>
+            <ExamsPage questions={[lawQuestion, secondLawQuestion]} />
+          </CloudSyncProvider>
+        </AppStateProvider>
+      </ToastProvider>,
+    );
+    expect(screen.getByRole('link', { name: /^第 1 題/ })).toBeInTheDocument();
+    expect(screen.queryByLabelText('內容')).not.toBeInTheDocument();
+
+    router.query = { slug: examsSlug(lawQuestion.id), tab: 'discussion' };
+    view.rerender(
+      <ToastProvider>
+        <AppStateProvider>
+          <CloudSyncProvider>
+            <ExamsPage questions={[lawQuestion, secondLawQuestion]} />
+          </CloudSyncProvider>
+        </AppStateProvider>
+      </ToastProvider>,
+    );
+    expect(screen.getByLabelText('內容')).toHaveTextContent('還沒送出的詳解');
+    openTab(/^題目$/);
+    expect(
+      screen.getByText('law-114-01 B').closest('label')!.querySelector('[aria-checked="true"]'),
+    ).not.toBeNull();
   });
 
   it('moves to a subject whose paper has not loaded yet', () => {
@@ -250,14 +368,14 @@ describe('ExamsPage question loading', () => {
 
     fireEvent.click(screen.getByRole('link', { name: /建築環境控制/ }));
 
-    expect(router.replace).toHaveBeenCalledWith(
+    expect(router.push).toHaveBeenCalledWith(
       { pathname: '/exams/[[...slug]]', query: { slug: ['env'] } },
       undefined,
-      { shallow: true, scroll: false },
+      levelMove,
     );
   });
 
-  it('waits for the router before treating an absent query as the default question', () => {
+  it('waits for the router before showing the question in the address', () => {
     router.isReady = false;
 
     renderPage({ questionBankStatus: 'loading' });
@@ -600,10 +718,10 @@ describe('ExamsPage question loading', () => {
     fireEvent.click(summary);
     fireEvent.click(within(selector).getByRole('link', { name: /建築環境控制/ }));
     expect(summary).toHaveAttribute('aria-expanded', 'false');
-    expect(router.replace).toHaveBeenLastCalledWith(
+    expect(router.push).toHaveBeenLastCalledWith(
       { pathname: '/exams/[[...slug]]', query: { slug: ['env'] } },
       undefined,
-      { shallow: true, scroll: false },
+      levelMove,
     );
   });
 });

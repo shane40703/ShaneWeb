@@ -1,19 +1,25 @@
+import { ExamsLayout } from '@/features/exams/exams-layout';
 import { ExamsPage } from '@/features/exams/exams-page';
 import { useSubjectQuestions, type QuestionBankStatus } from '@/lib/question-bank-client';
 import type { Question } from '@/lib/types';
 import { subjects } from '@/question-bank/catalog';
-import { fixtureSubjectQuestions } from '../../fixtures/questions';
+import { buildPaperIndex, questionRefs } from '@/question-bank/derived-data';
+import { fixtureQuestions, fixtureSubjectQuestions } from '../../fixtures/questions';
 
 const allSubjectIds = subjects.map((subject) => subject.id);
 
-/** 跟 /exams 的 getStaticProps 一樣，只預先產生第一個科目（法規）的題目，順序跟伺服器一樣。 */
+/** 先有內容的法規題目（網站只預先產生網址裡那一題；故事直接給整科，順序跟伺服器一樣）。 */
 const prerenderedQuestions = fixtureSubjectQuestions(allSubjectIds[0]);
 
+/** 跟網站的試卷索引一樣：一開始就知道每一份試卷有哪些題號，題目內容之後才下載。 */
+const fixtureRefs = questionRefs(buildPaperIndex(fixtureQuestions));
+
 /**
- * 照 src/pages/exams/[[...slug]].tsx 組出考古題討論版頁：預先產生的法規題目，加上 useSubjectQuestions
- * 下載的所有科目（Storybook 由範例題庫回應），用題目 id 合併後交給 ExamsPage。
+ * 照 src/pages/exams/[[...slug]].tsx 組出考古題討論版頁：外面是「返回」那一層（ExamsLayout），
+ * 範例題庫的每一題先只有題號，預先產生的法規題目與 useSubjectQuestions 下載的所有科目
+ * （Storybook 由範例題庫回應）有內容，用題目 id 合併後交給 ExamsPage。
  * 不給 props 時跟網站一樣；`bank` 用來看題庫下載中、下載失敗、完全沒有題目的畫面。
- * 頁面用網址的 slug 換題，故事的 decorators 要加 withStatefulRouter。
+ * 頁面用網址的 slug 換頁，故事的 decorators 要加 withStatefulRouter。
  */
 export function ExamsRoute({
   bank = 'loaded',
@@ -28,22 +34,26 @@ export function ExamsRoute({
   onRetryQuestionBank?: () => void;
 }) {
   const loaded = useSubjectQuestions(bank === 'loaded' ? allSubjectIds : []);
-  const initialQuestions = bank === 'empty' ? [] : prerenderedQuestions;
   const bankQuestions = bank === 'loaded' ? loaded.questions : [];
   const status: QuestionBankStatus =
     bank === 'loaded' ? loaded.status : bank === 'empty' ? 'ready' : bank;
   const overrides = new Map(questionOverrides.map((question) => [question.id, question]));
-  const questions = [
-    ...new Map(
-      [...initialQuestions, ...bankQuestions].map((question) => [question.id, question]),
-    ).values(),
-  ].map((question) => overrides.get(question.id) ?? question);
+  const bodies = new Map(
+    [...prerenderedQuestions, ...bankQuestions].map((question) => [
+      question.id,
+      overrides.get(question.id) ?? question,
+    ]),
+  );
+  const questions =
+    bank === 'empty' ? [] : fixtureRefs.map((ref) => bodies.get(ref.id) ?? ref);
 
   return (
-    <ExamsPage
-      questions={questions}
-      questionBankStatus={status}
-      onRetryQuestionBank={bank === 'loaded' ? loaded.retry : onRetryQuestionBank}
-    />
+    <ExamsLayout>
+      <ExamsPage
+        questions={questions}
+        questionBankStatus={status}
+        onRetryQuestionBank={bank === 'loaded' ? loaded.retry : onRetryQuestionBank}
+      />
+    </ExamsLayout>
   );
 }

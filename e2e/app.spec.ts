@@ -14,7 +14,7 @@ test('question content is present in build-time static HTML', async ({ request }
   test.skip(testInfo.project.name !== 'desktop');
 
   const [examsResponse, notesResponse] = await Promise.all([
-    request.get('/exams'),
+    request.get('/exams/law/114/1'),
     request.get('/notes'),
   ]);
   expect(examsResponse.ok()).toBe(true);
@@ -51,6 +51,12 @@ test('question-bank failures never expose an unrelated editable question', async
       .click({ timeout: 1000 });
     await expect(page).toHaveURL(/\/exams\/env\/113$/, { timeout: 1000 });
   }).toPass();
+  // The paper's page still lists every question; only their topics wait for the paper.
+  await expect(page.getByRole('link', { name: /^申論第 1 題( |$)/ })).toBeVisible();
+  await expect(page.getByText('考點暫時無法載入。')).toBeVisible();
+  await expect(page.getByRole('button', { name: '重新載入' })).toBeVisible();
+  await page.getByRole('link', { name: /^第 1 題( |$)/ }).click();
+  await expect(page).toHaveURL(/\/exams\/env\/113\/1$/);
   await expect(
     page.getByRole('heading', { name: '題目暫時無法顯示' }),
   ).toBeVisible();
@@ -172,6 +178,8 @@ test('all retained routes support direct visits and the removed old pages return
     { path: '/practice/law-cloze', title: '法規克漏字' },
     { path: '/practice/mock-exam', title: '歷屆試題模擬考' },
     { path: '/exams', title: '考古題討論版' },
+    { path: '/exams/law', title: '營建法規與實務考古題' },
+    { path: '/exams/law/114', title: '114 年營建法規與實務考古題' },
     { path: '/resources', title: '歷屆試題資料集成' },
     { path: '/resources/analysis', title: '考題分析' },
     { path: '/resources/memory-gallery', title: '速記圖庫' },

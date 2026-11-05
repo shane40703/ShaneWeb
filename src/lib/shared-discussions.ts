@@ -392,7 +392,8 @@ export function useDiscussionQuestionIds(prefix: string | null) {
   );
 }
 
-export function useSharedDiscussions(questionId: QuestionId) {
+/** A question's posts; null (an overview page, no question on screen) listens to nothing. */
+export function useSharedDiscussions(questionId: QuestionId | null) {
   const { state, dispatch } = useAppState();
   const cloud = useOptionalCloudSync();
   const user = cloud?.user ?? null;
@@ -410,7 +411,7 @@ export function useSharedDiscussions(questionId: QuestionId) {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    if (!enabled) return;
+    if (!enabled || !questionId) return;
     const firebase = getFirebaseServices();
     if (!firebase) return;
     const postsQuery = query(
@@ -525,7 +526,7 @@ export function useSharedDiscussions(questionId: QuestionId) {
   const addPost = useCallback(
     async (type: DiscussionPostType, content: string) => {
       const formatted = normalizeDiscussionContent(content);
-      if (!formatted) return;
+      if (!formatted || !questionId) return;
       if (!enabled) {
         const now = new Date().toISOString();
         dispatch({
@@ -685,7 +686,7 @@ export function useSharedDiscussions(questionId: QuestionId) {
   return {
     posts,
     enabled,
-    loading: enabled && loadedQuestionId !== questionId,
+    loading: enabled && questionId !== null && loadedQuestionId !== questionId,
     error,
     user,
     signIn,
