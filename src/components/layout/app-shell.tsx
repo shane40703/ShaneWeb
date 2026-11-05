@@ -1,5 +1,5 @@
 import { useRouter } from 'next/router';
-import { type CSSProperties, useEffect, useState } from 'react';
+import { type CSSProperties, useEffect, useRef, useState } from 'react';
 import {
   IconAlertTriangle,
   IconCloud,
@@ -23,6 +23,7 @@ import { ThemeToggle } from './theme-toggle';
 import { navigationPageTitle, SidebarContent } from './app-navigation';
 import { HomeScreenGuide } from './home-screen-guide';
 import { RouteProgress, RouteSheet, staysOnPage, usePendingRoute } from './route-progress';
+import { GridCrosshair } from './grid-crosshair';
 import styles from './app-shell.module.css';
 
 const persistenceMessages = {
@@ -49,6 +50,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const cloud = useCloudSync();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const workspaceRef = useRef<HTMLDivElement>(null);
   const homeScreenMode = useHomeScreenMode();
   // A copy of the mode, so a prompt arriving while the steps are open does not close them.
   const [homeScreenGuide, setHomeScreenGuide] = useState<HomeScreenGuideMode | null>(null);
@@ -93,7 +95,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           onAddToHomeScreen={homeScreenMode ? addToHomeScreen : undefined}
         />
       </aside>
-      <div className={styles.workspace}>
+      <div ref={workspaceRef} className={styles.workspace}>
+        <GridCrosshair workspace={workspaceRef} />
         <header className={styles.topbar}>
           <RouteProgress active={pendingRoute !== null} />
           <div className={styles.topbarLeft}>

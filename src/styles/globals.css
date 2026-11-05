@@ -82,7 +82,8 @@
     radial-gradient(ellipse 0.75px 3px at center, rgb(128 128 128 / 35%) 98%, transparent),
     linear-gradient(90deg, color-mix(in srgb, var(--grid-line) 55%, transparent) 1px, transparent 0),
     linear-gradient(color-mix(in srgb, var(--grid-line) 55%, transparent) 1px, transparent 0);
-  --paper-grid-size: 64px 64px, 64px 64px, 16px 16px, 16px 16px;
+  --paper-grid-step: 16px;
+  --paper-grid-size: 64px 64px, 64px 64px, var(--paper-grid-step) var(--paper-grid-step), var(--paper-grid-step) var(--paper-grid-step);
   --paper-grid-position: 32px 32px, 32px 32px, 0 0, 0 0;
 }
 
@@ -195,6 +196,8 @@ a,
 button { -webkit-tap-highlight-color: transparent; }
 ::selection { background: color-mix(in srgb, var(--primary) 26%, transparent); }
 .app-root { min-height: 100vh; isolation: isolate; }
+
+[data-grid-cursor] { cursor: none !important; }
 html[data-page-scroll-locked] body { overflow: hidden; }
 
 /* Loader icons indicate work in progress throughout the app. */
