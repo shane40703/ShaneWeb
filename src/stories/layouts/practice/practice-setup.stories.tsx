@@ -60,6 +60,7 @@ function LoadingBankSetup({
       subject={subject}
       settings={settings}
       pool={pool}
+      questions={questions}
       loading={bank === 'loading'}
       loadFailed={bank !== 'loading'}
       onRetry={onRetry}
@@ -110,6 +111,8 @@ function useHeldPaperFonts(hold: boolean) {
  * - 還沒選科時四科皆未勾選、紙本與線上作答停用；作答中的重新整理仍保留原題
  * - 展開「進階選項」調整年度、類別、題數、打亂選項、一律給分題：摘要旁出現「已調整」，
  *   可以「恢復預設」
+ * - 年度或一律給分設定變更時保留仍有題目的類別；沒有題目時提示並切回全部類別。
+ *   年度題數下方會說明排除的一律給分題數。
  * - 「線上作答」抽題後進入作答畫面，之後可以一路作答、完成練習、看練習結果
  * - 「製作紙本檔案」：按鈕變成「正在製作 PDF…」，再下載 PDF。要停在製作中，先打開
  *   Controls 的 holdPaper 再按

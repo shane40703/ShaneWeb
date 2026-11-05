@@ -324,6 +324,21 @@
   font-weight: 600;
 }
 
+.excludedCreditNote,
+.categoryNotice {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.excludedCreditNote {
+  grid-column: 1 / -1;
+}
+
+.categoryNotice {
+  color: var(--warning);
+}
+
 .countChoices {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(76px, 1fr));
@@ -370,7 +385,7 @@
   grid-column: 1 / -1;
   margin-top: 2px;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 12px;
   white-space: nowrap;
 }
 
@@ -1483,11 +1498,17 @@
 
 /* /daily's phone option rows: the dot is hidden, the row tint shows the choice. */
 @container (max-width: 540px) {
+  .optionsArea [role='radiogroup'] > div > button {
+    width: 44px;
+    height: 44px;
+    right: 2px;
+  }
+
   .optionsArea [role='radiogroup'] label {
     min-height: 44px;
     grid-template-columns: 20px minmax(0, 1fr);
     column-gap: 8px;
-    padding: 7px 44px 7px 10px;
+    padding: 7px 48px 7px 10px;
   }
 
   /* The letter chip. */
@@ -1511,8 +1532,8 @@
 
   /* Icon only; the button keeps its aria-label. Outranks the button's own `.button.button`. */
   .challenge .challengeActions > button {
-    min-width: 36px;
-    min-height: 36px;
+    min-width: 44px;
+    min-height: 44px;
     padding: 6px;
     font-size: 0;
     /* The zero-sized label remains a flex item: remove its gap so the icon is centered. */

@@ -376,8 +376,7 @@ describe('PracticePage setup', () => {
     fireEvent.change(screen.getByRole('combobox', { name: '題目類別' }), { target: { value: '建築法' } });
     expect(screen.getByText('已選 法規・從 15 題中抽 15 題')).toBeInTheDocument();
     fireEvent.change(screen.getByLabelText('起始年度'), { target: { value: '113' } });
-    expect(screen.getByText('已選 法規・從 40 題中抽 40 題')).toBeInTheDocument();
-    fireEvent.change(screen.getByRole('combobox', { name: '題目類別' }), { target: { value: '建築法' } });
+    expect(screen.getByRole('combobox', { name: '題目類別' })).toHaveValue('建築法');
     expect(screen.getByText('已選 法規・從 10 題中抽 10 題')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('radio', { name: /建築環境控制/ }));
     expect(all()).toHaveAttribute('aria-pressed', 'true');
@@ -427,11 +426,10 @@ describe('PracticePage setup', () => {
       target: { value: '建築法' },
     });
     expect(screen.getByText(/共 10 題/)).toBeInTheDocument();
+    expect(screen.getByText('已排除 2 題一律給分題目。')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('checkbox', { name: /包含一律給分題目/ }));
-    // Turning 一律給分 on resets the category, as its counts change.
-    fireEvent.change(screen.getByRole('combobox', { name: '題目類別' }), {
-      target: { value: '建築法' },
-    });
+    expect(screen.getByRole('combobox', { name: '題目類別' })).toHaveValue('建築法');
+    expect(screen.queryByText('已排除 2 題一律給分題目。')).not.toBeInTheDocument();
     expect(screen.getByText(/共 12 題/)).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: /^10 題/ }));
     fireEvent.click(screen.getByRole('checkbox', { name: /打亂選項順序/ }));
@@ -459,6 +457,43 @@ describe('PracticePage setup', () => {
     expect(screen.getByRole('button', { name: /進階選項/ })).toHaveTextContent(
       '50 題・112–114 年・全部類別・打亂選項・不含一律給分',
     );
+  });
+
+  it('announces an unavailable category and does not silently restore it after changing years again', async () => {
+    const unique = makeQuestion('law', 112, 90, { law: '限定年度測試' });
+    bank.push(unique);
+    try {
+      renderAt();
+      await openAdvanced();
+      const category = screen.getByRole('combobox', { name: '題目類別' });
+      fireEvent.change(category, { target: { value: '限定年度測試' } });
+      fireEvent.change(screen.getByLabelText('起始年度'), { target: { value: '113' } });
+      expect(category).toHaveValue('all');
+      expect(screen.getByRole('status')).toHaveTextContent('「限定年度測試」在新條件下沒有題目，已改為全部類別。');
+      fireEvent.change(screen.getByLabelText('起始年度'), { target: { value: '112' } });
+      expect(category).toHaveValue('all');
+    } finally {
+      bank.pop();
+    }
+  });
+
+  it('announces when excluding all-credit questions removes the selected category', async () => {
+    const unique = makeQuestion('law', 114, 90, { law: '全給分測試', allCredit: true });
+    bank.push(unique);
+    try {
+      renderAt();
+      await openAdvanced();
+      const toggle = screen.getByRole('checkbox', { name: /包含一律給分題目/ });
+      fireEvent.click(toggle);
+      const category = screen.getByRole('combobox', { name: '題目類別' });
+      fireEvent.change(category, { target: { value: '全給分測試' } });
+      fireEvent.click(toggle);
+      expect(category).toHaveValue('all');
+      expect(screen.getByRole('status')).toHaveTextContent('「全給分測試」在新條件下沒有題目，已改為全部類別。');
+      expect(screen.getByText('已排除 3 題一律給分題目。')).toBeInTheDocument();
+    } finally {
+      bank.pop();
+    }
   });
 
   it('resets the year range and category when the subject changes, keeping count and options', async () => {

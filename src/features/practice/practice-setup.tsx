@@ -10,11 +10,12 @@ import { Button } from '@/components/ui/ui';
 import type { DailyPaper } from '@/features/daily/daily-paper';
 import { useDailyPaperDownload } from '@/features/daily/daily-paper-download';
 import { trackPractice } from '@/lib/analytics';
-import type { SubjectId } from '@/lib/types';
+import type { Question, SubjectId } from '@/lib/types';
 import { getSubject, subjects } from '@/question-bank/catalog';
 import {
   DEFAULT_PRACTICE_SETTINGS,
   isDefaultPracticeSettings,
+  resolvePracticePool,
   type PracticePool,
   type PracticeSettings,
 } from './practice-session';
@@ -31,6 +32,7 @@ export function PracticeSetup({
   subject,
   settings,
   pool,
+  questions,
   loading,
   loadFailed,
   onRetry,
@@ -43,6 +45,7 @@ export function PracticeSetup({
   subject: SubjectId | null;
   settings: PracticeSettings;
   pool: PracticePool;
+  questions: readonly Question[];
   loading: boolean;
   loadFailed: boolean;
   onRetry: () => void;
@@ -54,6 +57,7 @@ export function PracticeSetup({
 }) {
   const paperDownload = useDailyPaperDownload();
   const [advancedOpen, setAdvancedOpen] = useState(false);
+  const [categoryNotice, setCategoryNotice] = useState('');
   const busy = !subject || loading || paperDownload.downloading;
   const canDraw = !busy && pool.count > 0;
   const customized = !isDefaultPracticeSettings(settings);
@@ -67,7 +71,16 @@ export function PracticeSetup({
   ].join('・');
 
   function update(patch: Partial<PracticeSettings>) {
-    onSettingsChange({ ...settings, ...patch });
+    const next = { ...settings, ...patch };
+    const poolChanged = patch.fromYear !== undefined || patch.toYear !== undefined || patch.includeAllCredit !== undefined;
+    if (subject && poolChanged && next.category !== 'all' &&
+      resolvePracticePool(questions, subject, next).category !== next.category) {
+      setCategoryNotice(`「${next.category}」在新條件下沒有題目，已改為全部類別。`);
+      next.category = 'all';
+    } else {
+      setCategoryNotice('');
+    }
+    onSettingsChange(next);
   }
 
   // Nothing is awaited before download(): its font request needs the click gesture.
@@ -96,7 +109,7 @@ export function PracticeSetup({
                 type="radio"
                 name="practice-subject"
                 checked={checked}
-                onChange={() => onSubjectChange(item.id)}
+                onChange={() => { setCategoryNotice(''); onSubjectChange(item.id); }}
               />
               <span>
                 <strong>{item.name}</strong>
@@ -146,7 +159,7 @@ export function PracticeSetup({
                   aria-label="起始年度"
                   value={pool.fromYear}
                   onChange={(event) =>
-                    update({ fromYear: Number(event.target.value), category: 'all' })
+                    update({ fromYear: Number(event.target.value) })
                   }
                 >
                   {[...pool.availableYears].reverse().map((year) => (
@@ -163,7 +176,7 @@ export function PracticeSetup({
                   aria-label="結束年度"
                   value={pool.toYear}
                   onChange={(event) =>
-                    update({ toYear: Number(event.target.value), category: 'all' })
+                    update({ toYear: Number(event.target.value) })
                   }
                 >
                   {pool.availableYears.map((year) => (
@@ -176,6 +189,9 @@ export function PracticeSetup({
               <strong>
                 <b>{pool.rangeCandidates.length}</b> 題符合年度
               </strong>
+              {!loading && !settings.includeAllCredit && pool.allCreditInRange > 0 ? (
+                <small className={styles.excludedCreditNote}>已排除 {pool.allCreditInRange} 題一律給分題目。</small>
+              ) : null}
             </div>
           </TitledFieldset>
 
@@ -198,6 +214,7 @@ export function PracticeSetup({
             <small className={styles.groupNote}>
               目前選擇 <strong>{categoryLabel}</strong>，共 {pool.candidates.length} 題
             </small>
+            {categoryNotice ? <small className={styles.categoryNotice} role="status">{categoryNotice}</small> : null}
           </TitledFieldset>
 
           <TitledFieldset title="題數" className={styles.advancedGroup} disabled={busy}>
@@ -251,7 +268,7 @@ export function PracticeSetup({
                 type="checkbox"
                 checked={settings.includeAllCredit}
                 onChange={(event) =>
-                  update({ includeAllCredit: event.target.checked, category: 'all' })
+                  update({ includeAllCredit: event.target.checked })
                 }
               />
               <span>
@@ -267,7 +284,7 @@ export function PracticeSetup({
             <small>預設：50 題、全部年度與類別、打亂選項、不含一律給分。</small>
             <Button
               disabled={!customized || busy}
-              onClick={() => onSettingsChange(DEFAULT_PRACTICE_SETTINGS)}
+              onClick={() => { setCategoryNotice(''); onSettingsChange(DEFAULT_PRACTICE_SETTINGS); }}
             >
               恢復預設
             </Button>

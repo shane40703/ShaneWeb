@@ -77,9 +77,13 @@
   --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', 'Noto Sans TC',
     'PingFang TC', 'Microsoft JhengHei', sans-serif;
   --font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
-  --paper-grid: linear-gradient(90deg, var(--grid-line) 1px, transparent 0),
-    linear-gradient(var(--grid-line) 1px, transparent 0);
-  --paper-grid-size: 24px 24px;
+  --paper-grid:
+    radial-gradient(ellipse 3px 0.75px at center, color-mix(in srgb, var(--primary) 38%, transparent) 98%, transparent),
+    radial-gradient(ellipse 0.75px 3px at center, color-mix(in srgb, var(--primary) 38%, transparent) 98%, transparent),
+    linear-gradient(90deg, color-mix(in srgb, var(--grid-line) 55%, transparent) 1px, transparent 0),
+    linear-gradient(color-mix(in srgb, var(--grid-line) 55%, transparent) 1px, transparent 0);
+  --paper-grid-size: 40px 40px, 40px 40px, 8px 8px, 8px 8px;
+  --paper-grid-position: 20px 20px, 20px 20px, 0 0, 0 0;
 }
 
 :root[data-theme='dark'] {
@@ -161,6 +165,7 @@ body {
   background-color: var(--bg);
   background-image: var(--paper-grid);
   background-size: var(--paper-grid-size);
+  background-position: var(--paper-grid-position);
   color: var(--text);
   font-family: var(--font-sans);
   font-size: 16px;

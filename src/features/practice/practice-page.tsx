@@ -649,6 +649,7 @@ export function PracticePage() {
         subject={subject}
         settings={settings}
         pool={pool}
+        questions={bank.questions}
         loading={bank.status === 'loading'}
         loadFailed={bank.status === 'error'}
         onRetry={bank.retry}
