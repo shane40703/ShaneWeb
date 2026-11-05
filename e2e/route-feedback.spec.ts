@@ -6,7 +6,8 @@ test('the sidebar answers a click before the page arrives', async ({
   test.skip(testInfo.project.name !== 'desktop');
   await page.goto('/practice');
   await page.waitForLoadState('networkidle');
-  await page.route('**/_next/data/**/exams.json*', async (route) => {
+  // The sidebar opens 考古題討論版 on the newest 法規 paper's first question.
+  await page.route('**/_next/data/**/exams/law/114/1.json*', async (route) => {
     await new Promise((resolve) => setTimeout(resolve, 1500));
     await route.continue();
   });
@@ -26,12 +27,9 @@ test('the sidebar answers a click before the page arrives', async ({
   // It waits a beat at opacity 0, so a page that arrives quickly never shows it.
   await expect(placeholder).toHaveCSS('opacity', '1');
 
-  await expect(page).toHaveURL(/\/exams$/);
+  await expect(page).toHaveURL(/\/exams\/law\/114\/1$/);
   await expect(placeholder).toHaveCount(0);
-  // 考古題討論版 lists its subjects.
-  await expect(
-    page.getByRole('link', { name: '營建法規與實務', exact: true }),
-  ).toBeVisible();
+  await expect(page.getByRole('heading', { name: '第 1 題' })).toBeVisible();
 });
 
 test('下一題 keeps the keyboard in place while the next paper downloads', async ({

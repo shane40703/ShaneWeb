@@ -3,15 +3,20 @@ import {
   IconBooks, IconBuildingSkyscraper, IconDeviceMobilePlus, IconFileText, IconBrandThreads, IconSettings, IconShield,
 } from '@tabler/icons-react';
 import { personalHub, personalPages } from '@/features/personal/personal-pages';
-import { examsHubName, examsPlace } from '@/lib/question-path';
+import { examsHref, examsHubName, examsPlace } from '@/lib/question-path';
+import { subjects, years } from '@/question-bank/catalog';
 import { practiceHub, practicePages } from '@/features/practice/practice-pages';
 import { resourcePages, resourcesHub } from '@/features/resources/resource-pages';
 import styles from './app-shell.module.css';
 
-interface NavigationLinkItem { href: string; label: string; icon: typeof IconFileText; pages?: readonly { href: string }[] }
+/** `href` is the section the item stays current in; `to`, when set, is where a click lands in it. */
+interface NavigationLinkItem { href: string; to?: string; label: string; icon: typeof IconFileText; pages?: readonly { href: string }[] }
+// 考古題討論版 opens on the newest 法規 paper's first question, as it did before it had overview
+// pages; /exams itself, the list of subjects, is the top of its 返回 links.
+const examsStart = examsHref([subjects[0].id, String(years[0]), '1']);
 const primaryNavigation: readonly NavigationLinkItem[] = [
   { href: practiceHub.href, label: practiceHub.label, icon: practiceHub.icon },
-  { href: '/exams', label: '考古題討論版', icon: IconBooks },
+  { href: '/exams', to: examsStart, label: '考古題討論版', icon: IconBooks },
   { href: resourcesHub.href, label: resourcesHub.label, icon: resourcesHub.icon },
   // Its pages keep their own top-level URLs, so the hub stays current on them by name.
   { href: personalHub.href, label: personalHub.label, icon: personalHub.icon, pages: personalPages },
@@ -61,7 +66,7 @@ interface NavigationProps {
 }
 
 function NavigationLink({ item, pathname, onNavigate, onOpenSettings }: NavigationProps & { item: NavigationLinkItem }) {
-  return <Link href={item.href} className={styles.navItem}
+  return <Link href={item.to ?? item.href} className={styles.navItem}
     aria-current={isCurrent(pathname, item) ? 'page' : undefined}
     onClick={event => {
       if (item.href === '/settings' && onOpenSettings) { event.preventDefault(); onOpenSettings(); }

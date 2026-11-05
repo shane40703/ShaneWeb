@@ -38,7 +38,8 @@ describe('grouped app navigation', () => {
         .map((link) => link.getAttribute('href')),
     ).toEqual([
       '/practice',
-      '/exams',
+      // 考古題討論版 opens on the newest 法規 paper's first question.
+      '/exams/law/114/1',
       '/resources',
       '/personal',
       '/settings',
@@ -62,6 +63,17 @@ describe('grouped app navigation', () => {
       'page',
     );
   });
+
+  it.each(['/exams/[[...slug]]', '/exams', '/exams/law', '/exams/law/114/1'])(
+    'keeps 考古題討論版 current on %s, wherever its link lands',
+    (pathname) => {
+      render(<SidebarContent pathname={pathname} />);
+      expect(screen.getByRole('link', { name: '考古題討論版' })).toHaveAttribute(
+        'aria-current',
+        'page',
+      );
+    },
+  );
 
   it('does not mark 我的作答存摺 current on 每日練習', () => {
     render(<SidebarContent pathname="/practice" />);

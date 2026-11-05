@@ -69,9 +69,18 @@ test('考古題討論版 overviews download only the paper they list', async ({
   test.skip(testInfo.project.name !== 'desktop');
   const requests = watchRequests(page);
   const files = () => requests.questionData().map((url) => new URL(url).pathname);
-  // A move under /exams stays on the loaded page; the sidebar may still prefetch its own pages.
+  // A move under /exams stays on the loaded page. The sidebar still prefetches the pages it
+  // links, 考古題討論版's first question among them, and Next marks those as prefetches.
+  const fetchedPageData: string[] = [];
+  page.on('request', (request) => {
+    if (
+      request.url().includes('/_next/data/') &&
+      request.headers().purpose !== 'prefetch'
+    )
+      fetchedPageData.push(request.url());
+  });
   const examsPageData = () =>
-    requests.pageData().filter((url) => new URL(url).pathname.includes('/exams/'));
+    fetchedPageData.filter((url) => new URL(url).pathname.includes('/exams/'));
 
   await page.goto('/exams');
   await expect(

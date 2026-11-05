@@ -89,10 +89,12 @@ test('past exams opens from the navigation and keeps browsing on /exams', async 
 }) => {
   await page.goto('/');
   const nav = await openNavigation(page);
+  // The sidebar opens the newest 法規 paper on its first question.
   await nav.getByRole('link', { name: '考古題討論版', exact: true }).click();
-  await expect(page).toHaveURL(/\/exams$/);
-  await expect(page).toHaveTitle('考古題討論版｜建築師考試');
+  await expect(page).toHaveURL(/\/exams\/law\/114\/1$/);
+  await expect(page).toHaveTitle('114 年營建法規與實務考古題第 1 題｜建築師考試');
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('考古題討論版');
+  await expect(page.getByRole('heading', { name: '第 1 題' })).toBeVisible();
   await expect(
     (await openNavigation(page)).getByRole('link', {
       name: '考古題討論版',
@@ -105,6 +107,16 @@ test('past exams opens from the navigation and keeps browsing on /exams', async 
       0,
     );
   }
+
+  // 返回 climbs to the list of subjects, one level at a time.
+  await page.getByRole('link', { name: '返回 114 年營建法規與實務考古題', exact: true }).click();
+  await expect(page).toHaveURL(/\/exams\/law\/114$/);
+  await page.getByRole('link', { name: '返回營建法規與實務考古題', exact: true }).click();
+  await expect(page).toHaveURL(/\/exams\/law$/);
+  await page.getByRole('link', { name: '返回考古題討論版', exact: true }).click();
+  await expect(page).toHaveURL(/\/exams$/);
+  await expect(page).toHaveTitle('考古題討論版｜建築師考試');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('考古題討論版');
 
   // Each overview lists the level below it, and a row leads one level down.
   await page.getByRole('link', { name: '營建法規與實務', exact: true }).click();
