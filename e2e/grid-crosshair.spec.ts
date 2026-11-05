@@ -24,6 +24,18 @@ test('drafting cursor appears on paper, snaps to the grid, and leaves controls a
   await page.mouse.move(273, 81);
   await expect(crosshair).toBeVisible();
   await page.mouse.wheel(0, 300);
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
+  await page.evaluate(() => new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
+  await expect(crosshair).toBeVisible();
+  expect(await page.evaluate(() => getComputedStyle(document.elementFromPoint(273, 81)!).cursor)).toBe('none');
+
+  // If content moves under a stationary cursor, the next scroll must restore the ordinary pointer.
+  await page.evaluate(() => {
+    const overlay = document.createElement('button');
+    overlay.style.cssText = 'position:fixed;left:260px;top:64px;width:30px;height:40px;z-index:50';
+    document.body.appendChild(overlay);
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  });
   await expect(crosshair).toBeHidden();
 });
 

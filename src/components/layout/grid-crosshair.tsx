@@ -10,6 +10,8 @@ export function GridCrosshair({ workspace }: { workspace: RefObject<HTMLDivEleme
     const marker = crosshair.current;
     if (!area || !marker) return;
     let cursorTarget: HTMLElement | null = null;
+    let lastMouse: { x: number; y: number } | null = null;
+    let scrollFrame: number | null = null;
 
     function hide() {
       marker!.hidden = true;
@@ -30,12 +32,17 @@ export function GridCrosshair({ workspace }: { workspace: RefObject<HTMLDivEleme
       return true;
     }
 
-    function move(event: PointerEvent) {
-      if (!window.matchMedia('(any-hover: hover) and (any-pointer: fine)').matches || event.pointerType !== 'mouse' || event.buttons || !isPaper(event.target as Element)) {
+    function update() {
+      if (!lastMouse || !window.matchMedia('(any-hover: hover) and (any-pointer: fine)').matches) {
         hide();
         return;
       }
-      const target = event.target as HTMLElement;
+      const { x, y } = lastMouse;
+      const target = document.elementFromPoint(x, y);
+      if (!isPaper(target)) {
+        hide();
+        return;
+      }
       if (cursorTarget !== target) {
         cursorTarget?.removeAttribute('data-grid-cursor');
         cursorTarget = target;
@@ -45,27 +52,53 @@ export function GridCrosshair({ workspace }: { workspace: RefObject<HTMLDivEleme
       // The paper scrolls with the document, so measure from the body's actual origin.
       const step = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--paper-grid-step')) || 16;
       const origin = document.body.getBoundingClientRect();
-      const snapX = origin.left + Math.round((event.clientX - origin.left) / step) * step;
-      const snapY = origin.top + Math.round((event.clientY - origin.top) / step) * step;
-      const snap = Math.abs(snapX - event.clientX) <= 4 && Math.abs(snapY - event.clientY) <= 4 && isPaper(document.elementFromPoint(snapX, snapY));
-      marker!.style.left = `${snap ? snapX : event.clientX}px`;
-      marker!.style.top = `${snap ? snapY : event.clientY}px`;
+      const snapX = origin.left + Math.round((x - origin.left) / step) * step;
+      const snapY = origin.top + Math.round((y - origin.top) / step) * step;
+      const snap = Math.abs(snapX - x) <= 4 && Math.abs(snapY - y) <= 4 && isPaper(document.elementFromPoint(snapX, snapY));
+      marker!.style.left = `${snap ? snapX : x}px`;
+      marker!.style.top = `${snap ? snapY : y}px`;
       marker!.toggleAttribute('data-snapped', snap);
       marker!.hidden = false;
     }
 
-    document.addEventListener('pointermove', move);
-    document.addEventListener('pointerdown', hide);
-    document.addEventListener('pointerleave', hide);
-    window.addEventListener('scroll', hide, true);
-    window.addEventListener('blur', hide);
-    return () => {
+    function move(event: PointerEvent) {
+      if (event.pointerType !== 'mouse' || event.buttons) {
+        lastMouse = null;
+        hide();
+        return;
+      }
+      lastMouse = { x: event.clientX, y: event.clientY };
+      update();
+    }
+
+    function clear() {
+      lastMouse = null;
       hide();
+    }
+
+    function scroll() {
+      if (scrollFrame !== null) return;
+      scrollFrame = requestAnimationFrame(() => {
+        scrollFrame = null;
+        update();
+      });
+    }
+
+    document.addEventListener('pointermove', move);
+    document.addEventListener('pointerup', move);
+    document.addEventListener('pointerdown', clear);
+    document.addEventListener('pointerleave', clear);
+    window.addEventListener('scroll', scroll, true);
+    window.addEventListener('blur', clear);
+    return () => {
+      clear();
+      if (scrollFrame !== null) cancelAnimationFrame(scrollFrame);
       document.removeEventListener('pointermove', move);
-      document.removeEventListener('pointerdown', hide);
-      document.removeEventListener('pointerleave', hide);
-      window.removeEventListener('scroll', hide, true);
-      window.removeEventListener('blur', hide);
+      document.removeEventListener('pointerup', move);
+      document.removeEventListener('pointerdown', clear);
+      document.removeEventListener('pointerleave', clear);
+      window.removeEventListener('scroll', scroll, true);
+      window.removeEventListener('blur', clear);
     };
   }, [workspace]);
 
