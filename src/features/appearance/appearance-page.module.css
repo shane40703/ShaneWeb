@@ -543,8 +543,8 @@
   border-radius: var(--radius-frame);
   background-color: var(--bg);
   background-image:
-    radial-gradient(ellipse 3px 0.75px at center, color-mix(in srgb, var(--primary) 38%, transparent) 98%, transparent),
-    radial-gradient(ellipse 0.75px 3px at center, color-mix(in srgb, var(--primary) 38%, transparent) 98%, transparent),
+    radial-gradient(ellipse 3px 0.75px at center, rgb(128 128 128 / 35%) 98%, transparent),
+    radial-gradient(ellipse 0.75px 3px at center, rgb(128 128 128 / 35%) 98%, transparent),
     linear-gradient(90deg, color-mix(in srgb, var(--grid-line) 55%, transparent) 1px, transparent 0),
     linear-gradient(color-mix(in srgb, var(--grid-line) 55%, transparent) 1px, transparent 0);
   background-size: var(--paper-grid-size);
