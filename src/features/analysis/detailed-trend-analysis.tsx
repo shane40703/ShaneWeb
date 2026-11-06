@@ -190,7 +190,7 @@ function LineChart({
   const chartLabel = `${years[0]} 年至 ${years.at(-1)} 年分類出題數量折線圖`;
 
   return (
-    <div className={styles.trendChartScroll} ref={chartRef} data-chart-motion={chartEntered || undefined}>
+    <div className={styles.trendChartScroll} ref={chartRef} data-chart-motion={chartEntered || undefined} role="region" aria-label="折線圖橫向捲動區" tabIndex={0}>
       <svg
         className={styles.trendChart}
         viewBox={`0 0 ${width} ${height}`}
@@ -432,60 +432,67 @@ export function DetailedTrendAnalysis({
 
         {allSeries.length ? (
           <>
-            <div className={styles.trendPicker} aria-label="選擇比較分類">
-              {allSeries.map((item) => {
-                const selected = selectedCategories.includes(item.category);
-                const disabled = !selected && selectedCategories.length >= maxSelectedSeries;
-                return (
-                  <label data-selected={selected || undefined} key={item.category}>
-                    <input
-                      type="checkbox"
-                      checked={selected}
-                      disabled={disabled}
-                      onChange={() => toggleCategory(item.category)}
-                    />
-                    <span>{item.category}</span>
-                    <small>{item.total} 題</small>
-                  </label>
-                );
-              })}
-            </div>
+            <div className={styles.trendWorkbench}>
+              <section className={styles.trendPickerPanel} aria-label="選擇比較分類">
+                <header className={styles.trendPickerHeader}>
+                  <strong>選擇比較分類</strong>
+                  <span>已選 {selectedCategories.length}／{maxSelectedSeries}</span>
+                </header>
+                <div className={styles.trendPicker} role="group" aria-label="比較分類清單" tabIndex={0}>
+                  {allSeries.map((item) => {
+                    const selected = selectedCategories.includes(item.category);
+                    const disabled = !selected && selectedCategories.length >= maxSelectedSeries;
+                    return (
+                      <label data-selected={selected || undefined} key={item.category}>
+                        <input
+                          type="checkbox"
+                          checked={selected}
+                          disabled={disabled}
+                          onChange={() => toggleCategory(item.category)}
+                        />
+                        <span>{item.category}</span>
+                        <small>{item.total} 題</small>
+                      </label>
+                    );
+                  })}
+                </div>
+              </section>
 
-            <div className={styles.trendStats} data-empty={!selectedSeries.length || undefined}>
-              <div>
-                <span>選取項目總標註</span>
-                <strong>{selectedSeries.length ? `${selectedTotal} 題次` : '—'}</strong>
-              </div>
-              <div>
-                <span>最高單年出題量</span>
-                <strong>{peak ? `${peak.year} 年・${peak.count} 題` : '—'}</strong>
-                <small>{peak?.category || '尚未選取分類'}</small>
-              </div>
-              <div>
-                <span>首末年度變化最大</span>
-                <strong>
-                  {largestChange
-                    ? `${largestChange.change > 0 ? '+' : ''}${largestChange.change} 題`
-                    : '—'}
-                </strong>
-                <small>{largestChange?.category || '尚未選取分類'}</small>
+              <div className={styles.trendVisual}>
+                <section className={styles.trendPanel} aria-label="跨年度分類折線圖">
+                  <div className={styles.trendLegend}>
+                    {selectedSeries.length ? selectedSeries.map((item) => (
+                      <span key={item.category}>
+                        <i style={{ background: item.color }} aria-hidden="true" />
+                        {item.category}
+                      </span>
+                    )) : <span>尚未選取比較分類</span>}
+                  </div>
+                  <p className={styles.trendScrollHint}>左右滑動查看完整年份</p>
+                  <LineChart years={analysisYears} series={selectedSeries} />
+                </section>
+                <div className={styles.trendStats} data-empty={!selectedSeries.length || undefined}>
+                  <div>
+                    <span>選取項目總標註</span>
+                    <strong>{selectedSeries.length ? `${selectedTotal} 題次` : '—'}</strong>
+                  </div>
+                  <div>
+                    <span>最高單年出題量</span>
+                    <strong>{peak ? `${peak.year} 年・${peak.count} 題` : '—'}</strong>
+                    <small>{peak?.category || '尚未選取分類'}</small>
+                  </div>
+                  <div>
+                    <span>首末年度變化最大</span>
+                    <strong>
+                      {largestChange
+                        ? `${largestChange.change > 0 ? '+' : ''}${largestChange.change} 題`
+                        : '—'}
+                    </strong>
+                    <small>{largestChange?.category || '尚未選取分類'}</small>
+                  </div>
+                </div>
               </div>
             </div>
-
-            <section className={styles.trendPanel} aria-label="跨年度分類折線圖">
-              <div className={styles.trendLegend}>
-                {selectedSeries.length ? selectedSeries.map((item) => (
-                  <span key={item.category}>
-                    <i style={{ background: item.color }} aria-hidden="true" />
-                    {item.category}
-                  </span>
-                )) : <span>尚未選取比較分類</span>}
-              </div>
-              <LineChart
-                years={analysisYears}
-                series={selectedSeries}
-              />
-            </section>
 
             {selectedSeries.length ? (
               <>

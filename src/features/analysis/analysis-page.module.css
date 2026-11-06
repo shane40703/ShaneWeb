@@ -489,6 +489,7 @@
 .trendBody {
   padding: 22px;
   display: grid;
+  container-type: inline-size;
 }
 
 .trendBody > * + * {
@@ -553,29 +554,70 @@
   min-width: 110px;
 }
 
-/* Which categories to compare: checkbox rows in columns, each row opened by a rule. The
-   rows carry their own rules and the list closes with one, so neither the picker nor the
-   figures after it draw a section rule of their own. Rows size to their content (a wrapped
-   name makes a taller row) and a gap keeps each column's rules apart from the next. */
-.trendBody > .trendPicker {
-  padding-top: 0;
-  border-top: 0;
+/* Keep the independent category list beside the chart whenever both can fit. */
+.trendWorkbench {
+  min-width: 0;
+  display: grid;
+  gap: 20px;
 }
 
-.trendBody > .trendStats {
-  padding-top: 0;
-  border-top: 0;
+.trendPickerPanel,
+.trendVisual {
+  min-width: 0;
+}
+
+.trendPickerHeader {
+  min-height: 30px;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.trendPickerHeader strong {
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.trendPickerHeader span {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  white-space: nowrap;
 }
 
 .trendPicker {
-  max-height: 419px;
+  max-height: min(200px, max(140px, 28vh));
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   grid-auto-rows: max-content;
   align-content: start;
   column-gap: 24px;
   overflow-y: auto;
   border-bottom: var(--rule);
+}
+
+.trendPicker:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: -2px;
+}
+
+@container (min-width: 980px) {
+  .trendWorkbench {
+    grid-template-columns: minmax(240px, 300px) minmax(0, 1fr);
+    align-items: start;
+    gap: 24px;
+  }
+
+  .trendPicker {
+    max-height: min(420px, max(160px, calc(100vh - 210px)));
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (pointer: coarse) {
+  .trendPicker label { min-height: 44px; }
 }
 
 .trendPicker label {
@@ -621,8 +663,11 @@
 
 /* Three figures side by side, divided by rules instead of tiles. */
 .trendStats {
+  margin-top: 16px;
+  padding-top: 16px;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-top: var(--rule);
 }
 
 .trendStats > div {
@@ -684,8 +729,25 @@
   overflow-x: auto;
 }
 
+.trendChartScroll:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: -2px;
+}
+
+.trendScrollHint {
+  display: none;
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+@container (max-width: 700px) {
+  .trendScrollHint { display: block; }
+}
+
 .trendChart {
   width: 100%;
+  max-width: 1100px;
   min-width: 680px;
   height: auto;
   display: block;
