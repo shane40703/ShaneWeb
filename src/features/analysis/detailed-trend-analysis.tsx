@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { IconChartLine } from '@tabler/icons-react';
 import { getAnalysisCategory, getQuestionDisplayCategories } from '@/lib/study';
 import type { QuestionSummary, SubjectId } from '@/lib/types';
+import { useChartEntrance } from './use-chart-entrance';
 import styles from './analysis-page.module.css';
 
 type TrendDimension = 'category' | 'fine-topic';
@@ -174,6 +175,7 @@ function LineChart({
   years: readonly number[];
   series: readonly (TrendSeries & { color: string })[];
 }) {
+  const [chartRef, chartEntered] = useChartEntrance<HTMLDivElement>();
   const width = 820;
   const height = 320;
   const margin = { top: 20, right: 24, bottom: 58, left: 62 };
@@ -188,7 +190,7 @@ function LineChart({
   const chartLabel = `${years[0]} 年至 ${years.at(-1)} 年分類出題數量折線圖`;
 
   return (
-    <div className={styles.trendChartScroll}>
+    <div className={styles.trendChartScroll} ref={chartRef} data-chart-motion={chartEntered || undefined}>
       <svg
         className={styles.trendChart}
         viewBox={`0 0 ${width} ${height}`}
@@ -251,8 +253,10 @@ function LineChart({
             .map((count, index) => `${x(index)},${y(count)}`)
             .join(' ');
           return (
-            <g key={item.category}>
+            <g key={`${item.category}:${item.color}:${points}`}>
               <polyline
+                className={styles.trendLine}
+                pathLength={1}
                 points={points}
                 fill="none"
                 stroke={item.color}
@@ -262,6 +266,7 @@ function LineChart({
               />
               {item.counts.map((count, index) => (
                 <circle
+                  className={styles.trendPoint}
                   cx={x(index)}
                   cy={y(count)}
                   r="4"

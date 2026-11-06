@@ -32,6 +32,7 @@ import {
   PRACTICE_SESSION_STORAGE_KEY,
 } from '@/features/practice/practice-session';
 import { DetailedTrendAnalysis } from './detailed-trend-analysis';
+import { useChartEntrance } from './use-chart-entrance';
 import styles from './analysis-page.module.css';
 
 const chartColors = [
@@ -56,6 +57,8 @@ export function AnalysisPage({
   rowsLoading?: boolean;
 }) {
   const router = useRouter();
+  const [distributionRef, distributionEntered] = useChartEntrance<HTMLDivElement>();
+  const [pieRef, pieEntered] = useChartEntrance<HTMLDivElement>();
   const querySubject = valueOf(router.query.subject);
   const subjectId: SubjectId = isSubjectId(querySubject) ? querySubject : 'law';
   const queryYear = valueOf(router.query.year);
@@ -311,7 +314,7 @@ export function AnalysisPage({
                     ；選擇分類即可查看對應考古題。
                   </p>
                 </header>
-                <div className={styles.lawList}>
+                <div className={styles.lawList} ref={distributionRef} data-chart-motion={distributionEntered || undefined}>
                   {analysis.map((item) => (
                     <button
                       type="button"
@@ -377,6 +380,8 @@ export function AnalysisPage({
             <div className={styles.pieLayout}>
               <div
                 className={styles.pie}
+                ref={pieRef}
+                data-chart-motion={pieEntered || undefined}
                 style={{
                   '--pie': `conic-gradient(${pieSegments.parts.join(',')})`,
                 } as CSSProperties}
@@ -388,6 +393,7 @@ export function AnalysisPage({
                   )
                   .join('、')}
               >
+                <div className={styles.pieGraphic} key={pieSegments.parts.join(',')} aria-hidden="true" />
                 <span>
                   <strong>{analysisTotal}</strong>
                   <span>{subjectId === 'law' ? '筆法規標註' : '題'}</span>
