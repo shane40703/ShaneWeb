@@ -77,6 +77,7 @@ const chartTokens = [
   '--chart-4',
   '--chart-5',
   '--chart-6',
+  '--chart-7',
 ] as const;
 
 describe.each([
@@ -115,6 +116,22 @@ describe.each([
       contrastRatio(tokens[foreground], tokens['--surface']),
       `${foreground} on --surface`,
     ).toBeGreaterThanOrEqual(3);
+  });
+
+  it('keeps seven muted hues in red-orange-yellow-green-blue-indigo-violet order', () => {
+    const hueRanges = [[350, 360], [20, 35], [45, 60], [130, 155], [195, 210], [230, 245], [280, 300]];
+    chartTokens.forEach((token, index) => {
+      const [r, g, b] = tokens[token].slice(1).match(/../g)!.map((hex) => parseInt(hex, 16) / 255);
+      const max = Math.max(r, g, b);
+      const min = Math.min(r, g, b);
+      const delta = max - min;
+      const hue = ((max === r ? (g - b) / delta : max === g ? (b - r) / delta + 2 : (r - g) / delta + 4) * 60 + 360) % 360;
+      const saturation = delta / (1 - Math.abs(max + min - 1));
+      expect(hue, token).toBeGreaterThanOrEqual(hueRanges[index][0]);
+      expect(hue, token).toBeLessThanOrEqual(hueRanges[index][1]);
+      expect(saturation, token).toBeLessThanOrEqual(0.5);
+      expect(saturation, token).toBeGreaterThan(0.15);
+    });
   });
 });
 

@@ -299,7 +299,6 @@ function createThemeKernel() {
       tokens['--primary-solid-hover'] = primaryHover;
       tokens['--on-primary'] = onPrimary;
       tokens['--focus'] = `rgb(${accentRgb[0]} ${accentRgb[1]} ${accentRgb[2]} / ${dark ? 42 : 28}%)`;
-      tokens['--chart-1'] = palette.accent;
       tokens['--subject-blue'] = palette.accent;
     }
 
@@ -439,7 +438,7 @@ const DEFAULT_THEME_TOKENS: Record<ThemeMode, ThemeTokens> = {
     '--sidebar-muted': '#636363',
     '--sidebar-hover': 'rgb(55 55 55 / 6%)',
     '--sidebar-active': 'rgb(40 63 125 / 10%)',
-    '--chart-1': '#3157ba',
+    '--chart-1': '#ad6265',
     '--subject-blue': '#3157ba',
     '--grid-line': '#d3c9b5',
     '--grid-line-soft': '#e3d9c3',
@@ -470,7 +469,7 @@ const DEFAULT_THEME_TOKENS: Record<ThemeMode, ThemeTokens> = {
     '--sidebar-muted': '#a39b8c',
     '--sidebar-hover': 'rgb(255 255 255 / 6%)',
     '--sidebar-active': 'rgb(143 169 240 / 14%)',
-    '--chart-1': '#8fa9f0',
+    '--chart-1': '#cc9093',
     '--subject-blue': '#8fa9f0',
     '--grid-line': '#2e2b26',
     '--grid-line-soft': '#25221e',

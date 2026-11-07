@@ -1,7 +1,8 @@
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AnalysisPage } from '@/features/analysis/analysis-page';
-import { buildForecastRanking } from '@/features/analysis/detailed-trend-analysis';
+import { buildForecastRanking, DetailedTrendAnalysis } from '@/features/analysis/detailed-trend-analysis';
+import { chartColors } from '@/lib/chart-colors';
 import type { QuestionSummary } from '@/lib/types';
 
 const router = vi.hoisted(() => ({
@@ -166,6 +167,37 @@ describe('AnalysisPage category quiz', () => {
     expect(screen.getByRole('table', { name: '115 年複習優先度' })).toBeInTheDocument();
     expect(screen.getByText('115 年複習優先度')).toBeInTheDocument();
     expect(screen.getByText(/不是命題機率/)).toBeInTheDocument();
+  });
+
+  it('uses all seven ordered colors for lines and legends and caps comparison at seven', () => {
+    render(<DetailedTrendAnalysis
+      questions={Array.from({ length: 8 }, (_, index) => ({
+        ...question(`law-114-${index}`, index + 1),
+        fineTopic: `考點 ${index + 1}`,
+      }))}
+      subjectId="law"
+      years={[114]}
+      colors={chartColors}
+    />);
+    fireEvent.click(screen.getByText('詳細趨勢分析'));
+    fireEvent.change(screen.getByLabelText('趨勢分析層級'), {
+      target: { value: 'fine-topic' },
+    });
+    const checkboxes = within(screen.getByRole('group', { name: '比較分類清單' }))
+      .getAllByRole('checkbox');
+    for (const checkbox of checkboxes.slice(3, 7)) fireEvent.click(checkbox);
+    expect(screen.getByText('已選 7／7')).toBeInTheDocument();
+    expect(checkboxes[7]).toBeDisabled();
+    const chart = screen.getByRole('region', { name: '跨年度分類折線圖' });
+    expect(Array.from(chart.querySelectorAll('polyline'), (line) => line.getAttribute('stroke')))
+      .toEqual(chartColors);
+    expect(Array.from(chart.querySelectorAll('i'), (swatch) => swatch.style.background))
+      .toEqual(chartColors);
+    fireEvent.click(checkboxes[0]);
+    expect(checkboxes[7]).toBeEnabled();
+    fireEvent.click(checkboxes[7]);
+    expect(Array.from(chart.querySelectorAll('polyline'), (line) => line.getAttribute('stroke')))
+      .toEqual(chartColors);
   });
 
   it('can compare manually assigned fine topics', () => {

@@ -24,6 +24,7 @@ import {
 import { examsQuestionHref } from '@/lib/question-path';
 import type { QuestionSummary, SubjectId } from '@/lib/types';
 import { readStoredValue } from '@/lib/storage';
+import { chartColors } from '@/lib/chart-colors';
 import { practiceQuizPage } from '@/features/practice/practice-pages';
 import {
   hasPracticeProgress,
@@ -34,15 +35,6 @@ import {
 import { DetailedTrendAnalysis } from './detailed-trend-analysis';
 import { useChartEntrance } from './use-chart-entrance';
 import styles from './analysis-page.module.css';
-
-const chartColors = [
-  'var(--chart-1)',
-  'var(--chart-2)',
-  'var(--chart-3)',
-  'var(--chart-4)',
-  'var(--chart-5)',
-  'var(--chart-6)',
-];
 
 function valueOf(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;

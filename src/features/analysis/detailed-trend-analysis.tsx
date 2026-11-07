@@ -24,7 +24,7 @@ export interface ForecastRow {
   signal: '高頻且穩定' | '近期升溫' | '穩定出題' | '近期降溫' | '久未出題' | '間歇出題';
 }
 
-const maxSelectedSeries = 6;
+const maxSelectedSeries = 7;
 
 function questionTrendCategories(
   question: QuestionSummary,

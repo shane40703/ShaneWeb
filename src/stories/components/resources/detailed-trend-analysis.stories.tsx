@@ -1,22 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { useLayoutEffect, useRef, type ComponentProps } from 'react';
 import { DetailedTrendAnalysis } from '@/features/analysis/detailed-trend-analysis';
+import { chartColors } from '@/lib/chart-colors';
 import type { QuestionSummary, SubjectId } from '@/lib/types';
 import { subjects, years } from '@/question-bank/catalog';
 import {
   resourceQuestionSummaries,
   summariesWithoutFineTopic,
 } from '../../fixtures/resources';
-
-/** 跟 analysis-page.tsx 傳給趨勢分析的配色一樣。 */
-const chartColors = [
-  'var(--chart-1)',
-  'var(--chart-2)',
-  'var(--chart-3)',
-  'var(--chart-4)',
-  'var(--chart-5)',
-  'var(--chart-6)',
-];
 
 /** 跟 analysis-page.tsx 一樣：比較這個科目在題庫裡有題目的年度，由舊到新。 */
 function trendYearsOf(questions: readonly QuestionSummary[], subjectId: SubjectId) {
@@ -61,7 +52,8 @@ function ExpandedTrendAnalysis({
  *
  * 畫面上可以操作看到：
  * - 點標題列收合或展開；一開始勾選題數最多的三項法規。
- * - 勾選比較的分類：全部取消時折線圖提示先勾選分類、統計顯示「—」；勾滿 6 項後其他項目停用。
+ * - 勾選比較的分類：全部取消時折線圖提示先勾選分類、統計顯示「—」；勾滿 7 項後其他項目停用。
+ * - 折線與圖例共用低飽和紅、橙、黃、綠、藍、靛、紫；工具列可切換深淺色檢查。
  * - 「分析層級」切到「人工細分考點」，調整起訖年度。
  *
  * Controls 的 subjectId 換成其他科目：跟考題分析頁一樣只比較這科有題目的年度（113 年），

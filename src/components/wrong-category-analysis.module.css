@@ -74,7 +74,7 @@
   justify-content: space-between;
   gap: 12px;
   border: 0;
-  border-left: 3px solid var(--chart-6);
+  border-left: 3px solid var(--chart-7);
   border-radius: 0;
   background: transparent;
   color: var(--text);
@@ -83,24 +83,28 @@
   cursor: pointer;
 }
 
-.tabs > button:nth-child(6n + 1) {
+.tabs > button:nth-child(7n + 1) {
   border-left-color: var(--chart-1);
 }
 
-.tabs > button:nth-child(6n + 2) {
+.tabs > button:nth-child(7n + 2) {
   border-left-color: var(--chart-2);
 }
 
-.tabs > button:nth-child(6n + 3) {
+.tabs > button:nth-child(7n + 3) {
   border-left-color: var(--chart-3);
 }
 
-.tabs > button:nth-child(6n + 4) {
+.tabs > button:nth-child(7n + 4) {
   border-left-color: var(--chart-4);
 }
 
-.tabs > button:nth-child(6n + 5) {
+.tabs > button:nth-child(7n + 5) {
   border-left-color: var(--chart-5);
+}
+
+.tabs > button:nth-child(7n + 6) {
+  border-left-color: var(--chart-6);
 }
 
 .tabs > button:hover {

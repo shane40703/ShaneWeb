@@ -249,7 +249,7 @@ describe('contrast validation and derived tokens', () => {
       '--primary': customLightPalette.accent,
       '--line': customLightPalette.border,
       '--control-line': customLightPalette.border,
-      '--chart-1': customLightPalette.accent,
+      '--chart-1': '#ad6265',
       '--subject-blue': customLightPalette.accent,
     });
     expect(tokens['--surface-2']).toMatch(/^#[0-9a-f]{6}$/);
@@ -277,6 +277,18 @@ describe('contrast validation and derived tokens', () => {
       '--subject-blue': '#8fa9f0',
       '--grid-line': '#2e2b26',
     });
+  });
+
+  it.each(['light', 'dark'] as const)('keeps the first chart series red after changing the %s accent', (mode) => {
+    const palette = mode === 'light' ? customLightPalette : customDarkPalette;
+    const baseline = deriveThemeTokens(mode, DEFAULT_THEME_PALETTES[mode]);
+    expect(deriveThemeTokens(mode, palette)['--chart-1']).toBe(baseline['--chart-1']);
+    applyThemeToDocument(mode, palette);
+    expect(document.documentElement.style.getPropertyValue('--chart-1')).toBe(baseline['--chart-1']);
+    localStorage.setItem(THEME_MODE_STORAGE_KEY, mode);
+    localStorage.setItem(THEME_COLORS_STORAGE_KEY, serializeStoredThemeColors({ [mode]: palette }));
+    runInitializationScript();
+    expect(document.documentElement.style.getPropertyValue('--chart-1')).toBe(baseline['--chart-1']);
   });
 
   it('keeps every accent-derived baseline token stable when only dark background changes', () => {
