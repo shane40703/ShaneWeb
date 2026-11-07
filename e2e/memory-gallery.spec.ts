@@ -101,6 +101,44 @@ test('portrait and landscape previews fill the card width without padding or cro
   }
 });
 
+test('gallery packs mixed-height cards without row gaps across responsive columns', async ({ page, isMobile }, testInfo) => {
+  await page.goto('/resources/memory-gallery');
+  const gallery = page.getByRole('region', { name: '速記圖庫', exact: true });
+  const cards = gallery.getByRole('article');
+  expect(await cards.count()).toBeGreaterThan(3);
+  const widths = isMobile ? [390] : [1440, 1000];
+  for (const width of widths) {
+    await page.setViewportSize({ width, height: 900 });
+    const boxes = await cards.evaluateAll(elements => elements.map(element => {
+      const rect = element.getBoundingClientRect();
+      return { x: rect.x, y: rect.y, width: rect.width, height: rect.height, fragments: element.getClientRects().length };
+    }));
+    const columns = new Map<number, typeof boxes>();
+    for (const box of boxes) {
+      const x = Math.round(box.x);
+      columns.set(x, [...(columns.get(x) ?? []), box]);
+      expect(box.fragments).toBe(1);
+    }
+    expect(columns.size).toBe(width > 1150 ? 3 : width > 600 ? 2 : 1);
+    for (const column of columns.values()) {
+      for (let index = 1; index < column.length; index++) {
+        const previous = column[index - 1];
+        expect(Math.abs(column[index].y - previous.y - previous.height - 20)).toBeLessThan(1);
+      }
+    }
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await page.screenshot({ path: testInfo.outputPath(`gallery-masonry-${width}.png`) });
+  }
+  const title = await cards.first().getByRole('heading').textContent();
+  await gallery.getByRole('searchbox').fill(title!);
+  await expect(cards).toHaveCount(1);
+  await cards.getByRole('button', { name: /^放大圖片/ }).click();
+  await expect(page.getByRole('dialog', { name: `放大檢視 ${title}` })).toBeVisible();
+  await page.keyboard.press('Escape');
+  await gallery.getByRole('searchbox').clear();
+  expect(await cards.count()).toBeGreaterThan(3);
+});
+
 test('gallery zoom controls stay accessible and block ordinary image saving', async ({ page }, testInfo) => {
   const gallery = await enterPopulatedGallery(page);
   expect(await gallery.locator('a[href*="/memory-gallery/assets/"]').count()).toBe(0);

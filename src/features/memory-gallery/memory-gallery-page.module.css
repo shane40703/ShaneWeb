@@ -149,13 +149,15 @@
 }
 
 .grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  align-items: start;
-  gap: 20px;
+  /* Each column packs cards at their natural height, without row-sized holes.
+     DOM and keyboard order follow the columns top-to-bottom, then left-to-right. */
+  column-count: 3;
+  column-gap: 20px;
 }
 
 .card {
+  break-inside: avoid;
+  margin-bottom: 20px;
   overflow: hidden;
   min-width: 0;
   scroll-margin-top: 84px;
@@ -273,7 +275,7 @@
 
 @media (max-width: 1150px) {
   .grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-count: 2;
   }
 }
 
@@ -287,7 +289,7 @@
   }
 
   .grid {
-    grid-template-columns: 1fr;
+    column-count: 1;
   }
 
   .filters {
