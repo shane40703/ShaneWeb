@@ -1,13 +1,14 @@
-// Draws the Home Screen icons from the sidebar's brand mark. The site has no logo yet.
-import { mkdir } from 'node:fs/promises';
+// Draws the Home Screen icons and favicon.ico from the sidebar's brand mark. The site has no logo yet.
+import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
 
-const outputDirectory = path.join(
+const publicDirectory = path.join(
   path.dirname(fileURLToPath(import.meta.url)),
-  '../public/icons',
+  '../public',
 );
+const outputDirectory = path.join(publicDirectory, 'icons');
 
 // Tabler's IconBuildingSkyscraper, on its 24 grid. Its ink spans 3 to 21 on both axes.
 const glyphPaths = [
@@ -33,6 +34,14 @@ const icons = [
   { file: 'icon-maskable-512.png', size: 512, glyphShare: 0.5 },
 ];
 
+// Scaled down, the glyph's thin lines and window dots blur, so tab sizes are redrawn in pixels:
+// a 2px stroke at 16 and 3px at 32, every straight edge on a pixel boundary, only the roofs smoothed.
+// 16 has room for three windows, not four.
+const tabGlyphs = {
+  16: 'M1 13h14v2H1z M2 13V4h2V3h2V2h2V1h2v12H8V4H6v1H4v8z M10 4h1v1h1v1h1v1h1v6h-2V7h-1V6h-1z M5 6h2v1H5z M5 8h2v1H5z M5 10h2v1H5z',
+  32: 'M4 26h25v3H4z M6 26V8l10-5h3v23h-3V6.35l-7 3.5V26z M19 9l8 5.33V26h-3V15.94l-5-3.33z M11 10h3v2h-3z M11 14h3v2h-3z M11 18h3v2h-3z M11 22h3v2h-3z',
+};
+
 function iconSvg(size, glyphShare) {
   const scale = (size * glyphShare) / glyphInkSize;
   const offset = size / 2 - glyphCentre * scale;
@@ -43,6 +52,32 @@ function iconSvg(size, glyphShare) {
   </svg>`;
 }
 
+function tabIconSvg(size) {
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+    <rect width="${size}" height="${size}" fill="${background}"/>
+    <path d="${tabGlyphs[size]}" fill="${foreground}"/>
+  </svg>`;
+}
+
+// An ICO is a directory of images; modern readers take PNGs inside it.
+function ico(frames) {
+  const directory = Buffer.alloc(6 + 16 * frames.length);
+  directory.writeUInt16LE(1, 2); // type 1: icon
+  directory.writeUInt16LE(frames.length, 4);
+  let offset = directory.length;
+  frames.forEach(({ size, png }, index) => {
+    const entry = 6 + 16 * index;
+    directory.writeUInt8(size, entry);
+    directory.writeUInt8(size, entry + 1);
+    directory.writeUInt16LE(1, entry + 4); // colour planes
+    directory.writeUInt16LE(32, entry + 6); // bits per pixel
+    directory.writeUInt32LE(png.length, entry + 8);
+    directory.writeUInt32LE(offset, entry + 12);
+    offset += png.length;
+  });
+  return Buffer.concat([directory, ...frames.map(({ png }) => png)]);
+}
+
 await mkdir(outputDirectory, { recursive: true });
 for (const { file, size, glyphShare } of icons) {
   // The square stays full-bleed and opaque: iOS paints transparency black, and each OS rounds the corners itself.
@@ -51,3 +86,18 @@ for (const { file, size, glyphShare } of icons) {
     .png()
     .toFile(path.join(outputDirectory, file));
 }
+
+// Browsers pick 16 or 32 for a tab by screen sharpness; 48 is the normal drawing.
+// The frames keep an alpha channel, as Windows expects of PNGs in an ICO, but the square fills it.
+const faviconFrames = await Promise.all(
+  [16, 32, 48].map(async (size) => ({
+    size,
+    png: await sharp(
+      Buffer.from(size in tabGlyphs ? tabIconSvg(size) : iconSvg(size, 0.62)),
+    )
+      .ensureAlpha()
+      .png()
+      .toBuffer(),
+  })),
+);
+await writeFile(path.join(publicDirectory, 'favicon.ico'), ico(faviconFrames));
