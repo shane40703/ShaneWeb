@@ -483,6 +483,26 @@ describe('MockExamPage answering', () => {
     expect(router.snapshot.asPath).toBe('/practice/mock-exam?subject=law&year=114&q=1');
   });
 
+  it('Space strikes out the current answer, restores it on the next press, and leaves buttons alone', async () => {
+    seedDraft({ 'law-114-01': answered(1) });
+    renderAt('/practice/mock-exam?subject=law&year=114&q=1');
+    await screen.findByRole('region', { name: '題目與選項' });
+    const heading = screen.getByRole('heading', { name: '第 1 題，共 5 題' });
+    expect(fireEvent.keyDown(heading, { key: ' ' })).toBe(false);
+    expect(storedDraft()['law-114-01']?.selected).toBeUndefined();
+    expect(storedDraft()['law-114-01']?.eliminatedOptions).toEqual([1]);
+    fireEvent.keyDown(heading, { key: ' ', repeat: true });
+    expect(storedDraft()['law-114-01']?.eliminatedOptions).toEqual([1]);
+    fireEvent.keyDown(heading, { key: ' ' });
+    expect(storedDraft()['law-114-01']?.eliminatedOptions).toBeUndefined();
+    expect(storedDraft()['law-114-01']?.selected).toBeUndefined();
+    expect(fireEvent.keyDown(screen.getByRole('button', { name: '刪去選項 B' }), { key: ' ' })).toBe(true);
+    fireEvent.keyDown(heading, { key: 'ArrowRight' });
+    await flush();
+    fireEvent.keyDown(document.activeElement!, { key: ' ' });
+    expect(storedDraft()['law-114-02']?.eliminatedOptions).toBeUndefined();
+  });
+
   it('enters a blank question from the top with ↓ and from the bottom with ↑', async () => {
     seedDraft({ 'law-114-01': answered(0) });
     renderAt('/practice/mock-exam?subject=law&year=114&q=2');
@@ -565,7 +585,7 @@ describe('MockExamPage answering', () => {
     expect(storedDraft()['law-114-02']?.selected).toBe(0);
   });
 
-  it('never submits from the keyboard shortcut on the last question', async () => {
+  it('never submits from the right-arrow shortcut on the last question', async () => {
     seedDraft(
       Object.fromEntries(
         [1, 2, 3, 4, 5].map((number) => [`law-114-0${number}`, answered(0)]),
@@ -581,6 +601,20 @@ describe('MockExamPage answering', () => {
 
     expect(router.snapshot.asPath).toBe('/practice/mock-exam?subject=law&year=114&q=5');
     expect(appState.dispatch).not.toHaveBeenCalled();
+  });
+
+  it('Ctrl/Command+Enter opens the normal submit warning and cannot bypass it from the dialog', async () => {
+    seedDraft({ 'law-114-01': answered(1) });
+    renderAt('/practice/mock-exam?subject=law&year=114&q=5');
+    const heading = await screen.findByRole('heading', { name: '第 5 題，共 5 題' });
+    await screen.findByRole('region', { name: '題目與選項' });
+    fireEvent.keyDown(heading, { key: 'Enter', ctrlKey: true, repeat: true });
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+    fireEvent.keyDown(heading, { key: 'Enter', metaKey: true });
+    const dialog = await screen.findByRole('alertdialog', { name: '確定要交卷嗎？' });
+    fireEvent.keyDown(dialog, { key: 'Enter', ctrlKey: true });
+    expect(appState.dispatch).not.toHaveBeenCalled();
+    expect(dialog).toBeInTheDocument();
   });
 
   it('carries the side column in the 題號 sheet for one-column widths', async () => {

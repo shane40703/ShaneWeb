@@ -366,6 +366,38 @@ function writeFromOtherTab(value: PracticeSession | null) {
 }
 
 describe('PracticePage setup', () => {
+  it('supports arrows and Space in daily practice without changing confirmed answers', async () => {
+    seed({ drafts: { [lawQuestions[0].id]: 0 } });
+    renderAt('/practice/quiz?q=1');
+    await screen.findByRole('region', { name: '題目與選項' });
+    const heading = screen.getByRole('heading', { name: '第 1 題，共 5 題' });
+    const id = lawQuestions[0].id;
+    fireEvent.keyDown(heading, { key: 'ArrowDown' });
+    expect(stored()!.drafts[id]).toBe(1);
+    expect(fireEvent.keyDown(heading, { key: ' ' })).toBe(false);
+    expect(stored()!.drafts[id]).toBeUndefined();
+    expect(stored()!.eliminated[id]).toEqual([1]);
+    fireEvent.keyDown(heading, { key: ' ', repeat: true });
+    expect(stored()!.eliminated[id]).toEqual([1]);
+    fireEvent.keyDown(heading, { key: ' ' });
+    expect(stored()!.eliminated[id] ?? []).toEqual([]);
+    fireEvent.keyDown(heading, { key: 'ArrowDown' });
+    expect(stored()!.drafts[id]).toBe(0);
+    fireEvent.keyDown(heading, { key: 'ArrowDown', metaKey: true });
+    expect(stored()!.drafts[id]).toBe(0);
+    const confirm = screen.getByRole('button', { name: '確認答案' });
+    expect(fireEvent.keyDown(confirm, { key: ' ' })).toBe(true);
+    fireEvent.click(confirm);
+    fireEvent.keyDown(heading, { key: 'ArrowDown' });
+    fireEvent.keyDown(heading, { key: ' ' });
+    expect(stored()!.answers[id].selected).toBe(0);
+    expect(stored()!.eliminated[id] ?? []).toEqual([]);
+    fireEvent.keyDown(heading, { key: 'ArrowRight' });
+    await waitFor(() => expect(stored()!.currentIndex).toBe(1));
+    fireEvent.keyDown(document.activeElement!, { key: 'ArrowLeft' });
+    await waitFor(() => expect(stored()!.currentIndex).toBe(0));
+  });
+
   it('selects every matching question and follows category, year and subject changes', async () => {
     renderAt();
     await openAdvanced();
@@ -1346,6 +1378,23 @@ describe('PracticePage with another tab', () => {
 });
 
 describe('PracticePage result', () => {
+  it('Ctrl/Command+Enter confirms the final answer first and finishes only on a second deliberate press', async () => {
+    seed({}, 1);
+    renderAt('/practice/quiz?q=1');
+    const heading = await screen.findByRole('heading', { name: '第 1 題，共 1 題' });
+    fireEvent.keyDown(heading, { key: 'Enter', ctrlKey: true });
+    expect(appState.dispatch).not.toHaveBeenCalled();
+    chooseOption('選項 A');
+    fireEvent.keyDown(heading, { key: 'Enter', ctrlKey: true });
+    expect(stored()!.answers[lawQuestions[0].id]).toBeDefined();
+    expect(appState.dispatch).not.toHaveBeenCalled();
+    fireEvent.keyDown(heading, { key: 'Enter', ctrlKey: true, repeat: true });
+    expect(appState.dispatch).not.toHaveBeenCalled();
+    fireEvent.keyDown(heading, { key: 'Enter', metaKey: true });
+    await screen.findByText('100% 正確率');
+    expect(appState.dispatch).toHaveBeenCalledTimes(1);
+  });
+
   it('only offers completion after confirming the last question, including a one-question set and reload', async () => {
     const confirm = vi.spyOn(window, 'confirm');
     seed({}, 1);

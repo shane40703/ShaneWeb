@@ -140,7 +140,7 @@ export function isMockExamStarted(progress: QuizProgressByQuestion) {
 export interface MockExamDraftSummary {
   answered: number;
   total: number;
-  /** 0-based: the first question without an answer, or the last one when all are answered. */
+  /** Last opened question; older drafts fall back to the first unanswered question. */
   resumeIndex: number;
   elapsedSeconds: number;
 }
@@ -153,10 +153,19 @@ export function summarizeMockExamDraft(
     (id) => progress[id]?.selected !== undefined,
   ).length;
   const firstOpen = questionIds.findIndex((id) => progress[id]?.selected === undefined);
+  let resumeIndex = firstOpen < 0 ? Math.max(0, questionIds.length - 1) : firstOpen;
+  let lastVisit = -1;
+  questionIds.forEach((id, index) => {
+    const visited = progress[id]?.visitedAt;
+    if (typeof visited === 'number' && Number.isSafeInteger(visited) && visited > lastVisit) {
+      lastVisit = visited;
+      resumeIndex = index;
+    }
+  });
   return {
     answered,
     total: questionIds.length,
-    resumeIndex: firstOpen < 0 ? Math.max(0, questionIds.length - 1) : firstOpen,
+    resumeIndex,
     elapsedSeconds: questionIds.reduce(
       (total, id) => total + Math.max(0, progress[id]?.elapsedSeconds ?? 0),
       0,

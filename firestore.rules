@@ -2,6 +2,20 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
+    // Per-user unfinished practice and paper drafts. Null payloads are durable tombstones.
+    match /users/{userId}/progress/{progressId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow create, update: if request.auth != null && request.auth.uid == userId
+        && (progressId == 'practice' || progressId.matches('paper-(law|env|construction|structure)-[0-9]{3}'))
+        && request.resource.data.keys().hasOnly(['version', 'payload', 'updatedAt', 'writer', 'syncedAt'])
+        && request.resource.data.version == 1
+        && (request.resource.data.payload == null || (request.resource.data.payload is string && request.resource.data.payload.size() <= 700000))
+        && request.resource.data.updatedAt is int && request.resource.data.updatedAt >= 0
+        && request.resource.data.writer is string && request.resource.data.writer.size() > 0 && request.resource.data.writer.size() <= 80
+        && request.resource.data.syncedAt == request.time;
+      allow delete: if false;
+    }
+
     match /users/{userId}/attempts/{attemptId} {
       function ownsDocument() {
         return request.auth != null && request.auth.uid == userId;

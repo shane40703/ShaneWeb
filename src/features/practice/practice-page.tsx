@@ -51,6 +51,7 @@ import { keepPracticeResult, readKeptPracticeResult } from './practice-result-me
 import { createRecordablePracticeResult, dailyActivityRecord } from './daily-practice-recording';
 import { PracticeSetup } from './practice-setup';
 import styles from './practice-page.module.css';
+import { notifyProgressChanged } from '@/lib/progress-events';
 
 type Query = Record<string, number | string>;
 type SessionChange =
@@ -62,6 +63,7 @@ const REWIND_TIMEOUT_MS = 1000;
 function removeStoredSession() {
   try {
     window.localStorage.removeItem(PRACTICE_SESSION_STORAGE_KEY);
+    notifyProgressChanged(PRACTICE_SESSION_STORAGE_KEY);
   } catch {
     // The in-memory reset still works when private browsing blocks storage.
   }
@@ -262,7 +264,7 @@ export function PracticePage() {
       }
       if (current?.id === incoming.id) {
         // Same set: take its answers, keep this tab on its own question.
-        const merged = { ...incoming, currentIndex: current.currentIndex };
+        const merged = { ...incoming, currentIndex: choosingRef.current ? incoming.currentIndex : current.currentIndex };
         const pending = timer.peek();
         if (pending) {
           // Two visible windows on one question count its time once.

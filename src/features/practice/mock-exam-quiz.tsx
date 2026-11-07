@@ -1,10 +1,8 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import {
   IconAlertTriangle,
-  IconArrowDown,
   IconArrowLeft,
   IconArrowRight,
-  IconArrowUp,
   IconFlag,
   IconLoader2,
   IconPlayerPause,
@@ -32,26 +30,10 @@ import { ElapsedClock } from './practice-quiz';
 import type { PracticeQuestionStatus } from './practice-quiz';
 import { getPracticeCategories, type PracticeTimer } from './practice-session';
 import styles from './practice-page.module.css';
+import { isSubmitShortcut, ownsEditingKeys, ownsSpaceKey, stepOption } from './quiz-keyboard';
+import { QuizShortcutHint } from './quiz-shortcut-hint';
 
-const ARROW_KEYS = new Set(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight']);
-
-/**
- * Where ↑ or ↓ moves the answer: from no answer, ↓ starts at the top and ↑ at the bottom.
- * Struck-out options are stepped over, and the ends stop instead of wrapping round, so a
- * press too many never jumps from D back to A. Undefined when there is nowhere to go.
- */
-function stepOption(
-  count: number,
-  eliminated: readonly number[],
-  from: number | undefined,
-  step: 1 | -1,
-) {
-  let next = from === undefined ? (step > 0 ? 0 : count - 1) : from + step;
-  for (; next >= 0 && next < count; next += step) {
-    if (!eliminated.includes(next)) return next;
-  }
-  return undefined;
-}
+const QUIZ_KEYS = new Set(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' ']);
 
 /** One question of a paper at a time, answered like the real exam: no verdict until 交卷. */
 export function MockExamQuiz({
@@ -91,6 +73,7 @@ export function MockExamQuiz({
   const { state, dispatch } = useAppState();
   const headingRef = useRef<HTMLHeadingElement>(null);
   const optionsRef = useRef<HTMLDivElement>(null);
+  const keyboardOption = useRef<{ questionId: string; index: number } | null>(null);
   const numbersRef = useRef<HTMLDivElement>(null);
   const [checkingBlanks, setCheckingBlanks] = useState(false);
   const total = paper.questionCount;
@@ -164,17 +147,19 @@ export function MockExamQuiz({
    * on the way in: on a focused option, the option list's own arrows would change the
    * answer on ←→ and come round from D to A.
    */
-  function handleArrowKey(event: KeyboardEvent<HTMLElement>) {
+  function handleKeyboard(event: KeyboardEvent<HTMLElement>) {
     const target = event.target;
-    if (!ARROW_KEYS.has(event.key) || !(target instanceof HTMLElement)) return;
-    if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
-    // A dialog over the paper, or a field to type in, keeps its own arrows.
-    if (
-      target.closest('[role="dialog"], [role="alertdialog"], input, textarea, select') ||
-      target.isContentEditable
-    ) {
+    if (isSubmitShortcut(event)) {
+      if (!(target instanceof HTMLElement) || ownsEditingKeys(target)) return;
+      event.preventDefault();
+      event.stopPropagation();
+      if (!event.repeat && canSubmit) requestSubmit();
       return;
     }
+    if (!QUIZ_KEYS.has(event.key) || !(target instanceof HTMLElement)) return;
+    if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+    // A dialog over the paper, or a field to type in, keeps its own arrows.
+    if (ownsEditingKeys(target) || (event.key === ' ' && ownsSpaceKey(target))) return;
     // Not the page's either: a held key would scroll it once the first step is taken.
     event.preventDefault();
     event.stopPropagation();
@@ -185,7 +170,7 @@ export function MockExamQuiz({
       return;
     }
     if (event.key === 'ArrowRight') {
-      // On the last question too: 交卷 is only ever a button.
+      // The right arrow never submits; use the button or Ctrl/Command+Enter.
       if (!isLast) onGoTo(index + 1);
       return;
     }
@@ -195,6 +180,16 @@ export function MockExamQuiz({
     );
     const focusedRadio = target.closest<HTMLElement>('[role="radio"]');
     const focusedIndex = focusedRadio ? radios.indexOf(focusedRadio) : -1;
+    const previous = keyboardOption.current?.questionId === questionId ? keyboardOption.current.index : undefined;
+    if (event.key === ' ') {
+      const option = focusedIndex >= 0 ? focusedIndex : current?.selected ?? previous;
+      if (option === undefined) return;
+      keyboardOption.current = { questionId, index: option };
+      if (current?.selected === option) onSelect(undefined);
+      onToggleEliminated(option);
+      headingRef.current?.focus({ preventScroll: true });
+      return;
+    }
     const next = stepOption(
       question.options.length,
       current?.eliminatedOptions ?? [],
@@ -203,6 +198,7 @@ export function MockExamQuiz({
       event.key === 'ArrowDown' ? 1 : -1,
     );
     if (next === undefined) return;
+    keyboardOption.current = { questionId, index: next };
     if (next !== current?.selected) onSelect(next);
     const radio = radios[next];
     // Focus on an option goes along, so a screen reader reads the new answer.
@@ -217,7 +213,7 @@ export function MockExamQuiz({
       aria-label="歷屆試題模擬考作答"
       // Takes focus from a click anywhere in the paper, so the arrow keys never go quiet.
       tabIndex={-1}
-      onKeyDownCapture={handleArrowKey}
+      onKeyDownCapture={handleKeyboard}
     >
       <h2
         ref={headingRef}
@@ -294,27 +290,7 @@ export function MockExamQuiz({
             </div>
             <footer>
               <ElapsedClock timer={timer} savedSeconds={summary.elapsedSeconds} />
-              {/* Read out as 上 下 選答案・左 右 換題. */}
-              <p className={styles.shortcutHint}>
-                <kbd>
-                  <IconArrowUp size={12} stroke={2} aria-hidden="true" />
-                  <span className={styles.visuallyHidden}>上</span>
-                </kbd>
-                <kbd>
-                  <IconArrowDown size={12} stroke={2} aria-hidden="true" />
-                  <span className={styles.visuallyHidden}>下</span>
-                </kbd>
-                <span>選答案・</span>
-                <kbd>
-                  <IconArrowLeft size={12} stroke={2} aria-hidden="true" />
-                  <span className={styles.visuallyHidden}>左</span>
-                </kbd>
-                <kbd>
-                  <IconArrowRight size={12} stroke={2} aria-hidden="true" />
-                  <span className={styles.visuallyHidden}>右</span>
-                </kbd>
-                <span>換題</span>
-              </p>
+              <QuizShortcutHint />
               <div className={styles.navButtons}>
                 <QuestionMapDrawer
                   triggerClassName={styles.mapTrigger}

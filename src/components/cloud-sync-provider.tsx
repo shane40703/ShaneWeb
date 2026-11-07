@@ -34,6 +34,8 @@ import {
 import { isQuizAttempt } from '@/lib/study';
 import type { QuizAttempt, SyncedNote } from '@/lib/types';
 import { useAppState } from '@/state/app-state';
+import { ProgressSyncBridge } from './progress-sync-bridge';
+import type { ProgressSyncState } from '@/lib/progress-sync-client';
 
 type CloudSyncStatus =
   | 'disabled'
@@ -189,6 +191,7 @@ export function CloudSyncProvider({ children }: { children: ReactNode }) {
     firebaseConfigurationAvailable() ? 'signed-out' : 'disabled',
   );
   const [error, setError] = useState('');
+  const [progressSync, setProgressSync] = useState<ProgressSyncState>({ status: 'idle', error: '' });
   const [readyUserId, setReadyUserId] = useState<string | null>(null);
   const [cloudRetryEpoch, setCloudRetryEpoch] = useState(0);
   const authenticatedUserId = useRef<string | null>(null);
@@ -607,12 +610,14 @@ export function CloudSyncProvider({ children }: { children: ReactNode }) {
     <CloudSyncContext.Provider
       value={{
         user,
-        status,
-        error,
+        status: user && progressSync.status === 'error' ? 'error'
+          : user && progressSync.status === 'syncing' && status === 'synced' ? 'syncing' : status,
+        error: error || (user ? progressSync.error : ''),
         signIn: handleSignIn,
         signOut: handleSignOut,
       }}
     >
+      <ProgressSyncBridge userId={user?.uid ?? null} onStatus={setProgressSync} />
       {children}
     </CloudSyncContext.Provider>
   );

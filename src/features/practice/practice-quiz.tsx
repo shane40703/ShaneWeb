@@ -1,4 +1,4 @@
-import { useEffect, useRef, useSyncExternalStore } from 'react';
+import { useEffect, useRef, useSyncExternalStore, type KeyboardEvent } from 'react';
 import {
   IconAlertTriangle,
   IconArrowLeft,
@@ -33,6 +33,8 @@ import {
   type PracticeTimer,
 } from './practice-session';
 import styles from './practice-page.module.css';
+import { isSubmitShortcut, ownsEditingKeys, ownsSpaceKey, stepOption } from './quiz-keyboard';
+import { QuizShortcutHint } from './quiz-shortcut-hint';
 
 export type PracticeQuestionStatus = 'ready' | 'loading' | 'error' | 'missing';
 
@@ -83,6 +85,9 @@ export function PracticeQuiz({
 }) {
   const { state, dispatch } = useAppState();
   const verdictRef = useRef<HTMLDivElement>(null);
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  const optionsRef = useRef<HTMLDivElement>(null);
+  const keyboardOption = useRef<{ questionId: string; index: number } | null>(null);
   const numbersRef = useRef<HTMLDivElement>(null);
   const focusVerdictFor = useRef<string | null>(null);
   const index = session.currentIndex;
@@ -126,8 +131,63 @@ export function PracticeQuiz({
     onConfirm();
   }
 
+  useEffect(() => {
+    if (document.activeElement === document.body || optionsRef.current?.contains(document.activeElement)) {
+      headingRef.current?.focus({ preventScroll: true });
+    }
+  }, [index, status]);
+
+  function handleKeyboard(event: KeyboardEvent<HTMLElement>) {
+    if (isSubmitShortcut(event)) {
+      const target = event.target;
+      if (!(target instanceof HTMLElement) || ownsEditingKeys(target)) return;
+      event.preventDefault();
+      event.stopPropagation();
+      if (event.repeat || !isLast || !question || status !== 'ready') return;
+      if (answer) onSubmit();
+      else if (selected !== undefined) confirm();
+      return;
+    }
+    if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(event.key)) return;
+    const target = event.target;
+    if (!(target instanceof HTMLElement) || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey || ownsEditingKeys(target)) return;
+    if (event.key === ' ' && ownsSpaceKey(target)) return;
+    event.preventDefault();
+    event.stopPropagation();
+    if (event.repeat) return;
+    if (event.key === 'ArrowLeft') {
+      if (index > 0) onGoTo(index - 1);
+      return;
+    }
+    if (event.key === 'ArrowRight') {
+      if (!isLast) onGoTo(index + 1);
+      return;
+    }
+    if (!question || answer) return;
+    const radios = Array.from(optionsRef.current?.querySelectorAll<HTMLElement>('[role="radio"]') ?? []);
+    const focused = target.closest<HTMLElement>('[role="radio"]');
+    const focusedIndex = focused ? radios.indexOf(focused) : -1;
+    const previous = keyboardOption.current?.questionId === questionId ? keyboardOption.current.index : undefined;
+    if (event.key === ' ') {
+      const option = focusedIndex >= 0 ? focusedIndex : selected ?? previous;
+      if (option === undefined) return;
+      keyboardOption.current = { questionId, index: option };
+      if (selected === option) onSelect(undefined);
+      onToggleEliminated(option);
+      headingRef.current?.focus({ preventScroll: true });
+      return;
+    }
+    const next = stepOption(question.options.length, session.eliminated[questionId] ?? [], focusedIndex >= 0 ? focusedIndex : selected, event.key === 'ArrowDown' ? 1 : -1);
+    if (next === undefined) return;
+    keyboardOption.current = { questionId, index: next };
+    onSelect(next);
+    if (focusedIndex >= 0) radios[next]?.focus({ preventScroll: true });
+    radios[next]?.closest('label')?.scrollIntoView?.({ block: 'nearest', behavior: 'instant' });
+  }
+
   return (
-    <section className={styles.practice} aria-label="每日抽題練習作答">
+    <section className={styles.practice} aria-label="每日抽題練習作答" tabIndex={-1} onKeyDownCapture={handleKeyboard}>
+      <h2 ref={headingRef} className={styles.visuallyHidden} tabIndex={-1} aria-live="polite">第 {index + 1} 題，共 {total} 題</h2>
       <div className={styles.questionArea}>
         {status === 'loading' ? (
           <div className={styles.loading}>
@@ -180,7 +240,7 @@ export function PracticeQuiz({
               <div className={styles.prompt}>
                 <QuestionPrompt question={question} />
               </div>
-              <div className={styles.optionsArea}>
+              <div className={styles.optionsArea} ref={optionsRef}>
                 <OptionGroup
                   label={`第 ${index + 1} 題請選擇答案`}
                   options={question.options}
@@ -232,6 +292,7 @@ export function PracticeQuiz({
             </div>
             <footer>
               <ElapsedClock timer={timer} savedSeconds={summary.elapsedSeconds} />
+              <QuizShortcutHint daily />
               <div className={styles.navButtons}>
                 <Button disabled={index === 0} onClick={() => onGoTo(index - 1)}>
                   <IconArrowLeft size={17} aria-hidden="true" /> 上一題

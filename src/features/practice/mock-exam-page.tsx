@@ -280,6 +280,10 @@ export function MockExamPage({ papers }: { papers: MockExamPaper[] }) {
         startedAt: entry.startedAt,
         elapsedSeconds: entry.elapsedSeconds,
       };
+      const latest = readMockExamDraft(scope);
+      const visitedAt = Math.max(Date.now(), ...Object.values(latest).map(value =>
+        typeof value?.visitedAt === 'number' && Number.isSafeInteger(value.visitedAt) ? value.visitedAt + 1 : 0));
+      save(scope, { ...latest, [currentId]: { ...entry, visitedAt } });
     }
   }, [currentId, progress, save, scope, view]);
 

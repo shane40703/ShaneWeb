@@ -4,6 +4,8 @@
  * origin's quota is full. Callers need to distinguish "the browser is full"
  * from "storage is unusable" so the UI can explain why work stopped saving.
  */
+import { notifyProgressChanged } from './progress-events';
+
 export type StorageWriteResult = 'saved' | 'quota-exceeded' | 'unavailable';
 
 const quotaErrorNames = new Set(['QuotaExceededError', 'NS_ERROR_DOM_QUOTA_REACHED']);
@@ -25,6 +27,7 @@ export function readStoredValue(key: string): string | null {
 export function writeStoredValue(key: string, value: string): StorageWriteResult {
   try {
     window.localStorage.setItem(key, value);
+    notifyProgressChanged(key);
     return 'saved';
   } catch (error) {
     return isQuotaExceeded(error) ? 'quota-exceeded' : 'unavailable';

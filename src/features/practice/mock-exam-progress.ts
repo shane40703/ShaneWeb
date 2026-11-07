@@ -13,6 +13,8 @@ export interface QuizQuestionProgress {
   startedAt: string;
   /** Last change made on the 歷屆試題模擬考 page, which lists recent papers first. */
   updatedAt?: string;
+  /** Last time this question was opened; used when resuming on another device. */
+  visitedAt?: number;
 }
 
 export type QuizProgressByQuestion = Partial<Record<QuestionId, QuizQuestionProgress>>;
