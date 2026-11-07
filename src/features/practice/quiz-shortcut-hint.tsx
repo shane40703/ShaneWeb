@@ -14,7 +14,7 @@ export function QuizShortcutHint({ daily = false }: { daily?: boolean }) {
       </span>
       <span className={styles.shortcutKeys}>
         <kbd>Ctrl / ⌘</kbd><span>＋</span><kbd>Enter</kbd>
-        <span>{daily ? '最後一題確認／完成練習' : '交卷'}</span>
+        <span>{daily ? '確認／下一題／完成練習' : '交卷'}</span>
       </span>
     </p>
   );

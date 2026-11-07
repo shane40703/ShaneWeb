@@ -30,7 +30,7 @@ import { ElapsedClock } from './practice-quiz';
 import type { PracticeQuestionStatus } from './practice-quiz';
 import { getPracticeCategories, type PracticeTimer } from './practice-session';
 import styles from './practice-page.module.css';
-import { isSubmitShortcut, ownsEditingKeys, ownsSpaceKey, stepOption } from './quiz-keyboard';
+import { focusedOptionIndex, focusRestoreOption, isSubmitShortcut, ownsEditingKeys, ownsSpaceKey, stepOption } from './quiz-keyboard';
 import { QuizShortcutHint } from './quiz-shortcut-hint';
 
 const QUIZ_KEYS = new Set(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' ']);
@@ -178,11 +178,10 @@ export function MockExamQuiz({
     const radios = Array.from(
       optionsRef.current?.querySelectorAll<HTMLElement>('[role="radio"]') ?? [],
     );
-    const focusedRadio = target.closest<HTMLElement>('[role="radio"]');
-    const focusedIndex = focusedRadio ? radios.indexOf(focusedRadio) : -1;
+    const focusedIndex = focusedOptionIndex(optionsRef.current, target);
     const previous = keyboardOption.current?.questionId === questionId ? keyboardOption.current.index : undefined;
     if (event.key === ' ') {
-      const option = focusedIndex >= 0 ? focusedIndex : current?.selected ?? previous;
+      const option = focusedIndex >= 0 ? focusedIndex : previous ?? current?.selected;
       if (option === undefined) return;
       keyboardOption.current = { questionId, index: option };
       if (current?.selected === option) onSelect(undefined);
@@ -192,17 +191,20 @@ export function MockExamQuiz({
     }
     const next = stepOption(
       question.options.length,
-      current?.eliminatedOptions ?? [],
       // From the option under focus, like any radio list; otherwise from the answer.
-      focusedIndex >= 0 ? focusedIndex : current?.selected,
+      focusedIndex >= 0 ? focusedIndex : previous ?? current?.selected,
       event.key === 'ArrowDown' ? 1 : -1,
     );
     if (next === undefined) return;
-    keyboardOption.current = { questionId, index: next };
-    if (next !== current?.selected) onSelect(next);
     const radio = radios[next];
-    // Focus on an option goes along, so a screen reader reads the new answer.
-    if (focusedIndex >= 0) radio?.focus({ preventScroll: true });
+    if (current?.eliminatedOptions?.includes(next)) {
+      keyboardOption.current = { questionId, index: next };
+      focusRestoreOption(radio);
+    } else {
+      keyboardOption.current = null;
+      if (next !== current?.selected) onSelect(next);
+      if (focusedIndex >= 0) radio?.focus({ preventScroll: true });
+    }
     // The new answer in sight, clear of the sticky bars by the page's scroll padding.
     radio?.closest('label')?.scrollIntoView?.({ block: 'nearest', behavior: 'instant' });
   }
@@ -283,8 +285,14 @@ export function MockExamQuiz({
                   options={question.options}
                   value={current?.selected}
                   eliminatedValues={current?.eliminatedOptions ?? []}
-                  onValueChange={onSelect}
-                  onToggleEliminated={onToggleEliminated}
+                  onValueChange={(value) => {
+                    keyboardOption.current = null;
+                    onSelect(value);
+                  }}
+                  onToggleEliminated={(option) => {
+                    keyboardOption.current = { questionId, index: option };
+                    onToggleEliminated(option);
+                  }}
                 />
               </div>
             </div>

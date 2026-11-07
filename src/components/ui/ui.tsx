@@ -162,6 +162,7 @@ export function OptionGroup({
           return (
             <div
               className={styles.optionRow}
+              data-option-index={index}
               data-eliminated={optionEliminated || undefined}
               key={index}
             >

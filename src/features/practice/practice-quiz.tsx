@@ -33,7 +33,7 @@ import {
   type PracticeTimer,
 } from './practice-session';
 import styles from './practice-page.module.css';
-import { isSubmitShortcut, ownsEditingKeys, ownsSpaceKey, stepOption } from './quiz-keyboard';
+import { focusedOptionIndex, focusRestoreOption, isSubmitShortcut, ownsEditingKeys, ownsSpaceKey, stepOption } from './quiz-keyboard';
 import { QuizShortcutHint } from './quiz-shortcut-hint';
 
 export type PracticeQuestionStatus = 'ready' | 'loading' | 'error' | 'missing';
@@ -143,8 +143,11 @@ export function PracticeQuiz({
       if (!(target instanceof HTMLElement) || ownsEditingKeys(target)) return;
       event.preventDefault();
       event.stopPropagation();
-      if (event.repeat || !isLast || !question || status !== 'ready') return;
-      if (answer) onSubmit();
+      if (event.repeat || !question || status !== 'ready') return;
+      if (answer) {
+        if (isLast) onSubmit();
+        else onGoTo(index + 1);
+      }
       else if (selected !== undefined) confirm();
       return;
     }
@@ -165,11 +168,10 @@ export function PracticeQuiz({
     }
     if (!question || answer) return;
     const radios = Array.from(optionsRef.current?.querySelectorAll<HTMLElement>('[role="radio"]') ?? []);
-    const focused = target.closest<HTMLElement>('[role="radio"]');
-    const focusedIndex = focused ? radios.indexOf(focused) : -1;
+    const focusedIndex = focusedOptionIndex(optionsRef.current, target);
     const previous = keyboardOption.current?.questionId === questionId ? keyboardOption.current.index : undefined;
     if (event.key === ' ') {
-      const option = focusedIndex >= 0 ? focusedIndex : selected ?? previous;
+      const option = focusedIndex >= 0 ? focusedIndex : previous ?? selected;
       if (option === undefined) return;
       keyboardOption.current = { questionId, index: option };
       if (selected === option) onSelect(undefined);
@@ -177,11 +179,17 @@ export function PracticeQuiz({
       headingRef.current?.focus({ preventScroll: true });
       return;
     }
-    const next = stepOption(question.options.length, session.eliminated[questionId] ?? [], focusedIndex >= 0 ? focusedIndex : selected, event.key === 'ArrowDown' ? 1 : -1);
+    const next = stepOption(question.options.length, focusedIndex >= 0 ? focusedIndex : previous ?? selected, event.key === 'ArrowDown' ? 1 : -1);
     if (next === undefined) return;
-    keyboardOption.current = { questionId, index: next };
-    onSelect(next);
-    if (focusedIndex >= 0) radios[next]?.focus({ preventScroll: true });
+    if (session.eliminated[questionId]?.includes(next)) {
+      keyboardOption.current = { questionId, index: next };
+      // Visit the restore control, never silently choose an eliminated answer.
+      focusRestoreOption(radios[next]);
+    } else {
+      keyboardOption.current = null;
+      onSelect(next);
+      if (focusedIndex >= 0) radios[next]?.focus({ preventScroll: true });
+    }
     radios[next]?.closest('label')?.scrollIntoView?.({ block: 'nearest', behavior: 'instant' });
   }
 
@@ -248,8 +256,14 @@ export function PracticeQuiz({
                   disabled={Boolean(answer)}
                   originalOptionIndexes={answer ? getOriginalOptionIndexes(question, session.optionOrders[questionId]) : undefined}
                   eliminatedValues={session.eliminated[questionId] ?? []}
-                  onValueChange={onSelect}
-                  onToggleEliminated={onToggleEliminated}
+                  onValueChange={(value) => {
+                    keyboardOption.current = null;
+                    onSelect(value);
+                  }}
+                  onToggleEliminated={(option) => {
+                    keyboardOption.current = { questionId, index: option };
+                    onToggleEliminated(option);
+                  }}
                 />
               </div>
               {answer ? (

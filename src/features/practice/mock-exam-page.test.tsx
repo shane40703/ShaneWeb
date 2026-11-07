@@ -451,20 +451,24 @@ describe('MockExamPage answering', () => {
     expect(document.activeElement).toBe(heading);
     const selected = () => storedDraft()['law-114-01']?.selected;
 
-    // Down from B steps over the struck-out C, and stops at D instead of coming round to A.
-    // The page does not scroll under the keys.
+    // Deleted C is reachable via its restore button, without choosing it as an answer.
     expect(fireEvent.keyDown(heading, { key: 'ArrowDown' })).toBe(false);
-    expect(selected()).toBe(3);
-    fireEvent.keyDown(heading, { key: 'ArrowDown' });
-    expect(selected()).toBe(3);
-    fireEvent.keyDown(heading, { key: 'ArrowUp' });
     expect(selected()).toBe(1);
-    fireEvent.keyDown(heading, { key: 'ArrowUp' });
-    fireEvent.keyDown(heading, { key: 'ArrowUp' });
+    expect(screen.getByRole('button', { name: '恢復選項 C' })).toHaveFocus();
+    fireEvent.keyDown(document.activeElement!, { key: 'ArrowDown' });
+    expect(selected()).toBe(3);
+    fireEvent.keyDown(document.activeElement!, { key: 'ArrowDown' });
+    expect(selected()).toBe(3);
+    fireEvent.keyDown(document.activeElement!, { key: 'ArrowUp' });
+    expect(selected()).toBe(3);
+    expect(screen.getByRole('button', { name: '恢復選項 C' })).toHaveFocus();
+    fireEvent.keyDown(document.activeElement!, { key: 'ArrowUp' });
+    expect(selected()).toBe(1);
+    fireEvent.keyDown(document.activeElement!, { key: 'ArrowUp' });
+    fireEvent.keyDown(document.activeElement!, { key: 'ArrowUp' });
     expect(selected()).toBe(0);
     expect(optionRadio('1-甲')).toHaveAttribute('aria-checked', 'true');
-    // The answer row shows the choice; focus stays on the question.
-    expect(document.activeElement).toBe(heading);
+    expect(optionRadio('1-甲')).toHaveFocus();
     // Arrows held with a modifier are the browser's: Alt+← is Back, ⌘↓ the page's end.
     expect(fireEvent.keyDown(heading, { key: 'ArrowDown', metaKey: true })).toBe(true);
     fireEvent.keyDown(heading, { key: 'ArrowDown', ctrlKey: true });

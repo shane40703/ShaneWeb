@@ -1,10 +1,17 @@
-/** Arrow selection stops at the ends and skips eliminated options. */
-export function stepOption(count: number, eliminated: readonly number[], from: number | undefined, step: 1 | -1) {
-  let next = from === undefined ? (step > 0 ? 0 : count - 1) : from + step;
-  for (; next >= 0 && next < count; next += step) {
-    if (!eliminated.includes(next)) return next;
-  }
-  return undefined;
+/** Visit every row, including eliminated options, without wrapping at either end. */
+export function stepOption(count: number, from: number | undefined, step: 1 | -1) {
+  const next = from === undefined ? (step > 0 ? 0 : count - 1) : from + step;
+  return next >= 0 && next < count ? next : undefined;
+}
+
+/** A row's restore button and radio represent the same keyboard position. */
+export function focusedOptionIndex(container: HTMLElement | null, target: HTMLElement) {
+  const row = target.closest<HTMLElement>('[data-option-index]');
+  return row && container?.contains(row) ? Number(row.dataset.optionIndex) : -1;
+}
+
+export function focusRestoreOption(radio: HTMLElement | undefined) {
+  radio?.closest('[data-option-index]')?.querySelector<HTMLButtonElement>('button')?.focus({ preventScroll: true });
 }
 
 export function ownsEditingKeys(target: HTMLElement) {
