@@ -78,22 +78,24 @@ function hub(
 }
 
 describe('ExamsHub: 考古題討論版 itself', () => {
-  it('says what the bank holds and lists the four subjects, one link each', () => {
+  it('says what the bank holds and lists the four subjects as facts, no links', () => {
     render(hub({ kind: 'bank' }));
 
     expect(
       lead(
-        '建築師考試（專門職業及技術人員高等考試建築師考試）四個科目的歷屆試題：民國 100 至 114 年，共 60 份試卷、3,672 題，其中申論題 72 題。每一題都有自己的頁面，可以先作答再看解答，也能在討論區留下詳解或提問。',
+        '建築師考試（專門職業及技術人員高等考試建築師考試）四個科目的歷屆試題：民國 100 至 114 年，共 60 份試卷、3,672 題，其中申論題 72 題。每一題都有自己的頁面，可以先作答再看解答，也能在討論區留下詳解或提問。在上方選一個科目，就從那一科最新一年的第 1 題開始。',
       ),
     ).toBeInTheDocument();
     expect(screen.getByText('3,672 題').tagName).toBe('SPAN');
     const rows = screen.getAllByRole('article');
-    expect(rows.map((row) => within(row).getByRole('link').getAttribute('href'))).toEqual(
-      ['/exams/law', '/exams/env', '/exams/construction', '/exams/structure'],
-    );
-    expect(screen.getAllByRole('link')).toHaveLength(4);
-    const law = screen.getByRole('link', { name: '營建法規與實務' });
-    expect(law).toHaveAttribute('data-subject', 'law');
+    expect(rows.map((row) => row.querySelector('h2')?.textContent)).toEqual([
+      '營建法規與實務 法規',
+      '建築環境控制 環控',
+      '建築構造與施工 構造',
+      '建築結構 結構',
+    ]);
+    // The selector above the page chooses a subject.
+    expect(screen.queryByRole('link')).not.toBeInTheDocument();
     expect(
       screen.getByRole('heading', { level: 2, name: '營建法規與實務 法規' }),
     ).toBeInTheDocument();
@@ -111,18 +113,6 @@ describe('ExamsHub: 考古題討論版 itself', () => {
     expect(screen.queryByRole('button')).not.toBeInTheDocument();
   });
 
-  it('stays on the page for a plain click and leaves a modified click to the browser', () => {
-    const navigate = vi.fn();
-    render(hub({ kind: 'bank' }, { onNavigate: navigate }));
-    const env = screen.getByRole('link', { name: '建築環境控制' });
-
-    expect(fireEvent.click(env)).toBe(false);
-    expect(navigate).toHaveBeenCalledWith(['env']);
-    expect(fireEvent.click(env, { metaKey: true })).toBe(true);
-    expect(fireEvent.click(env, { button: 1 })).toBe(true);
-    expect(navigate).toHaveBeenCalledOnce();
-  });
-
   it('starts at the lead after a move inside the page, and not on a full load', () => {
     const { rerender } = render(hub({ kind: 'bank' }));
     expect(lead(/四個科目的歷屆試題/)).not.toHaveFocus();
@@ -133,24 +123,22 @@ describe('ExamsHub: 考古題討論版 itself', () => {
 });
 
 describe('ExamsHub: a subject', () => {
-  it('lists its fifteen papers, newest first, with their counts', () => {
-    const navigate = vi.fn();
-    render(hub({ kind: 'subject', subject: 'law' }, { onNavigate: navigate }));
+  it('lists its fifteen papers, newest first, with their counts, as facts', () => {
+    render(hub({ kind: 'subject', subject: 'law' }));
 
     expect(
       lead(
-        '營建法規與實務（法規）：建築法規、都市計畫、建築管理與實務應用。民國 100 至 114 年每年一份試卷，共 15 份、選擇題 1,200 題。',
+        '營建法規與實務（法規）：建築法規、都市計畫、建築管理與實務應用。民國 100 至 114 年每年一份試卷，共 15 份、選擇題 1,200 題。在上方選一個年度，就從那一年的第 1 題開始。',
       ),
     ).toBeInTheDocument();
-    const links = screen.getAllByRole('link');
-    expect(links.map((link) => link.getAttribute('href'))).toEqual(
-      years.map((year) => `/exams/law/${year}`),
+    const rows = screen.getAllByRole('article');
+    expect(rows.map((row) => row.querySelector('h2')?.textContent)).toEqual(
+      years.map((year) => `${year} 年`),
     );
-    expect(links[0]).toHaveAccessibleName('114 年');
-    expect(screen.getAllByRole('article')[0]).toHaveTextContent('選擇題 80 題');
-
-    fireEvent.click(screen.getByRole('link', { name: '100 年' }));
-    expect(navigate).toHaveBeenCalledWith(['law', '100']);
+    expect(rows[0]).toHaveAccessibleName('114 年');
+    expect(rows[0]).toHaveTextContent('選擇題 80 題');
+    // The selector above the page chooses a year.
+    expect(screen.queryByRole('link')).not.toBeInTheDocument();
   });
 
   it('counts written questions first, as the paper prints them', () => {
@@ -158,7 +146,7 @@ describe('ExamsHub: a subject', () => {
 
     expect(
       lead(
-        '建築環境控制（環控）：環境物理、熱濕空氣、光環境、音環境與設備。民國 100 至 114 年每年一份試卷，共 15 份，申論題 37 題、選擇題 600 題。',
+        '建築環境控制（環控）：環境物理、熱濕空氣、光環境、音環境與設備。民國 100 至 114 年每年一份試卷，共 15 份，申論題 37 題、選擇題 600 題。在上方選一個年度，就從那一年的第 1 題開始。',
       ),
     ).toBeInTheDocument();
     expect(screen.getAllByRole('article')[0]).toHaveTextContent(

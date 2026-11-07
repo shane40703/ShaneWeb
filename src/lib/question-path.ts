@@ -1,5 +1,5 @@
 import { subjects } from '@/question-bank/catalog';
-import type { QuestionRef } from '@/question-bank/derived-data';
+import type { PaperIndex, QuestionRef } from '@/question-bank/derived-data';
 import type { SubjectId } from '@/question-bank/schema';
 
 const questionIdPattern = new RegExp(
@@ -40,9 +40,25 @@ export function examsSlugParts(slug: string | string[] | undefined) {
   return Array.isArray(slug) ? slug : slug ? [slug] : [];
 }
 
-/** The router query of an address; /exams itself has no slug, or Next would add a slash. */
-export function examsQuery(slug: readonly string[]): { slug?: string[] } {
-  return slug.length ? { slug: [...slug] } : {};
+/** 考古題討論版's tabs on a question: 題目, 討論區 and 筆記. */
+export type ExamsTab = 'question' | 'discussion' | 'notes';
+
+/** `?tab=discussion|notes`; absent or anything else is the 題目 tab. */
+export function examsTab(value: string | string[] | undefined): ExamsTab {
+  const tab = Array.isArray(value) ? value[0] : value;
+  return tab === 'discussion' || tab === 'notes' ? tab : 'question';
+}
+
+/**
+ * The router query of an address; /exams itself has no slug, or Next would add a slash. The
+ * path says where; only a tab other than 題目 adds `?tab=`.
+ */
+export function examsQuery(
+  slug: readonly string[],
+  tab: ExamsTab = 'question',
+): { slug?: string[]; tab?: ExamsTab } {
+  const query = slug.length ? { slug: [...slug] } : {};
+  return tab === 'question' ? query : { ...query, tab };
 }
 
 /** The question an address shows. Only an address that names a question shows one. */
@@ -82,17 +98,35 @@ export function examsPlaceSlug(place: ExamsPlace): string[] {
   return examsSlug(place.questionId);
 }
 
-/** The level a 返回 link leads to; /exams has none, the sidebar leads there. */
-export function examsParent(place: ExamsPlace): ExamsPlace | null {
-  if (place.kind === 'bank') return null;
-  if (place.kind === 'subject') return { kind: 'bank' };
-  if (place.kind === 'paper') return { kind: 'subject', subject: place.subject };
-  return { kind: 'paper', subject: place.subject, year: place.year };
+/**
+ * The address on screen as a reader can come back to it: the path, and the tab only on a
+ * question, which is the only address that has tabs.
+ */
+export function examsAddress(slug: readonly string[], tab: ExamsTab) {
+  const href = examsHref(slug);
+  return examsPlace([...slug]).kind === 'question' && tab !== 'question'
+    ? `${href}?tab=${tab}`
+    : href;
 }
 
 /**
- * The name of a level, for its tab title, the topbar and the 返回 link that leads to it. A
- * question is named by its paper; its own number follows in the title.
+ * Where a paper starts: its first question in paper order, so 申論第 1 題 when it has written
+ * questions. Undefined when the bank has no such paper.
+ */
+export function examsPaperStart(index: PaperIndex, subject: SubjectId, year: number) {
+  const row = index[subject]?.find(([paperYear]) => paperYear === year);
+  return row ? [subject, String(year), row[2] > 0 ? 'written-1' : '1'] : undefined;
+}
+
+/** Where a subject starts: its newest paper's first question. */
+export function examsSubjectStart(index: PaperIndex, subject: SubjectId) {
+  const newest = index[subject]?.[0];
+  return newest ? examsPaperStart(index, subject, newest[0]) : undefined;
+}
+
+/**
+ * The name of a level, for its tab title and the topbar. A question is named by its paper;
+ * its own number follows in the title.
  */
 export function examsHubName(place: ExamsPlace) {
   const subject =

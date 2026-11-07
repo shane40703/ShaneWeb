@@ -7,7 +7,6 @@ import {
   useMemo,
   useRef,
 } from 'react';
-import { IconChevronRight } from '@tabler/icons-react';
 import { EmptyState } from '@/components/content/content';
 import { InPageLink } from '@/components/in-page-link';
 import { SubjectIconBadge } from '@/components/subject-icon';
@@ -87,7 +86,8 @@ function bankLead(facts: PaperFacts) {
   return (
     `建築師考試（專門職業及技術人員高等考試建築師考試）${countWord(facts.subjects.length)}個科目的歷屆試題：` +
     `${yearRange(facts)}，共 ${formatCount(facts.papers)} 份試卷、${total} 題${written}。` +
-    '每一題都有自己的頁面，可以先作答再看解答，也能在討論區留下詳解或提問。'
+    '每一題都有自己的頁面，可以先作答再看解答，也能在討論區留下詳解或提問。' +
+    '在上方選一個科目，就從那一科最新一年的第 1 題開始。'
   );
 }
 
@@ -101,7 +101,8 @@ function subjectLead(subjectId: SubjectId, facts: PaperFacts) {
   return (
     `${subject?.name}（${subject?.shortName}）：${subject?.description}。` +
     `${yearRange(facts)}${everyYear ? '每年一份試卷，' : ''}共 ${formatCount(facts.papers)} 份` +
-    `${counts.length > 1 ? '，' : '、'}${counts.join('、')}。`
+    `${counts.length > 1 ? '，' : '、'}${counts.join('、')}。` +
+    '在上方選一個年度，就從那一年的第 1 題開始。'
   );
 }
 
@@ -122,23 +123,22 @@ function paperLead(
   );
 }
 
-/** One row of a ledger: the title links its page, and the whole row is the link. */
+/**
+ * One row of a ledger: what a subject or a paper holds, under its name. Not a link: the
+ * selector above the page opens subjects and years, and one page has one way to each.
+ */
 function LedgerRow({
-  href,
   title,
-  onFollow,
   kind,
   subject,
   aside,
   children,
 }: {
-  href: string;
   title: string;
-  onFollow: () => void;
   kind: 'subject' | 'paper';
-  /** A subject row carries its icon and keeps `data-subject` on the link. */
+  /** A subject row carries its icon. */
   subject?: SubjectId;
-  /** Beside the title, outside the link: a subject's short name. */
+  /** Beside the title: a subject's short name. */
   aside?: string;
   children?: ReactNode;
 }) {
@@ -147,14 +147,7 @@ function LedgerRow({
     <article className={styles.row} data-kind={kind} aria-labelledby={titleId}>
       {subject ? <SubjectIconBadge subject={subject} className={styles.badge} /> : null}
       <h2 id={titleId} className={styles.rowTitle}>
-        <InPageLink
-          href={href}
-          className={styles.rowLink}
-          data-subject={subject}
-          onFollow={onFollow}
-        >
-          {title}
-        </InPageLink>
+        {title}
         {aside ? (
           <>
             {' '}
@@ -163,12 +156,6 @@ function LedgerRow({
         ) : null}
       </h2>
       {children}
-      <IconChevronRight
-        className={styles.chevron}
-        size={20}
-        stroke={2}
-        aria-hidden="true"
-      />
     </article>
   );
 }
@@ -207,9 +194,11 @@ function QuestionRows({
 }
 
 /**
- * 考古題討論版's overview pages, one level each: the four subjects, a subject's papers, a paper's
- * questions. Each row is one link to the level below, with a short description and a figure,
- * and nothing else: no question's text, no shortcuts, nothing of the reader's own.
+ * 考古題討論版's overview pages, under the subject and year selector that the page puts at the
+ * top of every address: the four subjects, a subject's papers, a paper's questions. The board
+ * and a subject list their rows as facts, a short description and a figure, which are not links:
+ * the selector chooses. A paper lists each question as a link to it, with its topics. Nothing
+ * else: no question's text, nothing of the reader's own.
  *
  * The paper page's topic words are the ones the question page shows as tags. A prerendered page
  * has them already; after a move inside the page they come with the paper's file, which the
@@ -231,7 +220,7 @@ export function ExamsHub({
   paperTopics?: PaperTopics | null;
   status: QuestionBankStatus;
   onRetry?: () => void;
-  /** A move to another level: a new history entry, from the top of the page. */
+  /** A paper's row to its question: a new history entry, from the top of the page. */
   onNavigate: (slug: readonly string[]) => void;
   /** Arrived here by a move inside the page: start keyboard and screen readers at the lead. */
   focusLead?: boolean;
@@ -268,10 +257,8 @@ export function ExamsHub({
                 <LedgerRow
                   kind="subject"
                   subject={subject.id}
-                  href={examsHref([subject.id])}
                   title={subject.name}
                   aside={subject.shortName}
-                  onFollow={() => onNavigate([subject.id])}
                 >
                   <p className={styles.description}>{subject.description}</p>
                   <Figure parts={subjectFigure(paperFacts(index, subject.id))} />
@@ -290,7 +277,7 @@ export function ExamsHub({
       return (
         <EmptyState
           title="找不到這個科目"
-          description="這一頁可能已移除，請回考古題討論版重新選擇。"
+          description="這一頁可能已移除，請用上方的科目、年度按鈕重新選擇。"
         />
       );
     }
@@ -300,12 +287,7 @@ export function ExamsHub({
         <ul className={styles.ledger}>
           {papers.map(([year, multipleChoice, written]) => (
             <li key={year}>
-              <LedgerRow
-                kind="paper"
-                href={examsHref([place.subject, String(year)])}
-                title={`${year} 年`}
-                onFollow={() => onNavigate([place.subject, String(year)])}
-              >
+              <LedgerRow kind="paper" title={`${year} 年`}>
                 <Figure parts={questionCounts({ written, multipleChoice })} />
               </LedgerRow>
             </li>
@@ -365,7 +347,7 @@ function PaperHub({
     return (
       <EmptyState
         title="找不到這份試卷"
-        description="這一頁可能已移除，請回考古題討論版重新選擇。"
+        description="這一頁可能已移除，請用上方的科目、年度按鈕重新選擇。"
       />
     );
   }

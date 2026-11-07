@@ -1,10 +1,18 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { readStoredValue, writeStoredValue } from '@/lib/storage';
+import {
+  readSessionValue,
+  readStoredValue,
+  removeSessionValue,
+  removeStoredValue,
+  writeSessionValue,
+  writeStoredValue,
+} from '@/lib/storage';
 import { subjectsOfQuestionIds } from '@/lib/question-path';
 
 afterEach(() => {
   vi.restoreAllMocks();
   window.localStorage.clear();
+  window.sessionStorage.clear();
 });
 
 describe('storage access', () => {
@@ -32,6 +40,37 @@ describe('storage access', () => {
       throw new Error('storage disabled');
     });
     expect(readStoredValue('key')).toBeNull();
+  });
+
+  it('removes a value, and an unusable store is not an error', () => {
+    writeStoredValue('key', 'value');
+    removeStoredValue('key');
+    expect(readStoredValue('key')).toBeNull();
+
+    vi.spyOn(Storage.prototype, 'removeItem').mockImplementation(() => {
+      throw new Error('storage disabled');
+    });
+    expect(() => removeStoredValue('key')).not.toThrow();
+  });
+});
+
+describe('session storage access', () => {
+  it('keeps a value for this tab only, apart from localStorage', () => {
+    expect(writeSessionValue('key', 'tab')).toBe('saved');
+    expect(readSessionValue('key')).toBe('tab');
+    expect(readStoredValue('key')).toBeNull();
+
+    removeSessionValue('key');
+    expect(readSessionValue('key')).toBeNull();
+  });
+
+  it('treats a tab without sessionStorage as empty rather than throwing', () => {
+    vi.spyOn(window, 'sessionStorage', 'get').mockImplementation(() => {
+      throw new DOMException('denied', 'SecurityError');
+    });
+    expect(readSessionValue('key')).toBeNull();
+    expect(writeSessionValue('key', 'tab')).toBe('unavailable');
+    expect(() => removeSessionValue('key')).not.toThrow();
   });
 });
 

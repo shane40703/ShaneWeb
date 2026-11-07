@@ -1,8 +1,21 @@
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { EXAMS_PLACE_KEY } from '@/features/exams/exams-last-place';
 import { navigationPageTitle, SidebarContent } from './app-navigation';
 
+const router = vi.hoisted(() => ({
+  pathname: '/practice',
+  push: vi.fn(() => Promise.resolve(true)),
+  prefetch: vi.fn(() => Promise.resolve()),
+}));
+vi.mock('next/router', () => ({ useRouter: () => router }));
+
 beforeEach(() => {
+  router.pathname = '/practice';
+  router.push.mockClear();
+  router.prefetch.mockClear();
+  window.localStorage.clear();
+  window.sessionStorage.clear();
   vi.stubGlobal(
     'ResizeObserver',
     class {
@@ -38,8 +51,8 @@ describe('grouped app navigation', () => {
         .map((link) => link.getAttribute('href')),
     ).toEqual([
       '/practice',
-      // 考古題討論版 opens on the newest 法規 paper's first question.
-      '/exams/law/114/1',
+      // 考古題討論版 links its board; a plain click returns to the last place (below).
+      '/exams',
       '/resources',
       '/personal',
       '/settings',
@@ -74,6 +87,85 @@ describe('grouped app navigation', () => {
       );
     },
   );
+
+  describe('考古題討論版 returns to the last place the reader saw in it', () => {
+    const exams = () => screen.getByRole('link', { name: '考古題討論版' });
+
+    it('opens the place this tab remembers, ahead of the one this browser does', () => {
+      window.localStorage.setItem(EXAMS_PLACE_KEY, '/exams/law/108/12');
+      window.sessionStorage.setItem(EXAMS_PLACE_KEY, '/exams/law/114/7?tab=notes');
+      render(<SidebarContent pathname="/practice" />);
+
+      expect(exams()).toHaveAttribute('href', '/exams');
+      expect(fireEvent.click(exams())).toBe(false);
+      expect(router.push).toHaveBeenCalledWith('/exams/law/114/7?tab=notes');
+
+      // A new tab has no place of its own yet.
+      window.sessionStorage.clear();
+      fireEvent.click(exams());
+      expect(router.push).toHaveBeenLastCalledWith('/exams/law/108/12');
+    });
+
+    it('opens the newest 法規 paper’s first question when nothing usable is kept', () => {
+      render(<SidebarContent pathname="/practice" />);
+      fireEvent.click(exams());
+      expect(router.push).toHaveBeenLastCalledWith('/exams/law/114/1');
+
+      window.localStorage.setItem(EXAMS_PLACE_KEY, '/exams/law/114/03');
+      fireEvent.click(exams());
+      expect(router.push).toHaveBeenLastCalledWith('/exams/law/114/1');
+    });
+
+    it('fetches the place ahead as a link would', () => {
+      window.localStorage.setItem(EXAMS_PLACE_KEY, '/exams/law/110');
+      render(<SidebarContent pathname="/practice" />);
+      fireEvent.mouseEnter(exams());
+      expect(router.prefetch).toHaveBeenCalledWith('/exams/law/110');
+    });
+
+    it('leaves a click with a modifier key to the browser, for a new tab', () => {
+      const onNavigate = vi.fn();
+      render(<SidebarContent pathname="/practice" onNavigate={onNavigate} />);
+      // After the page's own handlers, which React runs at its root: whether they took the
+      // click. jsdom cannot open a tab, so the click ends here.
+      let taken: boolean | undefined;
+      document.addEventListener(
+        'click',
+        (event) => {
+          taken = event.defaultPrevented;
+          event.preventDefault();
+        },
+        { once: true },
+      );
+      fireEvent.click(exams(), { metaKey: true });
+      expect(taken).toBe(false);
+      expect(router.push).not.toHaveBeenCalled();
+      expect(onNavigate).toHaveBeenCalledOnce();
+    });
+
+    it('stays on the page inside 考古題討論版, and only closes the drawer', () => {
+      router.pathname = '/exams/[[...slug]]';
+      window.localStorage.setItem(EXAMS_PLACE_KEY, '/exams/law/108/12');
+      const onNavigate = vi.fn();
+      render(<SidebarContent pathname="/exams/[[...slug]]" onNavigate={onNavigate} />);
+
+      expect(fireEvent.click(exams())).toBe(false);
+      expect(router.push).not.toHaveBeenCalled();
+      expect(onNavigate).toHaveBeenCalledOnce();
+    });
+
+    it('takes the reader back while a click away from 考古題討論版 is still on its way', () => {
+      // The route is still 考古題討論版's; the sidebar already shows 每日練習, where it is going.
+      router.pathname = '/exams/[[...slug]]';
+      window.sessionStorage.setItem(EXAMS_PLACE_KEY, '/exams/law/114/30');
+      const onNavigate = vi.fn();
+      render(<SidebarContent pathname="/practice" onNavigate={onNavigate} />);
+
+      expect(fireEvent.click(exams())).toBe(false);
+      expect(router.push).toHaveBeenCalledWith('/exams/law/114/30');
+      expect(onNavigate).toHaveBeenCalledOnce();
+    });
+  });
 
   it('does not mark 我的作答存摺 current on 每日練習', () => {
     render(<SidebarContent pathname="/practice" />);

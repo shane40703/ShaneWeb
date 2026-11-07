@@ -6,7 +6,8 @@ test('the sidebar answers a click before the page arrives', async ({
   test.skip(testInfo.project.name !== 'desktop');
   await page.goto('/practice');
   await page.waitForLoadState('networkidle');
-  // The sidebar opens 考古題討論版 on the newest 法規 paper's first question.
+  // Nothing is remembered yet, so the sidebar opens 考古題討論版 on the newest 法規 paper's
+  // first question.
   await page.route('**/_next/data/**/exams/law/114/1.json*', async (route) => {
     await new Promise((resolve) => setTimeout(resolve, 1500));
     await route.continue();

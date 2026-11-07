@@ -39,25 +39,26 @@ test('every question stays reachable from a subject that was never loaded', asyn
 
   await page.goto('/exams');
   await page.waitForLoadState('networkidle');
+  expect(files()).toEqual([]);
+  // The selector's subject tile: the board's own list is facts, not links.
   await page.locator('a[data-subject="structure"]').click();
 
-  await expect(page).toHaveURL(/\/exams\/structure$/);
-  await expect(page.locator('header h1')).toHaveText('建築結構考古題');
-  expect(files()).toEqual([]);
-
-  await page.getByRole('link', { name: '100 年', exact: true }).click();
-  await expect(page).toHaveURL(/\/exams\/structure\/100$/);
-  // The paper's own file, for its topics and so that its questions open at once.
-  await expect(page.getByRole('link', { name: /^申論第 1 題 \S/ })).toBeVisible();
+  // The subject's newest paper, at its first question: only that paper downloads.
+  await expect(page).toHaveURL(/\/exams\/structure\/114\/written-1$/);
+  await expect(page.getByRole('heading', { name: '申論第 1 題' })).toBeVisible();
   await page.waitForLoadState('networkidle');
-  expect(files()).toEqual(['/question-data/structure/100.json']);
+  expect(files()).toEqual(['/question-data/structure/114.json']);
 
-  await page.getByRole('link', { name: /^申論第 1 題( |$)/ }).click();
+  await page
+    .getByRole('group', { name: '年度' })
+    .getByRole('link', { name: '100 年', exact: true })
+    .click();
   await expect(page).toHaveURL(/\/exams\/structure\/100\/written-1$/);
   await expect(page.getByRole('heading', { name: '申論第 1 題' })).toBeVisible();
   await page.waitForLoadState('networkidle');
-  // Only the paper before it, which 上一題 crosses into from here, comes on top.
+  // Then that paper, and only the paper before it, which 上一題 crosses into from here.
   expect(files()).toEqual([
+    '/question-data/structure/114.json',
     '/question-data/structure/100.json',
     '/question-data/structure/101.json',
   ]);
@@ -70,7 +71,7 @@ test('考古題討論版 overviews download only the paper they list', async ({
   const requests = watchRequests(page);
   const files = () => requests.questionData().map((url) => new URL(url).pathname);
   // A move under /exams stays on the loaded page. The sidebar still prefetches the pages it
-  // links, 考古題討論版's first question among them, and Next marks those as prefetches.
+  // links, and where 考古題討論版 returns to, and Next marks those as prefetches.
   const fetchedPageData: string[] = [];
   page.on('request', (request) => {
     if (
@@ -84,7 +85,7 @@ test('考古題討論版 overviews download only the paper they list', async ({
 
   await page.goto('/exams');
   await expect(
-    page.getByRole('link', { name: '營建法規與實務', exact: true }),
+    page.getByRole('heading', { level: 2, name: '營建法規與實務 法規' }),
   ).toBeVisible();
   await page.waitForLoadState('networkidle');
   await page.goto('/exams/law');
@@ -104,7 +105,7 @@ test('考古題討論版 overviews download only the paper they list', async ({
   await page.getByRole('link', { name: /^第 1 題( |$)/ }).click();
   await expect(page).toHaveURL(/\/exams\/law\/114\/1$/);
   await expect(page.getByRole('heading', { name: '第 1 題' })).toBeVisible();
-  await page.getByRole('link', { name: '返回 114 年營建法規與實務考古題' }).click();
+  await page.goBack();
   await expect(page).toHaveURL(/\/exams\/law\/114$/);
   await page.getByRole('link', { name: /^第 2 題( |$)/ }).click();
   await expect(page).toHaveURL(/\/exams\/law\/114\/2$/);
@@ -112,13 +113,7 @@ test('考古題討論版 overviews download only the paper they list', async ({
   // Back through the walk to the page the reader arrived on, without loading it again.
   await page.goBack();
   await expect(page).toHaveURL(/\/exams\/law\/114$/);
-  await expect(page.getByRole('link', { name: /^第 2 題( |$)/ })).toBeVisible();
-  await page.goBack();
-  await expect(page).toHaveURL(/\/exams\/law\/114\/1$/);
-  await expect(page.getByRole('heading', { name: '第 1 題' })).toBeVisible();
-  await page.goBack();
-  await expect(page).toHaveURL(/\/exams\/law\/114$/);
-  await expect(page.getByRole('heading', { name: '第 1 題' })).toHaveCount(0);
+  await expect(page.getByRole('heading', { name: '第 2 題' })).toHaveCount(0);
   await expect(page.getByRole('link', { name: /^第 1 題( |$)/ })).toBeVisible();
   await page.waitForLoadState('networkidle');
 

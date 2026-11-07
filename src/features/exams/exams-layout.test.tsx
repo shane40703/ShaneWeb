@@ -2,6 +2,7 @@ import { act, cleanup, render } from '@testing-library/react';
 import mitt from 'next/dist/shared/lib/mitt';
 import type { NextRouter } from 'next/router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { EXAMS_PLACE_KEY } from './exams-last-place';
 import { ExamsLayout, pushExamsPlace } from './exams-layout';
 
 const router = vi.hoisted(() => ({
@@ -70,9 +71,12 @@ const page = () => (
 
 beforeEach(() => {
   router.events = mitt();
+  router.isReady = true;
   router.push.mockClear();
   scrollTo.mockClear();
   scrolledTo(0);
+  window.localStorage.clear();
+  window.sessionStorage.clear();
 });
 
 afterEach(cleanup);
@@ -100,6 +104,62 @@ describe('pushExamsPlace', () => {
     pushExamsPlace(router as unknown as NextRouter, []);
     await act(async () => {});
     expect(scrollTo).not.toHaveBeenCalled();
+  });
+
+  it('opens the tab it is given there', () => {
+    pushExamsPlace(router as unknown as NextRouter, ['law', '113', '1'], 'discussion');
+    expect(router.push).toHaveBeenCalledWith(
+      {
+        pathname: '/exams/[[...slug]]',
+        query: { slug: ['law', '113', '1'], tab: 'discussion' },
+      },
+      undefined,
+      { shallow: true, scroll: false },
+    );
+  });
+});
+
+describe('ExamsLayout: the place the sidebar returns to', () => {
+  const remembered = () => [
+    window.sessionStorage.getItem(EXAMS_PLACE_KEY),
+    window.localStorage.getItem(EXAMS_PLACE_KEY),
+  ];
+
+  it('remembers the address on screen with its tab, and every move after it', () => {
+    router.query = { slug: ['law', '114', '37'], tab: 'notes' };
+    const view = render(page());
+    expect(remembered()).toEqual([
+      '/exams/law/114/37?tab=notes',
+      '/exams/law/114/37?tab=notes',
+    ]);
+
+    router.query = { slug: ['law', '114', '38'], tab: 'notes', utm_source: 'threads' };
+    view.rerender(page());
+    expect(remembered()).toEqual([
+      '/exams/law/114/38?tab=notes',
+      '/exams/law/114/38?tab=notes',
+    ]);
+  });
+
+  it('remembers an overview without a tab', () => {
+    router.query = { slug: ['law', '110'], tab: 'notes' };
+    render(page());
+    expect(remembered()).toEqual(['/exams/law/110', '/exams/law/110']);
+  });
+
+  it('writes nothing before the router has read the address', () => {
+    router.isReady = false;
+    router.query = {};
+    const view = render(page());
+    expect(remembered()).toEqual([null, null]);
+
+    router.isReady = true;
+    router.query = { slug: ['env', '112', 'written-2'], tab: 'discussion' };
+    view.rerender(page());
+    expect(remembered()).toEqual([
+      '/exams/env/112/written-2?tab=discussion',
+      '/exams/env/112/written-2?tab=discussion',
+    ]);
   });
 });
 

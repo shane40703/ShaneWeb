@@ -1,4 +1,4 @@
-import { type FormEvent, useEffect, useId, useRef, useState } from 'react';
+import { type FormEvent, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/router';
 import {
   IconArrowLeft,
@@ -35,12 +35,16 @@ import { Tab, TabList, TabPanel, TabsRoot } from '@/components/tabs';
 import { trackPractice } from '@/lib/analytics';
 import {
   examsHref,
+  examsPaperStart,
   examsPlace,
   examsQuery,
   examsQuestionHref,
   examsQuestionId,
   examsSlug,
   examsSlugParts,
+  examsSubjectStart,
+  examsTab,
+  type ExamsTab,
 } from '@/lib/question-path';
 import { mergeRichTextValues } from '@/lib/rich-document';
 import {
@@ -55,8 +59,13 @@ import {
   SimpleSelect,
   useToast,
 } from '@/components/ui/ui';
-import { getSubject, years } from '@/question-bank/catalog';
-import { hasBody, type PaperTopics, type QuestionEntry } from '@/question-bank/derived-data';
+import { getSubject, subjects, years } from '@/question-bank/catalog';
+import {
+  buildPaperIndex,
+  hasBody,
+  type PaperTopics,
+  type QuestionEntry,
+} from '@/question-bank/derived-data';
 import type {
   DiscussionPost,
   DiscussionPostType,
@@ -97,8 +106,6 @@ const explanationPostTypes: readonly DiscussionPostType[] = [
   'correction',
 ];
 
-type ExamsTab = 'question' | 'discussion' | 'notes';
-
 /** Answer-then-reveal state of one question; never written to app state. */
 interface PracticeState {
   selected?: number;
@@ -112,19 +119,10 @@ interface TabOverride {
   queryTab: ExamsTab | undefined;
 }
 
-function valueOf(value: string | string[] | undefined) {
-  return Array.isArray(value) ? value[0] : value;
-}
-
-/** `?tab=discussion|notes`; absent or anything else is the 題目 tab. */
-function tabOf(value: string | string[] | undefined): ExamsTab {
-  const tab = valueOf(value);
-  return tab === 'discussion' || tab === 'notes' ? tab : 'question';
-}
-
-/** The path says where; only a tab other than 題目 adds `?tab=`. */
-function queryFor(slug: readonly string[], tab: ExamsTab) {
-  return tab === 'question' ? examsQuery(slug) : { ...examsQuery(slug), tab };
+/** The reader folding or unfolding the selector, where they did it (see selectorAt). */
+interface SelectorToggle {
+  at: string;
+  expanded: boolean;
 }
 
 function BodyPending({
@@ -142,10 +140,11 @@ function BodyPending({
 }
 
 /**
- * 考古題討論版 at every address under /exams. A question's address shows that question; the
- * board itself, a subject and a paper list the level below them (ExamsHub) and show no question.
- * The component stays mounted for every move between them, so answers, 筆記 drafts and
- * unsent posts survive a trip up to an overview and back.
+ * 考古題討論版 at every address under /exams. Each starts with the same subject and year
+ * selector, in the same place; under it a question's address shows that question, and the board
+ * itself, a subject and a paper list what they hold (ExamsHub) and show no question. The
+ * component stays mounted for every move between them, so answers, 筆記 drafts and unsent
+ * posts survive a trip to an overview and back.
  */
 export function ExamsPage({
   questions,
@@ -169,7 +168,7 @@ export function ExamsPage({
   // Only an address that names a question shows one.
   const place = examsPlace(router.query.slug);
   const requestedQuestionId = examsQuestionId(router.query.slug);
-  const queryTab = routeReady ? tabOf(router.query.tab) : undefined;
+  const queryTab = routeReady ? examsTab(router.query.tab) : undefined;
   const requestedQuestion = requestedQuestionId
     ? questions.find((question) => question.id === requestedQuestionId)
     : undefined;
@@ -195,16 +194,28 @@ export function ExamsPage({
   const [replyDrafts, setReplyDrafts] = useState<Record<string, string>>({});
   const [editingPostId, setEditingPostId] = useState<string | null>(null);
   const [editingContent, setEditingContent] = useState('');
+  const index = useMemo(() => buildPaperIndex(questions), [questions]);
+  const placeKey = examsHref(examsSlugParts(router.query.slug));
   // One-column pages fold the subject / year selector behind a summary button (the CSS
-  // decides when); it folds again after a choice.
-  const [selectorExpanded, setSelectorExpanded] = useState(false);
+  // decides when). Where choosing is the whole task, on the board and a subject, it starts
+  // open; a paper and a question start folded. The reader's toggle holds on the overview it was
+  // made on, or across questions, so 上一題, 下一題 and the 題號 keep it as they always did and
+  // the compact bar stays under the finger. A choice folds it again.
+  const selectorAt = place.kind === 'question' ? 'question' : placeKey;
+  const [selectorToggle, setSelectorToggle] = useState<SelectorToggle | null>(null);
+  // Anywhere else, Back included, starts at that address's own default.
+  if (selectorToggle && selectorToggle.at !== selectorAt) setSelectorToggle(null);
+  const selectorExpanded =
+    selectorToggle?.at === selectorAt
+      ? selectorToggle.expanded
+      : place.kind === 'bank' || place.kind === 'subject';
   const selectorId = useId();
+  const summaryRef = useRef<HTMLButtonElement>(null);
   const compactNavRef = useRef<HTMLDivElement>(null);
   const verdictRef = useRef<HTMLParagraphElement>(null);
   const focusVerdictFor = useRef<string | null>(null);
   // Arriving at an overview by a move inside the page (not by loading it) starts the keyboard
   // and screen readers at its lead, as a full load starts them at the top.
-  const placeKey = examsHref(examsSlugParts(router.query.slug));
   const [loadedAt] = useState(placeKey);
   const [moved, setMoved] = useState(false);
   if (!moved && placeKey !== loadedAt) setMoved(true);
@@ -222,7 +233,7 @@ export function ExamsPage({
     void router.replace(
       {
         pathname: router.pathname,
-        query: queryFor(examsSlugParts(router.query.slug), tabOf(router.query.tab)),
+        query: examsQuery(examsSlugParts(router.query.slug), examsTab(router.query.tab)),
       },
       undefined,
       { shallow: true, scroll: false },
@@ -236,76 +247,146 @@ export function ExamsPage({
     verdictRef.current?.focus();
   }, [revealed, currentQuestionId]);
 
-  // A change of level (an overview's rows, 返回, the subject and year tiles) is a new history
-  // entry from the top of the page, and leaves the tab behind. Moving between questions and
-  // tabs replaces the entry and keeps the scroll, so reading a paper adds no history.
+  // A paper's row opens its question: a new history entry from the top of the page. Moving
+  // between questions and tabs replaces the entry and keeps the scroll, so reading a paper adds
+  // no history.
   function navigateToPlace(slug: readonly string[], mode: 'push' | 'replace' = 'replace') {
     if (mode === 'push') {
       pushExamsPlace(router, slug);
       return;
     }
     void router.replace(
-      { pathname: router.pathname, query: queryFor(slug, tab) },
+      { pathname: router.pathname, query: examsQuery(slug, tab) },
       undefined,
       { shallow: true, scroll: false },
     );
   }
 
+  // The selector shows the subject and the year the address names, where it names them.
+  const selectedSubject = place.kind === 'bank' ? undefined : place.subject;
+  const selectedYear =
+    place.kind === 'paper' || place.kind === 'question' ? place.year : undefined;
+  const subjectYears = selectedSubject
+    ? (index[selectedSubject] ?? []).map(([year]) => year)
+    : [];
+  const selectedSubjectName = selectedSubject ? getSubject(selectedSubject)?.name : undefined;
+
+  // The tiles link the subject and paper pages, for search engines and new tabs; a plain
+  // click opens that subject's newest paper, or this subject's paper of that year, at its first
+  // question, on the question's tab. A paper switch is a new history entry, so Back returns to
+  // the question being read. A tile naming the address on screen only folds the selector.
+  function openStart(slug: readonly string[] | undefined) {
+    const wasOpen = selectorExpanded;
+    setSelectorToggle({ at: selectorAt, expanded: false });
+    if (slug && examsHref(slug) !== placeKey) {
+      pushExamsPlace(router, slug, place.kind === 'question' ? tab : 'question');
+    }
+    // The chosen tile folds away, so the keyboard goes to the summary that opens it again.
+    if (wasOpen) summaryRef.current?.focus();
+  }
+
+  function selectSubject(subjectId: SubjectId) {
+    openStart(examsSubjectStart(index, subjectId));
+  }
+
+  function selectYear(year: SelectorYear) {
+    if (typeof year !== 'number' || !selectedSubject) return;
+    openStart(examsPaperStart(index, selectedSubject, year));
+  }
+
+  // First in every branch, so React keeps it, and the keyboard on its tile, across moves.
+  const selector = (
+    <div className={styles.selectorWrap} data-expanded={selectorExpanded}>
+      <button
+        ref={summaryRef}
+        type="button"
+        className={styles.selectorSummary}
+        aria-expanded={selectorExpanded}
+        aria-controls={selectorId}
+        aria-label="展開科目與年度"
+        onClick={() => setSelectorToggle({ at: selectorAt, expanded: !selectorExpanded })}
+      >
+        <span>
+          {!selectedSubjectName
+            ? '選擇科目'
+            : selectedYear === undefined
+              ? `${selectedSubjectName}・選擇年度`
+              : `${selectedSubjectName}・${selectedYear} 年`}
+        </span>
+        <IconChevronDown size={18} stroke={2} aria-hidden="true" />
+      </button>
+      <div id={selectorId} className={styles.selectorBody}>
+        <QuestionSelector
+          subjectId={selectedSubject}
+          year={selectedYear}
+          yearOptions={years.map((year) => ({
+            value: year,
+            disabled: !subjectYears.includes(year),
+          }))}
+          disabledSubjectIds={subjects
+            .filter((item) => !index[item.id]?.length)
+            .map((item) => item.id)}
+          onSubjectChange={selectSubject}
+          onYearChange={selectYear}
+          subjectHref={(subjectId) => examsHref([subjectId])}
+          yearHref={
+            selectedSubject
+              ? (value) => examsHref([selectedSubject, String(value)])
+              : undefined
+          }
+          ariaLabel="題目選擇"
+        />
+      </div>
+    </div>
+  );
+
   // After every hook, so the page keeps its state on the way to an overview and back.
   if (place.kind !== 'question') {
     return (
-      <ExamsHub
-        place={place}
-        questions={questions}
-        paperTopics={paperTopics}
-        status={questionBankStatus}
-        onRetry={onRetryQuestionBank}
-        onNavigate={(slug) => navigateToPlace(slug, 'push')}
-        focusLead={moved}
-      />
+      <div className={styles.page}>
+        {selector}
+        <ExamsHub
+          place={place}
+          questions={questions}
+          paperTopics={paperTopics}
+          status={questionBankStatus}
+          onRetry={onRetryQuestionBank}
+          onNavigate={(slug) => navigateToPlace(slug, 'push')}
+          focusLead={moved}
+        />
+      </div>
     );
   }
 
-  if (
-    routeHydrated &&
-    (router.isReady === false || (!currentQuestion && questionBankStatus === 'loading'))
-  ) {
+  if (routeHydrated && router.isReady === false) {
     return (
-      <EmptyState
-        title="正在載入題目"
-        description="正在取得指定題目的詳解與討論，請稍候。"
-      />
+      <div className={styles.page}>
+        {selector}
+        <EmptyState
+          title="正在載入題目"
+          description="正在取得指定題目的詳解與討論，請稍候。"
+        />
+      </div>
     );
   }
 
-  if (questionBankStatus === 'error' && !currentQuestion) {
+  // A question on its way is not missing: the page shows, with a card that waits for it.
+  if (!currentEntry || (!currentBody && !bodyPending)) {
     return (
-      <EmptyState
-        title="題庫載入失敗"
-        description="目前無法取得完整題庫，請重新載入後再試。"
-        action={
-          onRetryQuestionBank ? (
-            <Button onClick={onRetryQuestionBank}>重新載入</Button>
-          ) : undefined
-        }
-      />
+      <div className={styles.page}>
+        {selector}
+        <EmptyState
+          title={questions.length ? '找不到指定題目' : '題庫尚無資料'}
+          description={
+            questions.length
+              ? '這個題目可能已移除，請用上方的科目、年度按鈕重新選擇。'
+              : '加入題目後即可使用詳解與討論。'
+          }
+        />
+      </div>
     );
   }
 
-  if (!currentEntry || !currentQuestion || (!currentBody && !bodyPending)) {
-    return (
-      <EmptyState
-        title={questions.length ? '找不到指定題目' : '題庫尚無資料'}
-        description={
-          questions.length
-            ? '這個題目可能已移除，請從題庫重新選擇。'
-            : '加入題目後即可使用詳解與討論。'
-        }
-      />
-    );
-  }
-
-  const activeQuestion = currentQuestion;
   const activeEntry = currentEntry;
   const subject = getSubject(currentEntry.subject);
   const subjectQuestions = questions
@@ -313,9 +394,6 @@ export function ExamsPage({
     .sort(
       (left, right) => right.year - left.year || comparePaperQuestionOrder(left, right),
     );
-  const availableYears = [
-    ...new Set(subjectQuestions.map((question) => question.year)),
-  ].sort((a, b) => b - a);
   const paperQuestions = questions
     .filter(
       (question) =>
@@ -331,10 +409,13 @@ export function ExamsPage({
   );
   const posts = shared.posts;
   const difficultQuestionIds = new Set(state.difficultQuestionIds);
-  const difficult = state.difficultQuestionIds.includes(currentQuestion.id);
-  const written = currentQuestion.format === 'written';
+  // Of the body on screen, which can still be the last question while the next paper
+  // downloads: the hidden card keeps that question's shape, so nothing under it moves.
+  const shownEntry = currentQuestion ?? currentEntry;
+  const difficult = state.difficultQuestionIds.includes(shownEntry.id);
+  const written = shownEntry.format === 'written';
   const selected = currentPractice?.selected;
-  const correct = isQuestionCorrect(currentQuestion, selected);
+  const correct = currentQuestion ? isQuestionCorrect(currentQuestion, selected) : false;
   const builtInExplanation = currentBody?.explanation?.trim()
     ? currentBody.explanation
     : undefined;
@@ -342,6 +423,13 @@ export function ExamsPage({
     explanationPostTypes.includes(post.type),
   );
   const hasExplanation = Boolean(builtInExplanation) || explanationPosts.length > 0;
+  // No question has shown yet and its paper is on its way, as after a tile from an overview:
+  // the page is all there, with a card in place of the question that waits or offers a retry.
+  const firstPending = (
+    <section className={`${styles.questionCard} ${styles.firstPending}`} data-loading>
+      <BodyPending status={questionBankStatus} onRetry={onRetryQuestionBank} />
+    </section>
+  );
   /** The paper's tiles, shared by the aside and the 題號 drawer of the compact bar. */
   const pickerQuestions = paperQuestions.map((question) => ({
     id: question.id,
@@ -368,50 +456,33 @@ export function ExamsPage({
   function setTab(nextTab: ExamsTab) {
     setTabOverride({ tab: nextTab, queryTab });
     void router.replace(
-      { pathname: router.pathname, query: queryFor(examsSlug(activeEntry.id), nextTab) },
+      { pathname: router.pathname, query: examsQuery(examsSlug(activeEntry.id), nextTab) },
       undefined,
       { shallow: true, scroll: false },
     );
   }
 
-  // The subject and year tiles open that subject's or that year's overview, as their
-  // addresses say; the current year's tile is a way up to its paper.
-  function selectSubject(subjectId: SubjectId) {
-    setSelectorExpanded(false);
-    if (questions.some((question) => question.subject === subjectId)) {
-      navigateToPlace([subjectId], 'push');
-    }
-  }
-
-  function selectYear(year: SelectorYear) {
-    if (typeof year !== 'number') return;
-    setSelectorExpanded(false);
-    const paper = questions.some(
-      (question) => question.subject === activeEntry.subject && question.year === year,
-    );
-    if (paper) navigateToPlace([activeEntry.subject, String(year)], 'push');
-  }
-
+  // Answers are kept under the question in the URL, where the card reads them back.
   function selectOption(value: number | undefined) {
     setPractice((current) => ({
       ...current,
-      [activeQuestion.id]: { selected: value, revealed: false },
+      [activeEntry.id]: { selected: value, revealed: false },
     }));
   }
 
   function reveal() {
-    focusVerdictFor.current = activeQuestion.id;
+    focusVerdictFor.current = activeEntry.id;
     trackPractice(
-      practice[activeQuestion.id]?.selected === undefined
+      practice[activeEntry.id]?.selected === undefined
         ? 'answer_revealed'
         : 'question_answered',
       'exams',
-      activeQuestion.subject,
+      activeEntry.subject,
     );
     setPractice((current) => ({
       ...current,
-      [activeQuestion.id]: {
-        selected: current[activeQuestion.id]?.selected,
+      [activeEntry.id]: {
+        selected: current[activeEntry.id]?.selected,
         revealed: true,
       },
     }));
@@ -420,7 +491,7 @@ export function ExamsPage({
   function reset() {
     setPractice((current) => ({
       ...current,
-      [activeQuestion.id]: { revealed: false },
+      [activeEntry.id]: { revealed: false },
     }));
   }
 
@@ -527,36 +598,7 @@ export function ExamsPage({
 
   return (
     <div className={styles.page} inert={!routeHydrated || !hydrated}>
-      <div className={styles.selectorWrap} data-expanded={selectorExpanded}>
-        <button
-          type="button"
-          className={styles.selectorSummary}
-          aria-expanded={selectorExpanded}
-          aria-controls={selectorId}
-          aria-label="展開科目與年度"
-          onClick={() => setSelectorExpanded((current) => !current)}
-        >
-          <span>
-            {subject?.name}・{currentEntry.year} 年
-          </span>
-          <IconChevronDown size={18} stroke={2} aria-hidden="true" />
-        </button>
-        <div id={selectorId} className={styles.selectorBody}>
-          <QuestionSelector
-            subjectId={currentEntry.subject}
-            year={currentEntry.year}
-            yearOptions={years.map((year) => ({
-              value: year,
-              disabled: !availableYears.includes(year),
-            }))}
-            onSubjectChange={selectSubject}
-            onYearChange={selectYear}
-            subjectHref={(subjectId) => examsHref([subjectId])}
-            yearHref={(value) => examsHref([currentEntry.subject, String(value)])}
-            ariaLabel="題目選擇"
-          />
-        </div>
-      </div>
+      {selector}
 
       <div className={styles.examsLayout}>
         <main className={styles.contentColumn}>
@@ -613,164 +655,168 @@ export function ExamsPage({
             </TabList>
 
             <TabPanel value="question" className={styles.tabPanel}>
-              <section
-                className={styles.questionCard}
-                data-loading={bodyPending || undefined}
-              >
-                {bodyPending ? (
-                  <BodyPending status={questionBankStatus} onRetry={onRetryQuestionBank} />
-                ) : null}
-                <header>
-                  <div className={styles.tags}>
-                    <Tag tone="green">{subject?.name}</Tag>
-                    <Tag>{currentQuestion.year} 年</Tag>
-                    {getQuestionDisplayCategories(currentQuestion).map((category) => (
-                      <Tag tone="orange" key={category}>
-                        {category}
-                      </Tag>
-                    ))}
-                    {written ? <Tag tone="purple">申論題</Tag> : null}
-                    {currentQuestion.source.kind === 'sample' ? (
-                      <Tag tone="purple">示範題</Tag>
+              {currentQuestion ? (
+                <section
+                  className={styles.questionCard}
+                  data-loading={bodyPending || undefined}
+                >
+                  {bodyPending ? (
+                    <BodyPending status={questionBankStatus} onRetry={onRetryQuestionBank} />
+                  ) : null}
+                  <header>
+                    <div className={styles.tags}>
+                      <Tag tone="green">{subject?.name}</Tag>
+                      <Tag>{currentQuestion.year} 年</Tag>
+                      {getQuestionDisplayCategories(currentQuestion).map((category) => (
+                        <Tag tone="orange" key={category}>
+                          {category}
+                        </Tag>
+                      ))}
+                      {written ? <Tag tone="purple">申論題</Tag> : null}
+                      {currentQuestion.source.kind === 'sample' ? (
+                        <Tag tone="purple">示範題</Tag>
+                      ) : null}
+                    </div>
+                    {!written ? (
+                      <DifficultButton
+                        active={difficult}
+                        onClick={() =>
+                          dispatch({
+                            type: 'toggle-difficult',
+                            questionId: currentQuestion.id,
+                          })
+                        }
+                      />
+                    ) : null}
+                  </header>
+                  <QuestionSourceLine question={currentQuestion} />
+                  <h2 className={styles.questionNumber}>
+                    {formatQuestionNumberLabel(currentQuestion)}
+                  </h2>
+                  <QuestionPrompt question={currentQuestion} />
+                  <div className={styles.practice}>
+                    {written ? null : revealed ? (
+                      <>
+                        <QuestionAnswerPanel
+                          question={currentQuestion}
+                          heading={null}
+                          ariaLabel="題目選項"
+                          selectedIndex={selected}
+                          showStatusLabels={selected !== undefined}
+                        />
+                        <p
+                          ref={verdictRef}
+                          role="status"
+                          tabIndex={-1}
+                          className={styles.verdict}
+                          data-correct={(selected !== undefined && correct) || undefined}
+                          data-unanswered={selected === undefined || undefined}
+                        >
+                          {selected !== undefined ? (
+                            correct ? (
+                              <IconCircleCheck size={18} stroke={2} aria-hidden="true" />
+                            ) : (
+                              <IconX size={18} stroke={2} aria-hidden="true" />
+                            )
+                          ) : null}
+                          {selected !== undefined ? (
+                            <strong>{correct ? '答對了' : '答錯了'}</strong>
+                          ) : null}
+                          <span>
+                            正確答案：{formatCorrectAnswer(currentQuestion)}
+                            {selected !== undefined
+                              ? `・你的答案：${String.fromCharCode(65 + selected)}`
+                              : null}
+                          </span>
+                        </p>
+                      </>
+                    ) : (
+                      <div className={styles.answerArea}>
+                        <OptionGroup
+                          label="題目選項"
+                          options={currentQuestion.options}
+                          value={selected}
+                          onValueChange={selectOption}
+                        />
+                      </div>
+                    )}
+                    <div className={styles.answerActions}>
+                      {revealed ? (
+                        <Button variant="ghost" onClick={reset}>
+                          {written ? '收起解答' : '重新作答'}
+                        </Button>
+                      ) : (
+                        <Button variant="primary" onClick={reveal}>
+                          看解答
+                        </Button>
+                      )}
+                      <div className={styles.copyAction}>
+                        <CopyQuestionButton key={currentQuestion.id} question={currentQuestion} />
+                      </div>
+                    </div>
+                    {revealed ? (
+                      <div className={styles.explanation}>
+                        <h3>詳解</h3>
+                        {builtInExplanation ? (
+                          <p>
+                            <RichText>{builtInExplanation}</RichText>
+                          </p>
+                        ) : null}
+                        {explanationPosts.map((post) => (
+                          <article key={post.id}>
+                            <Tag tone={post.type === 'correction' ? 'orange' : 'purple'}>
+                              {postTypeLabels[post.type]}
+                            </Tag>
+                            {post.content ? (
+                              <p>
+                                <RichText>{post.content}</RichText>
+                              </p>
+                            ) : null}
+                            <AttachmentGallery images={post.images} />
+                          </article>
+                        ))}
+                        {!hasExplanation && shared.loading ? (
+                          <p className={styles.explanationEmpty} role="status">
+                            正在載入詳解…
+                          </p>
+                        ) : null}
+                        {!hasExplanation && !shared.loading ? (
+                          <>
+                            <p className={styles.explanationEmpty}>目前尚無詳解。</p>
+                            <div className={styles.answerActions}>
+                              <Button variant="ghost" onClick={() => setTab('discussion')}>
+                                到討論區看看
+                              </Button>
+                            </div>
+                          </>
+                        ) : null}
+                      </div>
                     ) : null}
                   </div>
-                  {!written ? (
-                    <DifficultButton
-                      active={difficult}
+                  <footer className={styles.questionNavigation}>
+                    <Button
+                      disabled={currentIndex <= 0}
                       onClick={() =>
-                        dispatch({
-                          type: 'toggle-difficult',
-                          questionId: currentQuestion.id,
-                        })
+                        subjectQuestions[currentIndex - 1] &&
+                        navigateFromFooter(subjectQuestions[currentIndex - 1].id)
                       }
-                    />
-                  ) : null}
-                </header>
-                <QuestionSourceLine question={currentQuestion} />
-                <h2 className={styles.questionNumber}>
-                  {formatQuestionNumberLabel(currentQuestion)}
-                </h2>
-                <QuestionPrompt question={currentQuestion} />
-                <div className={styles.practice}>
-                  {written ? null : revealed ? (
-                    <>
-                      <QuestionAnswerPanel
-                        question={currentQuestion}
-                        heading={null}
-                        ariaLabel="題目選項"
-                        selectedIndex={selected}
-                        showStatusLabels={selected !== undefined}
-                      />
-                      <p
-                        ref={verdictRef}
-                        role="status"
-                        tabIndex={-1}
-                        className={styles.verdict}
-                        data-correct={(selected !== undefined && correct) || undefined}
-                        data-unanswered={selected === undefined || undefined}
-                      >
-                        {selected !== undefined ? (
-                          correct ? (
-                            <IconCircleCheck size={18} stroke={2} aria-hidden="true" />
-                          ) : (
-                            <IconX size={18} stroke={2} aria-hidden="true" />
-                          )
-                        ) : null}
-                        {selected !== undefined ? (
-                          <strong>{correct ? '答對了' : '答錯了'}</strong>
-                        ) : null}
-                        <span>
-                          正確答案：{formatCorrectAnswer(currentQuestion)}
-                          {selected !== undefined
-                            ? `・你的答案：${String.fromCharCode(65 + selected)}`
-                            : null}
-                        </span>
-                      </p>
-                    </>
-                  ) : (
-                    <div className={styles.answerArea}>
-                      <OptionGroup
-                        label="題目選項"
-                        options={currentQuestion.options}
-                        value={selected}
-                        onValueChange={selectOption}
-                      />
-                    </div>
-                  )}
-                  <div className={styles.answerActions}>
-                    {revealed ? (
-                      <Button variant="ghost" onClick={reset}>
-                        {written ? '收起解答' : '重新作答'}
-                      </Button>
-                    ) : (
-                      <Button variant="primary" onClick={reveal}>
-                        看解答
-                      </Button>
-                    )}
-                    <div className={styles.copyAction}>
-                      <CopyQuestionButton key={currentQuestion.id} question={currentQuestion} />
-                    </div>
-                  </div>
-                  {revealed ? (
-                    <div className={styles.explanation}>
-                      <h3>詳解</h3>
-                      {builtInExplanation ? (
-                        <p>
-                          <RichText>{builtInExplanation}</RichText>
-                        </p>
-                      ) : null}
-                      {explanationPosts.map((post) => (
-                        <article key={post.id}>
-                          <Tag tone={post.type === 'correction' ? 'orange' : 'purple'}>
-                            {postTypeLabels[post.type]}
-                          </Tag>
-                          {post.content ? (
-                            <p>
-                              <RichText>{post.content}</RichText>
-                            </p>
-                          ) : null}
-                          <AttachmentGallery images={post.images} />
-                        </article>
-                      ))}
-                      {!hasExplanation && shared.loading ? (
-                        <p className={styles.explanationEmpty} role="status">
-                          正在載入詳解…
-                        </p>
-                      ) : null}
-                      {!hasExplanation && !shared.loading ? (
-                        <>
-                          <p className={styles.explanationEmpty}>目前尚無詳解。</p>
-                          <div className={styles.answerActions}>
-                            <Button variant="ghost" onClick={() => setTab('discussion')}>
-                              到討論區看看
-                            </Button>
-                          </div>
-                        </>
-                      ) : null}
-                    </div>
-                  ) : null}
-                </div>
-                <footer className={styles.questionNavigation}>
-                  <Button
-                    disabled={currentIndex <= 0}
-                    onClick={() =>
-                      subjectQuestions[currentIndex - 1] &&
-                      navigateFromFooter(subjectQuestions[currentIndex - 1].id)
-                    }
-                  >
-                    <IconArrowLeft size={17} stroke={2} aria-hidden="true" /> 上一題
-                  </Button>
-                  <Button
-                    disabled={currentIndex >= subjectQuestions.length - 1}
-                    onClick={() =>
-                      subjectQuestions[currentIndex + 1] &&
-                      navigateFromFooter(subjectQuestions[currentIndex + 1].id)
-                    }
-                  >
-                    下一題 <IconArrowRight size={17} stroke={2} aria-hidden="true" />
-                  </Button>
-                </footer>
-              </section>
+                    >
+                      <IconArrowLeft size={17} stroke={2} aria-hidden="true" /> 上一題
+                    </Button>
+                    <Button
+                      disabled={currentIndex >= subjectQuestions.length - 1}
+                      onClick={() =>
+                        subjectQuestions[currentIndex + 1] &&
+                        navigateFromFooter(subjectQuestions[currentIndex + 1].id)
+                      }
+                    >
+                      下一題 <IconArrowRight size={17} stroke={2} aria-hidden="true" />
+                    </Button>
+                  </footer>
+                </section>
+              ) : (
+                firstPending
+              )}
               {currentBody && hasSimilarQuestionsBlock(currentBody) ? (
                 <section className={styles.similarCard}>
                   <SimilarQuestions question={currentBody} basePath="/exams" />
@@ -1014,28 +1060,32 @@ export function ExamsPage({
             </TabPanel>
 
             <TabPanel value="notes" className={styles.tabPanel}>
-              <section
-                className={styles.notesCard}
-                data-loading={bodyPending || undefined}
-              >
-                {bodyPending ? (
-                  <BodyPending status={questionBankStatus} onRetry={onRetryQuestionBank} />
-                ) : null}
-                <QuestionNoteEditor
-                  key={`${currentQuestion.id}-${hydrated ? 'ready' : 'hydrating'}`}
-                  question={currentQuestion}
-                  header="compact"
-                  showDifficultButton={false}
-                  showSimilarQuestions={false}
-                  draft={noteDrafts[currentQuestion.id]}
-                  onDraftChange={(draft) =>
-                    setNoteDrafts((current) => ({
-                      ...current,
-                      [activeQuestion.id]: draft,
-                    }))
-                  }
-                />
-              </section>
+              {currentQuestion ? (
+                <section
+                  className={styles.notesCard}
+                  data-loading={bodyPending || undefined}
+                >
+                  {bodyPending ? (
+                    <BodyPending status={questionBankStatus} onRetry={onRetryQuestionBank} />
+                  ) : null}
+                  <QuestionNoteEditor
+                    key={`${currentQuestion.id}-${hydrated ? 'ready' : 'hydrating'}`}
+                    question={currentQuestion}
+                    header="compact"
+                    showDifficultButton={false}
+                    showSimilarQuestions={false}
+                    draft={noteDrafts[currentQuestion.id]}
+                    onDraftChange={(draft) =>
+                      setNoteDrafts((current) => ({
+                        ...current,
+                        [currentQuestion.id]: draft,
+                      }))
+                    }
+                  />
+                </section>
+              ) : (
+                firstPending
+              )}
             </TabPanel>
           </TabsRoot>
         </main>

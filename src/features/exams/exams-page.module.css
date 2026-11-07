@@ -706,6 +706,12 @@
   pointer-events: auto;
 }
 
+/* No question has shown yet (a tile from an overview): the card holds only the wait, at about
+   a short question's height, so the question arriving in it moves little below. */
+.firstPending {
+  min-height: 360px;
+}
+
 .bodyPending[data-status='loading'] {
   opacity: 0;
   animation: body-pending 0s linear 240ms forwards;

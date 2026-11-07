@@ -39,9 +39,25 @@ async function closeQuestionTiles(page: Page) {
   await expect(page.getByRole('dialog', { name: '題號導覽' })).toHaveCount(0);
 }
 
-/** On phones the subject / year selector sits behind a summary button and folds after a choice. */
+/** On phones the subject / year selector sits behind a summary button and folds after a choice;
+    the board and a subject's page start with it open. */
 async function expandSelector(page: Page) {
-  if (onPhone()) await page.getByRole('button', { name: '展開科目與年度' }).click();
+  if (!onPhone()) return;
+  const summary = page.getByRole('button', { name: '展開科目與年度' });
+  // The button can render before hydration, so retry until it opens.
+  await expect(async () => {
+    if ((await summary.getAttribute('aria-expanded')) !== 'true')
+      await summary.click({ timeout: 1000 });
+    await expect(summary).toHaveAttribute('aria-expanded', 'true', { timeout: 1000 });
+  }).toPass();
+}
+
+/** 考古題討論版 has hydrated once it has remembered the address on screen. A tile links the
+    subject or paper page, so a click before then would load that page instead of the question. */
+async function examsReady(page: Page, place: string) {
+  await expect
+    .poll(() => page.evaluate(() => sessionStorage.getItem('shaneweb:exams-place')))
+    .toBe(place);
 }
 
 test('copy stays below the choices and aligned right before and after revealing the answer', async ({ page }) => {
@@ -88,13 +104,17 @@ test('past exams opens from the navigation and keeps browsing on /exams', async 
   isMobile,
 }) => {
   await page.goto('/');
+  // The sidebar links /exams, which a click before hydration would load.
+  await page.waitForLoadState('networkidle');
   const nav = await openNavigation(page);
-  // The sidebar opens the newest 法規 paper on its first question.
+  // On a first visit the sidebar opens the newest 法規 paper on its first question.
   await nav.getByRole('link', { name: '考古題討論版', exact: true }).click();
   await expect(page).toHaveURL(/\/exams\/law\/114\/1$/);
   await expect(page).toHaveTitle('114 年營建法規與實務考古題第 1 題｜建築師考試');
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('考古題討論版');
   await expect(page.getByRole('heading', { name: '第 1 題' })).toBeVisible();
+  // No way back anywhere in 考古題討論版: every address starts with the same selector.
+  await expect(page.getByRole('link', { name: /^返回/ })).toHaveCount(0);
   await expect(
     (await openNavigation(page)).getByRole('link', {
       name: '考古題討論版',
@@ -108,26 +128,6 @@ test('past exams opens from the navigation and keeps browsing on /exams', async 
     );
   }
 
-  // 返回 climbs to the list of subjects, one level at a time.
-  await page.getByRole('link', { name: '返回 114 年營建法規與實務考古題', exact: true }).click();
-  await expect(page).toHaveURL(/\/exams\/law\/114$/);
-  await page.getByRole('link', { name: '返回營建法規與實務考古題', exact: true }).click();
-  await expect(page).toHaveURL(/\/exams\/law$/);
-  await page.getByRole('link', { name: '返回考古題討論版', exact: true }).click();
-  await expect(page).toHaveURL(/\/exams$/);
-  await expect(page).toHaveTitle('考古題討論版｜建築師考試');
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('考古題討論版');
-
-  // Each overview lists the level below it, and a row leads one level down.
-  await page.getByRole('link', { name: '營建法規與實務', exact: true }).click();
-  await expect(page).toHaveURL(/\/exams\/law$/);
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('營建法規與實務考古題');
-  await page.getByRole('link', { name: '114 年', exact: true }).click();
-  await expect(page).toHaveURL(/\/exams\/law\/114$/);
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('114 年營建法規與實務考古題');
-  await page.getByRole('link', { name: /^第 1 題( |$)/ }).click();
-  await expect(page).toHaveURL(/\/exams\/law\/114\/1$/);
-
   const numbers = await questionTiles(page);
   await expectCurrentTile(questionTile(numbers, '第 1 題'));
   await closeQuestionTiles(page);
@@ -137,14 +137,14 @@ test('past exams opens from the navigation and keeps browsing on /exams', async 
   await expect(page).toHaveURL(/\/exams\/law\/114\/2$/);
   await page.getByRole('button', { name: '上一題' }).first().click();
   await expect(page).toHaveURL(/\/exams\/law\/114\/1$/);
-  // The year and subject tiles open those overviews, and the browser's back button returns.
+  // A year tile opens that paper at its first question, and the browser's back button returns.
   await expandSelector(page);
   await page
     .getByRole('group', { name: '年度' })
     .getByRole('link', { name: '112 年' })
     .click();
-  await expect(page).toHaveURL(/\/exams\/law\/112$/);
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('112 年營建法規與實務考古題');
+  await expect(page).toHaveURL(/\/exams\/law\/112\/1$/);
+  await expect(page.getByRole('heading', { name: '第 1 題' })).toBeVisible();
   await page.goBack();
   await expect(page).toHaveURL(/\/exams\/law\/114\/1$/);
   // The selector folded after the choice.
@@ -153,16 +153,49 @@ test('past exams opens from the navigation and keeps browsing on /exams', async 
       'aria-expanded',
       'false',
     );
+  // A subject tile opens its newest paper, from 申論第 1 題 where the paper has written ones.
   await expandSelector(page);
   await page
     .getByRole('group', { name: '科目' })
     .getByRole('link', { name: /建築環境控制/ })
     .click();
-  await expect(page).toHaveURL(/\/exams\/env$/);
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('建築環境控制考古題');
-  await page.getByRole('link', { name: '返回考古題討論版', exact: true }).click();
-  await expect(page).toHaveURL(/\/exams$/);
+  await expect(page).toHaveURL(/\/exams\/env\/114\/written-1$/);
+  await expect(page.getByRole('heading', { name: '申論第 1 題' })).toBeVisible();
+
+  // The board has the same selector with no subject chosen yet; its list is facts, not links.
+  await page.goto('/exams');
+  await expect(page).toHaveTitle('考古題討論版｜建築師考試');
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('考古題討論版');
+  const years = page.getByRole('group', { name: '年度' }).getByRole('button');
+  await expect(years).toHaveCount(15);
+  for (const year of await years.all()) await expect(year).toBeDisabled();
+  await expect(page.getByRole('link', { name: '營建法規與實務', exact: true })).toHaveCount(0);
+  await examsReady(page, '/exams');
+  await expandSelector(page);
+  await page
+    .getByRole('group', { name: '科目' })
+    .getByRole('link', { name: /建築結構/ })
+    .click();
+  await expect(page).toHaveURL(/\/exams\/structure\/114\/written-1$/);
+  await expect(page.getByRole('heading', { name: '申論第 1 題' })).toBeVisible();
+
+  // A subject's page: the year tiles, then its papers as facts.
+  await page.goto('/exams/law');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('營建法規與實務考古題');
+  await examsReady(page, '/exams/law');
+  await expandSelector(page);
+  await page
+    .getByRole('group', { name: '年度' })
+    .getByRole('link', { name: '113 年' })
+    .click();
+  await expect(page).toHaveURL(/\/exams\/law\/113\/1$/);
+  await expect(page.getByRole('heading', { name: '第 1 題' })).toBeVisible();
+
+  // A paper's page lists its questions, and a row opens one.
+  await page.goto('/exams/law/114');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('114 年營建法規與實務考古題');
+  await page.getByRole('link', { name: /^第 1 題( |$)/ }).click();
+  await expect(page).toHaveURL(/\/exams\/law\/114\/1$/);
 
   await page.goto('/exams?question=law-114-01');
   const similar = page.getByRole('region', { name: '類似題目' }).getByRole('link');
@@ -178,6 +211,22 @@ test('past exams opens from the navigation and keeps browsing on /exams', async 
   expect(
     await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth),
   ).toBeLessThanOrEqual(0);
+});
+
+test('the subject and year selector sits at the same place on every address', async ({
+  page,
+}) => {
+  // On phones the summary button stands for it, as on a question.
+  const selector = onPhone()
+    ? page.getByRole('button', { name: '展開科目與年度' })
+    : page.getByRole('region', { name: '題目選擇' });
+  const tops: Record<string, number> = {};
+  for (const path of ['/exams', '/exams/law', '/exams/law/114', '/exams/law/114/1']) {
+    await page.goto(path);
+    await expect(selector).toBeVisible();
+    tops[path] = (await selector.boundingBox())!.y;
+  }
+  expect(new Set(Object.values(tops)).size, JSON.stringify(tops)).toBe(1);
 });
 
 test('the compact bar scrolls with the page and the footer returns to it', async ({

@@ -1,16 +1,20 @@
 import { describe, expect, it } from 'vitest';
 import {
+  examsAddress,
   examsHref,
-  examsParent,
+  examsPaperStart,
   examsPlace,
   examsQuery,
   examsQuestionHref,
   examsQuestionId,
   examsSlug,
   examsSlugs,
+  examsSubjectStart,
+  examsTab,
   parseQuestionId,
   subjectsOfQuestionIds,
 } from '@/lib/question-path';
+import type { PaperIndex } from '@/question-bank/derived-data';
 
 describe('question ids', () => {
   it('reads multiple-choice and essay ids', () => {
@@ -84,23 +88,52 @@ describe('考古題討論版 addresses', () => {
     expect(examsQuestionId([])).toBeUndefined();
   });
 
-  it('leads each level back to the one above it, and /exams to nothing', () => {
-    expect(examsParent({ kind: 'bank' })).toBeNull();
-    expect(examsParent(examsPlace(['law']))).toEqual({ kind: 'bank' });
-    expect(examsParent(examsPlace(['law', '114']))).toEqual({
-      kind: 'subject',
-      subject: 'law',
-    });
-    expect(examsParent(examsPlace(['env', '100', 'written-1']))).toEqual({
-      kind: 'paper',
-      subject: 'env',
-      year: 100,
-    });
-  });
-
   it('leaves the slug out of the query for /exams itself', () => {
     expect(examsQuery([])).toEqual({});
     expect(examsQuery(['law', '114'])).toEqual({ slug: ['law', '114'] });
+  });
+
+  it('adds a tab to the query only when it is not 題目', () => {
+    expect(examsQuery(['law', '114', '3'], 'question')).toEqual({ slug: ['law', '114', '3'] });
+    expect(examsQuery(['law', '114', '3'], 'notes')).toEqual({
+      slug: ['law', '114', '3'],
+      tab: 'notes',
+    });
+  });
+
+  it('reads the tab of an address, and anything else as 題目', () => {
+    expect(examsTab('discussion')).toBe('discussion');
+    expect(examsTab(['notes', 'discussion'])).toBe('notes');
+    expect(examsTab('answers')).toBe('question');
+    expect(examsTab(undefined)).toBe('question');
+  });
+
+  it('gives an address its tab only on a question', () => {
+    expect(examsAddress(['law', '114', '37'], 'notes')).toBe('/exams/law/114/37?tab=notes');
+    expect(examsAddress(['law', '114', '37'], 'question')).toBe('/exams/law/114/37');
+    expect(examsAddress(['law', '114'], 'discussion')).toBe('/exams/law/114');
+    expect(examsAddress([], 'notes')).toBe('/exams');
+  });
+
+  it('starts a paper at its first question, 申論第 1 題 when it has written ones', () => {
+    const index: PaperIndex = {
+      env: [
+        [114, 40, 3],
+        [113, 40, 2],
+      ],
+      law: [
+        [114, 80, 0],
+        [113, 80, 0],
+      ],
+    };
+    expect(examsPaperStart(index, 'env', 114)).toEqual(['env', '114', 'written-1']);
+    expect(examsPaperStart(index, 'law', 113)).toEqual(['law', '113', '1']);
+    expect(examsPaperStart(index, 'law', 100)).toBeUndefined();
+    expect(examsPaperStart(index, 'structure', 114)).toBeUndefined();
+    // A subject starts at its newest paper.
+    expect(examsSubjectStart(index, 'env')).toEqual(['env', '114', 'written-1']);
+    expect(examsSubjectStart(index, 'law')).toEqual(['law', '114', '1']);
+    expect(examsSubjectStart(index, 'structure')).toBeUndefined();
   });
 
   it('lists every subject, paper and question once', () => {

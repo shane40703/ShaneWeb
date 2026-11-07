@@ -140,6 +140,31 @@ describe('ExamsPage while another paper downloads', () => {
     expect(screen.queryByText('正在載入題目內容…')).not.toBeInTheDocument();
   });
 
+  it('keeps the shape of the question on screen when the next paper opens with an essay', () => {
+    // A subject tile from a multiple-choice question to 建築環境控制, whose papers open at
+    // 申論第 1 題.
+    const essay: QuestionRef = {
+      id: 'env-114-written-01',
+      subject: 'env',
+      year: 114,
+      questionNumber: 1,
+      format: 'written',
+    };
+    router.query = { slug: examsSlug(shown.id) };
+    const view = render(page('ready', [shown, essay]));
+    router.query = { slug: examsSlug(essay.id) };
+    view.rerender(page('loading', [shown, essay]));
+
+    // Hidden under the wait, the card still holds the last question's choices and 難題 button,
+    // so it keeps its height and the 上一題／下一題 under it stay where they were.
+    const card = document.querySelector('[data-loading]') as HTMLElement;
+    expect(within(card).getByText('正在載入題目內容…')).toBeInTheDocument();
+    expect(within(card).getByText('甲')).toBeInTheDocument();
+    // Hidden things have no accessible name, so by its text.
+    expect(within(card).getByText('標記為難題')).toBeInTheDocument();
+    expect(within(card).queryByText('申論題')).not.toBeInTheDocument();
+  });
+
   it('still says the question is missing once nothing is on its way', () => {
     crossPapers('ready');
 

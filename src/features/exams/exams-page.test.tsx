@@ -58,6 +58,20 @@ const environmentRef = {
   year: 114,
   questionNumber: 1,
 } as const;
+const environmentWrittenRef = {
+  id: 'env-114-written-01',
+  format: 'written',
+  subject: 'env',
+  year: 114,
+  questionNumber: 1,
+} as const;
+const law113Ref = {
+  id: 'law-113-01',
+  format: 'multiple-choice',
+  subject: 'law',
+  year: 113,
+  questionNumber: 1,
+} as const;
 const writtenQuestion: Question = {
   ...question('structure-114-written-01', 'structure'),
   format: 'written',
@@ -65,18 +79,27 @@ const writtenQuestion: Question = {
   answerKey: { kind: 'written' },
 };
 
-function renderPage(
-  props: Partial<React.ComponentProps<typeof ExamsPage>> = {},
-) {
-  return render(
+function page(props: Partial<React.ComponentProps<typeof ExamsPage>> = {}) {
+  return (
     <ToastProvider>
       <AppStateProvider>
         <CloudSyncProvider>
           <ExamsPage questions={[lawQuestion]} {...props} />
         </CloudSyncProvider>
       </AppStateProvider>
-    </ToastProvider>,
+    </ToastProvider>
   );
+}
+
+function renderPage(
+  props: Partial<React.ComponentProps<typeof ExamsPage>> = {},
+) {
+  return render(page(props));
+}
+
+/** The card that waits for a question no body has shown yet, under the selector. */
+function pendingCard() {
+  return document.querySelector('[data-loading]');
 }
 
 afterEach(cleanup);
@@ -146,9 +169,12 @@ describe('ExamsPage question loading', () => {
 
     renderPage({ questions: [lawQuestion, environmentRef], questionBankStatus: 'loading' });
 
+    // The page under the selector, with a card in place of the question.
+    expect(screen.getByRole('group', { name: '科目' })).toBeInTheDocument();
+    expect(pendingCard()).toHaveTextContent('正在載入題目內容…');
     expect(
-      screen.getByRole('heading', { name: '正在載入題目' }),
-    ).toBeInTheDocument();
+      screen.queryByRole('heading', { name: '正在載入題目' }),
+    ).not.toBeInTheDocument();
     expect(screen.queryByText('law-114-01 題幹')).not.toBeInTheDocument();
     expect(
       screen.queryByRole('button', { name: '標記為難題' }),
@@ -168,9 +194,9 @@ describe('ExamsPage question loading', () => {
       onRetryQuestionBank: retry,
     });
 
-    expect(
-      screen.getByRole('heading', { name: '題庫載入失敗' }),
-    ).toBeInTheDocument();
+    const heading = screen.getByRole('heading', { name: '題目暫時無法顯示' });
+    expect(pendingCard()).toContainElement(heading);
+    expect(screen.getByRole('tablist', { name: '題目分頁' })).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: '重新載入' }));
     expect(retry).toHaveBeenCalledOnce();
     expect(screen.queryByText('law-114-01 題幹')).not.toBeInTheDocument();
@@ -205,37 +231,80 @@ describe('ExamsPage question loading', () => {
   });
 
   it('gives subjects, papers and tiles real addresses, and stays on the page for a plain click', () => {
-    renderPage({ questions: [lawQuestion, secondLawQuestion] });
+    router.query = { slug: examsSlug(secondLawQuestion.id) };
+    renderPage({ questions: [lawQuestion, secondLawQuestion, environmentRef] });
 
+    // The subject and year tiles link the subject and paper pages, which a new tab opens.
     expect(screen.getByRole('link', { name: /建築環境控制/ })).toHaveAttribute('href', '/exams/env');
     expect(screen.getByRole('link', { name: '114 年' })).toHaveAttribute('href', '/exams/law/114');
     const tile = within(screen.getByRole('group', { name: '題號' })).getByRole('link', {
-      name: '第 2 題',
+      name: '第 1 題',
     });
-    expect(tile).toHaveAttribute('href', '/exams/law/114/2');
+    expect(tile).toHaveAttribute('href', '/exams/law/114/1');
 
     expect(fireEvent.click(tile)).toBe(false);
     expect(router.replace).toHaveBeenLastCalledWith(
-      { pathname: '/exams/[[...slug]]', query: { slug: ['law', '114', '2'] } },
+      { pathname: '/exams/[[...slug]]', query: { slug: ['law', '114', '1'] } },
       undefined,
       { shallow: true, scroll: false },
     );
     expect(router.push).not.toHaveBeenCalled();
 
-    // The subject and year tiles open their overviews, as their addresses say.
+    // A plain click opens the paper, or the subject's newest one, at its first question.
     expect(fireEvent.click(screen.getByRole('link', { name: '114 年' }))).toBe(false);
     expect(router.push).toHaveBeenLastCalledWith(
-      { pathname: '/exams/[[...slug]]', query: { slug: ['law', '114'] } },
+      { pathname: '/exams/[[...slug]]', query: { slug: ['law', '114', '1'] } },
       undefined,
       levelMove,
     );
     fireEvent.click(screen.getByRole('link', { name: /營建法規與實務/ }));
+    expect(router.push).toHaveBeenCalledTimes(2);
     expect(router.push).toHaveBeenLastCalledWith(
-      { pathname: '/exams/[[...slug]]', query: { slug: ['law'] } },
+      { pathname: '/exams/[[...slug]]', query: { slug: ['law', '114', '1'] } },
       undefined,
       levelMove,
     );
     expect(router.replace).toHaveBeenCalledOnce();
+  });
+
+  it('keeps the open tab when another year opens at its first question', () => {
+    router.query = { slug: examsSlug(lawQuestion.id), tab: 'discussion' };
+    renderPage({ questions: [lawQuestion, law113Ref] });
+
+    fireEvent.click(
+      within(screen.getByRole('group', { name: '年度' })).getByRole('link', { name: '113 年' }),
+    );
+    expect(router.push).toHaveBeenLastCalledWith(
+      {
+        pathname: '/exams/[[...slug]]',
+        query: { slug: ['law', '113', '1'], tab: 'discussion' },
+      },
+      undefined,
+      levelMove,
+    );
+  });
+
+  it('opens a paper with written questions at 申論第 1 題', () => {
+    renderPage({ questions: [lawQuestion, environmentRef, environmentWrittenRef] });
+
+    fireEvent.click(screen.getByRole('link', { name: /建築環境控制/ }));
+    expect(router.push).toHaveBeenLastCalledWith(
+      { pathname: '/exams/[[...slug]]', query: { slug: ['env', '114', 'written-1'] } },
+      undefined,
+      levelMove,
+    );
+  });
+
+  it('only folds the selector for a tile naming the address on screen', () => {
+    renderPage({ questions: [lawQuestion, secondLawQuestion] });
+    const summary = screen.getByRole('button', { name: '展開科目與年度' });
+
+    fireEvent.click(summary);
+    expect(fireEvent.click(screen.getByRole('link', { name: '114 年' }))).toBe(false);
+    expect(summary).toHaveAttribute('aria-expanded', 'false');
+    fireEvent.click(screen.getByRole('link', { name: /營建法規與實務/ }));
+    expect(router.push).not.toHaveBeenCalled();
+    expect(router.replace).not.toHaveBeenCalled();
   });
 
   it('leaves a click with a modifier key to the browser, for a new tab', () => {
@@ -277,7 +346,15 @@ describe('ExamsPage question loading', () => {
     expect(screen.queryByRole('heading', { name: '第 1 題' })).not.toBeInTheDocument();
     expect(screen.queryByRole('radiogroup')).not.toBeInTheDocument();
     expect(screen.queryByRole('tablist')).not.toBeInTheDocument();
-    expect(screen.queryByRole('group', { name: '科目' })).not.toBeInTheDocument();
+    // The selector a question has, with this paper chosen.
+    expect(
+      within(screen.getByRole('group', { name: '科目' })).getByRole('link', {
+        name: /營建法規與實務/,
+      }),
+    ).toHaveAttribute('aria-current', 'true');
+    expect(
+      within(screen.getByRole('group', { name: '年度' })).getByRole('link', { name: '114 年' }),
+    ).toHaveAttribute('aria-current', 'true');
     expect(router.replace).not.toHaveBeenCalled();
 
     fireEvent.click(first);
@@ -294,37 +371,51 @@ describe('ExamsPage question loading', () => {
       const view = renderPage({ questions: [lawQuestion, environmentQuestion] });
       expect(screen.queryByText('law-114-01 題幹')).not.toBeInTheDocument();
       expect(screen.queryByRole('button', { name: '看解答' })).not.toBeInTheDocument();
+      const subjectTiles = within(screen.getByRole('group', { name: '科目' }));
+      const yearTiles = within(screen.getByRole('group', { name: '年度' }));
+      if (!slug) {
+        // No subject chosen yet, so no year can be.
+        expect(
+          subjectTiles.getAllByRole('link').filter((tile) => tile.hasAttribute('aria-current')),
+        ).toEqual([]);
+        expect(yearTiles.queryAllByRole('link')).toEqual([]);
+        expect(yearTiles.getAllByRole('button')).toHaveLength(15);
+        for (const year of yearTiles.getAllByRole('button')) expect(year).toBeDisabled();
+      } else {
+        expect(subjectTiles.getByRole('link', { name: /營建法規與實務/ })).toHaveAttribute(
+          'aria-current',
+          'true',
+        );
+        const year = yearTiles.getByRole('link', { name: '114 年' });
+        expect(year).toHaveAttribute('href', '/exams/law/114');
+        expect(year).not.toHaveAttribute('aria-current');
+      }
       view.unmount();
     }
   });
 
-  it('leads a question back to its paper, and a plain click stays on the page', () => {
-    render(
-      <ToastProvider>
-        <AppStateProvider>
-          <CloudSyncProvider>
-            <ExamsLayout>
-              <ExamsPage questions={[lawQuestion, secondLawQuestion]} />
-            </ExamsLayout>
-          </CloudSyncProvider>
-        </AppStateProvider>
-      </ToastProvider>,
-    );
+  it('draws no way back at any address', () => {
+    for (const slug of [[], ['law'], ['law', '114'], examsSlug(lawQuestion.id)]) {
+      router.query = slug.length ? { slug } : {};
+      const view = render(
+        <ToastProvider>
+          <AppStateProvider>
+            <CloudSyncProvider>
+              <ExamsLayout>
+                <ExamsPage questions={[lawQuestion, secondLawQuestion]} />
+              </ExamsLayout>
+            </CloudSyncProvider>
+          </AppStateProvider>
+        </ToastProvider>,
+      );
 
-    const back = screen.getByRole('link', { name: '返回 114 年營建法規與實務考古題' });
-    expect(back).toHaveAttribute('href', '/exams/law/114');
-    expect(
-      back.compareDocumentPosition(screen.getByRole('button', { name: '展開科目與年度' })) &
-        Node.DOCUMENT_POSITION_FOLLOWING,
-    ).toBeTruthy();
-    expect(fireEvent.click(back)).toBe(false);
-    expect(router.push).toHaveBeenLastCalledWith(
-      { pathname: '/exams/[[...slug]]', query: { slug: ['law', '114'] } },
-      undefined,
-      levelMove,
-    );
-    expect(fireEvent.click(back, { ctrlKey: true })).toBe(true);
-    expect(router.push).toHaveBeenCalledOnce();
+      expect(screen.queryByRole('link', { name: /^返回/ })).not.toBeInTheDocument();
+      // The selector's summary comes first, before anything else that can be used.
+      expect(view.container.querySelector('a[href], button')).toBe(
+        screen.getByRole('button', { name: '展開科目與年度' }),
+      );
+      view.unmount();
+    }
   });
 
   it('keeps an unsent post and a chosen answer through a trip to the paper and back', () => {
@@ -364,15 +455,30 @@ describe('ExamsPage question loading', () => {
   });
 
   it('moves to a subject whose paper has not loaded yet', () => {
-    renderPage({ questions: [lawQuestion, environmentRef] });
+    router.query = {};
+    const view = renderPage({ questions: [lawQuestion, environmentRef] });
+    const summary = screen.getByRole('button', { name: '展開科目與年度' });
 
     fireEvent.click(screen.getByRole('link', { name: /建築環境控制/ }));
-
     expect(router.push).toHaveBeenCalledWith(
-      { pathname: '/exams/[[...slug]]', query: { slug: ['env'] } },
+      { pathname: '/exams/[[...slug]]', query: { slug: ['env', '114', '1'] } },
       undefined,
       levelMove,
     );
+
+    // There, the page is all there with the selector in place, and a card waits for the question.
+    router.query = { slug: ['env', '114', '1'] };
+    view.rerender(
+      page({ questions: [lawQuestion, environmentRef], questionBankStatus: 'loading' }),
+    );
+    expect(screen.getByRole('button', { name: '展開科目與年度' })).toBe(summary);
+    expect(summary).toHaveTextContent('建築環境控制・114 年');
+    expect(screen.getByRole('tablist', { name: '題目分頁' })).toBeInTheDocument();
+    expect(pendingCard()).toHaveTextContent('正在載入題目內容…');
+    expect(screen.queryByText('law-114-01 題幹')).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('heading', { name: '正在載入題目' }),
+    ).not.toBeInTheDocument();
   });
 
   it('waits for the router before showing the question in the address', () => {
@@ -383,6 +489,7 @@ describe('ExamsPage question loading', () => {
     expect(
       screen.getByRole('heading', { name: '正在載入題目' }),
     ).toBeInTheDocument();
+    expect(screen.getByRole('group', { name: '科目' })).toBeInTheDocument();
     expect(screen.queryByText('law-114-01 題幹')).not.toBeInTheDocument();
   });
 
@@ -718,10 +825,76 @@ describe('ExamsPage question loading', () => {
     fireEvent.click(summary);
     fireEvent.click(within(selector).getByRole('link', { name: /建築環境控制/ }));
     expect(summary).toHaveAttribute('aria-expanded', 'false');
+    // The chosen tile folds away; the keyboard waits on the summary that opens it again.
+    expect(summary).toHaveFocus();
     expect(router.push).toHaveBeenLastCalledWith(
-      { pathname: '/exams/[[...slug]]', query: { slug: ['env'] } },
+      { pathname: '/exams/[[...slug]]', query: { slug: ['env', '114', '1'] } },
       undefined,
       levelMove,
     );
+  });
+
+  it('starts the selector open where choosing is the whole task', () => {
+    for (const [slug, text, expanded] of [
+      [[], '選擇科目', 'true'],
+      [['law'], '營建法規與實務・選擇年度', 'true'],
+      [['law', '114'], '營建法規與實務・114 年', 'false'],
+    ] as const) {
+      router.query = slug.length ? { slug: [...slug] } : {};
+      const view = renderPage({ questions: [lawQuestion, environmentQuestion] });
+      const summary = screen.getByRole('button', { name: '展開科目與年度' });
+      expect(summary).toHaveTextContent(text);
+      expect(summary).toHaveAttribute('aria-expanded', expanded);
+      // The reader's own toggle holds on this address.
+      fireEvent.click(summary);
+      expect(summary).toHaveAttribute('aria-expanded', expanded === 'true' ? 'false' : 'true');
+      view.unmount();
+    }
+  });
+
+  it('starts every address at its own default after a choice, Back included', () => {
+    router.query = {};
+    const view = renderPage({ questions: [lawQuestion, environmentRef] });
+    const summary = screen.getByRole('button', { name: '展開科目與年度' });
+    expect(summary).toHaveAttribute('aria-expanded', 'true');
+
+    fireEvent.click(screen.getByRole('link', { name: /建築環境控制/ }));
+    router.query = { slug: ['env', '114', '1'] };
+    view.rerender(page({ questions: [lawQuestion, environmentRef] }));
+    expect(summary).toHaveAttribute('aria-expanded', 'false');
+
+    // Back to the board: open again, where choosing is the whole task.
+    router.query = {};
+    view.rerender(page({ questions: [lawQuestion, environmentRef] }));
+    expect(summary).toHaveAttribute('aria-expanded', 'true');
+
+    // A fold made on the board stays there; a subject starts open on its own.
+    fireEvent.click(summary);
+    expect(summary).toHaveAttribute('aria-expanded', 'false');
+    router.query = { slug: ['law'] };
+    view.rerender(page({ questions: [lawQuestion, environmentRef] }));
+    expect(summary).toHaveAttribute('aria-expanded', 'true');
+  });
+
+  it('keeps the reader’s toggle while reading on through the questions', () => {
+    const questions = [lawQuestion, secondLawQuestion];
+    const view = renderPage({ questions });
+    const summary = screen.getByRole('button', { name: '展開科目與年度' });
+    fireEvent.click(summary);
+    expect(summary).toHaveAttribute('aria-expanded', 'true');
+
+    // 下一題 replaces the address; the selector stays open, so nothing jumps under the finger.
+    fireEvent.click(screen.getAllByRole('button', { name: '下一題' })[0]);
+    router.query = { slug: examsSlug(secondLawQuestion.id) };
+    view.rerender(page({ questions }));
+    expect(summary).toHaveAttribute('aria-expanded', 'true');
+
+    // A paper is another level: it starts folded, and so does the question after it.
+    router.query = { slug: ['law', '114'] };
+    view.rerender(page({ questions }));
+    expect(summary).toHaveAttribute('aria-expanded', 'false');
+    router.query = { slug: examsSlug(lawQuestion.id) };
+    view.rerender(page({ questions }));
+    expect(summary).toHaveAttribute('aria-expanded', 'false');
   });
 });

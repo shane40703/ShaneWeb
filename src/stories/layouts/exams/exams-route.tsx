@@ -15,7 +15,8 @@ const prerenderedQuestions = fixtureSubjectQuestions(allSubjectIds[0]);
 const fixtureRefs = questionRefs(buildPaperIndex(fixtureQuestions));
 
 /**
- * 照 src/pages/exams/[[...slug]].tsx 組出考古題討論版頁：外面是「返回」那一層（ExamsLayout），
+ * 照 src/pages/exams/[[...slug]].tsx 組出考古題討論版頁：外面是 ExamsLayout（不畫「返回」，
+ * 只負責上一頁、下一頁的捲動位置，並記住側欄要回到的位置），
  * 範例題庫的每一題先只有題號，預先產生的法規題目與 useSubjectQuestions 下載的所有科目
  * （Storybook 由範例題庫回應）有內容，用題目 id 合併後交給 ExamsPage。
  * 不給 props 時跟網站一樣；`bank` 用來看題庫下載中、下載失敗、完全沒有題目的畫面。
@@ -30,7 +31,7 @@ export function ExamsRoute({
   bank?: 'loaded' | 'loading' | 'error' | 'empty';
   /** 取代題庫中同 id 的題目，例如加上內建詳解或改成示範題。 */
   questionOverrides?: readonly Question[];
-  /** 「題庫載入失敗」的重新載入按鈕（bank 為 loaded 時用網站本身的重試）。 */
+  /** 題目卡片「題目暫時無法顯示」的重新載入按鈕（bank 為 loaded 時用網站本身的重試）。 */
   onRetryQuestionBank?: () => void;
 }) {
   const loaded = useSubjectQuestions(bank === 'loaded' ? allSubjectIds : []);

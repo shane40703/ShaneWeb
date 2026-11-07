@@ -19,13 +19,13 @@ test.describe('what a search engine reads', () => {
       'name="description" content="114 年建築師考試營建法規與實務第 3 題：',
     );
     expect(html).toContain('href="/exams/law/114/4"');
+    // The selector's tiles link the subject and paper pages, its own paper among them.
     expect(html).toContain('href="/exams/env"');
     expect(html).toContain('href="/exams/law/113"');
-    // The way up to its paper.
     expect(html).toContain('href="/exams/law/114"');
-    expect(html).toMatch(
-      /<a [^>]*href="\/exams\/law\/114"[^>]*>(?:(?!<\/a>)[\s\S])*返回 114 年營建法規與實務考古題<\/a>/,
-    );
+    // No way back; the sidebar links the board from every page.
+    expect(html).not.toMatch(/返回 ?\d+ 年/);
+    expect(html).toContain('href="/exams"');
   });
 
   test('no directory address carries a question', async ({ request }) => {
@@ -62,10 +62,17 @@ test.describe('what a search engine reads', () => {
       expect(pages[path], path).toContain('"initialQuestion":null');
     }
 
+    // Every overview links the board (the sidebar) and the subjects (the selector).
+    for (const path of Object.keys(pages)) {
+      expect(pages[path], path).toContain('href="/exams"');
+      expect(pages[path], path).toContain('href="/exams/env"');
+      expect(pages[path], path).not.toContain('返回');
+    }
     expect(pages['/exams']).toContain('href="/exams/law"');
     expect(pages['/exams']).toMatch(/name="description" content="[^"]+"/);
+    // No subject is chosen on the board, so it links no paper.
+    expect(pages['/exams']).not.toContain('href="/exams/law/100"');
     expect(pages['/exams/law']).toContain('href="/exams/law/100"');
-    expect(pages['/exams/law']).toContain('返回考古題討論版');
     expect(pages['/exams/law/114']).toContain('href="/exams/law/114/1"');
     expect(pages['/exams/law/114']).toContain('href="/exams/law/114/80"');
     expect(pages['/exams/law/114']).toContain('建築技術規則');

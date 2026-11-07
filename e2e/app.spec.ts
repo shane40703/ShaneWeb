@@ -49,12 +49,23 @@ test('question-bank failures never expose an unrelated editable question', async
       .getByRole('group', { name: '年度' })
       .getByRole('link', { name: '113 年' })
       .click({ timeout: 1000 });
-    await expect(page).toHaveURL(/\/exams\/env\/113$/, { timeout: 1000 });
+    await expect(page).toHaveURL(/\/exams\/env\/113\/written-1$/, { timeout: 1000 });
   }).toPass();
-  // The paper's page still lists every question; only their topics wait for the paper.
-  await expect(page.getByRole('link', { name: /^申論第 1 題( |$)/ })).toBeVisible();
-  await expect(page.getByText('考點暫時無法載入。')).toBeVisible();
+  // The year opens its first question, whose paper cannot come: the card says so, under the
+  // selector, which stays.
+  await expect(page.getByRole('heading', { name: '題目暫時無法顯示' })).toBeVisible();
   await expect(page.getByRole('button', { name: '重新載入' })).toBeVisible();
+  await expect(page.getByRole('region', { name: '題目選擇' })).toBeVisible();
+  // The question that was on screen waits hidden under the notice: none of it can be answered
+  // or marked.
+  await expect(page.getByRole('radio')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: '標記為難題' })).toHaveCount(0);
+
+  // A paper's page brings its own topics, so it lists every question with them although no
+  // paper can download. (Topics waiting for a paper are covered by the hub's unit test.)
+  await page.goto('/exams/env/113');
+  await expect(page.getByRole('link', { name: /^申論第 1 題 \S/ })).toBeVisible();
+  await expect(page.getByText('考點暫時無法載入。')).toHaveCount(0);
   await page.getByRole('link', { name: /^第 1 題( |$)/ }).click();
   await expect(page).toHaveURL(/\/exams\/env\/113\/1$/);
   await expect(

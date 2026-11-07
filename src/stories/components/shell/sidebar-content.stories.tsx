@@ -37,7 +37,8 @@ const inSidebar: Decorator = (Story) => (
  * 寬度 800px 以下網站改用抽屜選單，所以固定用筆電寬度。
  *
  * 畫面上可以操作看到：點連結換成那一頁的目前頁面標示（「設定」在網站上是開啟設定視窗，
- * 只記錄在 Actions 面板）。Controls 的 pathname 也跟著更新。
+ * 只記錄在 Actions 面板）。Controls 的 pathname 也跟著更新。「考古題討論版」連到 /exams，
+ * 在網站上直接點會回到上次在考古題討論版看的那一頁（第一次是 114 年營建法規與實務第 1 題）。
  *
  * 手機抽屜裡的側欄（項目較高）只在手機寬度出現，看 `Components/基礎 UI/SideDrawer`，或
  * `Layouts/網站外框/側欄與頂部列` 切到手機寬度。

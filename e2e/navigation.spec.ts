@@ -35,7 +35,8 @@ test('navigation lists only the top-level pages, and returns home via the brand'
     personal.label,
   ]);
   await expect(links.nth(0)).toHaveAttribute('href', '/practice');
-  await expect(links.nth(1)).toHaveAttribute('href', '/exams/law/114/1');
+  // A plain click returns to the last place in 考古題討論版 (exams-last-place.spec.ts).
+  await expect(links.nth(1)).toHaveAttribute('href', '/exams');
   await expect(links.nth(2)).toHaveAttribute('href', '/resources');
   await expect(links.nth(3)).toHaveAttribute('href', '/personal');
   await expect(nav.getByRole('button').filter({ hasNotText: '加入主畫面' })).toHaveCount(0);

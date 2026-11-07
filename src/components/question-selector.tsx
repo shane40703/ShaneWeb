@@ -32,8 +32,10 @@ export function QuestionSelector({
   action,
   ariaLabel,
 }: {
-  subjectId: SubjectId;
-  year: SelectorYear;
+  /** Unset where no subject is chosen yet, such as 考古題討論版 itself. */
+  subjectId?: SubjectId;
+  /** Unset where no year is chosen yet, such as a subject's page. */
+  year?: SelectorYear;
   yearOptions: readonly SelectorYearOption[];
   onSubjectChange: (subjectId: SubjectId) => void;
   onYearChange: (year: SelectorYear) => void;

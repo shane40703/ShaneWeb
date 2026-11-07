@@ -1,14 +1,7 @@
 import { useRouter, type NextRouter } from 'next/router';
 import { type ReactNode, useEffect, useLayoutEffect, useRef } from 'react';
-import { HubLayout } from '@/components/layout/hub-layout';
-import {
-  examsHref,
-  examsHubName,
-  examsParent,
-  examsPlace,
-  examsPlaceSlug,
-  examsQuery,
-} from '@/lib/question-path';
+import { examsQuery, type ExamsTab } from '@/lib/question-path';
+import { useRememberExamsPlace } from './exams-last-place';
 
 /** What Next keeps in `history.state` for an entry it made; only the parts read here. */
 interface NextHistoryState {
@@ -30,13 +23,18 @@ function scrollToY(top: number) {
 }
 
 /**
- * A move to another level (an overview's rows, 返回, the subject and year tiles): a new history
- * entry, from the top of the page, without loading the page again. The page scrolls itself
- * once the new level shows: asked to, Next would also scroll to the top on Back to the entry.
+ * A move to another paper or level (a paper's rows, the subject and year tiles): a new history
+ * entry, from the top of the page, without loading the page again; `tab` is the tab to open
+ * there. The page scrolls itself once the new place shows: asked to, Next would also scroll
+ * to the top on Back to the entry.
  */
-export function pushExamsPlace(router: NextRouter, slug: readonly string[]) {
+export function pushExamsPlace(
+  router: NextRouter,
+  slug: readonly string[],
+  tab: ExamsTab = 'question',
+) {
   void router
-    .push({ pathname: router.pathname, query: examsQuery(slug) }, undefined, {
+    .push({ pathname: router.pathname, query: examsQuery(slug, tab) }, undefined, {
       shallow: true,
       scroll: false,
     })
@@ -120,28 +118,14 @@ function useExamsScroll(router: NextRouter) {
 }
 
 /**
- * 考古題討論版's way back, one level up from every address below /exams: a question to its
- * paper, a paper to its subject, a subject to the board. The board itself has none (the sidebar
- * leads there). The page under it keeps its position at every address, so it is never
- * remounted by a move.
+ * 考古題討論版 at every address under /exams. It draws no way back: every address starts with
+ * the same subject and year selector, which the page puts at the top. It puts each entry back
+ * where the reader left it, and remembers the address on screen for the sidebar. It renders
+ * nothing of its own, so the page under it is never remounted by a move.
  */
 export function ExamsLayout({ children }: { children: ReactNode }) {
   const router = useRouter();
-  const parent = examsParent(examsPlace(router.query.slug));
   useExamsScroll(router);
-
-  return (
-    <HubLayout
-      hub={
-        parent
-          ? { href: examsHref(examsPlaceSlug(parent)), label: examsHubName(parent) }
-          : null
-      }
-      onFollow={() => {
-        if (parent) pushExamsPlace(router, examsPlaceSlug(parent));
-      }}
-    >
-      {children}
-    </HubLayout>
-  );
+  useRememberExamsPlace(router);
+  return <>{children}</>;
 }

@@ -1,22 +1,26 @@
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import {
   IconBooks, IconBuildingSkyscraper, IconDeviceMobilePlus, IconFileText, IconBrandThreads, IconSettings, IconShield,
 } from '@tabler/icons-react';
+import { isPlainClick } from '@/components/in-page-link';
+import { examsReturnHref } from '@/features/exams/exams-last-place';
 import { personalHub, personalPages } from '@/features/personal/personal-pages';
-import { examsHref, examsHubName, examsPlace } from '@/lib/question-path';
-import { subjects, years } from '@/question-bank/catalog';
+import { examsHubName, examsPlace } from '@/lib/question-path';
 import { practiceHub, practicePages } from '@/features/practice/practice-pages';
 import { resourcePages, resourcesHub } from '@/features/resources/resource-pages';
 import styles from './app-shell.module.css';
 
-/** `href` is the section the item stays current in; `to`, when set, is where a click lands in it. */
-interface NavigationLinkItem { href: string; to?: string; label: string; icon: typeof IconFileText; pages?: readonly { href: string }[] }
-// 考古題討論版 opens on the newest 法規 paper's first question, as it did before it had overview
-// pages; /exams itself, the list of subjects, is the top of its 返回 links.
-const examsStart = examsHref([subjects[0].id, String(years[0]), '1']);
+/**
+ * `href` is the section the item stays current in, and what it links for search engines and new
+ * tabs; `land`, when set, is where a plain click goes instead, read at the click.
+ */
+interface NavigationLinkItem { href: string; land?: () => string; label: string; icon: typeof IconFileText; pages?: readonly { href: string }[] }
+// Every page links 考古題討論版's board, /exams; a plain click returns to the place the reader
+// last saw in it, or on a first visit opens the newest 法規 paper's first question.
 const primaryNavigation: readonly NavigationLinkItem[] = [
   { href: practiceHub.href, label: practiceHub.label, icon: practiceHub.icon },
-  { href: '/exams', to: examsStart, label: '考古題討論版', icon: IconBooks },
+  { href: '/exams', land: examsReturnHref, label: '考古題討論版', icon: IconBooks },
   { href: resourcesHub.href, label: resourcesHub.label, icon: resourcesHub.icon },
   // Its pages keep their own top-level URLs, so the hub stays current on them by name.
   { href: personalHub.href, label: personalHub.label, icon: personalHub.icon, pages: personalPages },
@@ -66,10 +70,21 @@ interface NavigationProps {
 }
 
 function NavigationLink({ item, pathname, onNavigate, onOpenSettings }: NavigationProps & { item: NavigationLinkItem }) {
-  return <Link href={item.to ?? item.href} className={styles.navItem}
+  const router = useRouter();
+  const { land } = item;
+  // Fetched ahead as the link itself would be; where it lands is read again at the click.
+  const prefetch = land ? () => void router.prefetch(land()) : undefined;
+  return <Link href={item.href} className={styles.navItem}
     aria-current={isCurrent(pathname, item) ? 'page' : undefined}
+    onMouseEnter={prefetch} onTouchStart={prefetch} onFocus={prefetch}
     onClick={event => {
       if (item.href === '/settings' && onOpenSettings) { event.preventDefault(); onOpenSettings(); }
+      else if (land && isPlainClick(event)) {
+        event.preventDefault();
+        // Already in the section: the place on screen is the one it would return to. The
+        // sidebar's path, which a click away has already moved on, so this click takes it back.
+        if (!isCurrent(pathname, item)) void router.push(land());
+      }
       onNavigate?.();
     }}>
     <span className={styles.navSymbol} aria-hidden="true"><item.icon size={20} stroke={1.9} /></span>
