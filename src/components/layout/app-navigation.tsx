@@ -7,6 +7,7 @@ import { isPlainClick } from '@/components/in-page-link';
 import { examsReturnHref } from '@/features/exams/exams-last-place';
 import { personalHub, personalPages } from '@/features/personal/personal-pages';
 import { examsHubName, examsPlace } from '@/lib/question-path';
+import { SITE_NAME } from '@/lib/site';
 import { practiceHub, practicePages } from '@/features/practice/practice-pages';
 import { resourcePages, resourcesHub } from '@/features/resources/resource-pages';
 import styles from './app-shell.module.css';
@@ -59,7 +60,7 @@ export function navigationPageTitle(pathname: string, query?: { slug?: string | 
   if (pathname === EXAMS_ROUTE || (pathname === '/exams' && query?.slug)) return examsPageTitle(query?.slug);
   if (pathname === '/exams' || pathname.startsWith('/exams/')) return examsPageTitle(pathname.split('/').slice(2));
   const path = pathname === '/appearance' ? '/settings' : pathname;
-  return titledPages.find(item => isActive(path, item.href))?.label ?? '建築師考試';
+  return titledPages.find(item => isActive(path, item.href))?.label ?? SITE_NAME;
 }
 
 interface NavigationProps {
@@ -108,9 +109,9 @@ function Navigation(props: NavigationProps) {
 
 export function SidebarContent(props: NavigationProps) {
   return <div className={styles.sidebarInner}>
-    <Link href="/" className={styles.brand} aria-label="建築師考試首頁" onClick={() => props.onNavigate?.()}>
+    <Link href="/" className={styles.brand} aria-label={`${SITE_NAME}首頁`} onClick={() => props.onNavigate?.()}>
       <span className={styles.brandMark} aria-hidden="true"><IconBuildingSkyscraper size={25} stroke={1.9} /></span>
-      <span className={styles.brandCopy}><strong>建築師考試</strong><small>考古題練習平台</small></span>
+      <span className={styles.brandCopy}><strong>{SITE_NAME}</strong><small>建築師考試考古題練習平台</small></span>
     </Link>
     <Navigation {...props} />
   </div>;

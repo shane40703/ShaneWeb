@@ -1,10 +1,11 @@
 import { expect, test, type APIRequestContext } from '@playwright/test';
 
-const SITE_NAME = '建築師考試練習平台';
+const SITE_NAME = '建築師大集結';
 
 /**
- * Google names a site in its results from the home page, the WebSite data first, and shows the
- * icon its head links to. It reads the HTML the server sends, so these checks run no scripts.
+ * Google names a site in its results from the home page: the WebSite data first, then
+ * og:site_name, its title and other text it shows, such as the sidebar's brand, and shows the icon
+ * its head links to. It reads the HTML the server sends, so these checks run no scripts.
  */
 const website = {
   '@context': 'https://schema.org',
@@ -37,6 +38,23 @@ const siteNames = (head: string) =>
     attribute(match[0], 'content'),
   );
 
+const titles = (head: string) =>
+  [...head.matchAll(/<title\b[^>]*>([^<]*)<\/title>/g)].map((match) => match[1]);
+
+const homeScreenNames = (head: string) =>
+  [...head.matchAll(/<meta\b[^>]*\bname="apple-mobile-web-app-title"[^>]*>/g)].map(
+    (match) => attribute(match[0], 'content'),
+  );
+
+/** Every link to the home page, its accessible name and the text it shows. */
+const homeLinks = (html: string) =>
+  [...html.matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/g)]
+    .filter((match) => attribute(match[1], 'href') === '/')
+    .map((match) => ({
+      label: attribute(match[1], 'aria-label'),
+      text: match[2].replace(/<[^>]*>/g, ''),
+    }));
+
 test.describe('site name and icon', () => {
   test.beforeEach(({}, testInfo) =>
     test.skip(
@@ -59,6 +77,32 @@ test.describe('site name and icon', () => {
         [],
       );
       expect(siteNames(head)).toEqual([SITE_NAME]);
+    });
+  }
+
+  test('the home tab and the Home Screen icon carry the site name', async ({
+    request,
+  }) => {
+    const { head } = await htmlOf(request, '/');
+    expect(titles(head)).toEqual(['建築師大集結｜建築師考試考古題練習平台']);
+    expect(homeScreenNames(head)).toEqual([SITE_NAME]);
+    const response = await request.get('/manifest.webmanifest');
+    expect(response.status()).toBe(200);
+    expect(await response.json()).toMatchObject({
+      name: SITE_NAME,
+      short_name: SITE_NAME,
+    });
+  });
+
+  for (const path of ['/', ...innerPages]) {
+    test(`${path} shows the site name in the sidebar the server sends`, async ({
+      request,
+    }) => {
+      const { html } = await htmlOf(request, path);
+      expect(homeLinks(html)).toContainEqual({
+        label: `${SITE_NAME}首頁`,
+        text: `${SITE_NAME}建築師考試考古題練習平台`,
+      });
     });
   }
 

@@ -574,7 +574,7 @@ export function AppearanceSettings({ embedded = false }: { embedded?: boolean })
                 <div className={styles.previewBrand}>
                   <span aria-hidden="true">建</span>
                   <div>
-                    <strong>建築師考試</strong>
+                    <strong>建築師大集結</strong>
                     <small>ARCHITECT EXAM</small>
                   </div>
                 </div>

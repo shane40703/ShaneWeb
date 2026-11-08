@@ -41,7 +41,7 @@ describe('grouped app navigation', () => {
     expect(nav.children[2]).toHaveTextContent(/^歷屆試題資料集成$/);
     expect(nav.children[3]).toHaveTextContent(/^我的作答存摺$/);
     expect(screen.queryByRole('link', { name: '首頁' })).not.toBeInTheDocument();
-    expect(screen.getByRole('link', { name: '建築師考試首頁' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: '建築師大集結首頁' })).toHaveAttribute(
       'href',
       '/',
     );
@@ -197,7 +197,7 @@ describe('grouped app navigation', () => {
     expect(fireEvent.click(screen.getByRole('link', { name: '設定' }))).toBe(false);
     expect(onOpenSettings).toHaveBeenCalledOnce();
     expect(onNavigate).toHaveBeenCalledOnce();
-    const brand = screen.getByRole('link', { name: '建築師考試首頁' });
+    const brand = screen.getByRole('link', { name: '建築師大集結首頁' });
     brand.addEventListener('click', (event) => event.preventDefault());
     fireEvent.click(brand);
     expect(onNavigate).toHaveBeenCalledTimes(2);
@@ -266,7 +266,7 @@ describe('grouped app navigation', () => {
     ['/community', '社群連結'],
     ['/privacy', '隱私權政策'],
     ['/404', '找不到頁面'],
-    ['/unknown', '建築師考試'],
+    ['/unknown', '建築師大集結'],
   ])('preserves the topbar title for %s', (pathname, title) => {
     expect(navigationPageTitle(pathname)).toBe(title);
   });
@@ -292,6 +292,6 @@ describe('grouped app navigation', () => {
     '/report',
     '/questions/law/114/01',
   ])('names no removed page in the topbar: %s', (pathname) => {
-    expect(navigationPageTitle(pathname)).toBe('建築師考試');
+    expect(navigationPageTitle(pathname)).toBe('建築師大集結');
   });
 });

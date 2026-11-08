@@ -7,7 +7,7 @@ const NOT_FOUND = '找不到頁面｜建築師考試';
  * shared link reads right before any script runs: the page's name, then the site's.
  */
 const titles: Record<string, string> = {
-  '/': '建築師考試考古題練習平台',
+  '/': '建築師大集結｜建築師考試考古題練習平台',
   '/practice': '每日練習｜建築師考試',
   '/practice/quiz': '每日抽題練習｜建築師考試',
   '/practice/law-cloze': '法規克漏字｜建築師考試',

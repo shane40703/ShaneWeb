@@ -3,7 +3,7 @@ import Head from 'next/head';
 import { Analytics } from '@/components/analytics';
 import { AppShell } from '@/components/layout/app-shell';
 import { Providers } from '@/components/providers';
-import { SITE_URL } from '@/lib/site';
+import { HOME_TITLE, SITE_NAME, SITE_URL } from '@/lib/site';
 import '@/styles/globals.css';
 
 export default function App({ Component, pageProps, router }: AppProps) {
@@ -12,10 +12,10 @@ export default function App({ Component, pageProps, router }: AppProps) {
   return (
     <>
       <Head>
-        <title>建築師考試考古題練習平台</title>
+        <title>{HOME_TITLE}</title>
         <meta
           name="description"
-          content="建築師考試考古題討論版、命題分析、詳解、筆記與難題整理。"
+          content={`${SITE_NAME}：建築師考試考古題討論版、命題分析、詳解、筆記與難題整理。`}
         />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         {hasOwnAddress ? (

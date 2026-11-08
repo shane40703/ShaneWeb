@@ -18,7 +18,7 @@ export default function Document() {
         {/* Last, as browsers that do not choose by size tend to take the last icon: its tab sizes are drawn for tabs. */}
         <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48" />
         <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
-        <meta name="apple-mobile-web-app-title" content="建築師考試" />
+        <meta name="apple-mobile-web-app-title" content={SITE_NAME} />
         <meta property="og:site_name" content={SITE_NAME} />
         <script
           dangerouslySetInnerHTML={{ __html: THEME_INITIALIZATION_SCRIPT }}

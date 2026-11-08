@@ -1,5 +1,5 @@
 ---
-name: 建築師考試練習平台
+name: 建築師大集結
 description: 米色方格紙上的建築師方格筆記本：奶油面板、一層墨線框、一支墨線藍，安靜不打擾。
 colors:
   rice-paper: "#eadfc9"
@@ -252,7 +252,7 @@ components:
     padding: "12px 12px 12px 14px"
 ---
 
-# Design System: 建築師考試練習平台
+# Design System: 建築師大集結
 
 ## Overview
 

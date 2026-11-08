@@ -54,7 +54,7 @@ test('navigation lists only the top-level pages, and returns home via the brand'
     0,
   );
   await openNavigation(page);
-  await page.getByRole('link', { name: '建築師考試首頁', exact: true }).click();
+  await page.getByRole('link', { name: '建築師大集結首頁', exact: true }).click();
   await expect(page).toHaveURL(/\/$/);
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('首頁');
   await expect(page.getByRole('dialog', { name: '主要功能', exact: true })).toHaveCount(
