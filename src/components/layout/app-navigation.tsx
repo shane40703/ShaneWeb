@@ -111,7 +111,7 @@ export function SidebarContent(props: NavigationProps) {
   return <div className={styles.sidebarInner}>
     <Link href="/" className={styles.brand} aria-label={`${SITE_NAME}首頁`} onClick={() => props.onNavigate?.()}>
       <span className={styles.brandMark} aria-hidden="true"><IconBuildingSkyscraper size={25} stroke={1.9} /></span>
-      <span className={styles.brandCopy}><strong>{SITE_NAME}</strong><small>建築師考試考古題練習平台</small></span>
+      <span className={styles.brandCopy}><strong>{SITE_NAME}</strong><small>考古題練習平台</small></span>
     </Link>
     <Navigation {...props} />
   </div>;

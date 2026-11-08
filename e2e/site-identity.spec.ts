@@ -101,7 +101,7 @@ test.describe('site name and icon', () => {
       const { html } = await htmlOf(request, path);
       expect(homeLinks(html)).toContainEqual({
         label: `${SITE_NAME}首頁`,
-        text: `${SITE_NAME}建築師考試考古題練習平台`,
+        text: `${SITE_NAME}考古題練習平台`,
       });
     });
   }
