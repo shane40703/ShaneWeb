@@ -1,4 +1,5 @@
 import { expect, test, type APIRequestContext } from '@playwright/test';
+import sharp from 'sharp';
 
 const SITE_NAME = '建築師大集結';
 
@@ -54,6 +55,18 @@ const homeLinks = (html: string) =>
       label: attribute(match[1], 'aria-label'),
       text: match[2].replace(/<[^>]*>/g, ''),
     }));
+
+/** The images inside an ICO, each with the size its directory claims. */
+const icoFrames = (ico: Buffer) =>
+  Array.from({ length: ico.readUInt16LE(4) }, (_, index) => {
+    const entry = 6 + 16 * index;
+    const offset = ico.readUInt32LE(entry + 12);
+    return {
+      width: ico[entry] || 256,
+      height: ico[entry + 1] || 256,
+      image: ico.subarray(offset, offset + ico.readUInt32LE(entry + 8)),
+    };
+  });
 
 test.describe('site name and icon', () => {
   test.beforeEach(({}, testInfo) =>
@@ -117,7 +130,11 @@ test.describe('site name and icon', () => {
       )
       .map((tag) => attribute(tag, 'href'));
     expect(hrefs).toEqual(
-      expect.arrayContaining(['/favicon.ico', '/icons/apple-touch-icon.png']),
+      expect.arrayContaining([
+        '/favicon.ico',
+        '/icons/favicon-192.png',
+        '/icons/apple-touch-icon.png',
+      ]),
     );
     for (const href of hrefs) {
       const response = await request.get(href!);
@@ -132,20 +149,15 @@ test.describe('site name and icon', () => {
     const ico = await response.body();
     expect(ico.readUInt16LE(0), 'reserved').toBe(0);
     expect(ico.readUInt16LE(2), 'type: icon').toBe(1);
-    const frames = Array.from({ length: ico.readUInt16LE(4) }, (_, index) => {
-      const entry = 6 + 16 * index;
-      const offset = ico.readUInt32LE(entry + 12);
-      const image = ico.subarray(offset, offset + ico.readUInt32LE(entry + 8));
-      return {
-        width: ico[entry] || 256,
-        height: ico[entry + 1] || 256,
-        // A PNG frame's own header must agree with its directory entry.
-        png: image.subarray(1, 4).toString('latin1') === 'PNG' && {
-          width: image.readUInt32BE(16),
-          height: image.readUInt32BE(20),
-        },
-      };
-    });
+    const frames = icoFrames(ico).map(({ width, height, image }) => ({
+      width,
+      height,
+      // A PNG frame's own header must agree with its directory entry.
+      png: image.subarray(1, 4).toString('latin1') === 'PNG' && {
+        width: image.readUInt32BE(16),
+        height: image.readUInt32BE(20),
+      },
+    }));
     expect(frames.toSorted((a, b) => a.width - b.width)).toEqual(
       [16, 32, 48].map((size) => ({
         width: size,
@@ -153,5 +165,36 @@ test.describe('site name and icon', () => {
         png: { width: size, height: size },
       })),
     );
+  });
+
+  test('tab and search-result icons are the building alone, nothing behind it', async ({
+    request,
+  }) => {
+    const ico = await (await request.get('/favicon.ico')).body();
+    const png = await (await request.get('/icons/favicon-192.png')).body();
+    for (const image of [...icoFrames(ico).map((frame) => frame.image), png]) {
+      const { data, info } = await sharp(image)
+        .ensureAlpha()
+        .raw()
+        .toBuffer({ resolveWithObject: true });
+      const pixel = (x: number, y: number) => {
+        const at = (y * info.width + x) * 4;
+        return [...data.subarray(at, at + 4)];
+      };
+      const last = info.width - 1;
+      for (const [x, y] of [
+        [0, 0],
+        [last, 0],
+        [0, last],
+        [last, last],
+      ]) {
+        expect(pixel(x, y)[3], `${info.width}px: corner ${x},${y} shows through`).toBe(0);
+      }
+      // The ground line under the building, in the sidebar's blue.
+      expect(
+        pixel(Math.floor(info.width / 2), Math.floor(info.height * 0.9)),
+        `${info.width}px: ground line`,
+      ).toEqual([49, 87, 186, 255]);
+    }
   });
 });

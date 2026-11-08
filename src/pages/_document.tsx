@@ -14,7 +14,8 @@ export default function Document() {
         <meta name="theme-color" content="#eadfc9" />
         {/* Safari ignores display_override, so "display": "browser" keeps its icon opening Safari, where this site's data and sign-in are; Chrome installs from display_override. */}
         <link rel="manifest" href="/manifest.webmanifest" />
-        <link rel="icon" href="/icons/icon-192.png" type="image/png" sizes="192x192" />
+        {/* Tab and search-result icons are the sidebar's building alone, with no tile; the Home Screen icons below keep theirs. */}
+        <link rel="icon" href="/icons/favicon-192.png" type="image/png" sizes="192x192" />
         {/* Last, as browsers that do not choose by size tend to take the last icon: its tab sizes are drawn for tabs. */}
         <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48" />
         <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />

@@ -1,4 +1,4 @@
-// Draws the Home Screen icons and favicon.ico from the sidebar's brand mark. The site has no logo yet.
+// Draws the Home Screen icons, favicon.ico and the search-result PNG from the sidebar's brand mark. The site has no logo yet.
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -23,8 +23,13 @@ const glyphPaths = [
 const glyphInkSize = 18;
 const glyphCentre = 12;
 const glyphStroke = 1.9;
+// Home Screen icons: the glyph in cream on a blue tile.
 const background = '#283f7d';
 const foreground = '#fef9f1';
+// Tab and search-result icons: the glyph alone, in the sidebar's blue (--primary, light theme), nothing behind it.
+const tabInk = '#3157ba';
+// With no tile the glyph fills the box as the sidebar's mark does; the pixel glyphs below span about as much.
+const tabGlyphShare = 0.8;
 
 // A maskable icon is cropped to any shape inside the central 80% circle, so its glyph is smaller.
 const icons = [
@@ -42,22 +47,30 @@ const tabGlyphs = {
   32: 'M4 26h25v3H4z M6 26V8l10-5h3v23h-3V6.35l-7 3.5V26z M19 9l8 5.33V26h-3V15.94l-5-3.33z M11 10h3v2h-3z M11 14h3v2h-3z M11 18h3v2h-3z M11 22h3v2h-3z',
 };
 
-function iconSvg(size, glyphShare) {
+const svg = (size, body) =>
+  `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">${body}</svg>`;
+
+function glyph(size, glyphShare, ink) {
   const scale = (size * glyphShare) / glyphInkSize;
   const offset = size / 2 - glyphCentre * scale;
   const paths = glyphPaths.map((d) => `<path d="${d}"/>`).join('');
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
-    <rect width="${size}" height="${size}" fill="${background}"/>
-    <g transform="translate(${offset} ${offset}) scale(${scale})" fill="none" stroke="${foreground}" stroke-width="${glyphStroke}" stroke-linecap="round" stroke-linejoin="round">${paths}</g>
-  </svg>`;
+  return `<g transform="translate(${offset} ${offset}) scale(${scale})" fill="none" stroke="${ink}" stroke-width="${glyphStroke}" stroke-linecap="round" stroke-linejoin="round">${paths}</g>`;
 }
 
-function tabIconSvg(size) {
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
-    <rect width="${size}" height="${size}" fill="${background}"/>
-    <path d="${tabGlyphs[size]}" fill="${foreground}"/>
-  </svg>`;
-}
+const iconSvg = (size, glyphShare) =>
+  svg(
+    size,
+    `<rect width="${size}" height="${size}" fill="${background}"/>${glyph(size, glyphShare, foreground)}`,
+  );
+
+// Sizes drawn in pixels use that drawing; the others scale the glyph.
+const tabIconSvg = (size) =>
+  svg(
+    size,
+    size in tabGlyphs
+      ? `<path d="${tabGlyphs[size]}" fill="${tabInk}"/>`
+      : glyph(size, tabGlyphShare, tabInk),
+  );
 
 // An ICO is a directory of images; modern readers take PNGs inside it.
 function ico(frames) {
@@ -88,16 +101,19 @@ for (const { file, size, glyphShare } of icons) {
 }
 
 // Browsers pick 16 or 32 for a tab by screen sharpness; 48 is the normal drawing.
-// The frames keep an alpha channel, as Windows expects of PNGs in an ICO, but the square fills it.
+// Around the glyph the frames are transparent, so they keep their alpha channel.
 const faviconFrames = await Promise.all(
   [16, 32, 48].map(async (size) => ({
     size,
-    png: await sharp(
-      Buffer.from(size in tabGlyphs ? tabIconSvg(size) : iconSvg(size, 0.62)),
-    )
+    png: await sharp(Buffer.from(tabIconSvg(size)))
       .ensureAlpha()
       .png()
       .toBuffer(),
   })),
 );
 await writeFile(path.join(publicDirectory, 'favicon.ico'), ico(faviconFrames));
+
+// Google wants a square of at least 48 beside its results, and browsers that take the largest icon get this one.
+await sharp(Buffer.from(tabIconSvg(192)))
+  .png()
+  .toFile(path.join(outputDirectory, 'favicon-192.png'));
