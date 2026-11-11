@@ -1,14 +1,6 @@
 import { useRouter } from 'next/router';
 import { type CSSProperties, useEffect, useRef, useState } from 'react';
-import {
-  IconAlertTriangle,
-  IconCloud,
-  IconCloudCheck,
-  IconDeviceFloppy,
-  IconLoader2,
-  IconLogout,
-  IconX,
-} from '@tabler/icons-react';
+import { IconAlertTriangle, IconDeviceFloppy, IconX } from '@tabler/icons-react';
 import { SideDrawer } from '@/components/ui/ui';
 import { useCloudSync } from '@/components/cloud-sync-provider';
 import {
@@ -20,6 +12,7 @@ import { SettingsPanel } from '@/features/settings/settings-panel';
 import { usePageScrollLock } from '@/lib/use-page-scroll-lock';
 import { useAppState } from '@/state/app-state';
 import { ThemeToggle } from './theme-toggle';
+import { CloudSyncCard } from './cloud-sync-card';
 import { navigationPageTitle, SidebarContent } from './app-navigation';
 import { HomeScreenGuide } from './home-screen-guide';
 import { RouteProgress, RouteSheet, staysOnPage, usePendingRoute } from './route-progress';
@@ -123,45 +116,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <IconDeviceFloppy size={15} stroke={2} aria-hidden="true" />
                 免登入・本機保存
               </span>
-            ) : cloud.user ? (
-              <button
-                type="button"
-                className={styles.cloudAccountButton}
-                onClick={() => void cloud.signOut()}
-                title={cloud.error || '按一下登出；作答紀錄已保留在雲端與本機'}
-              >
-                {cloud.status === 'syncing' ? (
-                  <IconLoader2 size={16} stroke={2} aria-hidden="true" />
-                ) : (
-                  <IconCloudCheck size={16} stroke={2} aria-hidden="true" />
-                )}
-                <span>
-                  {cloud.status === 'syncing'
-                    ? '同步中'
-                    : cloud.user.displayName || '已同步'}
-                </span>
-                <IconLogout size={14} stroke={2} aria-hidden="true" />
-              </button>
             ) : (
-              <div className={styles.cloudSignIn}>
-                <button
-                  type="button"
-                  className={styles.cloudAccountButton}
-                  onClick={() => void cloud.signIn()}
-                  disabled={cloud.status === 'syncing'}
-                  title={cloud.error || '登入後可跨裝置同步已完成的作答紀錄'}
-                >
-                  {cloud.status === 'syncing' ? (
-                    <IconLoader2 size={16} stroke={2} aria-hidden="true" />
-                  ) : (
-                    <IconCloud size={16} stroke={2} aria-hidden="true" />
-                  )}
-                  <span>{cloud.status === 'syncing' ? '登入中' : '同步作答'}</span>
-                </button>
-                {cloud.error ? (
-                  <span className={styles.cloudError} role="alert">{cloud.error}</span>
-                ) : null}
-              </div>
+              <CloudSyncCard />
             )}
           </div>
         </header>

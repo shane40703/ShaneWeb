@@ -77,7 +77,7 @@ function setSignInPending(pending: boolean) {
     if (pending) sessionStorage.setItem(SIGN_IN_PENDING_KEY, '1');
     else sessionStorage.removeItem(SIGN_IN_PENDING_KEY);
   } catch {
-    // Without storage the way back shows 同步作答 until Firebase answers.
+    // Without storage the way back shows 跨裝置同步 until Firebase answers.
   }
 }
 

@@ -226,19 +226,23 @@
 .cloudSignIn { position: relative; }
 .cloudError { width: min(330px, calc(100vw - 32px)); padding: 9px 11px; position: absolute; z-index: 20; top: calc(100% + 8px); right: 0; border: 1px solid var(--danger); border-radius: var(--radius-frame); background: var(--danger-soft); color: var(--danger); font-size: 12px; font-weight: 500; line-height: 1.5; }
 
-.cloudAccountButton:hover:not(:disabled) {
+.cloudAccountButton:hover,
+.cloudAccountButton[data-popup-open] {
   border-color: var(--primary);
   background: var(--primary-soft);
+}
+
+/* A long Google name stops short instead of pushing the page title aside. */
+.cloudAccountButton span {
+  max-width: 12em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .cloudAccountButton:focus-visible {
   outline: 2px solid var(--primary);
   outline-offset: 2px;
-}
-
-.cloudAccountButton:disabled {
-  cursor: wait;
-  opacity: 0.7;
 }
 
 .themeToggle {
@@ -386,6 +390,7 @@
     display: none;
   }
 
+  /* Only the leading cloud icon stays; the name and the chevron give way. */
   .cloudAccountButton span,
   .cloudAccountButton svg:last-child {
     display: none;

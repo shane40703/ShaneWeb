@@ -15,6 +15,7 @@ export const cloudModes = {
   'signed-in': '雲端：已登入',
   syncing: '雲端：同步中',
   error: '雲端：登入失敗',
+  'sync-error': '雲端：同步失敗',
 } as const;
 
 export type CloudMode = keyof typeof cloudModes;
@@ -26,7 +27,7 @@ const storyUser = {
 } as User;
 
 function cloudValue(mode: Exclude<CloudMode, 'local'>) {
-  const signedIn = mode === 'signed-in' || mode === 'syncing';
+  const signedIn = mode === 'signed-in' || mode === 'syncing' || mode === 'sync-error';
   return {
     user: signedIn ? storyUser : null,
     status:
@@ -34,10 +35,15 @@ function cloudValue(mode: Exclude<CloudMode, 'local'>) {
         ? ('synced' as const)
         : mode === 'signing-in' || mode === 'syncing'
           ? ('syncing' as const)
-          : mode === 'error'
+          : mode === 'error' || mode === 'sync-error'
             ? ('error' as const)
             : ('signed-out' as const),
-    error: mode === 'error' ? 'Google 登入視窗已關閉，尚未完成登入。' : '',
+    error:
+      mode === 'error'
+        ? 'Google 登入視窗已關閉，尚未完成登入。'
+        : mode === 'sync-error'
+          ? '無法連線到雲端，最新的紀錄還沒有同步。'
+          : '',
     signIn: fn(async () => undefined).mockName('cloud.signIn'),
     signOut: fn(async () => undefined).mockName('cloud.signOut'),
   };

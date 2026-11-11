@@ -60,7 +60,7 @@ function Probe() {
       <output aria-label="cloud status">{cloud.status}</output>
       <output aria-label="cloud error">{cloud.error}</output>
       <button type="button" onClick={() => void cloud.signIn()}>
-        同步作答
+        跨裝置同步
       </button>
     </>
   );
@@ -105,7 +105,7 @@ describe('signing in with Google', () => {
 
   it('sends the whole page to Google instead of opening a popup', async () => {
     await signedOut();
-    fireEvent.click(screen.getByRole('button', { name: '同步作答' }));
+    fireEvent.click(screen.getByRole('button', { name: '跨裝置同步' }));
     expect(mocks.signInWithRedirect).toHaveBeenCalledOnce();
     expect(status()).toHaveTextContent('syncing');
     expect(sessionStorage.getItem(PENDING_KEY)).toBe('1');
@@ -117,7 +117,7 @@ describe('signing in with Google', () => {
     );
     Object.defineProperty(navigator, 'standalone', { configurable: true, value: true });
     await signedOut();
-    fireEvent.click(screen.getByRole('button', { name: '同步作答' }));
+    fireEvent.click(screen.getByRole('button', { name: '跨裝置同步' }));
     expect(mocks.signInWithRedirect).toHaveBeenCalledOnce();
     expect(error()).toBeEmptyDOMElement();
   });
@@ -125,7 +125,7 @@ describe('signing in with Google', () => {
   it('explains why the page could not leave for Google', async () => {
     mocks.signInWithRedirect.mockRejectedValue({ code: 'auth/network-request-failed' });
     await signedOut();
-    fireEvent.click(screen.getByRole('button', { name: '同步作答' }));
+    fireEvent.click(screen.getByRole('button', { name: '跨裝置同步' }));
     await waitFor(() => expect(error()).toHaveTextContent('請檢查網路後重試'));
     expect(status()).toHaveTextContent('signed-out');
     expect(sessionStorage.getItem(PENDING_KEY)).toBeNull();
@@ -148,9 +148,9 @@ describe('signing in with Google', () => {
     expect(status()).toHaveTextContent('signed-out');
   });
 
-  it('goes back to 同步作答 when the browser restores the page left for Google', async () => {
+  it('goes back to 跨裝置同步 when the browser restores the page left for Google', async () => {
     await signedOut();
-    fireEvent.click(screen.getByRole('button', { name: '同步作答' }));
+    fireEvent.click(screen.getByRole('button', { name: '跨裝置同步' }));
     act(() => {
       window.dispatchEvent(pageshow(false));
     });
