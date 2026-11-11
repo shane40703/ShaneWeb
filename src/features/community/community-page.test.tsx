@@ -10,7 +10,7 @@ describe('CommunityPage', () => {
   it('shows both communities without requiring authentication, app state or a report form', () => {
     const { container } = render(<CommunityPage />);
     expect(screen.getByRole('heading', { name: '一起備考，也一起交流。' })).toBeVisible();
-    expect(screen.getByText('在 Threads 追蹤網站動態、交流備考心得；想一起把網站做得更好，歡迎加入 LINE 開源社群。')).toBeVisible();
+    expect(screen.getByText('在 Threads 追蹤網站動態；想交流考試內容、一起把網站做得更好，歡迎加入 LINE 社群。')).toBeVisible();
     expect(screen.getByText('@archi.exam_sup')).toBeVisible();
     expect(screen.getByText('建築師大集結開源討論群')).toBeVisible();
     expect(container.querySelector('form')).toBeNull();
@@ -24,10 +24,10 @@ describe('CommunityPage', () => {
     expect(cards).toHaveLength(2);
     const [threads, line] = cards;
     expect(threads).toHaveAccessibleName('Threads');
-    expect(line).toHaveAccessibleName('LINE 開源社群');
+    expect(line).toHaveAccessibleName('LINE 社群');
     expect(threads.getAttribute('aria-labelledby')).not.toBe(line.getAttribute('aria-labelledby'));
     expect(within(threads).getByRole('heading', { level: 3, name: 'Threads' })).toBeVisible();
-    expect(within(line).getByRole('heading', { level: 3, name: 'LINE 開源社群' })).toBeVisible();
+    expect(within(line).getByRole('heading', { level: 3, name: 'LINE 社群' })).toBeVisible();
 
     for (const text of [
       '嗨，我是 noki。',
@@ -37,14 +37,17 @@ describe('CommunityPage', () => {
     ]) expect(within(threads).getByText(text)).toBeVisible();
     expect(within(threads).queryByText(/告訴我你希望網站變得更好用/)).not.toBeInTheDocument();
 
-    for (const text of [
-      '這是建築師大集結的開源社群。',
-      '網站的程式碼是公開的，接下來要做什麼、怎麼做，都會在這裡討論。',
-      '對網站開發有興趣的人都歡迎加入，會不會寫程式都沒關係。可以一起規劃新功能、找出錯誤，也可以直接動手參與開發。',
-      '只是想許願功能或回報錯誤，也很歡迎進來說一聲。',
-      '掃描 QR Code，加入開源社群',
-      '使用手機瀏覽？直接點上方按鈕即可。',
-    ]) expect(within(line).getByText(text)).toBeVisible();
+    // The LINE card says what the community is for in exactly these four lines, as one list.
+    const items = within(line).getAllByRole('listitem');
+    expect(items.map(item => item.textContent)).toEqual([
+      '想要什麼新功能，進來許願',
+      '用的時候遇到錯誤，進來說一聲',
+      '對網站開發有興趣，一起來協作',
+      '交流考試內容，互相解惑',
+    ]);
+    expect(within(line).queryByText('這是建築師大集結的開源社群。')).not.toBeInTheDocument();
+    for (const text of ['掃描 QR Code，加入 LINE 社群', '使用手機瀏覽？直接點上方按鈕即可。'])
+      expect(within(line).getByText(text)).toBeVisible();
   });
 
   it('provides accessible, safe links for both buttons and both local QR images', () => {
@@ -60,7 +63,7 @@ describe('CommunityPage', () => {
       {
         card: line,
         href: 'https://line.me/ti/g2/OH11gDAPosXdZPLd4w4wCkQNHE6L-tZXjU7W0A',
-        names: [/^加入 LINE 開源社群/, '開啟 LINE 開源社群「建築師大集結開源討論群」的邀請頁（另開新分頁）'],
+        names: [/^加入 LINE 社群/, '開啟 LINE 社群「建築師大集結開源討論群」的邀請頁（另開新分頁）'],
       },
     ];
     for (const { card, href, names } of expected) {
@@ -76,7 +79,7 @@ describe('CommunityPage', () => {
     }
     expect(screen.getByRole('img', { name: 'Threads 帳號 archi.exam_sup 的 QR Code' }))
       .toHaveAttribute('src', threadsProfile.qrCode);
-    expect(screen.getByRole('img', { name: 'LINE 開源社群的 QR Code' }))
+    expect(screen.getByRole('img', { name: 'LINE 社群的 QR Code' }))
       .toHaveAttribute('src', lineCommunity.qrCode);
   });
 

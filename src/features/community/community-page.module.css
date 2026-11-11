@@ -57,6 +57,9 @@
 .handle { margin: 0; color: var(--muted); font-family: var(--font-mono); font-size: 13px; overflow-wrap: anywhere; }
 .copy { display: grid; gap: 12px; max-width: 48ch; }
 .copy .greeting { font-weight: 600; }
+/* The LINE card's four short lines: one list, no markers, set tighter than paragraphs. */
+.items { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; }
+.items li { line-height: 1.8; text-wrap: pretty; }
 .visit { min-height: 44px; margin-top: auto; }
 .qr {
   margin: 0;

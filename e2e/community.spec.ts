@@ -11,18 +11,18 @@ for (const theme of ['light', 'dark']) {
     await expect(page).toHaveTitle('社群連結｜建築師考試');
     await expect(page.getByRole('heading', { name: '社群連結', exact: true })).toBeVisible();
     await expect(page.getByRole('heading', { name: '一起備考，也一起交流。' })).toBeVisible();
-    await expect(page.getByText('在 Threads 追蹤網站動態、交流備考心得；想一起把網站做得更好，歡迎加入 LINE 開源社群。')).toBeVisible();
+    await expect(page.getByText('在 Threads 追蹤網站動態；想交流考試內容、一起把網站做得更好，歡迎加入 LINE 社群。')).toBeVisible();
     await expect(page.locator('main form')).toHaveCount(0);
     await expect(page.getByText(/送出問題回報|登入後送出的回報/)).toHaveCount(0);
     const threadsCard = page.getByRole('article', { name: 'Threads', exact: true });
-    const lineCard = page.getByRole('article', { name: 'LINE 開源社群', exact: true });
+    const lineCard = page.getByRole('article', { name: 'LINE 社群', exact: true });
     await expect(threadsCard.getByText('歡迎追蹤、分享解題心得。')).toBeVisible();
-    await expect(lineCard.getByText('這是建築師大集結的開源社群。')).toBeVisible();
+    await expect(lineCard.getByRole('listitem')).toHaveText(['想要什麼新功能，進來許願', '用的時候遇到錯誤，進來說一聲', '對網站開發有興趣，一起來協作', '交流考試內容，互相解惑']);
     await expect(lineCard.getByText('建築師大集結開源討論群', { exact: true })).toBeVisible();
     // The LINE card sits below the Threads card.
     const [threadsBox, lineBox] = await Promise.all([threadsCard.boundingBox(), lineCard.boundingBox()]);
     expect(lineBox!.y).toBeGreaterThanOrEqual(threadsBox!.y + threadsBox!.height);
-    for (const name of ['Threads 帳號 archi.exam_sup 的 QR Code', 'LINE 開源社群的 QR Code']) {
+    for (const name of ['Threads 帳號 archi.exam_sup 的 QR Code', 'LINE 社群的 QR Code']) {
       const image = page.getByRole('img', { name, exact: true });
       await expect(image).toBeVisible();
       await expect.poll(() => image.evaluate((node: HTMLImageElement) => node.complete && node.naturalWidth > 0)).toBe(true);
@@ -33,7 +33,7 @@ for (const theme of ['light', 'dark']) {
     await page.context().route('https://line.me/**', route => route.fulfill({ body: '<h1>LINE OpenChat</h1>', contentType: 'text/html' }));
     const targets = [
       { url: profileUrl, links: [page.getByRole('link', { name: /^前往 Threads/ }), page.getByRole('link', { name: /^開啟 archi.exam_sup/ })] },
-      { url: lineUrl, links: [page.getByRole('link', { name: /^加入 LINE 開源社群/ }), page.getByRole('link', { name: /^開啟 LINE 開源社群「建築師大集結開源討論群」/ })] },
+      { url: lineUrl, links: [page.getByRole('link', { name: /^加入 LINE 社群/ }), page.getByRole('link', { name: /^開啟 LINE 社群「建築師大集結開源討論群」/ })] },
     ];
     for (const { url, links } of targets) for (const link of links) {
       await expect(link).toHaveAttribute('href', url);

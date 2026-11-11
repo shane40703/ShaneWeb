@@ -12,7 +12,7 @@ export const threadsProfile = {
 
 /** The LINE OpenChat invite link, without the share sheet's utm_* tracking query. */
 export const lineCommunity = {
-  name: 'LINE 開源社群',
+  name: 'LINE 社群',
   handle: '建築師大集結開源討論群',
   href: 'https://line.me/ti/g2/OH11gDAPosXdZPLd4w4wCkQNHE6L-tZXjU7W0A',
   qrCode: '/social/line-open-chat.svg',

@@ -10,8 +10,10 @@ type CommunityCardContent = {
   id: string;
   link: { name: string; handle: string; href: string; qrCode: string };
   icon: ReactNode;
-  greeting: string;
-  paragraphs: readonly string[];
+  greeting?: string;
+  paragraphs?: readonly string[];
+  /** Short lines read together as one list (what the LINE community is for). */
+  items?: readonly string[];
   action: string;
   qrLabel: string;
   qrAlt: string;
@@ -37,16 +39,16 @@ const cards: readonly CommunityCardContent[] = [
     id: 'line',
     link: lineCommunity,
     icon: <IconBrandLine size={32} stroke={1.7} aria-hidden="true" />,
-    greeting: '這是建築師大集結的開源社群。',
-    paragraphs: [
-      '網站的程式碼是公開的，接下來要做什麼、怎麼做，都會在這裡討論。',
-      '對網站開發有興趣的人都歡迎加入，會不會寫程式都沒關係。可以一起規劃新功能、找出錯誤，也可以直接動手參與開發。',
-      '只是想許願功能或回報錯誤，也很歡迎進來說一聲。',
+    items: [
+      '想要什麼新功能，進來許願',
+      '用的時候遇到錯誤，進來說一聲',
+      '對網站開發有興趣，一起來協作',
+      '交流考試內容，互相解惑',
     ],
-    action: '加入 LINE 開源社群',
-    qrLabel: '開啟 LINE 開源社群「建築師大集結開源討論群」的邀請頁（另開新分頁）',
-    qrAlt: 'LINE 開源社群的 QR Code',
-    qrCaption: '掃描 QR Code，加入開源社群',
+    action: '加入 LINE 社群',
+    qrLabel: '開啟 LINE 社群「建築師大集結開源討論群」的邀請頁（另開新分頁）',
+    qrAlt: 'LINE 社群的 QR Code',
+    qrCaption: '掃描 QR Code，加入 LINE 社群',
   },
 ];
 
@@ -56,7 +58,7 @@ export function CommunityPage() {
       <header className={styles.intro}>
         <span className={styles.eyebrow}>STUDY TOGETHER</span>
         <h2 id="community-title">一起備考，也一起交流。</h2>
-        <p>在 Threads 追蹤網站動態、交流備考心得；想一起把網站做得更好，歡迎加入 LINE 開源社群。</p>
+        <p>在 Threads 追蹤網站動態；想交流考試內容、一起把網站做得更好，歡迎加入 LINE 社群。</p>
       </header>
 
       {cards.map(card => <CommunityCard key={card.id} card={card} />)}
@@ -78,8 +80,13 @@ function CommunityCard({ card }: { card: CommunityCardContent }) {
           </div>
         </div>
         <div className={styles.copy}>
-          <p className={styles.greeting}>{card.greeting}</p>
-          {card.paragraphs.map(paragraph => <p key={paragraph}>{paragraph}</p>)}
+          {card.greeting ? <p className={styles.greeting}>{card.greeting}</p> : null}
+          {card.paragraphs?.map(paragraph => <p key={paragraph}>{paragraph}</p>)}
+          {card.items ? (
+            <ul className={styles.items}>
+              {card.items.map(item => <li key={item}>{item}</li>)}
+            </ul>
+          ) : null}
         </div>
         <a
           className={`${buttonStyles.button} ${buttonStyles.primary} ${styles.visit}`}
