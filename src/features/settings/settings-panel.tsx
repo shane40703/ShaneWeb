@@ -1,4 +1,7 @@
+import Link from 'next/link';
+import { IconChevronRight } from '@tabler/icons-react';
 import { AppearanceSettings } from '@/pages/appearance';
+import { isPlainClick } from '@/components/in-page-link';
 import { QuestionAnswerPanel } from '@/components/question-answer-panel';
 import { ReadingFontControls } from '@/components/reading-font-controls';
 import { useAppState } from '@/state/app-state';
@@ -11,7 +14,12 @@ const PREVIEW_QUESTION = {
   answerKey: { kind: 'accepted', options: [] },
 } as const;
 
-export function SettingsPanel() {
+export function SettingsPanel({
+  onNavigate,
+}: {
+  /** Called when a plain click leaves for another page, so the settings dialog can close. */
+  onNavigate?: () => void;
+}) {
   const { state } = useAppState();
   const { questionFontSize } = state.readingPreferences;
 
@@ -46,6 +54,23 @@ export function SettingsPanel() {
           <AppearanceSettings embedded />
         </div>
       </details>
+      {/* The section keeps the spacing and the dashed rule; the link is only the row, so its
+          focus ring leaves the rule out. */}
+      <div className={styles.settingSection}>
+        <Link
+          href="/licenses"
+          className={styles.linkRow}
+          onClick={(event) => {
+            if (isPlainClick(event)) onNavigate?.();
+          }}
+        >
+          <span className={styles.linkText}>
+            <span className={styles.linkTitle}>開源授權</span>
+            <small>網站程式碼的授權，以及用到的字型、資料和第三方套件</small>
+          </span>
+          <IconChevronRight size={20} stroke={2} aria-hidden="true" />
+        </Link>
+      </div>
     </section>
   );
 }

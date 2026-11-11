@@ -200,7 +200,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </button>
             </header>
             <div className={styles.settingsBody}>
-              <SettingsPanel />
+              {/* A link inside (開源授權) leaves the page: close the dialog with it. */}
+              <SettingsPanel onNavigate={() => setSettingsOpen(false)} />
             </div>
           </section>
         </div>

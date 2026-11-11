@@ -59,6 +59,57 @@
   line-height: 1.5;
 }
 
+/* A section that is a page of its own (開源授權): the row is the link, with the same title and
+   description as a summary and a chevron at the end where the others open in place. The title
+   and description keep the summaries' indents (the title starts after the 14px triangle), so the
+   three rows share one left edge. */
+.linkRow {
+  padding: 4px 0;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.linkText {
+  min-width: 0;
+  flex: 1;
+}
+
+.linkTitle {
+  display: block;
+  padding-left: 15px;
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.linkRow small {
+  display: block;
+  margin-top: 2px;
+  padding-left: 22px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+  text-wrap: pretty;
+}
+
+.linkRow > svg {
+  flex: 0 0 auto;
+  color: var(--primary);
+}
+
+.linkRow:hover .linkTitle {
+  color: var(--primary-strong);
+}
+
+.linkRow:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-radius: var(--radius-control);
+}
+
 .sectionContent {
   padding: 20px 0 0;
   display: grid;

@@ -1,5 +1,7 @@
 import { readFileSync } from 'node:fs';
 import type { NextConfig } from 'next';
+import { ThirdPartyLicensesPlugin } from './src/build/third-party-licenses';
+import { SITE_URL } from './src/lib/site';
 
 function questionDataVersion() {
   if (process.env.NODE_ENV !== 'production') return '';
@@ -14,6 +16,20 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   allowedDevOrigins: ['127.0.0.1'],
   env: { NEXT_PUBLIC_QUESTION_DATA_VERSION: questionDataVersion() },
+  // The `webpack` hook below would stop `next dev` (Turbopack) without a Turbopack config.
+  turbopack: {},
+  // A `webpack` hook turns the build worker off by default; keep building in it as before.
+  experimental: { webpackBuildWorker: true },
+  webpack(config, { dev, dir, isServer }) {
+    // The 開源授權 page lists the packages the browser bundles really contain, with their
+    // licences, and every browser script points there (src/build/third-party-licenses.ts).
+    if (!dev && !isServer) {
+      config.plugins.push(
+        new ThirdPartyLicensesPlugin({ rootDir: dir, bannerUrl: `${SITE_URL}/licenses` }),
+      );
+    }
+    return config;
+  },
   async redirects() {
     return [
       { source: '/report', destination: '/community', permanent: true },

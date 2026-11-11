@@ -265,6 +265,7 @@ describe('grouped app navigation', () => {
     ['/appearance', '設定'],
     ['/community', '社群連結'],
     ['/privacy', '隱私權政策'],
+    ['/licenses', '開源授權'],
     ['/404', '找不到頁面'],
     ['/unknown', '建築師大集結'],
   ])('preserves the topbar title for %s', (pathname, title) => {

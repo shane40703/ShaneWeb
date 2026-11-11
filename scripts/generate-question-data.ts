@@ -23,6 +23,7 @@ const publicPages = [
   '/',
   '/community',
   '/exams',
+  '/licenses',
   '/practice',
   '/practice/law-cloze',
   '/privacy',

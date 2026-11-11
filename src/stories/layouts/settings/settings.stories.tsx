@@ -3,7 +3,8 @@ import SettingsPage from '@/pages/settings';
 import { pageParameters, withPageFrame } from '../../support/story-environment';
 
 /**
- * 設定頁（/settings）：閱讀設定與介面配色設定兩個可收合的區塊，預設都收起來。
+ * 設定頁（/settings）：閱讀設定與介面配色設定兩個可收合的區塊，預設都收起來；最下面一列
+ * 「開源授權」連到開源授權頁（`Layouts/開源授權/授權說明`）。
  * 在其他頁按側欄的「設定」是開啟設定視窗，內容一樣（`Layouts/網站外框/側欄與頂部列`）。
  *
  * 畫面上可以操作看到：點「閱讀設定」展開字級滑桿與預覽，拖動滑桿後預覽文字與整個網站的

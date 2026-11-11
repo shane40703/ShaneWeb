@@ -33,6 +33,7 @@ const titles: Record<string, string> = {
   '/appearance': '介面配色設定｜建築師考試',
   '/community': '社群連結｜建築師考試',
   '/privacy': '隱私權政策｜建築師考試',
+  '/licenses': '開源授權｜建築師考試',
   // A mistyped address, and a question the paper does not have.
   '/no-such-page': NOT_FOUND,
   '/exams/law/114/99': NOT_FOUND,

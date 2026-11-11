@@ -1,5 +1,6 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { SettingsPanel } from '@/features/settings/settings-panel';
 import SettingsPage from '@/pages/settings';
 
 const dispatch = vi.hoisted(() => vi.fn());
@@ -50,5 +51,30 @@ describe('SettingsPage', () => {
     expect(readingSection).not.toHaveAttribute('open');
     expect(appearanceSection).not.toHaveAttribute('open');
     expect(screen.getByLabelText('介面配色內容')).toBeInTheDocument();
+  });
+
+  it('links to 開源授權 as a row of its own instead of a collapsible section', () => {
+    render(<SettingsPage />);
+
+    const link = screen.getByRole('link', { name: /^開源授權/ });
+    expect(link).toHaveAttribute('href', '/licenses');
+    expect(link).toHaveTextContent('網站程式碼的授權，以及用到的字型、資料和第三方套件');
+    expect(link.closest('details')).toBeNull();
+    // The last section of the panel; the dashed rule belongs to the section, not the link.
+    expect(link.closest('section')?.lastElementChild).toContainElement(link);
+    expect(link.parentElement?.tagName).toBe('DIV');
+  });
+
+  it('tells the settings dialog to close when the row is followed, but not for a new tab', () => {
+    const onNavigate = vi.fn();
+    render(<SettingsPanel onNavigate={onNavigate} />);
+
+    const link = screen.getByRole('link', { name: /^開源授權/ });
+    // jsdom cannot open another page.
+    link.addEventListener('click', (event) => event.preventDefault());
+    fireEvent.click(link, { metaKey: true });
+    expect(onNavigate).not.toHaveBeenCalled();
+    fireEvent.click(link);
+    expect(onNavigate).toHaveBeenCalledTimes(1);
   });
 });

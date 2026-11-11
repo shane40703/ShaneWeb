@@ -31,9 +31,11 @@ const utilityNavigation: readonly NavigationLinkItem[] = [
   { href: '/community', label: '社群連結', icon: IconBrandThreads },
   { href: '/privacy', label: '隱私權政策', icon: IconShield },
 ];
+// Pages opened from inside another page (開源授權 from 設定) that still title the topbar.
+const linkedPages = [{ href: '/licenses', label: '開源授權' }] as const;
 // Hub pages (statistics, practice and 我的作答存摺) open from their hub instead of the sidebar
 // but still title the topbar; listed first so they win over their hub's shorter prefix.
-const titledPages = [...resourcePages, ...practicePages, ...personalPages, ...primaryNavigation, ...utilityNavigation];
+const titledPages = [...resourcePages, ...practicePages, ...personalPages, ...primaryNavigation, ...utilityNavigation, ...linkedPages];
 
 function isActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);

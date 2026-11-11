@@ -10,6 +10,7 @@ import {
 } from 'react';
 import { useArgs } from 'storybook/preview-api';
 import { AppShell } from '@/components/layout/app-shell';
+import { LicensesPage } from '@/features/licenses/licenses-page';
 import { PracticeHubPage } from '@/features/practice/practice-hub-page';
 import { ResourcesPage } from '@/features/resources/resources-page';
 import DifficultRoute from '@/pages/difficult';
@@ -29,6 +30,7 @@ import {
 } from '../../fixtures/personal';
 import { practiceOverview } from '../../fixtures/practice';
 import { resourcesOverview } from '../../fixtures/resources';
+import { licensesList } from '../../fixtures/licenses';
 import { failLocalStorageWrites } from '../../fixtures/shell';
 import { StatefulRouter } from '../../support/stateful-router';
 import { pageParameters } from '../../support/story-environment';
@@ -56,6 +58,8 @@ const pages = {
   '/settings': { label: '設定', content: <SettingsPage /> },
   '/community': { label: '社群連結', content: <CommunityRoute /> },
   '/privacy': { label: '隱私權政策', content: <PrivacyRoute /> },
+  // Opened from the settings dialog's 開源授權 row, which closes the dialog.
+  '/licenses': { label: '開源授權', content: <LicensesPage thirdParty={licensesList} /> },
 } satisfies Record<string, { label: string; content: ReactNode }>;
 
 type PagePath = keyof typeof pages;
@@ -152,7 +156,8 @@ function SitePages({
  *   （Controls 的 page 也跟著更新）；從「我的作答存摺」的頁面列進入子頁面時，側欄仍標示
  *   「我的作答存摺」。頁面裡的操作照常，例如考古題討論版、我的筆記點題號換題。
  * - 點側欄的「設定」在原頁面上開啟設定視窗，可以展開閱讀設定、介面配色設定；
- *   按右上角的關閉、背景或 Esc 關閉。設定頁（/settings）本身從 Controls 的 page 選。
+ *   按右上角的關閉、背景或 Esc 關閉；點最下面的「開源授權」換到開源授權頁，設定視窗跟著關閉。
+ *   設定頁（/settings）本身從 Controls 的 page 選。
  *   設定文字不可反白，自訂色碼輸入欄位仍可選取、編輯。
  * - 頂部列的深淺色切換。
  * - 側欄與頁面標題文字不可拖曳反白；錯誤訊息仍可選取。
