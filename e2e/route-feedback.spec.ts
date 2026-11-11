@@ -6,7 +6,7 @@ test('the sidebar answers a click before the page arrives', async ({
   test.skip(testInfo.project.name !== 'desktop');
   await page.goto('/practice');
   await page.waitForLoadState('networkidle');
-  // Nothing is remembered yet, so the sidebar opens 考古題討論版 on the newest 法規 paper's
+  // Nothing is remembered yet, so the sidebar opens 歷屆試題（討論版） on the newest 法規 paper's
   // first question.
   await page.route('**/_next/data/**/exams/law/114/1.json*', async (route) => {
     await new Promise((resolve) => setTimeout(resolve, 1500));
@@ -15,12 +15,12 @@ test('the sidebar answers a click before the page arrives', async ({
 
   const sidebar = page.getByRole('navigation', { name: '主要功能' });
   const placeholder = page.getByRole('status', { name: '正在開啟頁面' });
-  await sidebar.getByRole('link', { name: '考古題討論版' }).click();
+  await sidebar.getByRole('link', { name: '歷屆試題（討論版）' }).click();
 
   await expect(
-    page.getByRole('heading', { level: 1, name: '考古題討論版' }),
+    page.getByRole('heading', { level: 1, name: '歷屆試題（討論版）' }),
   ).toBeVisible();
-  await expect(sidebar.getByRole('link', { name: '考古題討論版' })).toHaveAttribute(
+  await expect(sidebar.getByRole('link', { name: '歷屆試題（討論版）' })).toHaveAttribute(
     'aria-current',
     'page',
   );

@@ -9,7 +9,7 @@ import {
   type QuestionPageProps,
 } from '@/server/question-bank.server';
 
-/** The same prerendered pair as 考古題討論版: the paper index and one question. */
+/** The same prerendered pair as 歷屆試題（討論版）: the paper index and one question. */
 export const getStaticProps: GetStaticProps<QuestionPageProps> = async () => ({
   props: await getQuestionPageProps(),
 });

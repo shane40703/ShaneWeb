@@ -69,11 +69,11 @@ describe('examsHead', () => {
   it('names a paper, a subject and the page itself', () => {
     expect(headAt(['law', '114']).title).toBe('114 年營建法規與實務考古題｜建築師考試');
     expect(headAt('law').title).toBe('營建法規與實務考古題｜建築師考試');
-    expect(headAt(undefined).title).toBe('考古題討論版｜建築師考試');
-    expect(headAt([]).title).toBe('考古題討論版｜建築師考試');
+    expect(headAt(undefined).title).toBe('歷屆試題（討論版）｜建築師考試');
+    expect(headAt([]).title).toBe('歷屆試題（討論版）｜建築師考試');
   });
 
-  it('describes 考古題討論版 with what the bank holds', () => {
+  it('describes 歷屆試題（討論版） with what the bank holds', () => {
     expect(headAt(undefined).description).toBe(
       '建築師考試歷屆考古題：營建法規與實務、建築環境控制兩科，民國 113 至 114 年共 4 份試卷、245 題，每一題都可以作答、看解答和討論。',
     );
@@ -110,7 +110,7 @@ describe('examsHead', () => {
   });
 
   it('names each level once, for the tab, the topbar and the way back', () => {
-    expect(examsHubName(examsPlace([]))).toBe('考古題討論版');
+    expect(examsHubName(examsPlace([]))).toBe('歷屆試題（討論版）');
     expect(examsHubName(examsPlace(['law']))).toBe('營建法規與實務考古題');
     expect(examsHubName(examsPlace(['law', '114']))).toBe('114 年營建法規與實務考古題');
     expect(examsHubName(examsPlace(['law', '114', '3']))).toBe('114 年營建法規與實務考古題');

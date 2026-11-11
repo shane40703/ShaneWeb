@@ -31,7 +31,7 @@ declare global {
 
 const OPT_OUT_STORAGE_KEY = 'shaneweb:ga-opt-out';
 const EXAMS_PATH = '/exams';
-const EXAMS_TITLE = '考古題討論版｜建築師考試';
+const EXAMS_TITLE = '歷屆試題（討論版）｜建築師考試';
 
 const practiceAreas: Record<PracticeMode, 'daily' | 'exams' | 'review'> = {
   daily_quiz: 'daily',
@@ -80,7 +80,7 @@ export function analyticsMeasurementId() {
 }
 
 /**
- * Each question has its own address for search engines. GA still sees 考古題討論版 as one page,
+ * Each question has its own address for search engines. GA still sees 歷屆試題（討論版） as one page,
  * so changing question is no page view and no 題號 reaches it through a URL or a title.
  */
 function reportedPath(path: string) {

@@ -15,7 +15,7 @@ const prerenderedQuestions = fixtureSubjectQuestions(allSubjectIds[0]);
 const fixtureRefs = questionRefs(buildPaperIndex(fixtureQuestions));
 
 /**
- * 照 src/pages/exams/[[...slug]].tsx 組出考古題討論版頁：外面是 ExamsLayout（不畫「返回」，
+ * 照 src/pages/exams/[[...slug]].tsx 組出歷屆試題（討論版）頁：外面是 ExamsLayout（不畫「返回」，
  * 只負責上一頁、下一頁的捲動位置，並記住側欄要回到的位置），
  * 範例題庫的每一題先只有題號，預先產生的法規題目與 useSubjectQuestions 下載的所有科目
  * （Storybook 由範例題庫回應）有內容，用題目 id 合併後交給 ExamsPage。

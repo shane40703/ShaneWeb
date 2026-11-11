@@ -760,7 +760,7 @@ describe('ExamsPage question loading', () => {
     expect(screen.getByRole('tab', { name: '筆記' })).toHaveAttribute('aria-selected', 'true');
     expect(screen.getByRole('button', { name: '編輯筆記' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '刪除筆記' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '分享到考古題討論版' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '分享到討論版' })).toBeInTheDocument();
   });
 
   it('tells when no other question shares the law question topic', async () => {

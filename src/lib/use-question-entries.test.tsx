@@ -105,7 +105,7 @@ describe('useQuestionEntries', () => {
     expect(preloadPaper).not.toHaveBeenCalled();
   });
 
-  it('downloads no question for 考古題討論版 itself or a subject', () => {
+  it('downloads no question for 歷屆試題（討論版） itself or a subject', () => {
     for (const slug of [[], ['law'], ['env']]) {
       mocks.router.query = { slug };
       renderHook(() => useQuestionEntries(index));

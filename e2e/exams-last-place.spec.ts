@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 
-/** The sidebar's 考古題討論版 returns to the last place the reader saw in it. */
+/** The sidebar's 歷屆試題（討論版） returns to the last place the reader saw in it. */
 
 async function openNavigation(page: Page) {
   const nav = page.getByRole('navigation', { name: '主要功能', exact: true });
@@ -21,7 +21,7 @@ async function openExamsFromSidebar(page: Page) {
   await (
     await openNavigation(page)
   )
-    .getByRole('link', { name: '考古題討論版', exact: true })
+    .getByRole('link', { name: '歷屆試題（討論版）', exact: true })
     .click();
 }
 
@@ -71,7 +71,7 @@ test('an address lands where it says and becomes the place', async ({ page }) =>
   await expect(page.locator('header h1')).toHaveText('110 年營建法規與實務考古題');
 });
 
-test('inside 考古題討論版 the sidebar stays on the page', async ({ page }) => {
+test('inside 歷屆試題（討論版） the sidebar stays on the page', async ({ page }) => {
   await page.goto('/exams/law/114/30');
   await expect.poll(() => remembered(page)).toBe('/exams/law/114/30');
   const entries = await page.evaluate(() => history.length);

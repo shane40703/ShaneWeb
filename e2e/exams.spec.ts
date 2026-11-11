@@ -52,7 +52,7 @@ async function expandSelector(page: Page) {
   }).toPass();
 }
 
-/** 考古題討論版 has hydrated once it has remembered the address on screen. A tile links the
+/** 歷屆試題（討論版） has hydrated once it has remembered the address on screen. A tile links the
     subject or paper page, so a click before then would load that page instead of the question. */
 async function examsReady(page: Page, place: string) {
   await expect
@@ -108,16 +108,16 @@ test('past exams opens from the navigation and keeps browsing on /exams', async 
   await page.waitForLoadState('networkidle');
   const nav = await openNavigation(page);
   // On a first visit the sidebar opens the newest 法規 paper on its first question.
-  await nav.getByRole('link', { name: '考古題討論版', exact: true }).click();
+  await nav.getByRole('link', { name: '歷屆試題（討論版）', exact: true }).click();
   await expect(page).toHaveURL(/\/exams\/law\/114\/1$/);
   await expect(page).toHaveTitle('114 年營建法規與實務考古題第 1 題｜建築師考試');
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('考古題討論版');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('歷屆試題（討論版）');
   await expect(page.getByRole('heading', { name: '第 1 題' })).toBeVisible();
-  // No way back anywhere in 考古題討論版: every address starts with the same selector.
+  // No way back anywhere in 歷屆試題（討論版）: every address starts with the same selector.
   await expect(page.getByRole('link', { name: /^返回/ })).toHaveCount(0);
   await expect(
     (await openNavigation(page)).getByRole('link', {
-      name: '考古題討論版',
+      name: '歷屆試題（討論版）',
       exact: true,
     }),
   ).toHaveAttribute('aria-current', 'page');
@@ -164,8 +164,8 @@ test('past exams opens from the navigation and keeps browsing on /exams', async 
 
   // The board has the same selector with no subject chosen yet; its list is facts, not links.
   await page.goto('/exams');
-  await expect(page).toHaveTitle('考古題討論版｜建築師考試');
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('考古題討論版');
+  await expect(page).toHaveTitle('歷屆試題（討論版）｜建築師考試');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('歷屆試題（討論版）');
   const years = page.getByRole('group', { name: '年度' }).getByRole('button');
   await expect(years).toHaveCount(15);
   for (const year of await years.all()) await expect(year).toBeDisabled();
@@ -298,7 +298,7 @@ test('a long option keeps its letter on the first line', async ({ page }) => {
 });
 
 test('posts on past exams stay with the question', async ({ page }) => {
-  const content = `考古題討論版頁的共享投稿 ${test.info().project.name}`;
+  const content = `歷屆試題（討論版）頁的共享投稿 ${test.info().project.name}`;
   await page.goto('/exams?question=law-114-03');
   await page.getByRole('tab', { name: /討論區/ }).click();
   await expect(page).toHaveURL(/\/exams\/law\/114\/3\?tab=discussion$/);
@@ -333,7 +333,7 @@ test('past exams questions are in the static HTML', async ({ request }, testInfo
   ]);
   expect(board.ok()).toBe(true);
   expect(question.ok()).toBe(true);
-  // Only the question's own address carries it; 考古題討論版 lists the subjects.
+  // Only the question's own address carries it; 歷屆試題（討論版） lists the subjects.
   expect(await board.text()).not.toContain(prompt);
   expect(await question.text()).toContain(prompt);
 });

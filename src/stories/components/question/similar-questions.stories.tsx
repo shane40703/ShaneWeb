@@ -19,10 +19,10 @@ const questionOptions = fixtureOptions(
 );
 
 /**
- * 考古題討論版題目分頁與我的筆記頁的類似考題：同一個考點的其他法規題，最新年度在前，
+ * 歷屆試題（討論版）題目分頁與我的筆記頁的類似考題：同一個考點的其他法規題，最新年度在前，
  * 每一列連到那一題。超過 8 題時先列最近 8 題，按「顯示全部」展開；考點沒有其他題時只有一行說明。
  * 元件本身沒有外框，由頁面的面板框起來（這裡用同樣的奶油紙框示意）。
- * 用 Controls 的 basePath 切換連到考古題討論版（/exams）或筆記頁（/notes），外觀相同。
+ * 用 Controls 的 basePath 切換連到討論版（/exams）或筆記頁（/notes），外觀相同。
  */
 const meta = {
   title: 'Components/題目/SimilarQuestions',

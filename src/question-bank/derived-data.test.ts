@@ -279,7 +279,7 @@ describe('the real bank survives the split', () => {
   });
 });
 
-describe('the paper pages of 考古題討論版', () => {
+describe('the paper pages of 歷屆試題（討論版）', () => {
   it('lists the same topics from the build and from the downloaded paper, for every paper', async () => {
     const summaries = await getPaperQuestionSummaries();
     let papers = 0;

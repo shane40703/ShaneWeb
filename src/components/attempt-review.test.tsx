@@ -134,14 +134,14 @@ describe('AttemptReview', () => {
 
     fireEvent.click(screen.getByText('檢視完整選項與筆記'));
     fillRichEditor(await screen.findByLabelText('第 1 題筆記內容'), '從對答案分享的詳解');
-    fireEvent.click(screen.getByRole('button', { name: /分享到考古題討論版/ }));
+    fireEvent.click(screen.getByRole('button', { name: /分享到討論版/ }));
 
     expect(await screen.findByLabelText('共享詳解狀態')).toHaveTextContent(
       '從對答案分享的詳解',
     );
 
     fillRichEditor(screen.getByLabelText('第 1 題筆記內容'), '修正後的詳解');
-    fireEvent.click(screen.getByRole('button', { name: /分享到考古題討論版/ }));
+    fireEvent.click(screen.getByRole('button', { name: /分享到討論版/ }));
 
     const result = await screen.findByLabelText('共享詳解狀態');
     expect(result).toHaveTextContent('修正後的詳解');

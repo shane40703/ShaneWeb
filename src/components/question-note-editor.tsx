@@ -29,7 +29,7 @@ export interface QuestionNoteDraft {
 }
 
 /**
- * The note editor shared by 我的筆記 and the 筆記 tab of 考古題討論版. The page keeps the
+ * The note editor shared by 我的筆記 and the 筆記 tab of 歷屆試題（討論版）. The page keeps the
  * unsaved draft (keyed by question id) and hands it back in; without a draft the saved note
  * is shown. Frameless: the page's panel draws the frame.
  */
@@ -80,7 +80,7 @@ export function QuestionNoteEditor({
     try {
       const result = await discussion.publish('explanation', content, images);
       notify(
-        '已分享到考古題討論版',
+        '已分享到討論版',
         discussion.enabled && images.length
           ? result.imagesShared
             ? '文字與圖片已同步共享。'
@@ -204,7 +204,7 @@ export function QuestionNoteEditor({
             />
           ) : null}
           <Button disabled={sharing} onClick={() => void shareNote()}>
-            {sharing ? '正在分享…' : '分享到考古題討論版'}
+            {sharing ? '正在分享…' : '分享到討論版'}
           </Button>
           {editing ? (
             <Button variant="primary" onClick={saveNote}>

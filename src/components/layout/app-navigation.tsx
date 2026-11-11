@@ -18,11 +18,11 @@ import styles from './app-shell.module.css';
  * tabs; `land`, when set, is where a plain click goes instead, read at the click.
  */
 interface NavigationLinkItem { href: string; land?: () => string; label: string; icon: typeof IconFileText; pages?: readonly { href: string }[] }
-// Every page links 考古題討論版's board, /exams; a plain click returns to the place the reader
+// Every page links 歷屆試題（討論版）'s board, /exams; a plain click returns to the place the reader
 // last saw in it, or on a first visit opens the newest 法規 paper's first question.
 const primaryNavigation: readonly NavigationLinkItem[] = [
   { href: practiceHub.href, label: practiceHub.label, icon: practiceHub.icon },
-  { href: '/exams', land: examsReturnHref, label: '考古題討論版', icon: IconBooks },
+  { href: '/exams', land: examsReturnHref, label: '歷屆試題（討論版）', icon: IconBooks },
   { href: resourcesHub.href, label: resourcesHub.label, icon: resourcesHub.icon },
   // Its pages keep their own top-level URLs, so the hub stays current on them by name.
   { href: personalHub.href, label: personalHub.label, icon: personalHub.icon, pages: personalPages },
@@ -49,10 +49,10 @@ function isCurrent(pathname: string, item: NavigationLinkItem) {
 
 const EXAMS_ROUTE = '/exams/[[...slug]]';
 
-/** 考古題討論版 names its subject and paper pages like their tabs; itself and a question keep its name. */
+/** 歷屆試題（討論版） names its subject and paper pages like their tabs; itself and a question keep its name. */
 function examsPageTitle(slug: string | string[] | undefined) {
   const place = examsPlace(slug);
-  return place.kind === 'subject' || place.kind === 'paper' ? examsHubName(place) : '考古題討論版';
+  return place.kind === 'subject' || place.kind === 'paper' ? examsHubName(place) : '歷屆試題（討論版）';
 }
 
 export function navigationPageTitle(pathname: string, query?: { slug?: string | string[] }) {

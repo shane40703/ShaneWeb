@@ -31,7 +31,7 @@ function referFrom(url: string) {
 beforeEach(() => {
   delete window.dataLayer;
   window.localStorage.clear();
-  document.title = '考古題討論版｜建築師考試';
+  document.title = '歷屆試題（討論版）｜建築師考試';
   visit('/');
 });
 
@@ -73,7 +73,10 @@ describe('page views', () => {
       ['js', expect.any(Date)],
       [
         'set',
-        { page_location: location('/exams'), page_title: '考古題討論版｜建築師考試' },
+        {
+          page_location: location('/exams'),
+          page_title: '歷屆試題（討論版）｜建築師考試',
+        },
       ],
       [
         'config',
@@ -163,7 +166,7 @@ describe('page views', () => {
     },
   );
 
-  it('reports every question address as 考古題討論版, with no 題號 in the URL or title', async () => {
+  it('reports every question address as 歷屆試題（討論版）, with no 題號 in the URL or title', async () => {
     document.title = '114 年營建法規與實務考古題第 3 題｜建築師考試';
     visit('/exams/law/114/3?utm_source=line');
     const { trackPageView } = await load();
@@ -174,7 +177,7 @@ describe('page views', () => {
       'set',
       {
         page_location: location('/exams?utm_source=line'),
-        page_title: '考古題討論版｜建築師考試',
+        page_title: '歷屆試題（討論版）｜建築師考試',
       },
     ]);
     expect(JSON.stringify(queue())).not.toContain('114');

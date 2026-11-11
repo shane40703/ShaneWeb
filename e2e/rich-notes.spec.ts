@@ -104,8 +104,8 @@ for (const theme of ['light', 'dark'] as const) {
     await expect(editor).toHaveText('0.75m2');
     await page.getByRole('button', { name: '儲存筆記', exact: true }).click();
     await expect(saved.locator('sup')).toHaveText('2');
-    await page.getByRole('button', { name: '分享到考古題討論版', exact: true }).click();
-    await expect(page.getByText('已分享到考古題討論版', { exact: true })).toBeVisible();
+    await page.getByRole('button', { name: '分享到討論版', exact: true }).click();
+    await expect(page.getByText('已分享到討論版', { exact: true })).toBeVisible();
     await page.goto('/exams?question=law-114-01');
     await page.getByRole('tab', { name: /討論區/ }).click();
     const post = page.locator('article').filter({ has: page.locator('sup', { hasText: '2' }) }).first();

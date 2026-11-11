@@ -18,7 +18,7 @@ import type { Question } from '@/lib/types';
 const outputRoot = path.join(process.cwd(), 'public', 'question-data');
 const sitemapFile = path.join(process.cwd(), 'public', 'sitemap.xml');
 
-/** The public pages besides 考古題討論版's; everything personal is left to robots.txt. */
+/** The public pages besides 歷屆試題（討論版）'s; everything personal is left to robots.txt. */
 const publicPages = [
   '/',
   '/exams',

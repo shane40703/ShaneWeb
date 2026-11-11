@@ -32,7 +32,7 @@ export function QuestionSelector({
   action,
   ariaLabel,
 }: {
-  /** Unset where no subject is chosen yet, such as 考古題討論版 itself. */
+  /** Unset where no subject is chosen yet, such as 歷屆試題（討論版） itself. */
   subjectId?: SubjectId;
   /** Unset where no year is chosen yet, such as a subject's page. */
   year?: SelectorYear;

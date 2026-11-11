@@ -19,7 +19,7 @@ import {
 import { subjects, years } from '@/question-bank/catalog';
 
 /**
- * The last place a reader saw in 考古題討論版, which the sidebar returns to: the address and
+ * The last place a reader saw in 歷屆試題（討論版）, which the sidebar returns to: the address and
  * its tab, nothing more (no scroll, answers or drafts). It is browsing, not work, so it is
  * kept in neither app state nor the cloud. Each browser tab keeps its own (sessionStorage); a
  * new tab starts from the latest in any tab (localStorage). Blocked or full storage only
@@ -60,7 +60,7 @@ export function rememberExamsPlace(address: string) {
   for (const store of stores) store.write(EXAMS_PLACE_KEY, address);
 }
 
-/** Where the sidebar's 考古題討論版 goes: this tab's place, else this browser's, else the start. */
+/** Where the sidebar's 歷屆試題（討論版） goes: this tab's place, else this browser's, else the start. */
 export function examsReturnHref() {
   for (const store of stores) {
     const place = examsPlaceFrom(store.read(EXAMS_PLACE_KEY));

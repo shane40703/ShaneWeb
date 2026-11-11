@@ -140,7 +140,7 @@ function BodyPending({
 }
 
 /**
- * 考古題討論版 at every address under /exams. Each starts with the same subject and year
+ * 歷屆試題（討論版） at every address under /exams. Each starts with the same subject and year
  * selector, in the same place; under it a question's address shows that question, and the board
  * itself, a subject and a paper list what they hold (ExamsHub) and show no question. The
  * component stays mounted for every move between them, so answers, 筆記 drafts and unsent

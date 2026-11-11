@@ -10,7 +10,7 @@ const allYearOptions = years.map((year) => ({ value: year }));
 
 const yearOptions = fixtureOptions(
   {
-    '全部年度（考古題討論版、筆記）': allYearOptions,
+    '全部年度（討論版、筆記）': allYearOptions,
     '只有 113、108、101 年有資料（我的難題、常錯題目）': years.map((year) => ({
       value: year,
       disabled: ![113, 108, 101].includes(year),
@@ -20,11 +20,11 @@ const yearOptions = fixtureOptions(
       ...allYearOptions,
     ],
   },
-  '全部年度（考古題討論版、筆記）',
+  '全部年度（討論版、筆記）',
 );
 
 /**
- * 考古題討論版、筆記頁、我的難題、常錯題目、歷屆試題資料集成共用的科目與年度選擇。
+ * 歷屆試題（討論版）、筆記頁、我的難題、常錯題目、歷屆試題資料集成共用的科目與年度選擇。
  *
  * 畫面上可以操作看到：點科目、點年度切換（Controls 的 subjectId、year 跟著變）。
  * 用 Controls 換年度選項（我的難題的停用年度、歷屆試題資料集成的跨年度）、勾選停用的科目

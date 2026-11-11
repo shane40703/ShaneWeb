@@ -125,7 +125,7 @@ export function MockExamSetup({
           <p>
             這份試卷另有申論題 {paper.writtenCount} 題，不列入模擬考計分，
             <Link href={examsQuestionHref(paper.firstWrittenId)}>
-              到考古題討論版閱讀
+              到討論版閱讀
               <IconFileText size={14} aria-hidden="true" />
             </Link>
           </p>

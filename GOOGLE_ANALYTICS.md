@@ -11,7 +11,7 @@
 | 參數            | 說明                                                                                                                                                                                                     |
 | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `practice_area` | 在哪個區塊練習，由 `practice_mode` 決定                                                                                                                                                                  |
-| `practice_mode` | 用哪種方式練習：`daily_quiz` 每日抽題練習、`mock_exam` 歷屆試題模擬考、`law_cloze` 法規克漏字、`paper` 製作紙本、`exams` 考古題討論版、`wrong_retry` 常錯題目重練、`difficult_retry` 難題標記重練 |
+| `practice_mode` | 用哪種方式練習：`daily_quiz` 每日抽題練習、`mock_exam` 歷屆試題模擬考、`law_cloze` 法規克漏字、`paper` 製作紙本、`exams` 歷屆試題（討論版）、`wrong_retry` 常錯題目重練、`difficult_retry` 難題標記重練 |
 | `subject`       | 科目：`law` 法規、`env` 環控、`construction` 構造、`structure` 結構                                                                                                                                      |
 
 ```text
@@ -21,8 +21,8 @@ practice_area 在哪個區塊練習 → practice_mode 用哪種方式練習
 │  ├ mock_exam 歷屆試題模擬考
 │  ├ law_cloze 法規克漏字
 │  └ paper 製作紙本
-├ exams 考古題討論版
-│  └ exams 考古題討論版
+├ exams 歷屆試題（討論版）
+│  └ exams 歷屆試題（討論版）
 └ review 重練
    ├ wrong_retry 常錯題目重練
    └ difficult_retry 難題標記重練
@@ -53,7 +53,7 @@ question_answered 寫了一題
 │  ├ daily_quiz：按「確認答案」
 │  ├ mock_exam：這題第一次選答案
 │  └ law_cloze：按「提交答案」
-├ exams 考古題討論版
+├ exams 歷屆試題（討論版）
 │  └ exams：選了答案後按「看解答」
 └ review 重練
    ├ wrong_retry：按「確認答案」，或在頁面內單題重新作答
@@ -62,7 +62,7 @@ question_answered 寫了一題
 answer_revealed 沒作答就看答案
 ├ daily 每日練習
 │  └ law_cloze：按「直接看答案」
-└ exams 考古題討論版
+└ exams 歷屆試題（討論版）
    └ exams：沒選答案就按「看解答」
 
 practice_complete 完成一輪練習
@@ -99,7 +99,7 @@ paper_download 製作出一份紙本練習卷
 
 | 事件                                            | 來源                                                                    |
 | ----------------------------------------------- | ----------------------------------------------------------------------- |
-| `page_view`                                     | 程式自己送。換頁才算，換題不算；考古題討論版的每一題都記成 `/exams`。 |
+| `page_view`                                     | 程式自己送。換頁才算，換題不算；歷屆試題（討論版）的每一題都記成 `/exams`。 |
 | `first_visit`、`session_start`、`user_engagement` | GA 自動記錄。                                                           |
 
 ## GA 後台設定
