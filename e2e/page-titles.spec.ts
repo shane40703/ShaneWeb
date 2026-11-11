@@ -31,7 +31,8 @@ const titles: Record<string, string> = {
   '/history': '歷屆試題作答履歷｜建築師考試',
   '/settings': '設定｜建築師考試',
   '/appearance': '介面配色設定｜建築師考試',
-  '/community': '社群連結｜建築師考試',
+  '/line': 'LINE 社群｜建築師考試',
+  '/threads': 'Threads｜建築師考試',
   '/privacy': '隱私權政策｜建築師考試',
   '/licenses': '開源授權｜建築師考試',
   // A mistyped address, and a question the paper does not have.

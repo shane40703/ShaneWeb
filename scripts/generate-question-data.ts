@@ -21,9 +21,9 @@ const sitemapFile = path.join(process.cwd(), 'public', 'sitemap.xml');
 /** The public pages besides 考古題討論版's; everything personal is left to robots.txt. */
 const publicPages = [
   '/',
-  '/community',
   '/exams',
   '/licenses',
+  '/line',
   '/practice',
   '/practice/law-cloze',
   '/privacy',
@@ -31,6 +31,7 @@ const publicPages = [
   '/resources/analysis',
   '/resources/laws',
   '/resources/memory-gallery',
+  '/threads',
   ...MEMORY_GALLERY_CATEGORIES.slice(1).map(
     (category) => `/resources/memory-gallery/${category.id}`,
   ),

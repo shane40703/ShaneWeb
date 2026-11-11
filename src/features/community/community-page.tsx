@@ -5,6 +5,9 @@ import buttonStyles from '@/components/ui/ui.module.css';
 import { lineCommunity, threadsProfile } from './community-links';
 import styles from './community-page.module.css';
 
+/** Each community has its own page, opened from its own sidebar item. */
+export type CommunityChannel = 'line' | 'threads';
+
 type CommunityCardContent = {
   /** Prefix of the heading id that labels the card; unique per card. */
   id: string;
@@ -20,8 +23,8 @@ type CommunityCardContent = {
   qrCaption: string;
 };
 
-const cards: readonly CommunityCardContent[] = [
-  {
+const cards: Record<CommunityChannel, CommunityCardContent> = {
+  threads: {
     id: 'threads',
     link: threadsProfile,
     icon: <IconBrandThreads size={32} stroke={1.7} aria-hidden="true" />,
@@ -30,12 +33,12 @@ const cards: readonly CommunityCardContent[] = [
       '我也是正在準備建築師考試的考生，一邊備考，一邊把自己的練習方式做成這個網站。',
       '歡迎追蹤、分享解題心得。',
     ],
-    action: '前往 Threads',
+    action: '前往 Threads 連結',
     qrLabel: '開啟 archi.exam_sup 的 Threads 主頁（另開新分頁）',
     qrAlt: 'Threads 帳號 archi.exam_sup 的 QR Code',
     qrCaption: '掃描 QR Code，加入交流',
   },
-  {
+  line: {
     id: 'line',
     link: lineCommunity,
     icon: <IconBrandLine size={32} stroke={1.7} aria-hidden="true" />,
@@ -45,23 +48,22 @@ const cards: readonly CommunityCardContent[] = [
       '對網站開發有興趣，一起來協作',
       '交流考試內容，互相解惑',
     ],
-    action: '加入 LINE 社群',
+    action: '加入 LINE 社群連結',
     qrLabel: '開啟 LINE 社群「建築師大集結開源討論群」的邀請頁（另開新分頁）',
     qrAlt: 'LINE 社群的 QR Code',
     qrCaption: '掃描 QR Code，加入 LINE 社群',
   },
-];
+};
 
-export function CommunityPage() {
+export function CommunityPage({ channel }: { channel: CommunityChannel }) {
   return (
     <section className={styles.page} aria-labelledby="community-title">
       <header className={styles.intro}>
         <span className={styles.eyebrow}>STUDY TOGETHER</span>
         <h2 id="community-title">一起備考，也一起交流。</h2>
-        <p>在 Threads 追蹤網站動態；想交流考試內容、一起把網站做得更好，歡迎加入 LINE 社群。</p>
       </header>
 
-      {cards.map(card => <CommunityCard key={card.id} card={card} />)}
+      <CommunityCard card={cards[channel]} />
     </section>
   );
 }

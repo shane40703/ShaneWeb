@@ -56,7 +56,8 @@ describe('grouped app navigation', () => {
       '/resources',
       '/personal',
       '/settings',
-      '/community',
+      '/line',
+      '/threads',
       '/privacy',
     ]);
     expect(within(nav).queryByRole('button')).not.toBeInTheDocument();
@@ -263,7 +264,8 @@ describe('grouped app navigation', () => {
     ['/practice-history', '每日練習履歷'],
     ['/settings', '設定'],
     ['/appearance', '設定'],
-    ['/community', '社群連結'],
+    ['/line', 'LINE 社群'],
+    ['/threads', 'Threads'],
     ['/privacy', '隱私權政策'],
     ['/licenses', '開源授權'],
     ['/404', '找不到頁面'],

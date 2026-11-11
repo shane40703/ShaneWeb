@@ -32,7 +32,10 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return [
-      { source: '/report', destination: '/community', permanent: true },
+      // 社群連結 became two pages, LINE 社群 and Threads: old links and bookmarks land on LINE,
+      // where 錯誤回報 now goes.
+      { source: '/report', destination: '/line', permanent: true },
+      { source: '/community', destination: '/line', permanent: true },
       {
         // Links shared before each question had its own address.
         source: '/exams',

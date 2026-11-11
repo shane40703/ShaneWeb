@@ -1,7 +1,8 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import {
-  IconBooks, IconBuildingSkyscraper, IconDeviceMobilePlus, IconFileText, IconSettings, IconShield, IconUsersGroup,
+  IconBooks, IconBrandLine, IconBrandThreads, IconBuildingSkyscraper, IconDeviceMobilePlus, IconFileText, IconSettings,
+  IconShield,
 } from '@tabler/icons-react';
 import { isPlainClick } from '@/components/in-page-link';
 import { examsReturnHref } from '@/features/exams/exams-last-place';
@@ -28,7 +29,8 @@ const primaryNavigation: readonly NavigationLinkItem[] = [
 ];
 const utilityNavigation: readonly NavigationLinkItem[] = [
   { href: '/settings', label: '設定', icon: IconSettings },
-  { href: '/community', label: '社群連結', icon: IconUsersGroup },
+  { href: '/line', label: 'LINE 社群', icon: IconBrandLine },
+  { href: '/threads', label: 'Threads', icon: IconBrandThreads },
   { href: '/privacy', label: '隱私權政策', icon: IconShield },
 ];
 // Pages opened from inside another page (開源授權 from 設定) that still title the topbar.

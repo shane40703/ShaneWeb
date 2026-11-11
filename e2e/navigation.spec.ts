@@ -44,7 +44,9 @@ test('navigation lists only the top-level pages, and returns home via the brand'
   for (const removed of ['詳解與討論', '歷屆試題', '統計分析', ...removedPages])
     await expect(nav.getByText(removed, { exact: true })).toHaveCount(0);
   await expect(nav.getByRole('link', { name: '設定', exact: true })).toBeVisible();
-  await expect(nav.getByRole('link', { name: '社群連結', exact: true })).toBeVisible();
+  await expect(nav.getByRole('link', { name: 'LINE 社群', exact: true })).toBeVisible();
+  await expect(nav.getByRole('link', { name: 'Threads', exact: true })).toBeVisible();
+  await expect(nav.getByRole('link', { name: '社群連結', exact: true })).toHaveCount(0);
   await expect(nav.getByRole('link', { name: '隱私權政策', exact: true })).toBeVisible();
   await page.screenshot({ path: testInfo.outputPath('navigation.png') });
 

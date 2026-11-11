@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 test('community and settings prevent accidental selection while color fields stay editable', async ({ page }) => {
-  await page.goto('/community');
+  await page.goto('/threads');
   await expect(page.getByRole('heading', { name: '一起備考，也一起交流。' })).toHaveCSS('user-select', 'none');
   await expect(page.getByRole('link', { name: /^前往 Threads/ })).toHaveAttribute('href', 'https://www.threads.com/@archi.exam_sup');
 

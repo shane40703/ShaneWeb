@@ -89,9 +89,9 @@ export function PrivacyPage() {
         <section className={styles.section}>
           <h2>聯絡方式</h2>
           <p>
-            對隱私權有疑問，或想刪除雲端上的資料，請到
-            <Link href="/community">社群連結</Link>
-            的 Threads 告訴我們。本政策更新時會修改上方日期。
+            對隱私權有疑問，或想刪除雲端上的資料，請到{' '}
+            <Link href="/threads">Threads</Link>
+            {' '}告訴我們。本政策更新時會修改上方日期。
           </p>
         </section>
       </article>

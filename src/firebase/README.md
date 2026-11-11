@@ -90,7 +90,7 @@ Ctrl＋Enter（Mac：⌘＋Enter）在模擬考可交卷，仍走原本的未作
 
 ## 社群連結與歷史回報
 
-- 問題回報表單已改為 `/community` 社群連結頁；舊 `/report` 網址會重新導向，不再送出回報。
+- 問題回報表單已改為社群頁（現在是 `/line` LINE 社群與 `/threads` Threads 兩頁）；舊 `/report` 與 `/community` 網址會轉到 `/line`，不再送出回報。
 - 社群頁不需要登入、不寫入 Firestore；Threads 連結與本機 QR Code 指向同一個公開主頁。
 - 既有 `contentReports` 雲端資料、本機舊回報及其管理介面保留，不因移除表單而刪除使用者資料。
 - 這次不變更 Firestore Rules；歷史雲端回報仍可由有權限的管理者在 Firebase Console 查看。

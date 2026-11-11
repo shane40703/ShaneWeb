@@ -36,11 +36,11 @@ describe('PrivacyPage', () => {
     expect(link).toHaveAttribute('rel', 'noreferrer');
   });
 
-  it('sends questions to 社群連結 inside the site', () => {
+  it('sends questions to the Threads page inside the site', () => {
     render(<PrivacyPage />);
 
-    const link = screen.getByRole('link', { name: '社群連結' });
-    expect(link).toHaveAttribute('href', '/community');
+    const link = screen.getByRole('link', { name: 'Threads' });
+    expect(link).toHaveAttribute('href', '/threads');
     expect(link).not.toHaveAttribute('target');
   });
 
@@ -51,7 +51,7 @@ describe('PrivacyPage', () => {
       '可以安裝 Google 提供的 Google Analytics 停用外掛 ↗，或使用會阻擋統計工具的瀏覽器擴充功能。兩種方式都不影響網站功能。',
     );
     expect(document.body).toHaveTextContent(
-      '對隱私權有疑問，或想刪除雲端上的資料，請到社群連結的 Threads 告訴我們。本政策更新時會修改上方日期。',
+      '對隱私權有疑問，或想刪除雲端上的資料，請到 Threads 告訴我們。本政策更新時會修改上方日期。',
     );
   });
 

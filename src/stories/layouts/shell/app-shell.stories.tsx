@@ -18,9 +18,10 @@ import HistoryRoute from '@/pages/history';
 import DailyPracticeHistoryRoute from '@/pages/practice-history';
 import HomeRoute from '@/pages/index';
 import PersonalRoute from '@/pages/personal';
-import CommunityRoute from '@/pages/community';
+import LineRoute from '@/pages/line';
 import PrivacyRoute from '@/pages/privacy';
 import SettingsPage from '@/pages/settings';
+import ThreadsRoute from '@/pages/threads';
 import WrongRoute from '@/pages/wrong';
 import {
   attemptsAppState,
@@ -56,7 +57,8 @@ const pages = {
   '/practice-history': { label: '每日練習履歷', content: <DailyPracticeHistoryRoute /> },
   '/history': { label: '歷屆試題作答履歷', content: <HistoryRoute /> },
   '/settings': { label: '設定', content: <SettingsPage /> },
-  '/community': { label: '社群連結', content: <CommunityRoute /> },
+  '/line': { label: 'LINE 社群', content: <LineRoute /> },
+  '/threads': { label: 'Threads', content: <ThreadsRoute /> },
   '/privacy': { label: '隱私權政策', content: <PrivacyRoute /> },
   // Opened from the settings dialog's 開源授權 row, which closes the dialog.
   '/licenses': { label: '開源授權', content: <LicensesPage thirdParty={licensesList} /> },
