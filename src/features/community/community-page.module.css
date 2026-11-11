@@ -23,6 +23,7 @@
 .intro p, .copy p {
   margin: 0;
   line-height: 1.8;
+  text-wrap: pretty;
 }
 .intro p { color: var(--muted); }
 .card {
@@ -68,7 +69,7 @@
   border-left: 1px dashed var(--line);
   min-width: 0;
 }
-.qrLink { display: block; width: 100%; max-width: 256px; background: #fff; }
+.qrLink { display: block; width: 100%; max-width: 256px; background: var(--image-surface); }
 .qrLink:focus-visible { outline: 2px solid var(--primary); outline-offset: 4px; }
 .qrLink img { display: block; width: 100%; height: auto; }
 .qr figcaption { display: grid; gap: 8px; text-align: center; line-height: 1.6; }
