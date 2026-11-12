@@ -2,6 +2,59 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
+    // Authoring is Console/IAM-only. Test mode is a public preview, not a secret.
+    match /pushMessages/{messageId} {
+      allow read: if resource.data.status in ['test', 'live'];
+      allow create, delete: if false;
+
+      function count(data, key) {
+        return data.get(key, 0);
+      }
+      function validCounterUpdate() {
+        let stage = resource.data.status;
+        let delivery = stage == 'test' ? 'testDelivered' : 'delivered';
+        let reading = stage == 'test' ? 'testRead' : 'read';
+        let receiptId = request.resource.data.lastReceiptId;
+        let path = /databases/$(database)/documents/pushMessages/$(messageId)/receipts/$(receiptId);
+        let existed = exists(path);
+        let beforeRead = existed ? get(path).data.read == true : false;
+        let after = getAfter(path).data;
+        return stage in ['test', 'live']
+          && resource.data.expiresAt is timestamp && resource.data.expiresAt > request.time
+          && receiptId is string && receiptId.matches(stage + '_[a-f0-9-]{36}')
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly([delivery, reading, 'lastReceiptId'])
+          && after.status == stage && after.delivered == true && after.read is bool
+          && (!beforeRead || after.read)
+          && (!existed || (!beforeRead && after.read))
+          && count(request.resource.data, delivery) is int
+          && count(request.resource.data, reading) is int
+          && count(request.resource.data, delivery) == count(resource.data, delivery) + (existed ? 0 : 1)
+          && count(request.resource.data, reading) == count(resource.data, reading) + (!beforeRead && after.read ? 1 : 0);
+      }
+      allow update: if validCounterUpdate();
+
+      match /receipts/{receiptId} {
+        // A random browser token, never an account identifier. No enumeration.
+        allow get: if receiptId.matches('(test|live)_[a-f0-9-]{36}');
+        allow list, delete: if false;
+        function validReceipt() {
+          let path = /databases/$(database)/documents/pushMessages/$(messageId);
+          let parent = get(path).data;
+          let after = getAfter(path).data;
+          let data = request.resource.data;
+          return data.keys().hasOnly(['status', 'delivered', 'read'])
+            && data.status in ['test', 'live'] && data.status == parent.status
+            && receiptId.matches(data.status + '_[a-f0-9-]{36}')
+            && data.delivered == true && data.read is bool
+            && parent.expiresAt > request.time
+            && after.lastReceiptId == receiptId
+            && after != parent;
+        }
+        allow create: if validReceipt();
+        allow update: if validReceipt() && resource.data.read == false && request.resource.data.read == true;
+      }
+    }
+
     // Per-user unfinished practice and paper drafts. Null payloads are durable tombstones.
     match /users/{userId}/progress/{progressId} {
       allow read: if request.auth != null && request.auth.uid == userId;

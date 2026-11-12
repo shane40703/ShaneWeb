@@ -20,6 +20,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
+    "test:push-rules": "firebase emulators:exec --only firestore --project demo-shane-push --config firebase.emulator.json 'tsx --test scripts/test-push-rules.ts'",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build"
   },
@@ -42,6 +43,7 @@
     "sharp": "^0.35.3"
   },
   "devDependencies": {
+    "@firebase/rules-unit-testing": "^5.0.2",
     "@playwright/test": "1.61.1",
     "@storybook/addon-docs": "10.6.3",
     "@storybook/nextjs-vite": "10.6.3",

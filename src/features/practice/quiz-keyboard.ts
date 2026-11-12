@@ -39,7 +39,9 @@ export function useQuizBodyShortcuts(handler: (event: globalThis.KeyboardEvent) 
   useEffect(() => {
     const onKeyDown = (event: globalThis.KeyboardEvent) => {
       if (event.target !== document.body && event.target !== document.documentElement) return;
-      if (document.querySelector('[role="dialog"], [role="alertdialog"], [role="menu"], [role="listbox"]')) return;
+      // Base UI announcements are non-modal dialogs; their presence must not stop
+      // writing answers. Keys focused inside the toast still belong to the toast.
+      if (document.querySelector('[role="dialog"]:not([data-push-announcement]), [role="alertdialog"], [role="menu"], [role="listbox"]')) return;
       handler(event);
     };
     window.addEventListener('keydown', onKeyDown);

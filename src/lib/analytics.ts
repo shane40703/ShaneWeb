@@ -148,3 +148,10 @@ export function trackPractice(
     subject,
   });
 }
+
+/** Shared event names, no message/visitor identifiers or content. Debug is event-scoped. */
+export function trackPush(event: 'push_delivered' | 'push_read', status: 'test' | 'live') {
+  if (!lastPath) return;
+  if (status === 'test') gtag('event', event, { debug_mode: true });
+  else gtag('event', event);
+}

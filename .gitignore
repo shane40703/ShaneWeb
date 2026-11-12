@@ -15,6 +15,9 @@ public/sitemap.xml
 # Storybook
 storybook-static/
 
+# Local visual review evidence (not website assets)
+.impeccable/review/
+
 # Git worktrees
 .worktrees/
 

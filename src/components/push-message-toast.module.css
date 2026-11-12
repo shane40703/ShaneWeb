@@ -1,0 +1,61 @@
+.viewport {
+  position: fixed;
+  right: 24px;
+  bottom: calc(88px + env(safe-area-inset-bottom));
+  z-index: 190;
+  width: min(400px, calc(100vw - 32px));
+}
+.toast {
+  background: var(--surface-elevated);
+  color: var(--text);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-popup);
+  box-shadow: var(--shadow-lg);
+  transition: transform 240ms cubic-bezier(0.16, 1, 0.3, 1), opacity 240ms ease-out;
+}
+.toast[data-starting-style], .toast[data-ending-style] {
+  transform: translateY(24px);
+  opacity: 0;
+}
+.content { padding: 16px; }
+.heading { display: flex; align-items: center; gap: 8px; }
+.heading svg { color: var(--primary); flex: none; }
+.title { font-size: 14px; font-weight: 600; }
+.message {
+  margin-top: 12px;
+  font-size: 14px;
+  line-height: 1.65;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: min(240px, 30dvh);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.actions { display: flex; justify-content: flex-end; margin-top: 12px; }
+.actions button { min-height: 44px; }
+.testBadge {
+  position: fixed;
+  right: 16px;
+  top: 72px;
+  z-index: 190;
+  padding: 4px 8px;
+  max-width: calc(100vw - 32px);
+  background: var(--warning-soft);
+  color: var(--warning);
+  border: 1px solid currentColor;
+  border-radius: var(--radius-frame);
+  font-size: 12px;
+  pointer-events: none;
+}
+@media (max-width: 540px) {
+  .viewport { right: 16px; }
+}
+@media (max-height: 450px) {
+  .viewport { bottom: calc(72px + env(safe-area-inset-bottom)); }
+  .content { padding: 12px; }
+  .message { max-height: 18dvh; margin-top: 8px; }
+  .actions { margin-top: 8px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .toast { transition: none; }
+}

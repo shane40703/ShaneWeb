@@ -6,7 +6,7 @@ export function PrivacyPage() {
     <div className={styles.page}>
       <article className={styles.panel}>
         <header className={styles.section}>
-          <p className={styles.updated}>最後更新：115 年 11 月 2 日</p>
+          <p className={styles.updated}>最後更新：115 年 11 月 12 日</p>
           <p>這裡說明本站會保存哪些資料、存在哪裡，以及使用統計怎麼運作。</p>
         </header>
 
@@ -39,6 +39,15 @@ export function PrivacyPage() {
         </section>
 
         <section className={styles.section}>
+          <h2>網站公告</h2>
+          <p>
+            網站開啟時會接收即時公告。本機保存公告已讀狀態與隨機產生的瀏覽器代碼；Firebase
+            保存該代碼對應的公告顯示、已讀紀錄及總人次，不連結你的 Google 帳號。這些紀錄用於避免重複計數。
+            換裝置或清除瀏覽器資料可能重新計數。公告與總數可公開讀取，個別紀錄無法列出清單。
+          </p>
+        </section>
+
+        <section className={styles.section}>
           <h2>使用統計</h2>
           <p>
             本站使用 Google Analytics
@@ -46,6 +55,7 @@ export function PrivacyPage() {
             會在你的瀏覽器存放 Cookie，用來分辨不同的瀏覽器，並收集以下資料：
           </p>
           <ul>
+            <li>網站公告顯示及已讀的次數，不包含公告文字或瀏覽器代碼</li>
             <li>造訪的頁面、來源網站或連結、停留時間</li>
             <li>裝置和瀏覽器類型、語言、大約地區</li>
             <li>

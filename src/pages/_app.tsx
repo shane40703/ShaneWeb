@@ -1,6 +1,7 @@
 import type { AppProps } from 'next/app';
 import Head from 'next/head';
 import { Analytics } from '@/components/analytics';
+import { PushMessages } from '@/components/push-messages';
 import { AppShell } from '@/components/layout/app-shell';
 import { Providers } from '@/components/providers';
 import { HOME_TITLE, SITE_NAME, SITE_URL } from '@/lib/site';
@@ -34,6 +35,7 @@ export default function App({ Component, pageProps, router }: AppProps) {
             <Component {...pageProps} />
           </AppShell>
         </div>
+        <PushMessages search={router.asPath.split('?')[1]?.split('#')[0] ?? ''} />
       </Providers>
       <Analytics />
     </>

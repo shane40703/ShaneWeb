@@ -35,6 +35,29 @@ beforeEach(() => {
   visit('/');
 });
 
+describe('push metrics', () => {
+  it('shares event names and sets debug_mode only on test events', async () => {
+    const { trackPageView, trackPush } = await load();
+    trackPageView('/');
+    trackPush('push_delivered', 'test');
+    trackPush('push_read', 'test');
+    trackPush('push_delivered', 'live');
+    trackPush('push_read', 'live');
+    expect(queue().slice(-4)).toEqual([
+      ['event', 'push_delivered', { debug_mode: true }],
+      ['event', 'push_read', { debug_mode: true }],
+      ['event', 'push_delivered'], ['event', 'push_read'],
+    ]);
+  });
+  it('respects analytics opt-out', async () => {
+    visit('/?ga=off');
+    const { trackPageView, trackPush } = await load();
+    trackPageView('/');
+    trackPush('push_delivered', 'test');
+    expect(queue()).toEqual([]);
+  });
+});
+
 afterEach(() => {
   vi.unstubAllEnvs();
   vi.restoreAllMocks();
