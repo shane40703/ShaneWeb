@@ -11,7 +11,8 @@ export function QuestionExplanationContent({
   question: Pick<Question, 'id' | 'explanation'>;
   emptyMessage?: string;
 }) {
-  const shared = useSharedDiscussions(question.id);
+  // Only post text and images show here, so replies, likes and reports are not read.
+  const shared = useSharedDiscussions(question.id, { reactions: false });
   const posts = shared.posts.filter(post =>
     ['explanation', 'supplement', 'correction'].includes(post.type),
   );

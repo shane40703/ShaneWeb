@@ -392,8 +392,21 @@ export function useDiscussionQuestionIds(prefix: string | null) {
   );
 }
 
-/** A question's posts; null (an overview page, no question on screen) listens to nothing. */
-export function useSharedDiscussions(questionId: QuestionId | null) {
+/**
+ * A question's posts; null (an overview page, no question on screen) listens to nothing.
+ * `reactions: false` listens to the posts alone, for views that show no replies or likes:
+ * otherwise every post adds a replies, a likes and, signed in, a report listener.
+ * `waitForServer` keeps `loading` until the server has answered, for a view that reads on
+ * demand: the cache may answer first (an earlier read in this tab, or offline), and its
+ * empty answer must not read as "no posts".
+ */
+export function useSharedDiscussions(
+  questionId: QuestionId | null,
+  {
+    reactions = true,
+    waitForServer = false,
+  }: { reactions?: boolean; waitForServer?: boolean } = {},
+) {
   const { state, dispatch } = useAppState();
   const cloud = useOptionalCloudSync();
   const user = cloud?.user ?? null;
@@ -418,8 +431,10 @@ export function useSharedDiscussions(questionId: QuestionId | null) {
       collection(firebase.db, 'discussionPosts'),
       where('questionId', '==', questionId),
     );
+    // A server answer that matches the cached one arrives only as a metadata change.
     return onSnapshot(
       postsQuery,
+      { includeMetadataChanges: waitForServer },
       (snapshot) => {
         const posts = deduplicateAuthorExplanations(snapshot.docs
           .flatMap((item) => {
@@ -428,7 +443,9 @@ export function useSharedDiscussions(questionId: QuestionId | null) {
           })
           .sort((left, right) => right.createdAt.localeCompare(left.createdAt)));
         setCloudPosts(posts);
-        setLoadedQuestionId(questionId);
+        if (!waitForServer || !snapshot.metadata.fromCache) {
+          setLoadedQuestionId(questionId);
+        }
         setError('');
       },
       () => {
@@ -436,11 +453,11 @@ export function useSharedDiscussions(questionId: QuestionId | null) {
         setLoadedQuestionId(questionId);
       },
     );
-  }, [enabled, questionId]);
+  }, [enabled, questionId, waitForServer]);
 
   const postIdsKey = cloudPosts.map((post) => post.id).join('|');
   useEffect(() => {
-    if (!enabled || !postIdsKey) return;
+    if (!enabled || !reactions || !postIdsKey) return;
     const firebase = getFirebaseServices();
     if (!firebase) return;
     const stops: Unsubscribe[] = [];
@@ -489,7 +506,7 @@ export function useSharedDiscussions(questionId: QuestionId | null) {
       }
     });
     return () => stops.forEach((stop) => stop());
-  }, [cloudPosts, enabled, postIdsKey, user]);
+  }, [cloudPosts, enabled, postIdsKey, reactions, user]);
 
   const posts = useMemo<SharedDiscussionPost[]>(() => {
     if (!enabled) {
@@ -501,10 +518,15 @@ export function useSharedDiscussions(questionId: QuestionId | null) {
       .filter((post) => post.questionId === questionId)
       .map((post) => ({
         ...post,
-        replies: repliesByPost[post.id] ?? [],
-        likes: likesByPost[post.id]?.count ?? 0,
-        likedByCurrentUser: likesByPost[post.id]?.liked ?? false,
-        reported: reportedPostIds.includes(post.id),
+        // Only the reaction listeners keep these current, so without them a post has none.
+        ...(reactions
+          ? {
+              replies: repliesByPost[post.id] ?? [],
+              likes: likesByPost[post.id]?.count ?? 0,
+              likedByCurrentUser: likesByPost[post.id]?.liked ?? false,
+              reported: reportedPostIds.includes(post.id),
+            }
+          : { replies: [], likes: 0, likedByCurrentUser: false, reported: false }),
         ownedByCurrentUser: Boolean(user && post.authorId === user.uid),
       }));
   }, [
@@ -512,6 +534,7 @@ export function useSharedDiscussions(questionId: QuestionId | null) {
     enabled,
     likesByPost,
     questionId,
+    reactions,
     repliesByPost,
     reportedPostIds,
     state.discussionPosts,

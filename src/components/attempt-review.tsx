@@ -193,53 +193,69 @@ function ReviewOptions({ question, selected }: { question: ReviewQuestion; selec
 }
 
 function ReviewDiscussion({ question }: { question: ReviewQuestion }) {
+  // A listener per row made every result view cost a read per question, so a row starts
+  // reading on its first open while the built-in explanation shows at once. It stays
+  // subscribed when collapsed, as ReviewOptions keeps its editor, so reopening is free.
   const [open, setOpen] = useState(false);
-  // Start the question-specific listener as soon as the review row is shown.
-  // Waiting until the accordion opens makes a fast empty snapshot look like
-  // there is no discussion and forces the user to interact elsewhere first.
-  const shared = useSharedDiscussions(question.id);
+  const [opened, setOpened] = useState(false);
 
   return (
     <section className={styles.reviewDiscussion}>
-      <button type="button" onClick={() => setOpen((current) => !current)}>
+      <button type="button" onClick={() => {
+        setOpen((current) => !current);
+        setOpened(true);
+      }}>
         {open ? '收合詳解與討論' : '顯示詳解與討論'}
         <IconMessages size={15} stroke={2} aria-hidden="true" />
       </button>
-      {open ? <ReviewDiscussionContent question={question} shared={shared} /> : null}
+      {opened ? <ReviewDiscussionContent question={question} open={open} /> : null}
     </section>
   );
 }
 
 function ReviewDiscussionContent({
   question,
-  shared,
+  open,
 }: {
   question: ReviewQuestion;
-  shared: ReturnType<typeof useSharedDiscussions>;
+  open: boolean;
 }) {
+  // Only post text and images show here, so replies, likes and reports are not read.
+  // Reads start on open, when the cache may answer first, so "none" waits for the server.
+  const shared = useSharedDiscussions(question.id, {
+    reactions: false,
+    waitForServer: true,
+  });
   const hasExplanation = Boolean(question.explanation?.trim());
 
-  if (shared.loading) return <p>正在載入詳解與討論…</p>;
-  if (shared.error) return <p>{shared.error}</p>;
-  if (!hasExplanation && !shared.posts.length) {
-    return <p>尚未有詳解或討論。</p>;
-  }
+  if (!open) return null;
 
   return (
-    <div className={styles.reviewDiscussionContent}>
-      {hasExplanation ? (
-        <article>
-          <strong>題目詳解</strong>
-          <p><RichText>{question.explanation!}</RichText></p>
-        </article>
+    <>
+      {hasExplanation || shared.posts.length ? (
+        <div className={styles.reviewDiscussionContent}>
+          {hasExplanation ? (
+            <article>
+              <strong>題目詳解</strong>
+              <p><RichText>{question.explanation!}</RichText></p>
+            </article>
+          ) : null}
+          {shared.posts.map((post) => (
+            <article key={post.id}>
+              {post.content ? <p><RichText>{post.content}</RichText></p> : null}
+              <AttachmentGallery images={post.images} />
+            </article>
+          ))}
+        </div>
       ) : null}
-      {shared.posts.map((post) => (
-        <article key={post.id}>
-          {post.content ? <p><RichText>{post.content}</RichText></p> : null}
-          <AttachmentGallery images={post.images} />
-        </article>
-      ))}
-    </div>
+      {shared.loading ? (
+        <p role="status">正在載入詳解與討論…</p>
+      ) : shared.error ? (
+        <p role="alert">{shared.error}</p>
+      ) : !hasExplanation && !shared.posts.length ? (
+        <p>尚未有詳解或討論。</p>
+      ) : null}
+    </>
   );
 }
 

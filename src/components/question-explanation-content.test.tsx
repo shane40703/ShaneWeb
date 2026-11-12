@@ -4,7 +4,9 @@ import type { DiscussionPost } from '@/lib/types';
 import { QuestionExplanationContent } from './question-explanation-content';
 
 const shared = vi.hoisted(() => ({ posts: [] as DiscussionPost[], loading: false, error: '', read: vi.fn() }));
-vi.mock('@/lib/shared-discussions', () => ({ useSharedDiscussions: (id: string) => { shared.read(id); return shared; } }));
+vi.mock('@/lib/shared-discussions', () => ({
+  useSharedDiscussions: (id: string, options?: { reactions?: boolean }) => { shared.read(id, options); return shared; },
+}));
 const question = { id: 'law-114-78', explanation: '' };
 function post(type: DiscussionPost['type'], content: string): DiscussionPost {
   return { id: type, questionId: question.id, type, content, images: [], createdAt: '2026-10-27T00:00:00Z', likes: 0, replies: [], reported: false };
@@ -18,7 +20,7 @@ describe('QuestionExplanationContent', () => {
     illustrated.images = [{ id: 'illustration', name: '共享詳解圖片', type: 'image/png', dataUrl: 'data:image/png;base64,aGVsbG8=' }];
     shared.posts = [post('explanation', '**共享解題重點**'), illustrated, post('correction', '勘誤說明'), post('question', '這是一則提問')];
     render(<QuestionExplanationContent question={{ ...question, explanation: '內建詳解' }} />);
-    expect(shared.read).toHaveBeenCalledWith(question.id);
+    expect(shared.read).toHaveBeenCalledWith(question.id, { reactions: false });
     expect(screen.getByText('內建詳解')).toBeInTheDocument();
     expect(screen.getByText('共享解題重點').tagName).toBe('STRONG');
     expect(screen.getByRole('img', { name: '共享詳解圖片' })).toBeInTheDocument();
