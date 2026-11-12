@@ -21,7 +21,7 @@ import {
   subjectReviewQuestions,
 } from './practice-session';
 import styles from './subject-practice-button.module.css';
-import { drawWrongQuestions } from './wrong-weighted-draw';
+import { createWrongPracticeDrawStore } from './wrong-practice-draw';
 
 /** Configure a subject's marked/mistaken questions before replacing any saved progress. */
 export function SubjectPracticeButton({
@@ -40,6 +40,7 @@ export function SubjectPracticeButton({
   const [countInput, setCountInput] = useState('50');
   const [shuffleOptions, setShuffleOptions] = useState(DEFAULT_PRACTICE_SETTINGS.shuffleOptions);
   const [starting, setStarting] = useState(false);
+  const [wrongDraws] = useState(createWrongPracticeDrawStore);
   const hintId = useId();
   const candidates = subjectReviewQuestions(questions, subject);
   const label = source === 'difficult' ? '難題標記' : '常錯題目';
@@ -54,7 +55,7 @@ export function SubjectPracticeButton({
       '目前的每日抽題練習還沒完成，要放棄並改練本科目這組題目嗎？作答進度會清除。',
     )) return;
     const selected = count === candidates.length ? candidates
-      : source === 'wrong' ? drawWrongQuestions(candidates, wrongCounts, count)
+      : source === 'wrong' ? wrongDraws.choose(subject, candidates, wrongCounts, count)
       : pickRandomItems(candidates, count);
     const session = {
       ...createPracticeSessionFromQuestions(selected, subject, shuffleOptions),
@@ -71,6 +72,8 @@ export function SubjectPracticeButton({
     try {
       if (!await router.push(practiceQuestionHref(0))) {
         notify('無法開啟練習頁，請再試一次。', undefined, 'error');
+      } else if (source === 'wrong') {
+        wrongDraws.record(subject, session.questionIds);
       }
     } catch {
       notify('無法開啟練習頁，請再試一次。', undefined, 'error');

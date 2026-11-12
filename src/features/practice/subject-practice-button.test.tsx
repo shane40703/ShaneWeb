@@ -5,6 +5,7 @@ import { ToastProvider } from '@/components/ui/ui';
 import type { Question } from '@/lib/types';
 import { createPracticeSessionFromQuestions, parsePracticeSession, PRACTICE_SESSION_STORAGE_KEY } from './practice-session';
 import { SubjectPracticeButton } from './subject-practice-button';
+import { WRONG_DRAW_HISTORY_KEY } from './wrong-practice-draw';
 
 const mocks = vi.hoisted(() => ({ push: vi.fn(async () => true), reportPersistence: vi.fn() }));
 vi.mock('next/router', () => ({ useRouter: () => ({ push: mocks.push }) }));
@@ -141,6 +142,49 @@ describe('SubjectPracticeButton', () => {
     await openSettings();
     fireEvent.click(screen.getByRole('button', { name: '開始練習（50 題）' }));
     expect(parsePracticeSession(localStorage.getItem(PRACTICE_SESSION_STORAGE_KEY))!.questionIds).toHaveLength(50);
+  });
+
+  it('records only a successfully opened wrong-question set, including a set of all questions', async () => {
+    const questions = bank(5);
+    mocks.push.mockResolvedValueOnce(false).mockResolvedValueOnce(true);
+    renderButton({ questions, source: 'wrong' });
+    await openSettings('wrong');
+    fireEvent.click(screen.getByRole('button', { name: '開始練習（5 題）' }));
+    await waitFor(() => expect(mocks.push).toHaveBeenCalledTimes(1));
+    expect(localStorage.getItem(WRONG_DRAW_HISTORY_KEY)).toBeNull();
+    await waitFor(() => expect(screen.getByRole('button', { name: '開始練習（5 題）' })).toBeEnabled());
+    fireEvent.click(screen.getByRole('button', { name: '開始練習（5 題）' }));
+    await waitFor(() => expect(JSON.parse(localStorage.getItem(WRONG_DRAW_HISTORY_KEY)!).law[0]).toHaveLength(5));
+  });
+
+  it('does not add difficult-question draws to the wrong-question cycle', async () => {
+    renderButton({ questions: bank(5) });
+    await openSettings();
+    fireEvent.click(screen.getByRole('button', { name: '開始練習（5 題）' }));
+    await waitFor(() => expect(mocks.push).toHaveBeenCalled());
+    expect(localStorage.getItem(WRONG_DRAW_HISTORY_KEY)).toBeNull();
+  });
+
+  it('avoids a previously opened wrong-question set on the next weighted draw', async () => {
+    const questions = bank(12);
+    const wrongCounts = Object.fromEntries(questions.map((item, index) => [item.id, index + 1]));
+    vi.spyOn(Math, 'random').mockReturnValue(0.5);
+    const first = renderButton({ questions, source: 'wrong', wrongCounts });
+    await openSettings('wrong');
+    fireEvent.click(screen.getByRole('button', { name: '5 題' }));
+    fireEvent.click(screen.getByRole('button', { name: '開始練習（5 題）' }));
+    await waitFor(() => expect(localStorage.getItem(WRONG_DRAW_HISTORY_KEY)).not.toBeNull());
+    const previous = parsePracticeSession(localStorage.getItem(PRACTICE_SESSION_STORAGE_KEY))!.questionIds;
+    first.unmount();
+
+    renderButton({ questions, source: 'wrong', wrongCounts });
+    await openSettings('wrong');
+    fireEvent.click(screen.getByRole('button', { name: '5 題' }));
+    fireEvent.click(screen.getByRole('button', { name: '開始練習（5 題）' }));
+    await waitFor(() => expect(JSON.parse(localStorage.getItem(WRONG_DRAW_HISTORY_KEY)!).law).toHaveLength(2));
+    const current = parsePracticeSession(localStorage.getItem(PRACTICE_SESSION_STORAGE_KEY))!.questionIds;
+    expect(current).toHaveLength(5);
+    expect(current.every((id) => !previous.includes(id))).toBe(true);
   });
 
   it('keeps an explicit all option beyond 50 questions and preserves the original order', async () => {
