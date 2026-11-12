@@ -111,9 +111,10 @@ function cloudAttempt(data: unknown): QuizAttempt | null {
 
 /**
  * What a batch of the attempts listener means for this device. `confirmed` holds the
- * records the server has accepted; only those can be deleted from elsewhere. A write the
- * server refused comes back as a removal when the SDK rolls it back, and this device's own
- * pending write echoes back first, so neither changes what was confirmed.
+ * records the server has accepted; only those can be deleted from elsewhere. This device's
+ * own pending write echoes back first and is not incoming: local state has it already, and
+ * merging it would send it again. A write the server refused comes back as a removal when
+ * the SDK rolls it back, so neither changes what was confirmed.
  */
 export function readAttemptChanges(
   changes: readonly {
@@ -131,9 +132,10 @@ export function readAttemptChanges(
       if (confirmed.delete(change.id)) removed.push(change.id);
       return;
     }
+    if (change.pending) return;
     const attempt = cloudAttempt(change.data);
     if (!attempt) return;
-    if (!change.pending) confirmed.add(attempt.id);
+    confirmed.add(attempt.id);
     incoming.push(attempt);
   });
   return { incoming, removed };
@@ -153,9 +155,58 @@ export async function uploadEach<T extends { id: string }>(
   };
 }
 
-/** Attempts are immutable by id. Existing server records must not be rewritten at every login. */
-export function pendingAttemptUploads<T extends { id: string }>(items: readonly T[], confirmedIds: ReadonlySet<string>) {
-  return items.filter((item) => !confirmedIds.has(item.id));
+/**
+ * Attempts are immutable by id. Existing server records must not be rewritten at every login,
+ * nor records still on their way or refused for good (`skippedIds`).
+ */
+export function pendingAttemptUploads<T extends { id: string }>(items: readonly T[], confirmedIds: ReadonlySet<string>, ...skippedIds: ReadonlySet<string>[]) {
+  return items.filter((item) => !confirmedIds.has(item.id) && !skippedIds.some((ids) => ids.has(item.id)));
+}
+
+/**
+ * Keys of the records being written now, and of those the server refused. `retired` is set
+ * when the account changes, so a write still settling for the last one marks nothing.
+ */
+interface WriteGuards {
+  inFlight: Set<string>;
+  rejected: Set<string>;
+  retired: boolean;
+}
+
+function writeGuards(): WriteGuards {
+  return { inFlight: new Set(), rejected: new Set(), retired: false };
+}
+
+/**
+ * Sends one record while `inFlight` holds its key, so a re-render meanwhile does not send it
+ * again. The SDK retries what it can by itself (offline, quota) and only rejects a write that
+ * resending cannot fix, so a refusal moves the key to `rejected` for the session. On success
+ * `confirm` runs first, so the record never looks unsent in between. A synchronous SDK throw
+ * (bad data) settles like a refused write.
+ */
+function guardedWrite(
+  key: string,
+  guards: WriteGuards,
+  write: () => Promise<unknown>,
+  confirm: () => void = () => {},
+) {
+  guards.inFlight.add(key);
+  return new Promise<unknown>((resolve) => resolve(write())).then(
+    () => {
+      if (!guards.retired) confirm();
+      guards.inFlight.delete(key);
+    },
+    (reason: unknown) => {
+      guards.inFlight.delete(key);
+      guards.rejected.add(key);
+      throw reason;
+    },
+  );
+}
+
+/** One version of one note; each edit makes a new one. */
+function noteVersion(questionId: string, updatedAt: string) {
+  return `${questionId} ${updatedAt}`;
 }
 
 export function parseCloudNote(data: DocumentData): SyncedNote | null {
@@ -207,6 +258,12 @@ export function CloudSyncProvider({ children }: { children: ReactNode }) {
   const authenticatedUserId = useRef<string | null>(null);
   const syncedAttemptIds = useRef(new Set<string>());
   const syncedNoteVersions = useRef(new Map<string, string>());
+  // Replaced at each sign-in, so a write still settling for the last account changes nothing.
+  const attemptWrites = useRef(writeGuards());
+  const noteWrites = useRef(writeGuards());
+  const deletionWrites = useRef(writeGuards());
+  // Bumped when the server holds an older note than this device, to offer ours again.
+  const [noteResendEpoch, setNoteResendEpoch] = useState(0);
   const difficultSyncInFlight = useRef(new Set<string>());
   const retryDifficultAfterFlight = useRef(new Set<string>());
   const [difficultSyncEpoch, setDifficultSyncEpoch] = useState(0);
@@ -245,6 +302,10 @@ export function CloudSyncProvider({ children }: { children: ReactNode }) {
       setReadyUserId(null);
       syncedAttemptIds.current.clear();
       syncedNoteVersions.current.clear();
+      [attemptWrites, noteWrites, deletionWrites].forEach((writes) => {
+        writes.current.retired = true;
+        writes.current = writeGuards();
+      });
       setError('');
       setStatus(nextUser ? 'syncing' : 'signed-out');
     });
@@ -318,13 +379,14 @@ export function CloudSyncProvider({ children }: { children: ReactNode }) {
         });
 
         // One record the server refuses must not keep notes and 難題標記 from syncing;
-        // it stays unsynced and is offered again with the next change.
-        const uploads = await uploadEach(pendingAttemptUploads(localAttempts.current, syncedAttemptIds.current), (attempt) =>
-          setDoc(
+        // it stays unsynced and is offered again at the next sign-in or page load.
+        const guards = attemptWrites.current;
+        const uploads = await uploadEach(pendingAttemptUploads(localAttempts.current, syncedAttemptIds.current, guards.inFlight, guards.rejected), (attempt) =>
+          guardedWrite(attempt.id, guards, () => setDoc(
             doc(attempts, attempt.id),
             { ...attempt, syncedAt: serverTimestamp() },
             { merge: true },
-          ),
+          )),
         );
         if (!active) return;
         uploads.synced.forEach((attemptId) => syncedAttemptIds.current.add(attemptId));
@@ -395,7 +457,9 @@ export function CloudSyncProvider({ children }: { children: ReactNode }) {
           notes,
           (nextSnapshot) => {
             const incoming = nextSnapshot.docChanges().flatMap((change) => {
-              if (change.type === 'removed') return [];
+              // A pending change is this device's own write echoing back: local state has
+              // it, and only the server's answer may count that version as synced.
+              if (change.type === 'removed' || change.doc.metadata.hasPendingWrites) return [];
               const note = parseCloudNote(change.doc.data());
               if (note) {
                 syncedNoteVersions.current.set(
@@ -406,6 +470,15 @@ export function CloudSyncProvider({ children }: { children: ReactNode }) {
               return note ? [note] : [];
             });
             if (incoming.length) dispatch({ type: 'merge-notes', notes: incoming });
+            // Another device's late write took the server back to an older version: send
+            // ours again. The upload effect skips a version on its way or refused.
+            if (
+              incoming.some(
+                (note) => (localNotes.current.noteUpdatedAt[note.questionId] ?? '') > note.updatedAt,
+              )
+            ) {
+              setNoteResendEpoch((value) => value + 1);
+            }
             setStatus('synced');
           },
           () => {
@@ -454,22 +527,30 @@ export function CloudSyncProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const firebase = getFirebaseServices();
     if (!firebase || !user || readyUserId !== user.uid) return;
-    if (!state.deletedAttemptIds.length) return;
+    const guards = deletionWrites.current;
+    // Each confirmed deletion changes the list: the others still on their way, or refused,
+    // are not sent again.
+    const deletions = state.deletedAttemptIds.filter(
+      (attemptId) => !guards.inFlight.has(attemptId) && !guards.rejected.has(attemptId),
+    );
+    if (!deletions.length) return;
 
-    void Promise.resolve()
-      .then(() => {
-        setStatus('syncing');
-        return Promise.all(
-          state.deletedAttemptIds.map((attemptId) =>
-            deleteDoc(
-              doc(firebase.db, 'users', user.uid, 'attempts', attemptId),
-            ).then(() => {
-              syncedAttemptIds.current.delete(attemptId);
-              dispatch({ type: 'confirm-attempt-deletion', attemptId });
-            }),
+    setStatus('syncing');
+    void Promise.all(
+      deletions.map((attemptId) =>
+        guardedWrite(
+          attemptId,
+          guards,
+          () => deleteDoc(
+            doc(firebase.db, 'users', user.uid, 'attempts', attemptId),
           ),
-        );
-      })
+          () => {
+            syncedAttemptIds.current.delete(attemptId);
+            dispatch({ type: 'confirm-attempt-deletion', attemptId });
+          },
+        ),
+      ),
+    )
       .then(() => setStatus('synced'))
       .catch(() => {
         setError('紀錄已從本機移除，恢復連線後請重新登入以刪除雲端紀錄。');
@@ -480,21 +561,30 @@ export function CloudSyncProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const firebase = getFirebaseServices();
     if (!firebase || !user || readyUserId !== user.uid) return;
+    const guards = attemptWrites.current;
+    // Not again while its write is on its way, nor after the server refused it.
     const unsynced = state.attempts.filter(
       (attempt) =>
         !state.deletedAttemptIds.includes(attempt.id) &&
-        !syncedAttemptIds.current.has(attempt.id),
+        !syncedAttemptIds.current.has(attempt.id) &&
+        !guards.inFlight.has(attempt.id) &&
+        !guards.rejected.has(attempt.id),
     );
     if (!unsynced.length) return;
 
     setStatus('syncing');
     void Promise.all(
       unsynced.map((attempt) =>
-        setDoc(
-          doc(firebase.db, 'users', user.uid, 'attempts', attempt.id),
-          { ...attempt, syncedAt: serverTimestamp() },
-          { merge: true },
-        ).then(() => syncedAttemptIds.current.add(attempt.id)),
+        guardedWrite(
+          attempt.id,
+          guards,
+          () => setDoc(
+            doc(firebase.db, 'users', user.uid, 'attempts', attempt.id),
+            { ...attempt, syncedAt: serverTimestamp() },
+            { merge: true },
+          ),
+          () => syncedAttemptIds.current.add(attempt.id),
+        ),
       ),
     )
       .then(() => setStatus('synced'))
@@ -507,27 +597,39 @@ export function CloudSyncProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const firebase = getFirebaseServices();
     if (!firebase || !user || readyUserId !== user.uid) return;
-    const changedNotes = Object.keys(state.noteUpdatedAt).filter(
-      (questionId) =>
-        syncedNoteVersions.current.get(questionId) !==
-        state.noteUpdatedAt[questionId],
-    );
+    const guards = noteWrites.current;
+    // A version on its way, or refused, is not sent again; a later edit is a new version
+    // and is.
+    const changedNotes = Object.keys(state.noteUpdatedAt).filter((questionId) => {
+      const updatedAt = state.noteUpdatedAt[questionId];
+      const version = noteVersion(questionId, updatedAt);
+      return (
+        syncedNoteVersions.current.get(questionId) !== updatedAt &&
+        !guards.inFlight.has(version) &&
+        !guards.rejected.has(version)
+      );
+    });
     if (!changedNotes.length) return;
 
     setStatus('syncing');
     void Promise.all(
       changedNotes.map((questionId) => {
         const updatedAt = state.noteUpdatedAt[questionId];
-        return setDoc(
-          doc(firebase.db, 'users', user.uid, 'notes', questionId),
-          {
-            questionId,
-            content: state.notes[questionId] ?? '',
-            updatedAt,
-            syncedAt: serverTimestamp(),
-          },
-          { merge: true },
-        ).then(() => syncedNoteVersions.current.set(questionId, updatedAt));
+        return guardedWrite(
+          noteVersion(questionId, updatedAt),
+          guards,
+          () => setDoc(
+            doc(firebase.db, 'users', user.uid, 'notes', questionId),
+            {
+              questionId,
+              content: state.notes[questionId] ?? '',
+              updatedAt,
+              syncedAt: serverTimestamp(),
+            },
+            { merge: true },
+          ),
+          () => syncedNoteVersions.current.set(questionId, updatedAt),
+        );
       }),
     )
       .then(() => setStatus('synced'))
@@ -535,7 +637,7 @@ export function CloudSyncProvider({ children }: { children: ReactNode }) {
         setError('最新筆記仍保存在本機，恢復連線後請重新登入同步。');
         setStatus('error');
       });
-  }, [readyUserId, state.noteUpdatedAt, state.notes, user]);
+  }, [noteResendEpoch, readyUserId, state.noteUpdatedAt, state.notes, user]);
 
   useEffect(() => {
     if (!user) return;

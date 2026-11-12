@@ -3,6 +3,7 @@ import {
   parseProgressRecord, PROGRESS_JOURNAL_KEY, PROGRESS_OWNER_KEY,
   readLocalProgress, readProgressJournal, type ProgressRecord,
 } from './progress-sync';
+import { firestoreErrorCode } from './firestore-error-code';
 import { PROGRESS_CHANGED_EVENT, PROGRESS_RESOLVE_EVENT, PROGRESS_SYNC_NOW_EVENT, REMOTE_PROGRESS_URL } from './progress-events';
 
 export interface ProgressConflict { id: string; localUpdatedAt: number; remoteUpdatedAt: number }
@@ -10,6 +11,10 @@ export interface ProgressSyncState { status: 'idle' | 'pending' | 'syncing' | 's
 export const PROGRESS_SYNC_INTERVAL_MS = 60_000;
 export const PROGRESS_BASELINE_KEY = 'shaneweb:progress-baseline:';
 const QUOTA_RETRY_MS = 5 * 60_000;
+const RETRY_MS = 60_000;
+const MAX_RETRY_MS = 30 * 60_000;
+/** A write that failed for these had no network; it is not a refusal. */
+const NETWORK_ERRORS = new Set(['unavailable', 'deadline-exceeded']);
 export interface ProgressTransport {
   listen(receive: (records: Record<string, unknown>) => void, error: (cause?: unknown) => void): () => void;
   /** Atomically writes only if newer, and returns the accepted server version. */
@@ -44,6 +49,8 @@ export function connectProgressSync(storage: Storage, uid: string, transport: Pr
   let failed = false;
   let timeout: ReturnType<typeof setTimeout> | undefined;
   let retryAfter = 0;
+  let writeFailures = 0;
+  let networkFailure = false;
   const conflicts = new Map<string, ProgressRecord>();
   const acknowledged = new Map<string, ProgressRecord>();
   const baselineKey = PROGRESS_BASELINE_KEY + uid;
@@ -58,11 +65,11 @@ export function connectProgressSync(storage: Storage, uid: string, transport: Pr
         ? [[id, { updatedAt: item.updatedAt!, writer: item.writer }]] : [];
     }));
   } catch { /* A missing baseline is handled conservatively as a conflict. */ }
+  const quotaError = (cause?: unknown) => firestoreErrorCode(cause) === 'resource-exhausted';
   const error = (cause?: unknown) => {
     if (!active) return;
     failed = true;
-    const code = cause && typeof cause === 'object' && 'code' in cause ? String(cause.code) : '';
-    const quota = code.includes('resource-exhausted');
+    const quota = quotaError(cause);
     if (quota) retryAfter = Date.now() + QUOTA_RETRY_MS;
     report({ status: 'error', error: quota
       ? '雲端用量暫時達上限，進度保留在本機，稍後會再嘗試同步。'
@@ -158,6 +165,8 @@ export function connectProgressSync(storage: Storage, uid: string, transport: Pr
       }
       if (ownsStorage()) {
         failed = false;
+        writeFailures = 0;
+        retryAfter = 0;
         if (conflicts.size) showConflict();
         else if (Object.entries(readProgressJournal(storage, uid)).some(([id, record]) =>
           !acknowledged.has(id) || compareProgress(record, acknowledged.get(id)!) > 0)) schedule();
@@ -165,7 +174,12 @@ export function connectProgressSync(storage: Storage, uid: string, transport: Pr
       }
     } catch (cause) {
       error(cause);
-      if (retryAfter > Date.now()) {
+      // Every failure waits longer, whatever its code: focus, edits and 立即同步 must not
+      // retry a refused write each time.
+      if (active) {
+        networkFailure = NETWORK_ERRORS.has(firestoreErrorCode(cause));
+        const base = quotaError(cause) ? QUOTA_RETRY_MS : 0;
+        retryAfter = Date.now() + Math.min(MAX_RETRY_MS, Math.max(base, RETRY_MS * 2 ** writeFailures++));
         clearTimeout(timeout);
         timeout = setTimeout(() => { timeout = undefined; void flush(); }, retryAfter - Date.now());
       }
@@ -190,6 +204,12 @@ export function connectProgressSync(storage: Storage, uid: string, transport: Pr
     if (Date.now() < retryAfter) return;
     clearTimeout(timeout); timeout = undefined; void flush();
   };
+  // Going online, or 立即同步, ends the pause after a write that had no network.
+  const retryNow = () => {
+    if (networkFailure) { networkFailure = false; writeFailures = 0; retryAfter = 0; }
+    flushNow();
+  };
+  const online = () => { if (networkFailure) retryNow(); };
   const hidden = () => { if (document.visibilityState === 'hidden') flushNow(); };
   const retryOnFocus = () => { if (failed) flushNow(); };
   const resolve = (event: Event) => {
@@ -235,7 +255,8 @@ export function connectProgressSync(storage: Storage, uid: string, transport: Pr
   window.addEventListener('pagehide', flushNow);
   window.addEventListener('focus', retryOnFocus);
   document.addEventListener('visibilitychange', hidden);
-  window.addEventListener(PROGRESS_SYNC_NOW_EVENT, flushNow);
+  window.addEventListener(PROGRESS_SYNC_NOW_EVENT, retryNow);
+  window.addEventListener('online', online);
   window.addEventListener(PROGRESS_RESOLVE_EVENT, resolve);
   return () => {
     active = false;
@@ -246,7 +267,8 @@ export function connectProgressSync(storage: Storage, uid: string, transport: Pr
     window.removeEventListener('pagehide', flushNow);
     window.removeEventListener('focus', retryOnFocus);
     document.removeEventListener('visibilitychange', hidden);
-    window.removeEventListener(PROGRESS_SYNC_NOW_EVENT, flushNow);
+    window.removeEventListener(PROGRESS_SYNC_NOW_EVENT, retryNow);
+    window.removeEventListener('online', online);
     window.removeEventListener(PROGRESS_RESOLVE_EVENT, resolve);
   };
 }

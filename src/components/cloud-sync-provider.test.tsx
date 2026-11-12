@@ -151,10 +151,13 @@ describe('CloudSyncProvider', () => {
     };
     const confirmed = new Set(['attempt-old']);
 
-    // This device's write echoes back, then the server refuses it and the SDK rolls it back.
+    // This device's write echoes back while pending: local state has it already, so it is not
+    // incoming (merging it would send it again). Then the server refuses it and the SDK rolls
+    // it back; neither confirms it.
     expect(
       readAttemptChanges([{ type: 'added', id: record.id, data: record, pending: true }], confirmed),
-    ).toEqual({ incoming: [record], removed: [] });
+    ).toEqual({ incoming: [], removed: [] });
+    expect(confirmed.has(record.id)).toBe(false);
     expect(
       readAttemptChanges([{ type: 'removed', id: record.id, data: record, pending: false }], confirmed),
     ).toEqual({ incoming: [], removed: [] });

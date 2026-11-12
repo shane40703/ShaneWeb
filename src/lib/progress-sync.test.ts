@@ -229,7 +229,8 @@ describe('cross-device unfinished practice', () => {
     expect(report).toHaveBeenLastCalledWith({ status: 'synced', error: '' });
   });
 
-  it('keeps local progress after a denied write and retries on focus', async () => {
+  it('keeps local progress after a denied write and retries after a pause, not on focus', async () => {
+    vi.useFakeTimers();
     const storage = memoryStorage();
     storage.setItem(PRACTICE_SESSION_STORAGE_KEY, JSON.stringify(practice()));
     const cloud = server();
@@ -240,7 +241,63 @@ describe('cross-device unfinished practice', () => {
     expect(report).toHaveBeenLastCalledWith(expect.objectContaining({ status: 'error' }));
     expect(storage.getItem(PRACTICE_SESSION_STORAGE_KEY)).not.toBeNull();
     window.dispatchEvent(new Event('focus'));
+    await vi.advanceTimersByTimeAsync(59_999);
+    expect(write).toHaveBeenCalledTimes(1);
+    await vi.advanceTimersByTimeAsync(1);
+    expect(write).toHaveBeenCalledTimes(2);
+    expect(cloud.records.practice.payload).not.toBeNull();
+    expect(report).toHaveBeenLastCalledWith({ status: 'synced', error: '' });
+  });
+
+  it('backs off repeated denied writes instead of retrying on every focus', async () => {
+    vi.useFakeTimers();
+    const storage = memoryStorage();
+    storage.setItem(PRACTICE_SESSION_STORAGE_KEY, JSON.stringify(practice()));
+    const cloud = server();
+    const write = vi.fn(async () => { throw { code: 'permission-denied' }; });
+    const report = vi.fn();
+    mount(storage, { ...cloud.transport, write }, 'user', report);
     await settle();
+    expect(write).toHaveBeenCalledTimes(1);
+    // Going online or 立即同步 cannot fix a refusal either.
+    for (let halfMinute = 0; halfMinute < 120; halfMinute++) {
+      window.dispatchEvent(new Event('focus'));
+      window.dispatchEvent(new Event('online'));
+      window.dispatchEvent(new Event(PROGRESS_SYNC_NOW_EVENT));
+      await vi.advanceTimersByTimeAsync(30_000);
+    }
+    // Tries at 0, 1, 3, 7, 15 and 31 minutes; the next pause is capped at 30 minutes.
+    expect(write).toHaveBeenCalledTimes(6);
+    expect(storage.getItem(PRACTICE_SESSION_STORAGE_KEY)).not.toBeNull();
+    expect(report).toHaveBeenLastCalledWith(expect.objectContaining({ status: 'error' }));
+  });
+
+  it('retries a write that had no network at once when back online or on 立即同步', async () => {
+    vi.useFakeTimers();
+    const storage = memoryStorage();
+    storage.setItem(PRACTICE_SESSION_STORAGE_KEY, JSON.stringify(practice()));
+    const cloud = server();
+    let offline = true;
+    const write = vi.fn(async (id: string, next: ProgressRecord) => {
+      if (offline) throw { code: 'unavailable' };
+      return cloud.transport.write(id, next);
+    });
+    const report = vi.fn();
+    mount(storage, { ...cloud.transport, write }, 'user', report);
+    await settle();
+    // Offline: tries at 0, 1 and 3 minutes, then 立即同步 tries once more; focus waits.
+    await vi.advanceTimersByTimeAsync(180_000);
+    expect(write).toHaveBeenCalledTimes(3);
+    window.dispatchEvent(new Event(PROGRESS_SYNC_NOW_EVENT));
+    await settle();
+    expect(write).toHaveBeenCalledTimes(4);
+    window.dispatchEvent(new Event('focus'));
+    await settle();
+    expect(write).toHaveBeenCalledTimes(4);
+    offline = false;
+    window.dispatchEvent(new Event('online'));
+    await settle();
+    expect(write).toHaveBeenCalledTimes(5);
     expect(cloud.records.practice.payload).not.toBeNull();
     expect(report).toHaveBeenLastCalledWith({ status: 'synced', error: '' });
   });

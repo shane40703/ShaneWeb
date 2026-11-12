@@ -58,6 +58,31 @@ export type AppAction =
   | { type: 'add-content-report'; report: ContentReport }
   | { type: 'delete-content-report'; reportId: string };
 
+/**
+ * Compares plain JSON values. Key order is ignored because Firestore returns map fields in
+ * its own order, and undefined fields count as missing, as they do in JSON.
+ */
+function sameJson(left: unknown, right: unknown): boolean {
+  if (left === right) return true;
+  if (!left || !right || typeof left !== 'object' || typeof right !== 'object') return false;
+  if (Array.isArray(left) || Array.isArray(right)) {
+    return (
+      Array.isArray(left) &&
+      Array.isArray(right) &&
+      left.length === right.length &&
+      left.every((item, index) => sameJson(item, right[index]))
+    );
+  }
+  const leftRecord = left as Record<string, unknown>;
+  const rightRecord = right as Record<string, unknown>;
+  const leftKeys = Object.keys(leftRecord).filter((key) => leftRecord[key] !== undefined);
+  const rightKeys = Object.keys(rightRecord).filter((key) => rightRecord[key] !== undefined);
+  return (
+    leftKeys.length === rightKeys.length &&
+    leftKeys.every((key) => sameJson(leftRecord[key], rightRecord[key]))
+  );
+}
+
 export function appReducer(state: AppState, action: AppAction): AppState {
   switch (action.type) {
     case 'hydrate':
@@ -140,6 +165,17 @@ export function appReducer(state: AppState, action: AppAction): AppState {
     }
     case 'merge-attempts': {
       const deletedAttemptIds = new Set(state.deletedAttemptIds);
+      const known = new Map(state.attempts.map((attempt) => [attempt.id, attempt]));
+      // Listener echoes repeat what this device has. The same state keeps the upload
+      // effect, which watches the attempts, from running again for nothing.
+      if (
+        action.attempts.every(
+          (attempt) =>
+            deletedAttemptIds.has(attempt.id) || sameJson(known.get(attempt.id), attempt),
+        )
+      ) {
+        return state;
+      }
       const attempts = new Map(
         [...state.attempts, ...action.attempts]
           .filter((attempt) => !deletedAttemptIds.has(attempt.id))
@@ -194,13 +230,16 @@ export function appReducer(state: AppState, action: AppAction): AppState {
     case 'merge-notes': {
       const notes = { ...state.notes };
       const noteUpdatedAt = { ...state.noteUpdatedAt };
-      action.notes.forEach((note) => {
-        if ((noteUpdatedAt[note.questionId] ?? '') >= note.updatedAt) return;
+      let applied = false;
+      for (const note of action.notes) {
+        if ((noteUpdatedAt[note.questionId] ?? '') >= note.updatedAt) continue;
         if (note.content.trim()) notes[note.questionId] = note.content.trim();
         else delete notes[note.questionId];
         noteUpdatedAt[note.questionId] = note.updatedAt;
-      });
-      return { ...state, notes, noteUpdatedAt };
+        applied = true;
+      }
+      // Nothing newer: the same state keeps the note upload effect from running again.
+      return applied ? { ...state, notes, noteUpdatedAt } : state;
     }
     case 'add-discussion-post':
       return { ...state, discussionPosts: [action.post, ...state.discussionPosts] };
