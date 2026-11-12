@@ -11,6 +11,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ToastProvider } from '@/components/ui/ui';
 import type { Question, SubjectId } from '@/lib/types';
 import { PRACTICE_SESSION_STORAGE_KEY, type PracticeSession } from './practice-session';
+import { DEFAULT_DRAW_HISTORY_KEY } from './default-practice-draw';
 import { PracticePage } from './practice-page';
 import { keepPracticeResult } from './practice-result-memory';
 import styles from './practice-page.module.css';
@@ -580,6 +581,35 @@ describe('PracticePage setup', () => {
     expect(router.replace).not.toHaveBeenCalled();
     expect(screen.getByRole('region', { name: '每日抽題練習設定' })).toBeInTheDocument();
   });
+
+  it('shares default draw history between a downloaded paper and the next online set', async () => {
+    renderAt();
+    await chooseDefaultSubject();
+    fireEvent.click(screen.getByRole('button', { name: '製作紙本檔案' }));
+    await waitFor(() => expect(JSON.parse(window.localStorage.getItem(DEFAULT_DRAW_HISTORY_KEY)!).law).toHaveLength(1));
+    const first = JSON.parse(window.localStorage.getItem(DEFAULT_DRAW_HISTORY_KEY)!).law[0] as string[];
+    expect(first).toHaveLength(50);
+    await startOnline();
+    await screen.findByRole('region', { name: '題目與選項' });
+    const next = stored()!.questionIds;
+    expect(next.filter((id) => !first.includes(id))).toHaveLength(10);
+    expect(JSON.parse(window.localStorage.getItem(DEFAULT_DRAW_HISTORY_KEY)!).law).toHaveLength(2);
+  });
+
+  it('ignores and does not update default history when advanced settings change', async () => {
+    const previous = lawQuestions.slice(0, 50).map((item) => item.id);
+    const history = JSON.stringify({ law: [previous] });
+    window.localStorage.setItem(DEFAULT_DRAW_HISTORY_KEY, history);
+    vi.spyOn(Math, 'random').mockReturnValue(0);
+    renderAt();
+    await openAdvanced();
+    fireEvent.click(screen.getByRole('button', { name: /^5 題/ }));
+    await startOnline();
+    await screen.findByRole('region', { name: '題目與選項' });
+    expect(stored()!.questionIds).toHaveLength(5);
+    expect(stored()!.questionIds.some((id) => previous.includes(id))).toBe(true);
+    expect(window.localStorage.getItem(DEFAULT_DRAW_HISTORY_KEY)).toBe(history);
+  });
 });
 
 describe('PracticePage usage statistics', () => {
@@ -604,6 +634,7 @@ describe('PracticePage usage statistics', () => {
     fireEvent.click(await screen.findByRole('button', { name: '製作紙本檔案' }));
     expect(await screen.findByRole('alert')).toHaveTextContent('PDF 失敗');
     expect(analytics.trackPractice).not.toHaveBeenCalled();
+    expect(window.localStorage.getItem(DEFAULT_DRAW_HISTORY_KEY)).toBeNull();
   });
 
   it('requests the local fonts within the click, before anything is awaited', async () => {

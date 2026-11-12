@@ -40,6 +40,7 @@ export function PracticeSetup({
   onSettingsChange,
   onStart,
   onMakePaper,
+  onPaperDownloaded,
   resume,
 }: {
   subject: SubjectId | null;
@@ -53,6 +54,7 @@ export function PracticeSetup({
   onSettingsChange: (settings: PracticeSettings) => void;
   onStart: () => void;
   onMakePaper: () => DailyPaper | Promise<DailyPaper>;
+  onPaperDownloaded?: () => void;
   resume?: { subject: SubjectId; index: number; total: number; onResume: () => void };
 }) {
   const paperDownload = useDailyPaperDownload();
@@ -86,7 +88,10 @@ export function PracticeSetup({
   // Nothing is awaited before download(): its font request needs the click gesture.
   async function downloadPaper() {
     const downloaded = await paperDownload.download(onMakePaper);
-    if (downloaded && subject) trackPractice('paper_download', 'paper', subject);
+    if (downloaded) {
+      onPaperDownloaded?.();
+      if (subject) trackPractice('paper_download', 'paper', subject);
+    }
   }
 
   return (

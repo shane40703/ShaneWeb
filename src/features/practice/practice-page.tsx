@@ -33,6 +33,7 @@ import {
   displayPracticeQuestion,
   hasPracticeAnswers,
   hasPracticeProgress,
+  isDefaultPracticeSettings,
   movePracticeTo,
   parsePracticeSession,
   PRACTICE_PATH,
@@ -49,6 +50,7 @@ import {
 import { readEntryTag, readReloadedDepth, writeEntryTag } from './practice-history';
 import { keepPracticeResult, readKeptPracticeResult } from './practice-result-memory';
 import { createRecordablePracticeResult, dailyActivityRecord } from './daily-practice-recording';
+import { createDefaultPracticeDrawStore } from './default-practice-draw';
 import { PracticeSetup } from './practice-setup';
 import styles from './practice-page.module.css';
 import { notifyProgressChanged } from '@/lib/progress-events';
@@ -109,6 +111,8 @@ export function PracticePage() {
   const [subject, setSubject] = useState<SubjectId | null>(null);
   const [settings, setSettings] = useState<PracticeSettings>(DEFAULT_PRACTICE_SETTINGS);
   const [timer] = useState(createPracticeTimer);
+  const [defaultDraws] = useState(createDefaultPracticeDrawStore);
+  const pendingPaperDraw = useRef<{ subject: SubjectId; ids: string[] } | null>(null);
   // Mirrors `session` synchronously, so handlers and listeners never act on a stale copy.
   const sessionRef = useRef<PracticeSession | null>(null);
   const lastWritten = useRef<string | null>(null);
@@ -495,11 +499,24 @@ export function PracticePage() {
     }));
   }
 
+  function drawPracticeSet(selectedSubject: SubjectId) {
+    const isDefault = isDefaultPracticeSettings(settings);
+    const candidates = isDefault
+      ? defaultDraws.choose(selectedSubject, pool.candidates, pool.count)
+      : pool.candidates;
+    return {
+      isDefault,
+      session: createPracticeSession({ ...pool, candidates }, selectedSubject, settings.shuffleOptions),
+    };
+  }
+
   function startPractice() {
     if (!subject || !pool.count || !confirmDiscard('開始新題組會取代未完成的練習進度，確定要繼續嗎？')) return;
     timer.take();
     clearResult();
-    commitSession(createPracticeSession(pool, subject, settings.shuffleOptions));
+    const draw = drawPracticeSet(subject);
+    if (draw.isDefault) defaultDraws.record(subject, draw.session.questionIds);
+    commitSession(draw.session);
     trackPractice('practice_start', quizPracticeMode(), subject);
     // The setup entry becomes the set's first: Back from question 1 leaves the page.
     navigate('replace', { q: 1 }, 0);
@@ -508,8 +525,17 @@ export function PracticePage() {
   async function makePaper() {
     if (!subject) throw new Error('請先選擇科目。');
     // A separate draw: the paper never becomes the online set.
-    const draw = createPracticeSession(pool, subject, settings.shuffleOptions);
-    return createPracticePaper(draw, await loadQuestionBodies(draw.questionIds));
+    pendingPaperDraw.current = null;
+    const draw = drawPracticeSet(subject);
+    const paper = createPracticePaper(draw.session, await loadQuestionBodies(draw.session.questionIds));
+    if (draw.isDefault) pendingPaperDraw.current = { subject, ids: draw.session.questionIds };
+    return paper;
+  }
+
+  function paperDownloaded() {
+    const draw = pendingPaperDraw.current;
+    pendingPaperDraw.current = null;
+    if (draw) defaultDraws.record(draw.subject, draw.ids);
   }
 
   function goTo(index: number) {
@@ -659,6 +685,7 @@ export function PracticePage() {
         onSettingsChange={setSettings}
         onStart={startPractice}
         onMakePaper={makePaper}
+        onPaperDownloaded={paperDownloaded}
         resume={session && (hasPracticeProgress(session) || session.currentIndex > 0) ? {
           subject: session.subject,
           index: session.currentIndex + 1,
