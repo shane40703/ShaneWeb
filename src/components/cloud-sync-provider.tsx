@@ -35,12 +35,14 @@ import { isQuizAttempt } from '@/lib/study';
 import type { QuizAttempt, SyncedNote } from '@/lib/types';
 import { useAppState } from '@/state/app-state';
 import { ProgressSyncBridge } from './progress-sync-bridge';
-import type { ProgressSyncState } from '@/lib/progress-sync-client';
+import type { ProgressConflict, ProgressSyncState } from '@/lib/progress-sync-client';
+import { PROGRESS_RESOLVE_EVENT, PROGRESS_SYNC_NOW_EVENT } from '@/lib/progress-events';
 
 type CloudSyncStatus =
   | 'disabled'
   | 'signed-out'
   | 'syncing'
+  | 'pending'
   | 'synced'
   | 'error';
 
@@ -48,6 +50,9 @@ interface CloudSyncContextValue {
   user: User | null;
   status: CloudSyncStatus;
   error: string;
+  progressConflicts: ProgressConflict[];
+  syncProgressNow: () => void;
+  resolveProgressConflict: (id: string, choice: 'local' | 'remote') => void;
   signIn: () => Promise<void>;
   signOut: () => Promise<void>;
 }
@@ -146,6 +151,11 @@ export async function uploadEach<T extends { id: string }>(
     synced: results.flatMap((result) => (result.status === 'fulfilled' ? [result.value] : [])),
     failed: results.some((result) => result.status === 'rejected'),
   };
+}
+
+/** Attempts are immutable by id. Existing server records must not be rewritten at every login. */
+export function pendingAttemptUploads<T extends { id: string }>(items: readonly T[], confirmedIds: ReadonlySet<string>) {
+  return items.filter((item) => !confirmedIds.has(item.id));
 }
 
 export function parseCloudNote(data: DocumentData): SyncedNote | null {
@@ -309,7 +319,7 @@ export function CloudSyncProvider({ children }: { children: ReactNode }) {
 
         // One record the server refuses must not keep notes and 難題標記 from syncing;
         // it stays unsynced and is offered again with the next change.
-        const uploads = await uploadEach(localAttempts.current, (attempt) =>
+        const uploads = await uploadEach(pendingAttemptUploads(localAttempts.current, syncedAttemptIds.current), (attempt) =>
           setDoc(
             doc(attempts, attempt.id),
             { ...attempt, syncedAt: serverTimestamp() },
@@ -610,9 +620,13 @@ export function CloudSyncProvider({ children }: { children: ReactNode }) {
     <CloudSyncContext.Provider
       value={{
         user,
-        status: user && progressSync.status === 'error' ? 'error'
-          : user && progressSync.status === 'syncing' && status === 'synced' ? 'syncing' : status,
-        error: error || (user ? progressSync.error : ''),
+        status: user && (progressSync.status === 'error' || progressSync.status === 'conflict') ? 'error'
+          : user && progressSync.status === 'syncing' && status === 'synced' ? 'syncing'
+          : user && progressSync.status === 'pending' && status === 'synced' ? 'pending' : status,
+        error: user && (progressSync.status === 'error' || progressSync.status === 'conflict') ? progressSync.error : error,
+        progressConflicts: user ? progressSync.conflicts ?? [] : [],
+        syncProgressNow: () => window.dispatchEvent(new Event(PROGRESS_SYNC_NOW_EVENT)),
+        resolveProgressConflict: (id, choice) => window.dispatchEvent(new CustomEvent(PROGRESS_RESOLVE_EVENT, { detail: { id, choice } })),
         signIn: handleSignIn,
         signOut: handleSignOut,
       }}

@@ -3,6 +3,7 @@ import { collection, doc, onSnapshot, runTransaction, serverTimestamp } from 'fi
 import { getFirebaseServices } from '@/lib/firebase-client';
 import { compareProgress, parseProgressRecord } from '@/lib/progress-sync';
 import { connectProgressSync, trackLocalProgress, type ProgressSyncState } from '@/lib/progress-sync-client';
+import { PROGRESS_SYNC_NOW_EVENT } from '@/lib/progress-events';
 
 export function ProgressSyncBridge({ userId, onStatus }: {
   userId: string | null;
@@ -31,13 +32,20 @@ export function ProgressSyncBridge({ userId, onStatus }: {
       return;
     }
     try {
+      let listenerFailed = false;
+      let reconnectTimer: ReturnType<typeof setTimeout> | undefined;
       const progress = collection(firebase.db, 'users', userId, 'progress');
-      return connectProgressSync(localStorage, userId, {
+      const disconnect = connectProgressSync(localStorage, userId, {
         listen(receive, failed) {
           return onSnapshot(progress, { includeMetadataChanges: true }, snapshot => {
             if (snapshot.metadata.fromCache || snapshot.metadata.hasPendingWrites) return;
             receive(Object.fromEntries(snapshot.docs.map(item => [item.id, item.data()])));
-          }, failed);
+          }, (cause) => {
+            listenerFailed = true;
+            failed(cause);
+            const quota = cause?.code === 'resource-exhausted';
+            reconnectTimer = setTimeout(() => setRetry(value => value + 1), quota ? 300_000 : 60_000);
+          });
         },
         write(id, record) {
           return runTransaction(firebase.db, async transaction => {
@@ -51,6 +59,9 @@ export function ProgressSyncBridge({ userId, onStatus }: {
           });
         },
       }, onStatus);
+      const reconnect = () => { if (listenerFailed) setRetry(value => value + 1); };
+      window.addEventListener(PROGRESS_SYNC_NOW_EVENT, reconnect);
+      return () => { clearTimeout(reconnectTimer); window.removeEventListener(PROGRESS_SYNC_NOW_EVENT, reconnect); disconnect(); };
     } catch {
       onStatus({ status: 'error', error: '無法同步未完成作答，請確認瀏覽器儲存空間與 Firebase 設定。' });
     }

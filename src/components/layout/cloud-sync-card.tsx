@@ -71,9 +71,10 @@ export function CloudSyncCard({ defaultOpen = false }: { defaultOpen?: boolean }
 
   const user = cloud.user;
   const syncing = cloud.status === 'syncing';
+  const pending = cloud.status === 'pending';
   const failed = cloud.status === 'error';
   const name = user?.displayName || '已登入';
-  const statusText = syncing ? '同步中' : failed ? '同步失敗' : '已同步';
+  const statusText = syncing ? '同步中' : pending ? '作答進度待同步' : cloud.progressConflicts.length ? '作答進度衝突' : failed ? '同步失敗' : '已同步';
   const triggerLabel = user
     ? `${name}，${statusText}`
     : syncing
@@ -103,7 +104,7 @@ export function CloudSyncCard({ defaultOpen = false }: { defaultOpen?: boolean }
         >
           {syncing ? (
             <IconLoader2 size={16} stroke={2} aria-hidden="true" />
-          ) : !user ? (
+          ) : !user || pending ? (
             <IconCloud size={16} stroke={2} aria-hidden="true" />
           ) : failed ? (
             <IconCloudX size={16} stroke={2} aria-hidden="true" />
@@ -143,6 +144,8 @@ export function CloudSyncCard({ defaultOpen = false }: { defaultOpen?: boolean }
                       <IconLoader2 size={16} stroke={2} aria-hidden="true" />
                     ) : failed ? (
                       <IconAlertTriangle size={16} stroke={2} aria-hidden="true" />
+                    ) : pending ? (
+                      <IconCloud size={16} stroke={2} aria-hidden="true" />
                     ) : (
                       <IconCloudCheck size={16} stroke={2} aria-hidden="true" />
                     )}
@@ -154,6 +157,24 @@ export function CloudSyncCard({ defaultOpen = false }: { defaultOpen?: boolean }
                       ) : null}
                     </p>
                   </div>
+                  <p className={styles.note}>作答進度先保存在本機，有變更時約每分鐘同步。換裝置前請按「立即同步」並等待完成。</p>
+                  <div className={styles.actions}>
+                    <Button fullWidth disabled={syncing || cloud.progressConflicts.length > 0} onClick={cloud.syncProgressNow}>
+                      立即同步作答進度
+                    </Button>
+                  </div>
+                  {cloud.progressConflicts.map((conflict) => (
+                    <div className={styles.section} key={conflict.id}>
+                      <p className={styles.body}>
+                        {conflict.id === 'practice' ? '每日抽題練習' : conflict.id}在本機與雲端都有不同進度，請選擇保留哪一份：
+                      </p>
+                      <p className={styles.note}>本機：{new Date(conflict.localUpdatedAt).toLocaleString('zh-TW')}；雲端：{new Date(conflict.remoteUpdatedAt).toLocaleString('zh-TW')}。選擇後另一份進度會被取代。</p>
+                      <div className={styles.actions}>
+                        <Button fullWidth onClick={() => cloud.resolveProgressConflict(conflict.id, 'local')}>保留本機進度</Button>
+                        <Button fullWidth onClick={() => cloud.resolveProgressConflict(conflict.id, 'remote')}>保留雲端進度</Button>
+                      </div>
+                    </div>
+                  ))}
                   <SyncedContents label="同步的內容" />
                   <div className={styles.section}>
                     <p className={styles.body}>

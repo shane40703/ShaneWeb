@@ -44,15 +44,17 @@ it('waits for a server snapshot, writes private progress atomically, and stops w
   expect(onStatus).toHaveBeenLastCalledWith({ status: 'idle', error: '' });
 });
 
-it('uses a newer transaction result instead of overwriting it with a stale draft', async () => {
+it('does not overwrite either version when a newer transaction result conflicts with a local draft', async () => {
   localStorage.setItem('shaneweb:quiz-progress', draft);
   const newer = { version: 1, payload: null, updatedAt: Date.now() + 1000, writer: 'phone' };
   mocks.get.mockResolvedValue({ exists: () => true, data: () => newer });
-  render(<ProgressSyncBridge userId="alice" onStatus={vi.fn()} />);
+  const onStatus = vi.fn();
+  render(<ProgressSyncBridge userId="alice" onStatus={onStatus} />);
   await act(async () => mocks.receive!({ metadata: { fromCache: false, hasPendingWrites: false }, docs: [] }));
   expect(mocks.set).not.toHaveBeenCalled();
-  expect(JSON.parse(localStorage.getItem('shaneweb:quiz-progress')!).scopes).toEqual({});
-  expect(JSON.parse(localStorage.getItem(PROGRESS_JOURNAL_KEY + 'alice')!)['paper-law-114']).toEqual(newer);
+  expect(JSON.parse(localStorage.getItem('shaneweb:quiz-progress')!).scopes['paper:law:114']).toBeDefined();
+  expect(JSON.parse(localStorage.getItem(PROGRESS_JOURNAL_KEY + 'alice')!)['paper-law-114'].payload).not.toBeNull();
+  expect(onStatus).toHaveBeenLastCalledWith(expect.objectContaining({ status: 'conflict' }));
 });
 
 it('reports denied rules without dropping the local draft and reconnects on online', async () => {
@@ -65,4 +67,20 @@ it('reports denied rules without dropping the local draft and reconnects on onli
   await act(async () => window.dispatchEvent(new Event('online')));
   expect(mocks.unsubscribe).toHaveBeenCalledTimes(1);
   expect(mocks.listen).toHaveBeenCalledTimes(2);
+});
+
+it('reconnects a failed quota-limited listener only after a pause', async () => {
+  vi.useFakeTimers();
+  try {
+    const onStatus = vi.fn();
+    render(<ProgressSyncBridge userId="alice" onStatus={onStatus} />);
+    await act(async () => (mocks.fail as unknown as (cause: unknown) => void)({ code: 'resource-exhausted' }));
+    expect(onStatus).toHaveBeenLastCalledWith(expect.objectContaining({ error: expect.stringContaining('用量') }));
+    await act(async () => vi.advanceTimersByTimeAsync(299_999));
+    expect(mocks.listen).toHaveBeenCalledTimes(1);
+    await act(async () => vi.advanceTimersByTimeAsync(1));
+    expect(mocks.listen).toHaveBeenCalledTimes(2);
+  } finally {
+    vi.useRealTimers();
+  }
 });

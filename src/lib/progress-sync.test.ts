@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { connectProgressSync, trackLocalProgress, type ProgressTransport } from './progress-sync-client';
+import { connectProgressSync, trackLocalProgress, PROGRESS_BASELINE_KEY, PROGRESS_SYNC_INTERVAL_MS, type ProgressTransport } from './progress-sync-client';
 import { applyProgressRecord, captureProgress, compareProgress, parseProgressRecord, PROGRESS_JOURNAL_KEY, PROGRESS_OWNER_KEY, readLocalProgress, readProgressJournal, type ProgressRecord } from './progress-sync';
-import { notifyProgressChanged } from './progress-events';
+import { notifyProgressChanged, PROGRESS_RESOLVE_EVENT, PROGRESS_SYNC_NOW_EVENT } from './progress-events';
 import { PRACTICE_SESSION_STORAGE_KEY, type PracticeSession } from '@/features/practice/practice-session';
 import { QUIZ_PROGRESS_STORAGE_KEY } from '@/features/practice/mock-exam-progress';
 import { summarizeMockExamDraft } from '@/features/practice/mock-exam';
@@ -66,17 +66,18 @@ describe('cross-device unfinished practice', () => {
     await settle();
     phone.setItem(PRACTICE_SESSION_STORAGE_KEY, JSON.stringify(practice({ currentIndex: 0 })));
     notifyProgressChanged(PRACTICE_SESSION_STORAGE_KEY);
-    await vi.advanceTimersByTimeAsync(350);
+    await vi.advanceTimersByTimeAsync(PROGRESS_SYNC_INTERVAL_MS);
     expect(JSON.parse(cloud.records.practice.payload!).currentIndex).toBe(0);
     phone.removeItem(PRACTICE_SESSION_STORAGE_KEY);
     notifyProgressChanged(PRACTICE_SESSION_STORAGE_KEY);
-    await vi.advanceTimersByTimeAsync(350);
+    await vi.advanceTimersByTimeAsync(PROGRESS_SYNC_INTERVAL_MS);
     expect(cloud.records.practice.payload).toBeNull();
     stop();
     const stale = memoryStorage();
     stale.setItem(PROGRESS_OWNER_KEY, 'user');
     stale.setItem(PRACTICE_SESSION_STORAGE_KEY, JSON.stringify(practice()));
     stale.setItem(PROGRESS_JOURNAL_KEY + 'user', JSON.stringify({ practice: record(JSON.stringify(practice())) }));
+    stale.setItem(PROGRESS_BASELINE_KEY + 'user', JSON.stringify({ practice: record(JSON.stringify(practice())) }));
     mount(stale, cloud.transport);
     await settle();
     expect(stale.getItem(PRACTICE_SESSION_STORAGE_KEY)).toBeNull();
@@ -116,7 +117,7 @@ describe('cross-device unfinished practice', () => {
     expect(JSON.parse(storage.getItem(PRACTICE_SESSION_STORAGE_KEY)!)).toEqual(practice());
   });
 
-  it('does not overwrite a newer server version that arrives during upload', async () => {
+  it('keeps both versions when a newer server version arrives during upload', async () => {
     const storage = memoryStorage();
     const old = record(JSON.stringify(practice()), 10);
     const newer = record(JSON.stringify(practice({ currentIndex: 0 })), 20, 'phone');
@@ -124,10 +125,108 @@ describe('cross-device unfinished practice', () => {
     storage.setItem(PRACTICE_SESSION_STORAGE_KEY, old.payload!);
     storage.setItem(PROGRESS_JOURNAL_KEY + 'user', JSON.stringify({ practice: old }));
     const transport: ProgressTransport = { listen(receive) { receive({}); return () => {}; }, write: vi.fn(async () => newer) };
-    mount(storage, transport);
+    const report = vi.fn();
+    mount(storage, transport, 'user', report);
+    await settle();
+    expect(JSON.parse(storage.getItem(PRACTICE_SESSION_STORAGE_KEY)!).currentIndex).toBe(1);
+    expect(report).toHaveBeenLastCalledWith(expect.objectContaining({ status: 'conflict' }));
+    window.dispatchEvent(new CustomEvent(PROGRESS_RESOLVE_EVENT, { detail: { id: 'practice', choice: 'remote' } }));
     await settle();
     expect(JSON.parse(storage.getItem(PRACTICE_SESSION_STORAGE_KEY)!).currentIndex).toBe(0);
     expect(readProgressJournal(storage, 'user').practice).toEqual(parseProgressRecord('practice', newer));
+  });
+
+  it('batches repeated local changes for a minute and allows an immediate sync', async () => {
+    vi.useFakeTimers();
+    const cloud = server();
+    const write = vi.fn(cloud.transport.write);
+    const storage = memoryStorage();
+    const report = vi.fn();
+    mount(storage, { ...cloud.transport, write }, 'user', report);
+    await settle();
+    storage.setItem(PRACTICE_SESSION_STORAGE_KEY, JSON.stringify(practice()));
+    notifyProgressChanged(PRACTICE_SESSION_STORAGE_KEY);
+    await vi.advanceTimersByTimeAsync(30_000);
+    storage.setItem(PRACTICE_SESSION_STORAGE_KEY, JSON.stringify(practice({ currentIndex: 0 })));
+    notifyProgressChanged(PRACTICE_SESSION_STORAGE_KEY);
+    expect(write).not.toHaveBeenCalled();
+    expect(report).toHaveBeenLastCalledWith({ status: 'pending', error: '' });
+    await vi.advanceTimersByTimeAsync(30_000);
+    expect(write).toHaveBeenCalledTimes(1);
+    expect(JSON.parse(cloud.records.practice.payload!).currentIndex).toBe(0);
+    storage.setItem(PRACTICE_SESSION_STORAGE_KEY, JSON.stringify(practice()));
+    notifyProgressChanged(PRACTICE_SESSION_STORAGE_KEY);
+    window.dispatchEvent(new Event(PROGRESS_SYNC_NOW_EVENT));
+    await settle();
+    expect(write).toHaveBeenCalledTimes(2);
+  });
+
+  it('backs off after a quota error without losing local progress', async () => {
+    vi.useFakeTimers();
+    const storage = memoryStorage();
+    storage.setItem(PRACTICE_SESSION_STORAGE_KEY, JSON.stringify(practice()));
+    const cloud = server();
+    const write = vi.fn(cloud.transport.write).mockRejectedValueOnce({ code: 'resource-exhausted' });
+    const report = vi.fn();
+    mount(storage, { ...cloud.transport, write }, 'user', report);
+    await settle();
+    expect(report).toHaveBeenLastCalledWith(expect.objectContaining({ error: expect.stringContaining('用量') }));
+    window.dispatchEvent(new Event('focus'));
+    window.dispatchEvent(new Event(PROGRESS_SYNC_NOW_EVENT));
+    await vi.advanceTimersByTimeAsync(299_999);
+    expect(write).toHaveBeenCalledTimes(1);
+    expect(storage.getItem(PRACTICE_SESSION_STORAGE_KEY)).not.toBeNull();
+    await vi.advanceTimersByTimeAsync(1);
+    expect(write).toHaveBeenCalledTimes(2);
+    expect(report).toHaveBeenLastCalledWith({ status: 'synced', error: '' });
+  });
+
+  it('keeps local edits made while an upload is in flight and waits before the next upload', async () => {
+    vi.useFakeTimers();
+    const storage = memoryStorage();
+    let finish!: (record: ProgressRecord) => void;
+    const write = vi.fn()
+      .mockImplementationOnce((_id: string, entry: ProgressRecord) => new Promise<ProgressRecord>(resolve => { finish = () => resolve(entry); }))
+      .mockImplementation(async (_id: string, entry: ProgressRecord) => entry);
+    const transport: ProgressTransport = { listen(receive) { receive({}); return () => {}; }, write };
+    const report = vi.fn();
+    mount(storage, transport, 'user', report);
+    await settle();
+    storage.setItem(PRACTICE_SESSION_STORAGE_KEY, JSON.stringify(practice()));
+    notifyProgressChanged(PRACTICE_SESSION_STORAGE_KEY);
+    window.dispatchEvent(new Event(PROGRESS_SYNC_NOW_EVENT));
+    await settle();
+    storage.setItem(PRACTICE_SESSION_STORAGE_KEY, JSON.stringify(practice({ currentIndex: 0 })));
+    notifyProgressChanged(PRACTICE_SESSION_STORAGE_KEY);
+    finish(record(null));
+    await settle();
+    expect(write).toHaveBeenCalledTimes(1);
+    expect(report).toHaveBeenLastCalledWith({ status: 'pending', error: '' });
+    await vi.advanceTimersByTimeAsync(PROGRESS_SYNC_INTERVAL_MS);
+    expect(write).toHaveBeenCalledTimes(2);
+    expect(JSON.parse(write.mock.calls[1][1].payload).currentIndex).toBe(0);
+  });
+
+  it('allows the user to keep the local version when both devices changed', async () => {
+    const initial = record(JSON.stringify(practice()), 10, 'desktop');
+    const local = record(JSON.stringify(practice({ currentIndex: 0 })), 20, 'desktop');
+    const remote = record(JSON.stringify(practice({ currentIndex: 1, drafts: {} })), 30, 'phone');
+    const storage = memoryStorage();
+    storage.setItem(PROGRESS_OWNER_KEY, 'user');
+    storage.setItem(PRACTICE_SESSION_STORAGE_KEY, local.payload!);
+    storage.setItem(PROGRESS_JOURNAL_KEY + 'user', JSON.stringify({ practice: local }));
+    storage.setItem(PROGRESS_BASELINE_KEY + 'user', JSON.stringify({ practice: initial }));
+    const cloud = server({ practice: remote });
+    const report = vi.fn();
+    mount(storage, cloud.transport, 'user', report);
+    await settle();
+    expect(report).toHaveBeenLastCalledWith(expect.objectContaining({ status: 'conflict' }));
+    expect(cloud.records.practice).toEqual(remote);
+    expect(JSON.parse(storage.getItem(PRACTICE_SESSION_STORAGE_KEY)!).currentIndex).toBe(0);
+    window.dispatchEvent(new CustomEvent(PROGRESS_RESOLVE_EVENT, { detail: { id: 'practice', choice: 'local' } }));
+    await settle();
+    expect(JSON.parse(cloud.records.practice.payload!).currentIndex).toBe(0);
+    expect(report).toHaveBeenLastCalledWith({ status: 'synced', error: '' });
   });
 
   it('keeps local progress after a denied write and retries on focus', async () => {

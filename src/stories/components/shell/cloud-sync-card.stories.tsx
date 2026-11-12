@@ -83,6 +83,14 @@ export const 同步中: Story = {
   globals: { cloud: 'syncing' },
 };
 
+export const 作答進度待同步: Story = {
+  globals: { cloud: 'pending' },
+};
+
+export const 作答進度衝突: Story = {
+  globals: { cloud: 'conflict' },
+};
+
 /** 已登入但最新的紀錄傳不上雲端：狀態列是紅色的「同步失敗」和原因。 */
 export const 同步失敗: Story = {
   globals: { cloud: 'sync-error' },

@@ -3,11 +3,15 @@ import {
   parseProgressRecord, PROGRESS_JOURNAL_KEY, PROGRESS_OWNER_KEY,
   readLocalProgress, readProgressJournal, type ProgressRecord,
 } from './progress-sync';
-import { PROGRESS_CHANGED_EVENT, REMOTE_PROGRESS_URL } from './progress-events';
+import { PROGRESS_CHANGED_EVENT, PROGRESS_RESOLVE_EVENT, PROGRESS_SYNC_NOW_EVENT, REMOTE_PROGRESS_URL } from './progress-events';
 
-export interface ProgressSyncState { status: 'idle' | 'syncing' | 'synced' | 'error'; error: string }
+export interface ProgressConflict { id: string; localUpdatedAt: number; remoteUpdatedAt: number }
+export interface ProgressSyncState { status: 'idle' | 'pending' | 'syncing' | 'synced' | 'error' | 'conflict'; error: string; conflicts?: ProgressConflict[] }
+export const PROGRESS_SYNC_INTERVAL_MS = 60_000;
+export const PROGRESS_BASELINE_KEY = 'shaneweb:progress-baseline:';
+const QUOTA_RETRY_MS = 5 * 60_000;
 export interface ProgressTransport {
-  listen(receive: (records: Record<string, unknown>) => void, error: () => void): () => void;
+  listen(receive: (records: Record<string, unknown>) => void, error: (cause?: unknown) => void): () => void;
   /** Atomically writes only if newer, and returns the accepted server version. */
   write(id: string, record: ProgressRecord): Promise<ProgressRecord>;
 }
@@ -37,9 +41,33 @@ export function connectProgressSync(storage: Storage, uid: string, transport: Pr
   let ready = false;
   let running = false;
   let again = false;
+  let failed = false;
   let timeout: ReturnType<typeof setTimeout> | undefined;
+  let retryAfter = 0;
+  const conflicts = new Map<string, ProgressRecord>();
   const acknowledged = new Map<string, ProgressRecord>();
-  const error = () => { if (active) report({ status: 'error', error: '未完成作答暫時無法同步，進度仍保存在本機。請檢查連線與 Firestore 進度規則。' }); };
+  const baselineKey = PROGRESS_BASELINE_KEY + uid;
+  let baseline: Record<string, Pick<ProgressRecord, 'updatedAt' | 'writer'>> = {};
+  try {
+    const saved = JSON.parse(storage.getItem(baselineKey) ?? '{}');
+    baseline = Object.fromEntries(Object.entries(saved).flatMap(([id, value]) => {
+      if (!value || typeof value !== 'object') return [];
+      const item = value as Partial<ProgressRecord>;
+      return Number.isSafeInteger(item.updatedAt) && (item.updatedAt ?? -1) >= 0 &&
+        typeof item.writer === 'string' && item.writer.length > 0 && item.writer.length <= 80
+        ? [[id, { updatedAt: item.updatedAt!, writer: item.writer }]] : [];
+    }));
+  } catch { /* A missing baseline is handled conservatively as a conflict. */ }
+  const error = (cause?: unknown) => {
+    if (!active) return;
+    failed = true;
+    const code = cause && typeof cause === 'object' && 'code' in cause ? String(cause.code) : '';
+    const quota = code.includes('resource-exhausted');
+    if (quota) retryAfter = Date.now() + QUOTA_RETRY_MS;
+    report({ status: 'error', error: quota
+      ? '雲端用量暫時達上限，進度保留在本機，稍後會再嘗試同步。'
+      : '未完成作答暫時無法同步，進度仍保存在本機。請檢查連線與 Firestore 進度規則。' });
+  };
   const ownsStorage = () => active && storage.getItem(PROGRESS_OWNER_KEY) === uid;
   const persist = (journal: ReturnType<typeof readProgressJournal>) => storage.setItem(PROGRESS_JOURNAL_KEY + uid, JSON.stringify(journal));
   function assertJournalCurrent() {
@@ -78,9 +106,31 @@ export function connectProgressSync(storage: Storage, uid: string, transport: Pr
     events.forEach(event => window.dispatchEvent(event));
   }
 
+  function remember(id: string, remote: ProgressRecord) {
+    const next = { ...baseline, [id]: { updatedAt: remote.updatedAt, writer: remote.writer } };
+    storage.setItem(baselineKey, JSON.stringify(next));
+    baseline = next;
+    acknowledged.set(id, remote);
+  }
+  function showConflict() {
+    const journal = readProgressJournal(storage, uid);
+    report({ status: 'conflict', error: '本機與雲端都有不同進度，請選擇要保留哪一份。', conflicts:
+      [...conflicts].map(([id, remote]) => ({ id, localUpdatedAt: journal[id]?.updatedAt ?? 0, remoteUpdatedAt: remote.updatedAt })) });
+  }
   function adopt(id: string, remote: ProgressRecord) {
     if (!ownsStorage()) return;
     const journal = readProgressJournal(storage, uid);
+    const local = journal[id];
+    const base = baseline[id];
+    const sameVersion = (record: ProgressRecord) => base && record.updatedAt === base.updatedAt && record.writer === base.writer;
+    const localChanged = local && !sameVersion(local);
+    const remoteChanged = !sameVersion(remote);
+    if (local && local.writer !== remote.writer && local.payload !== remote.payload && localChanged && remoteChanged) {
+      conflicts.set(id, remote);
+      showConflict();
+      return;
+    }
+    conflicts.delete(id);
     if (!journal[id] || compareProgress(remote, journal[id]) > 0) {
       // Do not acknowledge an unapplied draft if storage is full. Publish only once both
       // the draft and its version are saved; React listeners must not echo remote writes.
@@ -88,17 +138,17 @@ export function connectProgressSync(storage: Storage, uid: string, transport: Pr
       persist({ ...journal, [id]: remote });
       window.dispatchEvent(event);
     }
-    acknowledged.set(id, remote);
+    remember(id, remote);
   }
 
   async function flush() {
-    if (!ownsStorage() || !ready) return;
+    if (!ownsStorage() || !ready || Date.now() < retryAfter) return;
     if (running) { again = true; return; }
     running = true;
     try {
       assertJournalCurrent();
       const pending = Object.entries(readProgressJournal(storage, uid)).filter(([id, record]) =>
-        !acknowledged.has(id) || compareProgress(record, acknowledged.get(id)!) > 0);
+        !conflicts.has(id) && (!acknowledged.has(id) || compareProgress(record, acknowledged.get(id)!) > 0));
       if (pending.length) report({ status: 'syncing', error: '' });
       for (const [id, record] of pending) {
         if (!ownsStorage()) return;
@@ -106,8 +156,20 @@ export function connectProgressSync(storage: Storage, uid: string, transport: Pr
         const accepted = await transport.write(id, record);
         adopt(id, accepted);
       }
-      if (ownsStorage()) report({ status: 'synced', error: '' });
-    } catch { error(); }
+      if (ownsStorage()) {
+        failed = false;
+        if (conflicts.size) showConflict();
+        else if (Object.entries(readProgressJournal(storage, uid)).some(([id, record]) =>
+          !acknowledged.has(id) || compareProgress(record, acknowledged.get(id)!) > 0)) schedule();
+        else report({ status: 'synced', error: '' });
+      }
+    } catch (cause) {
+      error(cause);
+      if (retryAfter > Date.now()) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => { timeout = undefined; void flush(); }, retryAfter - Date.now());
+      }
+    }
     finally {
       running = false;
       if (again && ownsStorage()) { again = false; void flush(); }
@@ -115,15 +177,43 @@ export function connectProgressSync(storage: Storage, uid: string, transport: Pr
   }
   function schedule() {
     if (!ownsStorage()) return;
-    report({ status: 'syncing', error: '' });
-    clearTimeout(timeout);
-    timeout = setTimeout(() => void flush(), 300);
+    if (conflicts.size) showConflict();
+    else if (Date.now() >= retryAfter) report({ status: 'pending', error: '' });
+    if (!timeout) timeout = setTimeout(() => { timeout = undefined; void flush(); },
+      Math.max(PROGRESS_SYNC_INTERVAL_MS, retryAfter - Date.now()));
   }
   const changed = () => schedule();
   const storageChanged = (event: StorageEvent) => {
     if (event.key === PROGRESS_JOURNAL_KEY + uid) schedule();
   };
-  const flushNow = () => { clearTimeout(timeout); void flush(); };
+  const flushNow = () => {
+    if (Date.now() < retryAfter) return;
+    clearTimeout(timeout); timeout = undefined; void flush();
+  };
+  const hidden = () => { if (document.visibilityState === 'hidden') flushNow(); };
+  const retryOnFocus = () => { if (failed) flushNow(); };
+  const resolve = (event: Event) => {
+    const { id, choice } = (event as CustomEvent<{ id: string; choice: 'local' | 'remote' }>).detail ?? {};
+    const remote = conflicts.get(id);
+    if (!remote || !ownsStorage()) return;
+    try {
+      const journal = readProgressJournal(storage, uid);
+      const local = journal[id];
+      if (!local || (choice !== 'local' && choice !== 'remote')) return;
+      remember(id, remote);
+      if (choice === 'remote') {
+        const changedEvent = applyProgressRecord(storage, id, remote, false);
+        persist({ ...journal, [id]: remote });
+        window.dispatchEvent(changedEvent);
+      } else {
+        persist({ ...journal, [id]: { ...local, updatedAt: Math.max(Date.now(), remote.updatedAt + 1, local.updatedAt + 1) } });
+      }
+      conflicts.delete(id);
+      if (conflicts.size) showConflict();
+      else if (choice === 'local') { report({ status: 'pending', error: '' }); flushNow(); }
+      else void flush();
+    } catch (cause) { error(cause); }
+  };
   report({ status: 'syncing', error: '' });
   const unsubscribe = transport.listen((records) => {
     if (!ownsStorage()) return;
@@ -134,15 +224,19 @@ export function connectProgressSync(storage: Storage, uid: string, transport: Pr
         if (!record) throw new Error('Invalid progress');
         adopt(id, record);
       }
-      ready = true;
-      void flush();
-    } catch { error(); }
+      if (!ready) {
+        ready = true;
+        void flush();
+      }
+    } catch (cause) { error(cause); }
   }, error);
   window.addEventListener(PROGRESS_CHANGED_EVENT, changed);
   window.addEventListener('storage', storageChanged);
   window.addEventListener('pagehide', flushNow);
-  document.addEventListener('visibilitychange', flushNow);
-  window.addEventListener('focus', flushNow);
+  window.addEventListener('focus', retryOnFocus);
+  document.addEventListener('visibilitychange', hidden);
+  window.addEventListener(PROGRESS_SYNC_NOW_EVENT, flushNow);
+  window.addEventListener(PROGRESS_RESOLVE_EVENT, resolve);
   return () => {
     active = false;
     clearTimeout(timeout);
@@ -150,7 +244,9 @@ export function connectProgressSync(storage: Storage, uid: string, transport: Pr
     window.removeEventListener(PROGRESS_CHANGED_EVENT, changed);
     window.removeEventListener('storage', storageChanged);
     window.removeEventListener('pagehide', flushNow);
-    document.removeEventListener('visibilitychange', flushNow);
-    window.removeEventListener('focus', flushNow);
+    window.removeEventListener('focus', retryOnFocus);
+    document.removeEventListener('visibilitychange', hidden);
+    window.removeEventListener(PROGRESS_SYNC_NOW_EVENT, flushNow);
+    window.removeEventListener(PROGRESS_RESOLVE_EVENT, resolve);
   };
 }

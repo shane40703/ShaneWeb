@@ -6,6 +6,7 @@ import {
   getFirebaseSignInErrorMessage,
   parseCloudDifficultSettings,
   parseCloudNote,
+  pendingAttemptUploads,
   readAttemptChanges,
   uploadEach,
   useCloudSync,
@@ -109,6 +110,11 @@ describe('CloudSyncProvider', () => {
       synced: ['paper'],
       failed: false,
     });
+  });
+
+  it('does not re-upload attempts already present on the server', () => {
+    expect(pendingAttemptUploads([{ id: 'existing' }, { id: 'new' }], new Set(['existing'])))
+      .toEqual([{ id: 'new' }]);
   });
 
   it('accepts a count-only daily activity record from the cloud without restoring answers', () => {

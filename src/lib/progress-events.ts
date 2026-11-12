@@ -1,4 +1,6 @@
 export const PROGRESS_CHANGED_EVENT = 'shaneweb:progress-changed';
+export const PROGRESS_SYNC_NOW_EVENT = 'shaneweb:progress-sync-now';
+export const PROGRESS_RESOLVE_EVENT = 'shaneweb:progress-resolve';
 export const REMOTE_PROGRESS_URL = 'shaneweb:remote-progress';
 export function notifyProgressChanged(key: string) {
   if (typeof window !== 'undefined' && ['shaneweb:practice-session', 'shaneweb:quiz-progress'].includes(key)) {

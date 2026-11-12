@@ -14,6 +14,8 @@ export const cloudModes = {
   'signing-in': '雲端：登入中',
   'signed-in': '雲端：已登入',
   syncing: '雲端：同步中',
+  pending: '雲端：作答進度待同步',
+  conflict: '雲端：作答進度衝突',
   error: '雲端：登入失敗',
   'sync-error': '雲端：同步失敗',
 } as const;
@@ -27,23 +29,30 @@ const storyUser = {
 } as User;
 
 function cloudValue(mode: Exclude<CloudMode, 'local'>) {
-  const signedIn = mode === 'signed-in' || mode === 'syncing' || mode === 'sync-error';
+  const signedIn = mode === 'signed-in' || mode === 'syncing' || mode === 'pending' || mode === 'conflict' || mode === 'sync-error';
   return {
     user: signedIn ? storyUser : null,
     status:
       mode === 'signed-in'
         ? ('synced' as const)
+        : mode === 'pending'
+          ? ('pending' as const)
         : mode === 'signing-in' || mode === 'syncing'
           ? ('syncing' as const)
-          : mode === 'error' || mode === 'sync-error'
+          : mode === 'error' || mode === 'sync-error' || mode === 'conflict'
             ? ('error' as const)
             : ('signed-out' as const),
     error:
       mode === 'error'
         ? 'Google 登入視窗已關閉，尚未完成登入。'
+        : mode === 'conflict'
+          ? '本機與雲端都有不同進度，請選擇要保留哪一份。'
         : mode === 'sync-error'
           ? '無法連線到雲端，最新的紀錄還沒有同步。'
           : '',
+    progressConflicts: mode === 'conflict' ? [{ id: 'practice', localUpdatedAt: 1794439200000, remoteUpdatedAt: 1794439260000 }] : [],
+    syncProgressNow: fn().mockName('cloud.syncProgressNow'),
+    resolveProgressConflict: fn().mockName('cloud.resolveProgressConflict'),
     signIn: fn(async () => undefined).mockName('cloud.signIn'),
     signOut: fn(async () => undefined).mockName('cloud.signOut'),
   };

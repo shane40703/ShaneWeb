@@ -5,13 +5,16 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { QuizAttempt } from '@/lib/types';
 import { CloudSyncCard } from './cloud-sync-card';
 
-type CloudStatus = 'disabled' | 'signed-out' | 'syncing' | 'synced' | 'error';
+type CloudStatus = 'disabled' | 'signed-out' | 'syncing' | 'pending' | 'synced' | 'error';
 
 const mocks = vi.hoisted(() => ({
   cloud: {
     user: null as User | null,
     status: 'signed-out' as CloudStatus,
     error: '',
+    progressConflicts: [] as { id: string; localUpdatedAt: number; remoteUpdatedAt: number }[],
+    syncProgressNow: vi.fn(),
+    resolveProgressConflict: vi.fn(),
     signIn: vi.fn(async () => undefined),
     signOut: vi.fn(async () => undefined),
   },
@@ -45,9 +48,11 @@ async function openCard(name: string) {
 }
 
 beforeEach(() => {
-  setCloud({ user: null, status: 'signed-out', error: '' });
+  setCloud({ user: null, status: 'signed-out', error: '', progressConflicts: [] });
   mocks.cloud.signIn.mockClear();
   mocks.cloud.signOut.mockClear();
+  mocks.cloud.syncProgressNow.mockClear();
+  mocks.cloud.resolveProgressConflict.mockClear();
   mocks.state.attempts = [{ id: 'one' }, { id: 'two' }] as QuizAttempt[];
   mocks.state.notes = { 'law-114-01': '筆記' };
   mocks.state.noteImages = {};
@@ -219,6 +224,24 @@ describe('CloudSyncCard signed in', () => {
     );
     expect(card).toHaveTextContent('同步中');
     expect(within(card).queryByRole('alert')).toBeNull();
+  });
+
+  it('explains pending progress and lets the user sync it before switching devices', async () => {
+    setCloud({ status: 'pending' });
+    const { user, card } = await openCard('林建築，作答進度待同步');
+    expect(card).toHaveTextContent('作答進度先保存在本機');
+    await user.click(within(card).getByRole('button', { name: '立即同步作答進度' }));
+    expect(mocks.cloud.syncProgressNow).toHaveBeenCalledOnce();
+  });
+
+  it('asks which progress to retain when devices conflict', async () => {
+    setCloud({ status: 'error', error: '本機與雲端都有不同進度，請選擇要保留哪一份。',
+      progressConflicts: [{ id: 'practice', localUpdatedAt: 1000, remoteUpdatedAt: 2000 }] });
+    const { user, card } = await openCard('林建築，作答進度衝突');
+    expect(card).toHaveTextContent('選擇後另一份進度會被取代');
+    expect(within(card).getByRole('button', { name: '立即同步作答進度' })).toBeDisabled();
+    await user.click(within(card).getByRole('button', { name: '保留本機進度' }));
+    expect(mocks.cloud.resolveProgressConflict).toHaveBeenCalledWith('practice', 'local');
   });
 
   it('reports a failed sync with its reason inside the card', async () => {
