@@ -240,7 +240,7 @@ describe('MockExamPage setup', () => {
     expect(screen.getByRole('radio', { name: /114 年/ })).toBeChecked();
   });
 
-  it('points papers with essays to 歷屆試題（討論版）, which keeps them out of the score', async () => {
+  it('points papers with essays to 歷屆試題討論版, which keeps them out of the score', async () => {
     renderAt('/practice/mock-exam?subject=env&year=114');
 
     const setup = await screen.findByRole('region', { name: '歷屆試題模擬考設定' });
@@ -1042,7 +1042,7 @@ describe('MockExamPage submitting', () => {
       year: 114,
       answers: { 'law-114-01': 0, 'law-114-02': 2 },
       elapsedSeconds: 55,
-      // 一律給分 counts even unanswered, as on the original 歷屆試題（討論版）.
+      // 一律給分 counts even unanswered, as on the original 歷屆試題討論版.
       correctCount: 2,
       wrongCount: 1,
       unansweredCount: 2,

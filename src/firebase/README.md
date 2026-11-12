@@ -99,13 +99,13 @@ Ctrl＋Enter（Mac：⌘＋Enter）在模擬考可交卷，仍走原本的未作
 
 - 只在 Vercel 的 Production 設定 `NEXT_PUBLIC_GA_MEASUREMENT_ID`；沒有這個變數時網站不會載入 GA，本機與 Preview 都不會送資料。
 - 程式直接使用 gtag，不經過 `firebase/analytics`；評估 ID 來自連結到 Firebase 專案的 GA4 資源（G- 開頭）。所有呼叫都集中在 `src/lib/analytics.ts`。
-- 每個頁面只傳路徑和 `utm_` 參數，`?question=`、`?q=`、`?result=` 不會送出，整頁載入時來自本站的 referrer 也會先清理；同一頁換題不算新的頁面瀏覽。歷屆試題（討論版）每題有自己的網址，但 GA 一律記成 `/exams` 和固定標題，所以統計資料不含題號。每題的搜尋成效看 Search Console。gtag.js 抽樣送出的診斷請求（`/td`、`/a`）會帶載入時的網域和路徑，無法用設定關閉，隱私權政策有說明。
+- 每個頁面只傳路徑和 `utm_` 參數，`?question=`、`?q=`、`?result=` 不會送出，整頁載入時來自本站的 referrer 也會先清理；同一頁換題不算新的頁面瀏覽。歷屆試題討論版每題有自己的網址，但 GA 一律記成 `/exams` 和固定標題，所以統計資料不含題號。每題的搜尋成效看 Search Console。gtag.js 抽樣送出的診斷請求（`/td`、`/a`）會帶載入時的網域和路徑，無法用設定關閉，隱私權政策有說明。
 - 社群貼文都連到首頁並帶 `utm_` 參數。第一筆頁面瀏覽記下來源後，`src/components/analytics.tsx` 會把首頁網址列的這些參數拿掉，複製網址分享時才不會把來源一起帶走。其他頁面不處理：每日抽題練習會把網址變動當成使用者操作，重設選好的科目。
 
 | 事件 | 送出時機 |
 | --- | --- |
 | `practice_start` | 開始一組練習或一份試卷；法規克漏字在本輪第一次提交或看答案時 |
-| `question_answered` | 確認答案、模擬考第一次選答、歷屆試題（討論版）選答後看解答 |
+| `question_answered` | 確認答案、模擬考第一次選答、歷屆試題討論版選答後看解答 |
 | `answer_revealed` | 沒有作答就看答案（含申論題） |
 | `practice_complete` | 完成練習、交卷、法規克漏字的最後一題 |
 | `paper_download` | 紙本練習卷的 PDF 下載成功 |

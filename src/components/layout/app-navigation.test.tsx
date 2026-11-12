@@ -37,7 +37,7 @@ describe('grouped app navigation', () => {
     render(<SidebarContent pathname="/" />);
     const nav = screen.getByRole('navigation', { name: '主要功能' });
     expect(nav.children[0]).toHaveTextContent(/^每日練習$/);
-    expect(nav.children[1]).toHaveTextContent(/^歷屆試題（討論版）$/);
+    expect(nav.children[1]).toHaveTextContent(/^歷屆試題討論版$/);
     expect(nav.children[2]).toHaveTextContent(/^歷屆試題資料集成$/);
     expect(nav.children[3]).toHaveTextContent(/^我的作答存摺$/);
     expect(screen.queryByRole('link', { name: '首頁' })).not.toBeInTheDocument();
@@ -51,7 +51,7 @@ describe('grouped app navigation', () => {
         .map((link) => link.getAttribute('href')),
     ).toEqual([
       '/practice',
-      // 歷屆試題（討論版） links its board; a plain click returns to the last place (below).
+      // 歷屆試題討論版 links its board; a plain click returns to the last place (below).
       '/exams',
       '/resources',
       '/personal',
@@ -79,18 +79,18 @@ describe('grouped app navigation', () => {
   });
 
   it.each(['/exams/[[...slug]]', '/exams', '/exams/law', '/exams/law/114/1'])(
-    'keeps 歷屆試題（討論版） current on %s, wherever its link lands',
+    'keeps 歷屆試題討論版 current on %s, wherever its link lands',
     (pathname) => {
       render(<SidebarContent pathname={pathname} />);
-      expect(screen.getByRole('link', { name: '歷屆試題（討論版）' })).toHaveAttribute(
+      expect(screen.getByRole('link', { name: '歷屆試題討論版' })).toHaveAttribute(
         'aria-current',
         'page',
       );
     },
   );
 
-  describe('歷屆試題（討論版） returns to the last place the reader saw in it', () => {
-    const exams = () => screen.getByRole('link', { name: '歷屆試題（討論版）' });
+  describe('歷屆試題討論版 returns to the last place the reader saw in it', () => {
+    const exams = () => screen.getByRole('link', { name: '歷屆試題討論版' });
 
     it('opens the place this tab remembers, ahead of the one this browser does', () => {
       window.localStorage.setItem(EXAMS_PLACE_KEY, '/exams/law/108/12');
@@ -144,7 +144,7 @@ describe('grouped app navigation', () => {
       expect(onNavigate).toHaveBeenCalledOnce();
     });
 
-    it('stays on the page inside 歷屆試題（討論版）, and only closes the drawer', () => {
+    it('stays on the page inside 歷屆試題討論版, and only closes the drawer', () => {
       router.pathname = '/exams/[[...slug]]';
       window.localStorage.setItem(EXAMS_PLACE_KEY, '/exams/law/108/12');
       const onNavigate = vi.fn();
@@ -155,8 +155,8 @@ describe('grouped app navigation', () => {
       expect(onNavigate).toHaveBeenCalledOnce();
     });
 
-    it('takes the reader back while a click away from 歷屆試題（討論版） is still on its way', () => {
-      // The route is still 歷屆試題（討論版）'s; the sidebar already shows 每日練習, where it is going.
+    it('takes the reader back while a click away from 歷屆試題討論版 is still on its way', () => {
+      // The route is still 歷屆試題討論版's; the sidebar already shows 每日練習, where it is going.
       router.pathname = '/exams/[[...slug]]';
       window.sessionStorage.setItem(EXAMS_PLACE_KEY, '/exams/law/114/30');
       const onNavigate = vi.fn();
@@ -235,7 +235,7 @@ describe('grouped app navigation', () => {
         'page',
       );
       expect(
-        screen.getByRole('link', { name: '歷屆試題（討論版）' }),
+        screen.getByRole('link', { name: '歷屆試題討論版' }),
       ).not.toHaveAttribute('aria-current');
     },
   );
@@ -246,11 +246,11 @@ describe('grouped app navigation', () => {
     ['/practice/quiz', '每日抽題練習'],
     ['/practice/law-cloze', '法規克漏字'],
     ['/practice/mock-exam', '歷屆試題模擬考'],
-    ['/exams', '歷屆試題（討論版）'],
+    ['/exams', '歷屆試題討論版'],
     ['/exams/law', '營建法規與實務考古題'],
     ['/exams/law/114', '114 年營建法規與實務考古題'],
-    ['/exams/env/100/written-1', '歷屆試題（討論版）'],
-    ['/exams/law/114/3', '歷屆試題（討論版）'],
+    ['/exams/env/100/written-1', '歷屆試題討論版'],
+    ['/exams/law/114/3', '歷屆試題討論版'],
     ['/resources', '歷屆試題資料集成'],
     ['/resources/analysis', '考題分析'],
     ['/resources/memory-gallery', '速記圖庫'],
@@ -275,11 +275,11 @@ describe('grouped app navigation', () => {
   });
 
   it.each([
-    [[], '歷屆試題（討論版）'],
+    [[], '歷屆試題討論版'],
     [['law'], '營建法規與實務考古題'],
     [['env', '114'], '114 年建築環境控制考古題'],
-    [['law', '114', '3'], '歷屆試題（討論版）'],
-  ])('names the 歷屆試題（討論版） page at %j like its tab', (slug, title) => {
+    [['law', '114', '3'], '歷屆試題討論版'],
+  ])('names the 歷屆試題討論版 page at %j like its tab', (slug, title) => {
     expect(navigationPageTitle('/exams/[[...slug]]', { slug })).toBe(title);
     expect(navigationPageTitle('/exams', { slug })).toBe(title);
   });

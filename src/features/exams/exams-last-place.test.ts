@@ -53,7 +53,7 @@ describe('examsPlaceFrom', () => {
   });
 });
 
-describe('the sidebar’s place in 歷屆試題（討論版）', () => {
+describe('the sidebar’s place in 歷屆試題討論版', () => {
   it('starts at the newest 法規 paper’s first question', () => {
     expect(examsStart).toBe('/exams/law/114/1');
     expect(examsReturnHref()).toBe('/exams/law/114/1');

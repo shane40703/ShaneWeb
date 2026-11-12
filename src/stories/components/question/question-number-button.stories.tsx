@@ -58,7 +58,7 @@ function Sample({ label, number = '12', active: initialActive, ...props }: Sampl
 }
 
 /**
- * 每日抽題練習、模擬考、歷屆試題（討論版）、筆記頁共用的題號按鈕，所有狀態並排比較。
+ * 每日抽題練習、模擬考、歷屆試題討論版、筆記頁共用的題號按鈕，所有狀態並排比較。
  * 實際的題號排列見 QuestionNumberGrid、QuestionNumberPicker。
  *
  * 畫面上可以操作看到：點任一個題號切換成「目前題目」或取消。

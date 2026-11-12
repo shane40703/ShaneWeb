@@ -30,12 +30,12 @@ test('navigation lists only the top-level pages, and returns home via the brand'
   const links = nav.locator(':scope > a');
   await expect(links).toHaveText([
     '每日練習',
-    '歷屆試題（討論版）',
+    '歷屆試題討論版',
     '歷屆試題資料集成',
     personal.label,
   ]);
   await expect(links.nth(0)).toHaveAttribute('href', '/practice');
-  // A plain click returns to the last place in 歷屆試題（討論版） (exams-last-place.spec.ts).
+  // A plain click returns to the last place in 歷屆試題討論版 (exams-last-place.spec.ts).
   await expect(links.nth(1)).toHaveAttribute('href', '/exams');
   await expect(links.nth(2)).toHaveAttribute('href', '/resources');
   await expect(links.nth(3)).toHaveAttribute('href', '/personal');

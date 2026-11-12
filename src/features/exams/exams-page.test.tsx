@@ -738,6 +738,8 @@ describe('ExamsPage question loading', () => {
 
     expect(screen.getByRole('tab', { name: '筆記' })).toHaveAttribute('aria-selected', 'true');
     expect(screen.getByLabelText('我的筆記')).toBeInTheDocument();
+    const options = screen.getByRole('region', { name: '題目選項' });
+    for (const option of lawQuestion.options) expect(within(options).getByText(option)).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: '看解答' })).not.toBeInTheDocument();
     expect(screen.queryByLabelText('內容')).not.toBeInTheDocument();
   });

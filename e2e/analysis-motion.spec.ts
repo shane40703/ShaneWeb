@@ -1,5 +1,34 @@
 import { expect, test } from '@playwright/test';
 
+test('category search and discussion notes work at the current viewport', async ({ page }, testInfo) => {
+  await page.goto('/resources/analysis?subject=law&year=114');
+  const distribution = page.getByRole('region', { name: '命題分類與對應考古題' });
+  const search = distribution.getByRole('searchbox', { name: '搜尋相關法規' });
+  await search.fill('都市');
+  await expect(distribution.getByRole('button', { name: /^都市計畫法\s/ })).toBeVisible();
+  await expect(distribution.getByRole('button', { name: /建築技術規則/ })).toHaveCount(0);
+  await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(page.viewportSize()!.width);
+  if (page.viewportSize()!.width <= 520) {
+    const title = await distribution.getByText('114 年命題分布').boundingBox();
+    const input = await search.boundingBox();
+    expect(input!.y).toBeGreaterThan(title!.y + title!.height);
+  }
+  await distribution.scrollIntoViewIfNeeded();
+  await page.screenshot({ path: testInfo.outputPath('category-search.png') });
+  await search.fill('完全不存在的法規');
+  await expect(distribution.getByRole('status')).toContainText('找不到符合的分類');
+  await search.fill('');
+  await expect(distribution.getByRole('button', { name: /建築技術規則/ })).toBeVisible();
+
+  await page.goto('/exams/law/114/1?tab=notes');
+  const options = page.getByRole('region', { name: '題目選項' });
+  await expect(options.locator('li')).toHaveCount(4);
+  await expect(page.getByLabel('我的筆記')).toBeVisible();
+  await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(page.viewportSize()!.width);
+  await options.scrollIntoViewIfNeeded();
+  await page.screenshot({ path: testInfo.outputPath('note-options.png') });
+});
+
 test('analysis charts animate as they enter view and update with the selected data', async ({ page }) => {
   await page.goto('/resources/analysis?subject=law&year=114');
   const distribution = page.locator('[class*="lawList"]');

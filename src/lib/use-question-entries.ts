@@ -19,10 +19,10 @@ function valueOf(value: string | string[] | undefined) {
 }
 
 /**
- * What 歷屆試題（討論版） and 我的筆記 navigate over: every question of the bank as an entry, from the
+ * What 歷屆試題討論版 and 我的筆記 navigate over: every question of the bank as an entry, from the
  * paper index, with a body once its paper has loaded. Only the paper in the URL downloads, and
  * the one next to it when the reader is about to cross into it. A paper's own page downloads
- * that paper, for its topics and so that its first question opens at once; 歷屆試題（討論版） itself
+ * that paper, for its topics and so that its first question opens at once; 歷屆試題討論版 itself
  * and a subject's page download nothing.
  */
 export function useQuestionEntries(paperIndex: PaperIndex, initialQuestion?: Question) {

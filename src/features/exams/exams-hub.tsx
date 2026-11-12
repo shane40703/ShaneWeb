@@ -194,7 +194,7 @@ function QuestionRows({
 }
 
 /**
- * 歷屆試題（討論版）'s overview pages, under the subject and year selector that the page puts at the
+ * 歷屆試題討論版's overview pages, under the subject and year selector that the page puts at the
  * top of every address: the four subjects, a subject's papers, a paper's questions. The board
  * and a subject list their rows as facts, a short description and a figure, which are not links:
  * the selector chooses. A paper lists each question as a link to it, with its topics. Nothing

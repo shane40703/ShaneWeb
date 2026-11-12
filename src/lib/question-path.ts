@@ -20,7 +20,7 @@ export function parseQuestionId(questionId: string) {
 
 const WRITTEN_PREFIX = 'written-';
 
-/** 歷屆試題（討論版）'s address parts: `['law', '114', '3']`, or `['env', '100', 'written-1']`. */
+/** 歷屆試題討論版's address parts: `['law', '114', '3']`, or `['env', '100', 'written-1']`. */
 export function examsSlug(questionId: string) {
   const parsed = parseQuestionId(questionId);
   if (!parsed) return [];
@@ -40,7 +40,7 @@ export function examsSlugParts(slug: string | string[] | undefined) {
   return Array.isArray(slug) ? slug : slug ? [slug] : [];
 }
 
-/** 歷屆試題（討論版）'s tabs on a question: 題目, 討論區 and 筆記. */
+/** 歷屆試題討論版's tabs on a question: 題目, 討論區 and 筆記. */
 export type ExamsTab = 'question' | 'discussion' | 'notes';
 
 /** `?tab=discussion|notes`; absent or anything else is the 題目 tab. */
@@ -71,7 +71,7 @@ export function examsQuestionId(slug: string | string[] | undefined) {
 }
 
 /**
- * What an address under /exams is: 歷屆試題（討論版） itself, a subject, a paper or a question. The
+ * What an address under /exams is: 歷屆試題討論版 itself, a subject, a paper or a question. The
  * first three list the level below them; only a question shows a question.
  */
 export type ExamsPlace =
@@ -133,7 +133,7 @@ export function examsHubName(place: ExamsPlace) {
     place.kind === 'bank'
       ? undefined
       : subjects.find((item) => item.id === place.subject);
-  if (place.kind === 'bank' || !subject) return '歷屆試題（討論版）';
+  if (place.kind === 'bank' || !subject) return '歷屆試題討論版';
   if (place.kind === 'subject') return `${subject.name}考古題`;
   return `${place.year} 年${subject.name}考古題`;
 }

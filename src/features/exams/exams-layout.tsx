@@ -14,7 +14,7 @@ function entryState() {
   return window.history.state as NextHistoryState | null;
 }
 
-/** How far down each entry of 歷屆試題（討論版） was when the reader left it, by Next's key for it. */
+/** How far down each entry of 歷屆試題討論版 was when the reader left it, by Next's key for it. */
 const scrollPositions = new Map<string, number>();
 
 function scrollToY(top: number) {
@@ -44,7 +44,7 @@ export function pushExamsPlace(
 }
 
 /**
- * Back and Forward inside 歷屆試題（討論版） return to where the reader was on that entry, such as
+ * Back and Forward inside 歷屆試題討論版 return to where the reader was on that entry, such as
  * the row of the paper they opened a question from, and stay on the loaded page.
  *
  * - Leaving an entry records how far down it was, just before Next writes the next entry and
@@ -118,7 +118,7 @@ function useExamsScroll(router: NextRouter) {
 }
 
 /**
- * 歷屆試題（討論版） at every address under /exams. It draws no way back: every address starts with
+ * 歷屆試題討論版 at every address under /exams. It draws no way back: every address starts with
  * the same subject and year selector, which the page puts at the top. It puts each entry back
  * where the reader left it, and remembers the address on screen for the sidebar. It renders
  * nothing of its own, so the page under it is never remounted by a move.

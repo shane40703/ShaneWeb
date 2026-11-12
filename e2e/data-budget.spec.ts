@@ -15,7 +15,7 @@ function watchRequests(page: Page) {
   };
 }
 
-test('歷屆試題（討論版） downloads the paper on screen, not the bank', async ({
+test('歷屆試題討論版 downloads the paper on screen, not the bank', async ({
   page,
 }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop');
@@ -64,14 +64,14 @@ test('every question stays reachable from a subject that was never loaded', asyn
   ]);
 });
 
-test('歷屆試題（討論版） overviews download only the paper they list', async ({
+test('歷屆試題討論版 overviews download only the paper they list', async ({
   page,
 }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop');
   const requests = watchRequests(page);
   const files = () => requests.questionData().map((url) => new URL(url).pathname);
   // A move under /exams stays on the loaded page. The sidebar still prefetches the pages it
-  // links, and where 歷屆試題（討論版） returns to, and Next marks those as prefetches.
+  // links, and where 歷屆試題討論版 returns to, and Next marks those as prefetches.
   const fetchedPageData: string[] = [];
   page.on('request', (request) => {
     if (

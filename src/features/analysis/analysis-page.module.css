@@ -131,6 +131,51 @@
   line-height: 1.6;
 }
 
+.lawDistribution > header {
+  grid-template-columns: minmax(0, 1fr) minmax(120px, 200px);
+  column-gap: 16px;
+}
+
+.lawDistribution > header > span,
+.lawDistribution > header > strong,
+.lawDistribution > header > p {
+  grid-column: 1;
+}
+
+.categorySearch {
+  grid-column: 2;
+  grid-row: 1 / 4;
+  align-self: center;
+  min-width: 0;
+  width: 100%;
+  height: 40px;
+  padding: 0 12px;
+  border: var(--frame);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+}
+
+.categorySearch:focus-visible {
+  border-color: var(--primary);
+  outline: 2px solid var(--focus);
+  outline-offset: 1px;
+}
+
+.noSearchResults {
+  margin: 0;
+  padding: 24px 12px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+@media (max-width: 520px) {
+  .lawDistribution > header { grid-template-columns: minmax(0, 1fr); }
+  .categorySearch { grid-column: 1; grid-row: auto; margin-top: 8px; }
+}
+
 .lawQuestions > header button {
   width: fit-content;
   margin-top: 10px;

@@ -1,7 +1,7 @@
 /*
  * The shared note editor: question, then a quiet rule, the note fields, then a rule and the
  * action row; on 我的筆記 a dashed rule and 類似考題 follow. It draws no frame of its own: the
- * page's panel (我的筆記 editor panel, the 筆記 tab of 歷屆試題（討論版）) frames it.
+ * page's panel (我的筆記 editor panel, the 筆記 tab of 歷屆試題討論版) frames it.
  */
 .editor {
   min-width: 0;
@@ -28,7 +28,7 @@
   line-height: 1.3;
 }
 
-/* Compact header (the 筆記 tab of 歷屆試題（討論版）): the same mono number as the 題目 tab. */
+/* Compact header (the 筆記 tab of 歷屆試題討論版): the same mono number as the 題目 tab. */
 .editor[data-compact] > .questionNumber {
   font-family: var(--font-mono);
   font-size: 14px;

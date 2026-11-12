@@ -12,7 +12,7 @@ const titles: Record<string, string> = {
   '/practice/quiz': '每日抽題練習｜建築師考試',
   '/practice/law-cloze': '法規克漏字｜建築師考試',
   '/practice/mock-exam': '歷屆試題模擬考｜建築師考試',
-  '/exams': '歷屆試題（討論版）｜建築師考試',
+  '/exams': '歷屆試題討論版｜建築師考試',
   '/exams/law': '營建法規與實務考古題｜建築師考試',
   '/exams/law/114': '114 年營建法規與實務考古題｜建築師考試',
   '/exams/law/114/3': '114 年營建法規與實務考古題第 3 題｜建築師考試',

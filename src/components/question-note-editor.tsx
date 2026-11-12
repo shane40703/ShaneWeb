@@ -29,7 +29,7 @@ export interface QuestionNoteDraft {
 }
 
 /**
- * The note editor shared by 我的筆記 and the 筆記 tab of 歷屆試題（討論版）. The page keeps the
+ * The note editor shared by 我的筆記 and the 筆記 tab of 歷屆試題討論版. The page keeps the
  * unsaved draft (keyed by question id) and hands it back in; without a draft the saved note
  * is shown. Frameless: the page's panel draws the frame.
  */
@@ -45,7 +45,7 @@ export function QuestionNoteEditor({
   question: Question;
   draft?: QuestionNoteDraft;
   onDraftChange: (draft: QuestionNoteDraft) => void;
-  /** full: tags, source, number, prompt and answer rows; compact: number and prompt only. */
+  /** full: tags and source; both variants show the question and answer rows. */
   header?: 'full' | 'compact';
   showDifficultButton?: boolean;
   showSimilarQuestions?: boolean;
@@ -132,7 +132,7 @@ export function QuestionNoteEditor({
       ) : null}
       <h2 className={styles.questionNumber}>{formatQuestionNumberLabel(question)}</h2>
       <QuestionPrompt question={question} compact={header === 'compact'} />
-      {header === 'full' && question.format !== 'written' ? (
+      {question.format !== 'written' ? (
         <QuestionAnswerPanel question={question} heading={null} ariaLabel="題目選項" />
       ) : null}
       {editing ? (

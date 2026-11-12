@@ -94,6 +94,33 @@ function poolView(pool: ReturnType<typeof resolvePracticePool>) {
 }
 
 describe('the real bank survives the split', () => {
+  it('keeps outdated questions in papers but excludes them from daily practice', () => {
+    const ids = ['law-103-73', 'law-104-47', 'law-107-47', 'law-105-38'];
+    const allIds = new Set(bySubject.law.map((question) => question.id));
+    const poolIds = new Set(resolvePracticePool(bySubject.law, 'law', DEFAULT_PRACTICE_SETTINGS).candidates.map((question) => question.id));
+    for (const id of ids) {
+      expect(allIds.has(id)).toBe(true);
+      expect(poolIds.has(id)).toBe(false);
+    }
+    expect(bySubject.law.find((question) => question.id === 'law-103-42')?.relatedLaws)
+      .toContain('非都市土地使用管制規則');
+  });
+
+  it('includes the requested parent categories alongside their detailed regulations', () => {
+    for (const [detail, parent] of [
+      ['都市更新條例施行細則', '都市更新條例'],
+      ['都市計畫法臺灣省施行細則', '都市計畫法'],
+      ['區域計畫法施行細則', '區域計畫法'],
+      ['國土計畫法施行細則', '國土計畫法'],
+      ['採購評選委員會組織準則', '政府採購法'],
+      ['營造業法施行細則', '營造業法'],
+    ]) {
+      const matched = bySubject.law.filter((question) => question.relatedLaws?.includes(detail));
+      expect(matched.length).toBeGreaterThan(0);
+      for (const question of matched) expect(question.relatedLaws, question.id).toContain(parent);
+    }
+  });
+
   it('has the whole bank to compare against', () => {
     expect(new Set(bank.map((question) => question.subject)).size).toBe(subjects.length);
     expect(bank.length).toBeGreaterThan(3000);
@@ -279,7 +306,7 @@ describe('the real bank survives the split', () => {
   });
 });
 
-describe('the paper pages of 歷屆試題（討論版）', () => {
+describe('the paper pages of 歷屆試題討論版', () => {
   it('lists the same topics from the build and from the downloaded paper, for every paper', async () => {
     const summaries = await getPaperQuestionSummaries();
     let papers = 0;

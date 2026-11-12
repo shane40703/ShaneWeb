@@ -51,6 +51,7 @@ export function AnalysisPage({
   const router = useRouter();
   const [distributionRef, distributionEntered] = useChartEntrance<HTMLDivElement>();
   const [pieRef, pieEntered] = useChartEntrance<HTMLDivElement>();
+  const [categorySearch, setCategorySearch] = useState('');
   const querySubject = valueOf(router.query.subject);
   const subjectId: SubjectId = isSubjectId(querySubject) ? querySubject : 'law';
   const queryYear = valueOf(router.query.year);
@@ -99,7 +100,7 @@ export function AnalysisPage({
         count: 0,
         percentage: 0,
       },
-  );
+  ).sort((left, right) => right.count - left.count);
   const lawAnalysis = getLawAnalysis(source);
   const analysis =
     subjectId === 'law'
@@ -112,11 +113,15 @@ export function AnalysisPage({
   const analysisTotal = analysis.reduce((total, item) => total + item.count, 0);
   const categoryLabel = subjectId === 'law' ? '相關法規' : '命題分類';
   const [selectedCategoryValue, setSelectedCategoryValue] = useState<string>();
-  const selectedCategory = analysis.some(
+  const normalizedSearch = categorySearch.trim().normalize('NFKC').toLocaleLowerCase();
+  const visibleAnalysis = analysis.filter((item) =>
+    item.category.normalize('NFKC').toLocaleLowerCase().includes(normalizedSearch),
+  );
+  const selectedCategory = visibleAnalysis.some(
     (item) => item.category === selectedCategoryValue,
   )
     ? selectedCategoryValue
-    : analysis[0]?.category;
+    : visibleAnalysis[0]?.category;
   const selectedCategoryQuestions = selectedCategory
     ? source.filter((question) =>
         subjectId === 'law'
@@ -168,6 +173,7 @@ export function AnalysisPage({
   }
 
   function changeSubject(nextSubject: SubjectId) {
+    setCategorySearch('');
     if (year === 'all') {
       const nextAvailableYears = years.filter((candidateYear) =>
         questions.some(
@@ -290,8 +296,7 @@ export function AnalysisPage({
 
       {source.length && analysis.length ? (
         <>
-          {selectedCategory ? (
-            <section className={styles.lawAnalysis} aria-label="命題分類與對應考古題">
+          <section className={styles.lawAnalysis} aria-label="命題分類與對應考古題">
               <div className={styles.lawDistribution}>
                 <header>
                   <span>{categoryLabel}占比</span>
@@ -305,9 +310,17 @@ export function AnalysisPage({
                       : ''}
                     ；選擇分類即可查看對應考古題。
                   </p>
+                  <input
+                    className={styles.categorySearch}
+                    type="search"
+                    aria-label={`搜尋${categoryLabel}`}
+                    placeholder={`搜尋${categoryLabel}`}
+                    value={categorySearch}
+                    onChange={(event) => setCategorySearch(event.target.value)}
+                  />
                 </header>
                 <div className={styles.lawList} ref={distributionRef} data-chart-motion={distributionEntered || undefined}>
-                  {analysis.map((item) => (
+                  {visibleAnalysis.map((item) => (
                     <button
                       type="button"
                       key={item.category}
@@ -324,9 +337,16 @@ export function AnalysisPage({
                       <b>{item.percentage.toFixed(1)}%</b>
                     </button>
                   ))}
+                  {!visibleAnalysis.length ? (
+                    <p className={styles.noSearchResults} role="status">
+                      找不到符合的分類，請試試其他關鍵字。
+                    </p>
+                  ) : null}
                 </div>
               </div>
               <div className={styles.lawQuestions}>
+                {selectedCategory ? (
+                  <>
                 <header>
                   <span>對應考古題</span>
                   <strong>{selectedCategory}</strong>
@@ -357,9 +377,12 @@ export function AnalysisPage({
                     </Link>
                   ))}
                 </div>
+                  </>
+                ) : (
+                  <EmptyState title="尚未找到分類" description="請調整搜尋關鍵字。" />
+                )}
               </div>
-            </section>
-          ) : null}
+          </section>
 
           <section
             className={`${styles.chartCard} ${styles.pieOverview}`}

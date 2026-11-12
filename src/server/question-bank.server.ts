@@ -613,8 +613,8 @@ export async function getQuestionPageProps(): Promise<QuestionPageProps> {
 }
 
 /**
- * 歷屆試題（討論版）: a question's address prerenders that question. A paper's page gets its topic
- * words instead, and 歷屆試題（討論版） itself and a subject only the index: no overview carries
+ * 歷屆試題討論版: a question's address prerenders that question. A paper's page gets its topic
+ * words instead, and 歷屆試題討論版 itself and a subject only the index: no overview carries
  * any question's text.
  */
 export interface ExamsPageProps extends QuestionPageProps {

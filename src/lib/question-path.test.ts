@@ -40,7 +40,7 @@ describe('question ids', () => {
   });
 });
 
-describe('歷屆試題（討論版） addresses', () => {
+describe('歷屆試題討論版 addresses', () => {
   const refs = [
     { id: 'env-114-written-01', format: 'written', subject: 'env', year: 114, questionNumber: 1 },
     { id: 'env-114-01', format: 'multiple-choice', subject: 'env', year: 114, questionNumber: 1 },

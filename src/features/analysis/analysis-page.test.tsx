@@ -39,6 +39,40 @@ describe('AnalysisPage category quiz', () => {
     router.replace.mockReset();
   });
 
+  it('filters the distribution by keyword without changing the overall chart totals', () => {
+    render(<AnalysisPage questions={[
+      question('law-114-01', 1),
+      { ...question('law-114-02', 2), relatedLaws: ['都市計畫法'] },
+    ]} />);
+    const distribution = screen.getByRole('region', { name: '命題分類與對應考古題' });
+    const search = within(distribution).getByRole('searchbox', { name: '搜尋相關法規' });
+    fireEvent.change(search, { target: { value: '都市' } });
+    expect(within(distribution).getByRole('button', { name: /都市計畫法/ })).toBeInTheDocument();
+    expect(within(distribution).queryByRole('button', { name: /建築技術規則/ })).not.toBeInTheDocument();
+    expect(within(distribution).getByRole('link', { name: /law-114-02 題幹/ })).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: /建築技術規則.*都市計畫法|都市計畫法.*建築技術規則/ })).toBeInTheDocument();
+    fireEvent.change(search, { target: { value: '沒有此分類' } });
+    expect(within(distribution).getByRole('status')).toHaveTextContent('找不到符合的分類');
+    fireEvent.change(search, { target: { value: '' } });
+    expect(within(distribution).getByRole('button', { name: /建築技術規則/ })).toBeInTheDocument();
+  });
+
+  it.each([
+    ['env', '熱', '空氣'],
+    ['construction', '混凝土構造', '鋼構造'],
+    ['structure', '力學', '耐震'],
+  ] as const)('sorts the %s distribution by descending count', (subject, low, high) => {
+    router.query = { subject, year: '114' };
+    const make = (index: number, category: string): QuestionSummary => ({
+      ...question(`${subject}-114-${index}`, index), subject,
+      topic: category, primaryCategory: category, relatedLaws: [],
+    });
+    render(<AnalysisPage questions={[make(1, low), make(2, high), make(3, high)]} />);
+    const distribution = screen.getByRole('region', { name: '命題分類與對應考古題' });
+    const rows = within(distribution).getAllByRole('button', { pressed: true });
+    expect(rows[0]).toHaveTextContent(high);
+  });
+
   it('filters cross-year analysis by a selected year range', () => {
     router.query = {
       subject: 'law',
@@ -59,7 +93,7 @@ describe('AnalysisPage category quiz', () => {
     expect(screen.getByLabelText('分析結束年度')).toHaveValue('114');
   });
 
-  it('opens 每日抽題練習 with the category and year, and each question in 歷屆試題（討論版）', () => {
+  it('opens 每日抽題練習 with the category and year, and each question in 歷屆試題討論版', () => {
     const questions = [
       question('law-114-01', 1),
       question('law-114-02', 2),

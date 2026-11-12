@@ -365,7 +365,7 @@ describe('analysis', () => {
     const lawAnalysis = getLawAnalysis(source);
 
     expect(primaryAnalysis.reduce((sum, item) => sum + item.count, 0)).toBe(80);
-    expect(lawAnalysis.reduce((sum, item) => sum + item.count, 0)).toBe(83);
+    expect(lawAnalysis.reduce((sum, item) => sum + item.count, 0)).toBe(87);
     expect(lawAnalysis).toContainEqual(
       expect.objectContaining({ law: '法律常識', count: 1 }),
     );

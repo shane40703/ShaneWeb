@@ -454,7 +454,7 @@ test('the mock exam answers a whole paper, keeps it when leaving, and scores it 
   await setup.getByRole('link', { name: /查看結果/ }).click();
   await expect(score).toHaveAttribute('aria-valuemax', '60');
   await page.goto('/history');
-  // Saved to 歷屆試題作答履歷 like the original 歷屆試題（討論版）.
+  // Saved to 歷屆試題作答履歷 like the original 歷屆試題討論版.
   const year = page.getByRole('group', { name: '113 年作答紀錄' });
   await expect(year.locator('summary')).toContainText('共作答 1 次');
   await year.locator('summary').click();
@@ -684,7 +684,7 @@ test('the home subject cards, 考題分析 and question cards lead to the new pa
   ).toBeChecked();
 
   await page.goto('/resources/analysis?subject=law&year=114');
-  // Each listed question opens in 歷屆試題（討論版）; nothing leads to the old 作答頁.
+  // Each listed question opens in 歷屆試題討論版; nothing leads to the old 作答頁.
   await expect(page.locator('a[href^="/exams/law/114/"]').first()).toBeVisible();
   expect(await page.locator('a[href*="/questions/"], a[href*="mode="]').count()).toBe(0);
   await page.getByRole('button', { name: '到每日抽題練習抽題' }).click();

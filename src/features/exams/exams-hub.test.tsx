@@ -77,7 +77,7 @@ function hub(
   );
 }
 
-describe('ExamsHub: 歷屆試題（討論版） itself', () => {
+describe('ExamsHub: 歷屆試題討論版 itself', () => {
   it('says what the bank holds and lists the four subjects as facts, no links', () => {
     render(hub({ kind: 'bank' }));
 
