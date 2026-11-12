@@ -499,12 +499,13 @@ export function MockExamPage({ papers }: { papers: MockExamPaper[] }) {
             startedAt: new Date().toISOString(),
           })
         }
-        onToggleEliminated={(option) =>
+        onToggleEliminated={(option, clearSelected) =>
           currentId &&
           update({
             type: 'toggle-eliminated-option',
             questionId: currentId,
             option,
+            clearSelected,
             startedAt: new Date().toISOString(),
           })
         }

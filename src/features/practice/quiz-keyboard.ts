@@ -26,3 +26,23 @@ export function ownsSpaceKey(target: HTMLElement) {
 export function isSubmitShortcut(event: { key: string; ctrlKey: boolean; metaKey: boolean; altKey: boolean; shiftKey: boolean }) {
   return event.key === 'Enter' && (event.ctrlKey || event.metaKey) && !event.altKey && !event.shiftKey;
 }
+
+/** Daily practice also permits plain Enter; focused controls retain their normal activation. */
+export function isPracticeActionShortcut(event: { key: string; ctrlKey: boolean; metaKey: boolean; altKey: boolean; shiftKey: boolean }) {
+  return event.key === 'Enter' && !event.altKey && !event.shiftKey;
+}
+import { useEffect } from 'react';
+
+
+/** A click outside the paper can leave focus on the page itself, not on a control. */
+export function useQuizBodyShortcuts(handler: (event: globalThis.KeyboardEvent) => void) {
+  useEffect(() => {
+    const onKeyDown = (event: globalThis.KeyboardEvent) => {
+      if (event.target !== document.body && event.target !== document.documentElement) return;
+      if (document.querySelector('[role="dialog"], [role="alertdialog"], [role="menu"], [role="listbox"]')) return;
+      handler(event);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [handler]);
+}

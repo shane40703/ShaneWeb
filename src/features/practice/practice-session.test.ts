@@ -355,6 +355,14 @@ describe('answering', () => {
     expect(selectPracticeOption(session, 'law-999-99', 1)).toBe(session);
   });
 
+  it('atomically clears and strikes out a selected option for keyboard use', () => {
+    const drafted = selectPracticeOption(session, other.id, 2);
+    const eliminated = togglePracticeElimination(drafted, other.id, 2, true);
+    expect(eliminated.drafts[other.id]).toBeUndefined();
+    expect(eliminated.eliminated[other.id]).toEqual([2]);
+    expect(drafted.drafts[other.id]).toBe(2);
+  });
+
   it('counts time only while a question is still open', () => {
     const ticked = tickPracticeTimer(
       tickPracticeTimer(session, question.id),

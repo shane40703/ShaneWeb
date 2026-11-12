@@ -879,8 +879,8 @@
   justify-content: center;
 }
 
-/* Focus from a click in the paper, for the shortcuts; a click needs no ring. */
-.paperQuiz:focus {
+/* The quiz container receives mouse focus for shortcuts; individual controls keep their focus rings. */
+.practice:focus {
   outline: none;
 }
 

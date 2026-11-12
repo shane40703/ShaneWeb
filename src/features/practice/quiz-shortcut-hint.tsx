@@ -13,7 +13,7 @@ export function QuizShortcutHint({ daily = false }: { daily?: boolean }) {
         <span>換題・</span><kbd>空白</kbd><span>刪去／恢復</span>
       </span>
       <span className={styles.shortcutKeys}>
-        <kbd>Ctrl / ⌘</kbd><span>＋</span><kbd>Enter</kbd>
+        {daily ? null : <><kbd>Ctrl / ⌘</kbd><span>＋</span></>}<kbd>Enter</kbd>
         <span>{daily ? '確認／下一題／完成練習' : '交卷'}</span>
       </span>
     </p>

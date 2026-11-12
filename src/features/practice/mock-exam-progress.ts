@@ -32,6 +32,7 @@ export type QuizProgressAction =
       type: 'toggle-eliminated-option';
       questionId: QuestionId;
       option: number;
+      clearSelected?: boolean;
       startedAt: string;
     };
 
@@ -58,12 +59,13 @@ export function quizProgressReducer(
     }
     case 'toggle-eliminated-option': {
       // The chosen answer cannot be struck out.
-      if (current.selected === action.option) return state;
+      if (current.selected === action.option && !action.clearSelected) return state;
       const eliminatedOptions = current.eliminatedOptions ?? [];
       const next = eliminatedOptions.includes(action.option)
         ? eliminatedOptions.filter((option) => option !== action.option)
         : [...eliminatedOptions, action.option].sort((left, right) => left - right);
       const progress = { ...current };
+      if (action.clearSelected && current.selected === action.option) delete progress.selected;
       if (next.length) progress.eliminatedOptions = next;
       else delete progress.eliminatedOptions;
       return { ...state, [action.questionId]: progress };

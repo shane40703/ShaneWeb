@@ -33,7 +33,7 @@ import {
   type PracticeTimer,
 } from './practice-session';
 import styles from './practice-page.module.css';
-import { focusedOptionIndex, focusRestoreOption, isSubmitShortcut, ownsEditingKeys, ownsSpaceKey, stepOption } from './quiz-keyboard';
+import { focusedOptionIndex, focusRestoreOption, isPracticeActionShortcut, ownsEditingKeys, ownsSpaceKey, stepOption, useQuizBodyShortcuts } from './quiz-keyboard';
 import { QuizShortcutHint } from './quiz-shortcut-hint';
 
 export type PracticeQuestionStatus = 'ready' | 'loading' | 'error' | 'missing';
@@ -77,7 +77,7 @@ export function PracticeQuiz({
   timer: PracticeTimer;
   onRetry: () => void;
   onSelect: (selected: number | undefined) => void;
-  onToggleEliminated: (option: number) => void;
+  onToggleEliminated: (option: number, clearSelected?: boolean) => void;
   onConfirm: () => void;
   onGoTo: (index: number) => void;
   onSubmit: () => void;
@@ -137,10 +137,12 @@ export function PracticeQuiz({
     }
   }, [index, status]);
 
-  function handleKeyboard(event: KeyboardEvent<HTMLElement>) {
-    if (isSubmitShortcut(event)) {
+  function handleKeyboard(event: KeyboardEvent<HTMLElement> | globalThis.KeyboardEvent) {
+    if (('nativeEvent' in event ? event.nativeEvent : event).isComposing) return;
+    if (isPracticeActionShortcut(event)) {
       const target = event.target;
-      if (!(target instanceof HTMLElement) || ownsEditingKeys(target)) return;
+      if (!(target instanceof HTMLElement) || ownsEditingKeys(target) ||
+        (!event.ctrlKey && !event.metaKey && ownsSpaceKey(target))) return;
       event.preventDefault();
       event.stopPropagation();
       if (event.repeat || !question || status !== 'ready') return;
@@ -174,8 +176,7 @@ export function PracticeQuiz({
       const option = focusedIndex >= 0 ? focusedIndex : previous ?? selected;
       if (option === undefined) return;
       keyboardOption.current = { questionId, index: option };
-      if (selected === option) onSelect(undefined);
-      onToggleEliminated(option);
+      onToggleEliminated(option, selected === option);
       headingRef.current?.focus({ preventScroll: true });
       return;
     }
@@ -192,6 +193,8 @@ export function PracticeQuiz({
     }
     radios[next]?.closest('label')?.scrollIntoView?.({ block: 'nearest', behavior: 'instant' });
   }
+
+  useQuizBodyShortcuts(handleKeyboard);
 
   return (
     <section className={styles.practice} aria-label="每日抽題練習作答" tabIndex={-1} onKeyDownCapture={handleKeyboard}>
@@ -313,7 +316,7 @@ export function PracticeQuiz({
                 </Button>
                 {answer ? (
                   !isLast ? (
-                    <Button key="next" variant="primary" onClick={() => onGoTo(index + 1)}>
+                    <Button key="next" variant="primary" aria-keyshortcuts="Enter" onClick={() => onGoTo(index + 1)}>
                       下一題 <IconArrowRight size={17} aria-hidden="true" />
                     </Button>
                   ) : null
@@ -330,6 +333,7 @@ export function PracticeQuiz({
                     ) : null}
                     <Button
                       variant="primary"
+                      aria-keyshortcuts="Enter"
                       disabled={selected === undefined}
                       onClick={confirm}
                     >
@@ -338,7 +342,7 @@ export function PracticeQuiz({
                   </>
                 )}
                 {isLast && answer ? (
-                  <Button key="finish" variant="primary" onClick={onSubmit}>
+                  <Button key="finish" variant="primary" aria-keyshortcuts="Enter" onClick={onSubmit}>
                     <IconFlag size={17} aria-hidden="true" /> 完成練習
                   </Button>
                 ) : null}

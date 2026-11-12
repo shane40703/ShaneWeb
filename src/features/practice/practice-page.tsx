@@ -725,9 +725,9 @@ export function PracticePage() {
         onSelect={(selected) =>
           changeAnswers((current) => selectPracticeOption(current, currentId, selected))
         }
-        onToggleEliminated={(option) =>
+        onToggleEliminated={(option, clearSelected) =>
           changeAnswers((current) =>
-            togglePracticeElimination(current, currentId, option),
+            togglePracticeElimination(current, currentId, option, clearSelected),
           )
         }
         onConfirm={confirmAnswer}

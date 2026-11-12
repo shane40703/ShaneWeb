@@ -408,6 +408,49 @@ describe('PracticePage setup', () => {
     await waitFor(() => expect(stored()!.currentIndex).toBe(0));
   });
 
+  it('uses plain Enter to confirm and advance while leaving focused controls and IME input alone', async () => {
+    seed({}, 2);
+    renderAt('/practice/quiz?q=1');
+    const heading = await screen.findByRole('heading', { name: '第 1 題，共 2 題' });
+    const id = lawQuestions[0].id;
+    fireEvent.keyDown(heading, { key: 'ArrowDown' });
+    expect(stored()!.drafts[id]).toBe(0);
+    expect(fireEvent.keyDown(heading, { key: 'Enter', isComposing: true })).toBe(true);
+    expect(stored()!.answers[id]).toBeUndefined();
+    const mark = screen.getByRole('button', { name: '標記為難題' });
+    expect(fireEvent.keyDown(mark, { key: 'Enter' })).toBe(true);
+    expect(stored()!.answers[id]).toBeUndefined();
+    expect(fireEvent.keyDown(heading, { key: 'Enter' })).toBe(false);
+    expect(stored()!.answers[id]).toBeDefined();
+    fireEvent.keyDown(heading, { key: 'Enter', repeat: true });
+    expect(stored()!.currentIndex).toBe(0);
+    fireEvent.keyDown(heading, { key: 'Enter' });
+    await waitFor(() => expect(stored()!.currentIndex).toBe(1));
+  });
+
+  it('keeps Space usable when a click has left focus on the page, but not while a dialog is open', async () => {
+    seed({ drafts: { [lawQuestions[0].id]: 0 } });
+    renderAt('/practice/quiz?q=1');
+    await screen.findByRole('region', { name: '題目與選項' });
+    const id = lawQuestions[0].id;
+    (document.activeElement as HTMLElement).blur();
+    expect(document.activeElement).toBe(document.body);
+    expect(fireEvent.keyDown(document.body, { key: ' ' })).toBe(false);
+    expect(stored()!.drafts[id]).toBeUndefined();
+    expect(stored()!.eliminated[id]).toEqual([0]);
+    const dialog = document.createElement('div');
+    dialog.setAttribute('role', 'dialog');
+    document.body.appendChild(dialog);
+    try {
+      expect(fireEvent.keyDown(document.body, { key: ' ' })).toBe(true);
+      expect(stored()!.eliminated[id]).toEqual([0]);
+    } finally {
+      dialog.remove();
+    }
+    fireEvent.keyDown(document.body, { key: ' ' });
+    expect(stored()!.eliminated[id] ?? []).toEqual([]);
+  });
+
   it('selects every matching question and follows category, year and subject changes', async () => {
     renderAt();
     await openAdvanced();
@@ -1418,19 +1461,19 @@ describe('PracticePage with another tab', () => {
 });
 
 describe('PracticePage result', () => {
-  it('Ctrl/Command+Enter confirms the final answer first and finishes only on a second deliberate press', async () => {
+  it('Enter confirms the final answer first and finishes only on a second deliberate press', async () => {
     seed({}, 1);
     renderAt('/practice/quiz?q=1');
     const heading = await screen.findByRole('heading', { name: '第 1 題，共 1 題' });
-    fireEvent.keyDown(heading, { key: 'Enter', ctrlKey: true });
+    fireEvent.keyDown(heading, { key: 'Enter' });
     expect(appState.dispatch).not.toHaveBeenCalled();
     chooseOption('選項 A');
-    fireEvent.keyDown(heading, { key: 'Enter', ctrlKey: true });
+    fireEvent.keyDown(heading, { key: 'Enter' });
     expect(stored()!.answers[lawQuestions[0].id]).toBeDefined();
     expect(appState.dispatch).not.toHaveBeenCalled();
-    fireEvent.keyDown(heading, { key: 'Enter', ctrlKey: true, repeat: true });
+    fireEvent.keyDown(heading, { key: 'Enter', repeat: true });
     expect(appState.dispatch).not.toHaveBeenCalled();
-    fireEvent.keyDown(heading, { key: 'Enter', metaKey: true });
+    fireEvent.keyDown(heading, { key: 'Enter' });
     await screen.findByText('100% 正確率');
     expect(appState.dispatch).toHaveBeenCalledTimes(1);
   });

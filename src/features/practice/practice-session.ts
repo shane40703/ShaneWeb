@@ -405,8 +405,9 @@ export function togglePracticeElimination(
   session: PracticeSession,
   questionId: string,
   option: number,
+  clearSelected = false,
 ) {
-  if (!isOpenQuestion(session, questionId) || session.drafts[questionId] === option)
+  if (!isOpenQuestion(session, questionId) || (session.drafts[questionId] === option && !clearSelected))
     return session;
   const current = session.eliminated[questionId] ?? [];
   const next = current.includes(option)
@@ -415,6 +416,11 @@ export function togglePracticeElimination(
   const eliminated = { ...session.eliminated };
   if (next.length) eliminated[questionId] = next;
   else delete eliminated[questionId];
+  if (clearSelected && session.drafts[questionId] === option) {
+    const drafts = { ...session.drafts };
+    delete drafts[questionId];
+    return { ...session, drafts, eliminated };
+  }
   return { ...session, eliminated };
 }
 

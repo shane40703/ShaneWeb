@@ -30,7 +30,7 @@ import { ElapsedClock } from './practice-quiz';
 import type { PracticeQuestionStatus } from './practice-quiz';
 import { getPracticeCategories, type PracticeTimer } from './practice-session';
 import styles from './practice-page.module.css';
-import { focusedOptionIndex, focusRestoreOption, isSubmitShortcut, ownsEditingKeys, ownsSpaceKey, stepOption } from './quiz-keyboard';
+import { focusedOptionIndex, focusRestoreOption, isSubmitShortcut, ownsEditingKeys, ownsSpaceKey, stepOption, useQuizBodyShortcuts } from './quiz-keyboard';
 import { QuizShortcutHint } from './quiz-shortcut-hint';
 
 const QUIZ_KEYS = new Set(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' ']);
@@ -65,7 +65,7 @@ export function MockExamQuiz({
   submitWarning: string | null;
   onRetry: () => void;
   onSelect: (selected: number | undefined) => void;
-  onToggleEliminated: (option: number) => void;
+  onToggleEliminated: (option: number, clearSelected?: boolean) => void;
   onGoTo: (index: number) => void;
   onSubmit: () => void;
   onLeave: () => void;
@@ -147,7 +147,8 @@ export function MockExamQuiz({
    * on the way in: on a focused option, the option list's own arrows would change the
    * answer on ←→ and come round from D to A.
    */
-  function handleKeyboard(event: KeyboardEvent<HTMLElement>) {
+  function handleKeyboard(event: KeyboardEvent<HTMLElement> | globalThis.KeyboardEvent) {
+    if (('nativeEvent' in event ? event.nativeEvent : event).isComposing) return;
     const target = event.target;
     if (isSubmitShortcut(event)) {
       if (!(target instanceof HTMLElement) || ownsEditingKeys(target)) return;
@@ -184,8 +185,7 @@ export function MockExamQuiz({
       const option = focusedIndex >= 0 ? focusedIndex : previous ?? current?.selected;
       if (option === undefined) return;
       keyboardOption.current = { questionId, index: option };
-      if (current?.selected === option) onSelect(undefined);
-      onToggleEliminated(option);
+      onToggleEliminated(option, current?.selected === option);
       headingRef.current?.focus({ preventScroll: true });
       return;
     }
@@ -208,6 +208,8 @@ export function MockExamQuiz({
     // The new answer in sight, clear of the sticky bars by the page's scroll padding.
     radio?.closest('label')?.scrollIntoView?.({ block: 'nearest', behavior: 'instant' });
   }
+
+  useQuizBodyShortcuts(handleKeyboard);
 
   return (
     <section

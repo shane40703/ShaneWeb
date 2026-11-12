@@ -122,6 +122,15 @@ describe('quizProgressReducer', () => {
     });
     expect(state.q?.eliminatedOptions).toBeUndefined();
   });
+
+  it('atomically clears and strikes out the selected answer for keyboard use', () => {
+    const original = { q: { selected: 1, elapsedSeconds: 14, startedAt: 'a', eliminatedOptions: [2] } };
+    const changed = quizProgressReducer(original, {
+      type: 'toggle-eliminated-option', questionId: 'q', option: 1, clearSelected: true, startedAt: 'b',
+    });
+    expect(changed.q).toEqual({ elapsedSeconds: 14, startedAt: 'a', eliminatedOptions: [1, 2] });
+    expect(original.q.selected).toBe(1);
+  });
 });
 
 describe('paper draft storage', () => {
