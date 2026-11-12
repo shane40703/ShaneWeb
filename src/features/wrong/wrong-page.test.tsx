@@ -128,6 +128,24 @@ describe('WrongPage', () => {
     expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).attempts).toHaveLength(attempts.length);
   });
 
+  it('uses the actual cumulative wrong counts to weight a smaller practice set', async () => {
+    renderPage();
+    fireEvent.click(await screen.findByRole('button', { name: '練習本科目常錯題目' }));
+    expect(screen.getByText(/答錯越多越容易抽到/)).toBeInTheDocument();
+    fireEvent.change(screen.getByRole('spinbutton', { name: '本次題數' }), { target: { value: '1' } });
+    fireEvent.click(screen.getByRole('checkbox', { name: '打亂選項順序' }));
+    const random = vi.spyOn(Math, 'random').mockReturnValue(0.5);
+    try {
+      fireEvent.click(screen.getByRole('button', { name: '開始練習（1 題）' }));
+      const saved = JSON.parse(localStorage.getItem(PRACTICE_SESSION_STORAGE_KEY)!);
+      // Counts are 2 and 1; the midpoint falls in the first question's two-weight interval.
+      expect(saved.questionIds).toEqual([lawQuestion.id]);
+      expect(saved.reviewSource).toBe('wrong');
+    } finally {
+      random.mockRestore();
+    }
+  });
+
   it('groups saved mistakes and shows every repeated-wrong count', async () => {
     renderPage();
 

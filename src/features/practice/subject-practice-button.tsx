@@ -21,15 +21,17 @@ import {
   subjectReviewQuestions,
 } from './practice-session';
 import styles from './subject-practice-button.module.css';
+import { drawWrongQuestions } from './wrong-weighted-draw';
 
 /** Configure a subject's marked/mistaken questions before replacing any saved progress. */
 export function SubjectPracticeButton({
-  questions, subject, source, loading = false,
+  questions, subject, source, loading = false, wrongCounts = {},
 }: {
   questions: readonly Question[];
   subject: SubjectId;
   source: 'difficult' | 'wrong';
   loading?: boolean;
+  wrongCounts?: Readonly<Record<string, number>>;
 }) {
   const router = useRouter();
   const { reportPersistence } = useAppState();
@@ -51,7 +53,9 @@ export function SubjectPracticeButton({
     if (current && hasPracticeProgress(current) && !window.confirm(
       '目前的每日抽題練習還沒完成，要放棄並改練本科目這組題目嗎？作答進度會清除。',
     )) return;
-    const selected = count === candidates.length ? candidates : pickRandomItems(candidates, count);
+    const selected = count === candidates.length ? candidates
+      : source === 'wrong' ? drawWrongQuestions(candidates, wrongCounts, count)
+      : pickRandomItems(candidates, count);
     const session = {
       ...createPracticeSessionFromQuestions(selected, subject, shuffleOptions),
       reviewSource: source,
@@ -113,7 +117,9 @@ export function SubjectPracticeButton({
                     onClick={() => setCountInput(String(candidates.length))}>全部（{candidates.length} 題）</Button>
                 </div>
                 <p id={hintId} className={styles.hint} role={!validCount ? 'alert' : undefined}>
-                  {validCount ? '可自訂題數；未選全部時隨機抽取、不重複。其餘難題標記與錯題紀錄都會保留。'
+                  {validCount ? source === 'wrong'
+                    ? '未選全部時依累計答錯次數加權抽題，答錯越多越容易抽到；每題不重複。錯題紀錄都會保留。'
+                    : '可自訂題數；未選全部時隨機抽取、不重複。其餘難題標記與錯題紀錄都會保留。'
                     : `請輸入 1～${candidates.length} 的整數題數。`}
                 </p>
                 <label className={styles.shuffle}>

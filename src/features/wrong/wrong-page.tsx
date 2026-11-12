@@ -292,6 +292,7 @@ export function WrongPage({
             {activeSubject ? (
               <SubjectPracticeButton
                 questions={subjectStats.map(({ question }) => question)}
+                wrongCounts={Object.fromEntries(subjectStats.map(({ question, wrongCount }) => [question.id, wrongCount]))}
                 subject={activeSubject.id}
                 source="wrong"
                 loading={questionBankStatuses[activeSubject.id] === 'loading' || questionBankStatuses[activeSubject.id] === 'error'}
