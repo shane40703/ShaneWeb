@@ -153,14 +153,14 @@ describe('resolvePracticePool', () => {
     makeQuestion('env-114-01', { subject: 'env' }),
   ];
 
-  it('excludes the four outdated questions only from daily pools, including advanced settings', () => {
-    const outdated = ['law-103-73', 'law-104-47', 'law-107-47', 'law-105-38']
+  it('excludes the five outdated questions only from daily pools, including advanced settings', () => {
+    const outdated = ['law-103-56', 'law-103-73', 'law-104-47', 'law-107-47', 'law-105-38']
       .map((id) => makeQuestion(id, { year: Number(id.split('-')[1]) }));
     const valid = makeQuestion('law-114-01');
     for (const settings of [DEFAULT_PRACTICE_SETTINGS, { ...DEFAULT_PRACTICE_SETTINGS, includeAllCredit: true, count: 'all' as const }]) {
       expect(resolvePracticePool([...outdated, valid], 'law', settings).candidates.map((item) => item.id)).toEqual([valid.id]);
     }
-    expect(subjectReviewQuestions(outdated, 'law')).toHaveLength(4);
+    expect(subjectReviewQuestions(outdated, 'law')).toHaveLength(5);
   });
 
   it('defaults to the daily practice pool: no 一律給分, no written questions, other subjects ignored', () => {

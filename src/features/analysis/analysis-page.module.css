@@ -123,6 +123,11 @@
   line-height: 1.3;
 }
 
+/* Reserve space for long law names so filtering cannot move the rest of the page. */
+.lawQuestions > header > strong {
+  min-height: 2.6em;
+}
+
 .lawDistribution > header > p,
 .lawQuestions > header > p {
   margin: 0;
@@ -142,10 +147,8 @@
   grid-column: 1;
 }
 
-.categorySearch {
-  grid-column: 2;
-  grid-row: 1 / 4;
-  align-self: center;
+.categorySearch,
+.trendSearch {
   min-width: 0;
   width: 100%;
   height: 40px;
@@ -158,7 +161,14 @@
   font-size: 14px;
 }
 
-.categorySearch:focus-visible {
+.categorySearch {
+  grid-column: 2;
+  grid-row: 1 / 4;
+  align-self: center;
+}
+
+.categorySearch:focus-visible,
+.trendSearch:focus-visible {
   border-color: var(--primary);
   outline: 2px solid var(--focus);
   outline-offset: 1px;
@@ -186,6 +196,7 @@
    it always cuts on a rule; a closing rule marks the edge of the scroll region (the extra
    pixel in each max-height is that rule, which border-box counts inside). */
 .lawList {
+  height: calc(var(--category-rows) * 57px + 1px);
   max-height: 514px;
   display: grid;
   align-content: start;
@@ -284,6 +295,7 @@
 /* Matching questions: one link per row, separated by rules. Rows are exactly 62px and the
    list shows eight, closed by a rule. */
 .lawQuestions > div {
+  height: calc(var(--question-rows) * 62px + 1px);
   max-height: 497px;
   display: grid;
   align-content: start;
@@ -632,8 +644,12 @@
   white-space: nowrap;
 }
 
+.trendSearch {
+  margin: 4px 0 10px;
+}
+
 .trendPicker {
-  max-height: min(200px, max(140px, 28vh));
+  height: min(200px, max(140px, 28vh));
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   grid-auto-rows: max-content;
@@ -656,7 +672,7 @@
   }
 
   .trendPicker {
-    max-height: min(420px, max(160px, calc(100vh - 210px)));
+    height: min(420px, max(160px, calc(100vh - 210px)));
     grid-template-columns: 1fr;
   }
 }
@@ -1241,4 +1257,8 @@
     border-left: 0;
     border-top: var(--rule);
   }
+}
+
+@media (max-width: 360px) {
+  .lawQuestions > header > strong { min-height: 3.9em; }
 }

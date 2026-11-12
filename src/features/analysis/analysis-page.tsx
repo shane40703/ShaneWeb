@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { type CSSProperties, useState } from 'react';
+import { type CSSProperties, useRef, useState } from 'react';
 import {
   IconArrowRight,
   IconListCheck,
@@ -22,15 +22,18 @@ import {
   parseYear,
 } from '@/lib/study';
 import { examsQuestionHref } from '@/lib/question-path';
-import type { QuestionSummary, SubjectId } from '@/lib/types';
-import { readStoredValue } from '@/lib/storage';
+import type { Question, QuestionSummary, SubjectId } from '@/lib/types';
+import { readStoredValue, removeStoredValue, writeStoredValue } from '@/lib/storage';
+import { trackPractice } from '@/lib/analytics';
 import { chartColors } from '@/lib/chart-colors';
-import { practiceQuizPage } from '@/features/practice/practice-pages';
 import {
   hasPracticeProgress,
+  createPracticeSession,
+  DEFAULT_PRACTICE_SETTINGS,
   parsePracticeSession,
-  practiceCategoryFor,
+  practiceQuestionHref,
   PRACTICE_SESSION_STORAGE_KEY,
+  resolvePracticePool,
 } from '@/features/practice/practice-session';
 import { DetailedTrendAnalysis } from './detailed-trend-analysis';
 import { useChartEntrance } from './use-chart-entrance';
@@ -42,9 +45,12 @@ function valueOf(value: string | string[] | undefined) {
 
 export function AnalysisPage({
   questions,
+  practiceQuestions = [],
   rowsLoading = false,
 }: {
   questions: QuestionSummary[];
+  /** Body-less facets used to start precisely the questions shown in the distribution. */
+  practiceQuestions?: readonly Question[];
   /** The charts are ready; the rows' stems are still on their way. */
   rowsLoading?: boolean;
 }) {
@@ -52,6 +58,9 @@ export function AnalysisPage({
   const [distributionRef, distributionEntered] = useChartEntrance<HTMLDivElement>();
   const [pieRef, pieEntered] = useChartEntrance<HTMLDivElement>();
   const [categorySearch, setCategorySearch] = useState('');
+  const [practiceError, setPracticeError] = useState('');
+  const [startingPractice, setStartingPractice] = useState(false);
+  const startingPracticeRef = useRef(false);
   const querySubject = valueOf(router.query.subject);
   const subjectId: SubjectId = isSubjectId(querySubject) ? querySubject : 'law';
   const queryYear = valueOf(router.query.year);
@@ -204,13 +213,28 @@ export function AnalysisPage({
     updateQuery({ year: nextYear });
   }
 
-  /**
-   * Opens 每日抽題練習's setup with this subject, year range and category. A set in
-   * progress would keep the setup from showing, so it goes first, after asking.
-   */
-  function practiceSelectedCategory() {
-    if (!selectedCategoryQuestions.length) return;
-    const current = parsePracticeSession(readStoredValue(PRACTICE_SESSION_STORAGE_KEY));
+  /** Starts exactly this distribution's eligible questions, keeping the selected year scope. */
+  async function practiceSelectedCategory() {
+    if (startingPracticeRef.current) return;
+    setPracticeError('');
+    if (!selectedCategory || !selectedCategoryQuestions.length) return;
+    const rangeFrom = year === 'all' ? rangeStart : year;
+    const rangeTo = year === 'all' ? rangeEnd : year;
+    const pool = resolvePracticePool(practiceQuestions, subjectId, {
+      ...DEFAULT_PRACTICE_SETTINGS,
+      fromYear: rangeFrom,
+      toYear: rangeTo,
+      count: 'all',
+      includeAllCredit: true,
+    });
+    const selectedIds = new Set(selectedCategoryQuestions.map((question) => question.id));
+    const candidates = pool.candidates.filter((question) => selectedIds.has(question.id));
+    if (!candidates.length) {
+      setPracticeError('此分類目前沒有可練習的題目。');
+      return;
+    }
+    const previous = readStoredValue(PRACTICE_SESSION_STORAGE_KEY);
+    const current = parsePracticeSession(previous);
     if (
       current &&
       hasPracticeProgress(current) &&
@@ -218,21 +242,37 @@ export function AnalysisPage({
     ) {
       return;
     }
-    try {
-      window.localStorage.removeItem(PRACTICE_SESSION_STORAGE_KEY);
-    } catch {
-      // Without storage there is no saved set to replace.
+    startingPracticeRef.current = true;
+    setStartingPractice(true);
+    const session = createPracticeSession({
+      candidates,
+      count: candidates.length,
+      rangeStart: rangeFrom,
+      rangeEnd: rangeTo,
+      category: selectedCategory,
+    }, subjectId, DEFAULT_PRACTICE_SETTINGS.shuffleOptions);
+    const stored = JSON.stringify(session);
+    if (writeStoredValue(PRACTICE_SESSION_STORAGE_KEY, stored) !== 'saved') {
+      setPracticeError('瀏覽器無法儲存練習進度，請檢查儲存空間或瀏覽器設定。');
+      startingPracticeRef.current = false;
+      setStartingPractice(false);
+      return;
     }
-    const category = practiceCategoryFor(selectedCategoryQuestions, selectedCategory);
-    void router.push({
-      pathname: practiceQuizPage.href,
-      query: {
-        subject: subjectId,
-        from: String(year === 'all' ? rangeStart : year),
-        to: String(year === 'all' ? rangeEnd : year),
-        ...(category ? { category } : {}),
-      },
-    });
+    try {
+      const navigated = await router.push(practiceQuestionHref(0));
+      if (navigated === false) throw new Error('navigation cancelled');
+      trackPractice('practice_start', 'daily_quiz', subjectId);
+    } catch {
+      // Never overwrite a different set another tab may have started meanwhile.
+      if (readStoredValue(PRACTICE_SESSION_STORAGE_KEY) === stored) {
+        if (previous === null) removeStoredValue(PRACTICE_SESSION_STORAGE_KEY);
+        else writeStoredValue(PRACTICE_SESSION_STORAGE_KEY, previous);
+      }
+      setPracticeError('無法開啟練習，請再試一次。');
+    } finally {
+      startingPracticeRef.current = false;
+      setStartingPractice(false);
+    }
   }
 
   return (
@@ -319,7 +359,8 @@ export function AnalysisPage({
                     onChange={(event) => setCategorySearch(event.target.value)}
                   />
                 </header>
-                <div className={styles.lawList} ref={distributionRef} data-chart-motion={distributionEntered || undefined}>
+                <div className={styles.lawList} ref={distributionRef} data-chart-motion={distributionEntered || undefined}
+                  style={{ '--category-rows': Math.min(analysis.length, 9) } as CSSProperties}>
                   {visibleAnalysis.map((item) => (
                     <button
                       type="button"
@@ -344,23 +385,23 @@ export function AnalysisPage({
                   ) : null}
                 </div>
               </div>
-              <div className={styles.lawQuestions}>
-                {selectedCategory ? (
-                  <>
+              <div className={styles.lawQuestions}
+                style={{ '--question-rows': Math.min(8, Math.max(...analysis.map((item) => item.count))) } as CSSProperties}>
                 <header>
                   <span>對應考古題</span>
-                  <strong>{selectedCategory}</strong>
+                  <strong>{selectedCategory ?? '尚未找到分類'}</strong>
                   <p>
-                    目前範圍共 {selectedCategoryQuestions.length} 題，點題目可查看詳解；也可以到每日抽題練習用這個類別抽題。
+                    目前範圍共 {selectedCategoryQuestions.length} 題，點題目可查看詳解；每日練習會排除已不適用的題目。
                   </p>
                   <Button
                     variant="primary"
-                    onClick={practiceSelectedCategory}
-                    disabled={!selectedCategoryQuestions.length}
+                    onClick={() => void practiceSelectedCategory()}
+                    disabled={!selectedCategory || !selectedCategoryQuestions.length || startingPractice}
                   >
                     <IconListCheck size={16} stroke={2} aria-hidden="true" />
-                    到每日抽題練習抽題
+                    {startingPractice ? '正在開啟練習…' : '作答此分類所有題目'}
                   </Button>
+                  {practiceError ? <p role="alert">{practiceError}</p> : null}
                 </header>
                 <div>
                   {selectedCategoryQuestions.map((question) => (
@@ -376,11 +417,8 @@ export function AnalysisPage({
                       <IconArrowRight size={16} stroke={2} aria-hidden="true" />
                     </Link>
                   ))}
+                  {!selectedCategory ? <EmptyState title="尚未找到分類" description="請調整搜尋關鍵字。" /> : null}
                 </div>
-                  </>
-                ) : (
-                  <EmptyState title="尚未找到分類" description="請調整搜尋關鍵字。" />
-                )}
               </div>
           </section>
 

@@ -1,9 +1,9 @@
-import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AnalysisPage } from '@/features/analysis/analysis-page';
 import { buildForecastRanking, DetailedTrendAnalysis } from '@/features/analysis/detailed-trend-analysis';
 import { chartColors } from '@/lib/chart-colors';
-import type { QuestionSummary } from '@/lib/types';
+import type { Question, QuestionSummary } from '@/lib/types';
 
 const router = vi.hoisted(() => ({
   pathname: '/analysis',
@@ -16,7 +16,11 @@ vi.mock('next/router', () => ({
   useRouter: () => router,
 }));
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  window.localStorage.clear();
+  vi.restoreAllMocks();
+});
 
 function question(id: string, questionNumber: number): QuestionSummary {
   return {
@@ -32,10 +36,21 @@ function question(id: string, questionNumber: number): QuestionSummary {
   };
 }
 
+function playable(summary: QuestionSummary): Question {
+  return {
+    ...summary,
+    content: [{ kind: 'text', text: summary.text }],
+    options: ['選項 A', '選項 B', '選項 C', '選項 D'],
+    answerKey: { kind: 'accepted', options: [0] },
+    source: { kind: 'sample' },
+  };
+}
+
 describe('AnalysisPage category quiz', () => {
   beforeEach(() => {
     router.query = { subject: 'law', year: '114' };
     router.push.mockReset();
+    router.push.mockResolvedValue(true);
     router.replace.mockReset();
   });
 
@@ -93,26 +108,27 @@ describe('AnalysisPage category quiz', () => {
     expect(screen.getByLabelText('分析結束年度')).toHaveValue('114');
   });
 
-  it('opens 每日抽題練習 with the category and year, and each question in 歷屆試題討論版', () => {
+  it('starts all questions of the selected category directly and keeps the existing links', async () => {
     const questions = [
       question('law-114-01', 1),
       question('law-114-02', 2),
     ];
-    render(<AnalysisPage questions={questions} />);
+    render(<AnalysisPage questions={questions} practiceQuestions={questions.map(playable)} />);
 
     expect(screen.getByRole('link', { name: /law-114-02 題幹/ })).toHaveAttribute(
       'href',
       '/exams/law/114/2',
     );
-    fireEvent.click(screen.getByRole('button', { name: '到每日抽題練習抽題' }));
+    fireEvent.click(screen.getByRole('button', { name: '作答此分類所有題目' }));
 
-    expect(router.push).toHaveBeenCalledWith({
-      pathname: '/practice/quiz',
-      query: { subject: 'law', from: '114', to: '114', category: '建築技術規則' },
-    });
+    expect(router.push).toHaveBeenCalledWith('/practice/quiz?q=1');
+    const saved = JSON.parse(window.localStorage.getItem('shaneweb:practice-session')!);
+    expect(saved).toMatchObject({ category: '建築技術規則', rangeStart: 114, rangeEnd: 114 });
+    expect(saved.questionIds.sort()).toEqual(['law-114-01', 'law-114-02']);
+    await waitFor(() => expect(screen.getByRole('button', { name: '作答此分類所有題目' })).toBeEnabled());
   });
 
-  it('asks before replacing a 每日抽題練習 set in progress', () => {
+  it('asks before replacing a 每日抽題練習 set in progress', async () => {
     window.localStorage.setItem(
       'shaneweb:practice-session',
       JSON.stringify({
@@ -124,9 +140,10 @@ describe('AnalysisPage category quiz', () => {
       }),
     );
     const confirm = vi.spyOn(window, 'confirm').mockReturnValueOnce(false);
-    render(<AnalysisPage questions={[question('law-114-01', 1)]} />);
+    const first = question('law-114-01', 1);
+    render(<AnalysisPage questions={[first]} practiceQuestions={[playable(first)]} />);
 
-    fireEvent.click(screen.getByRole('button', { name: '到每日抽題練習抽題' }));
+    fireEvent.click(screen.getByRole('button', { name: '作答此分類所有題目' }));
     expect(confirm).toHaveBeenCalledWith(
       '目前的每日抽題練習還沒完成，要放棄並改用這個類別抽題嗎？作答進度會清除。',
     );
@@ -134,14 +151,13 @@ describe('AnalysisPage category quiz', () => {
     expect(window.localStorage.getItem('shaneweb:practice-session')).not.toBeNull();
 
     confirm.mockReturnValueOnce(true);
-    fireEvent.click(screen.getByRole('button', { name: '到每日抽題練習抽題' }));
-    expect(window.localStorage.getItem('shaneweb:practice-session')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: '作答此分類所有題目' }));
+    expect(JSON.parse(window.localStorage.getItem('shaneweb:practice-session')!).questionIds).toEqual(['law-114-01']);
     expect(router.push).toHaveBeenCalledTimes(1);
-    confirm.mockRestore();
-    window.localStorage.clear();
+    await waitFor(() => expect(screen.getByRole('button', { name: '作答此分類所有題目' })).toBeEnabled());
   });
 
-  it('can start from a secondary related-law category', () => {
+  it('starts only the questions in a secondary related-law category', async () => {
     const questions = [
       {
         ...question('law-114-01', 1),
@@ -154,19 +170,67 @@ describe('AnalysisPage category quiz', () => {
         relatedLaws: ['建築法'],
       },
     ];
-    render(<AnalysisPage questions={questions} />);
+    render(<AnalysisPage questions={questions} practiceQuestions={questions.map(playable)} />);
 
     fireEvent.click(
       screen.getByRole('button', { name: /建築技術規則1 題/ }),
     );
     fireEvent.click(
-      screen.getByRole('button', { name: '到每日抽題練習抽題' }),
+      screen.getByRole('button', { name: '作答此分類所有題目' }),
     );
 
-    expect(router.push).toHaveBeenCalledWith({
-      pathname: '/practice/quiz',
-      query: { subject: 'law', from: '114', to: '114', category: '建築技術規則' },
-    });
+    expect(router.push).toHaveBeenCalledWith('/practice/quiz?q=1');
+    expect(JSON.parse(window.localStorage.getItem('shaneweb:practice-session')!).questionIds).toEqual(['law-114-01']);
+    await waitFor(() => expect(screen.getByRole('button', { name: '作答此分類所有題目' })).toBeEnabled());
+  });
+
+  it('starts more than 50 eligible questions, including all-credit, and excludes obsolete questions', async () => {
+    router.query = { subject: 'law', year: 'all', fromYear: '103', toYear: '114' };
+    const questions = Array.from({ length: 60 }, (_, index) => question(`law-114-${String(index + 1).padStart(2, '0')}`, index + 1));
+    const obsolete = { ...question('law-103-56', 56), year: 103 };
+    const bank = [...questions.map(playable), playable(obsolete)];
+    bank[0].answerKey = { kind: 'all-credit' };
+    render(<AnalysisPage questions={[...questions, obsolete]} practiceQuestions={bank} />);
+    fireEvent.click(screen.getByRole('button', { name: '作答此分類所有題目' }));
+    const saved = JSON.parse(window.localStorage.getItem('shaneweb:practice-session')!);
+    expect(saved.questionIds).toHaveLength(60);
+    expect(saved.questionIds).toContain(bank[0].id);
+    expect(saved.questionIds).not.toContain(obsolete.id);
+    await waitFor(() => expect(screen.getByRole('button', { name: '作答此分類所有題目' })).toBeEnabled());
+  });
+
+  it('uses analysis classification, rather than unrelated tags, for non-law subjects', async () => {
+    router.query = { subject: 'env', year: '114' };
+    const thermal = [1, 2].map((number) => ({
+      ...question(`env-114-0${number}`, number), subject: 'env' as const,
+      topic: '熱環境', primaryCategory: '熱', relatedLaws: ['共同標記'],
+    }));
+    const other = { ...question('env-114-03', 3), subject: 'env' as const,
+      topic: '通風', primaryCategory: '空氣', relatedLaws: ['共同標記'] };
+    const summaries = [...thermal, other];
+    render(<AnalysisPage questions={summaries} practiceQuestions={summaries.map(playable)} />);
+    fireEvent.click(screen.getByRole('button', { name: '作答此分類所有題目' }));
+    const saved = JSON.parse(localStorage.getItem('shaneweb:practice-session')!);
+    expect(saved.category).toBe('熱');
+    expect(saved.questionIds.sort()).toEqual(['env-114-01', 'env-114-02']);
+    await waitFor(() => expect(screen.getByRole('button', { name: '作答此分類所有題目' })).toBeEnabled());
+  });
+
+  it('preserves the previous set when storage or navigation fails', async () => {
+    const first = question('law-114-01', 1);
+    const previous = JSON.stringify({ version: 1, id: 'previous', subject: 'law', questionIds: ['law-114-09'] });
+    localStorage.setItem('shaneweb:practice-session', previous);
+    const write = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => { throw new Error('blocked'); });
+    render(<AnalysisPage questions={[first]} practiceQuestions={[playable(first)]} />);
+    fireEvent.click(screen.getByRole('button', { name: '作答此分類所有題目' }));
+    expect(screen.getByRole('alert')).toHaveTextContent('無法儲存練習進度');
+    expect(localStorage.getItem('shaneweb:practice-session')).toBe(previous);
+    expect(router.push).not.toHaveBeenCalled();
+    write.mockRestore();
+    router.push.mockRejectedValueOnce(new Error('failed'));
+    fireEvent.click(screen.getByRole('button', { name: '作答此分類所有題目' }));
+    await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('無法開啟練習'));
+    expect(localStorage.getItem('shaneweb:practice-session')).toBe(previous);
   });
 
   it('compares selected law categories across years with exact counts', () => {
@@ -201,6 +265,29 @@ describe('AnalysisPage category quiz', () => {
     expect(screen.getByRole('table', { name: '115 年複習優先度' })).toBeInTheDocument();
     expect(screen.getByText('115 年複習優先度')).toBeInTheDocument();
     expect(screen.getByText(/不是命題機率/)).toBeInTheDocument();
+  });
+
+  it('searches comparison categories without changing the selected lines', () => {
+    const questions = [
+      question('law-114-01', 1),
+      { ...question('law-114-02', 2), relatedLaws: ['都市計畫法'] },
+      { ...question('law-114-03', 3), relatedLaws: ['建築法'] },
+    ];
+    render(<AnalysisPage questions={questions} />);
+    fireEvent.click(screen.getByText('詳細趨勢分析'));
+    const picker = screen.getByRole('group', { name: '比較分類清單' });
+    const search = screen.getByRole('searchbox', { name: '搜尋比較分類' });
+    expect(within(picker).getAllByRole('checkbox', { checked: true })).toHaveLength(3);
+    const chart = screen.getByRole('region', { name: '跨年度分類折線圖' });
+    const lineCount = chart.querySelectorAll('polyline').length;
+    fireEvent.change(search, { target: { value: '都市' } });
+    expect(within(picker).getAllByRole('checkbox')).toHaveLength(1);
+    expect(within(picker).getByRole('checkbox', { name: /都市計畫法/ })).toBeChecked();
+    expect(chart.querySelectorAll('polyline')).toHaveLength(lineCount);
+    fireEvent.change(search, { target: { value: '沒有此分類' } });
+    expect(within(picker).getByRole('status')).toHaveTextContent('找不到符合的分類');
+    fireEvent.change(search, { target: { value: '' } });
+    expect(within(picker).getAllByRole('checkbox', { checked: true })).toHaveLength(3);
   });
 
   it('uses all seven ordered colors for lines and legends and caps comparison at seven', () => {

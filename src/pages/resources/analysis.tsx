@@ -7,7 +7,7 @@ import { ResourceLayout } from '@/features/resources/resource-layout';
 import { useSubjectStems } from '@/lib/question-bank-client';
 import { isSubjectId } from '@/lib/study';
 import { subjects, years } from '@/question-bank/catalog';
-import { facetSummaries } from '@/question-bank/derived-data';
+import { facetQuestions, facetSummaries } from '@/question-bank/derived-data';
 import {
   getAnalysisPageProps,
   type AnalysisPageProps,
@@ -49,6 +49,10 @@ export default function ResourceAnalysisRoute({
       }),
     [facets, initialStems, stems, subject],
   );
+  const practiceQuestions = useMemo(
+    () => facets[subject] ? facetQuestions(subject, facets[subject]!) : [],
+    [facets, subject],
+  );
 
   return (
     <>
@@ -56,7 +60,7 @@ export default function ResourceAnalysisRoute({
         <title>考題分析｜建築師考試</title>
       </Head>
       <ResourceLayout current="analysis">
-        <AnalysisPage questions={questions} rowsLoading={!shipped && !stems && status === 'loading'} />
+        <AnalysisPage questions={questions} practiceQuestions={practiceQuestions} rowsLoading={!shipped && !stems && status === 'loading'} />
       </ResourceLayout>
     </>
   );

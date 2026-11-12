@@ -306,11 +306,16 @@ export function DetailedTrendAnalysis({
   );
   const selectionKey = `${subjectId}:${dimension}`;
   const [selectedByKey, setSelectedByKey] = useState<Record<string, string[]>>({});
+  const [categorySearch, setCategorySearch] = useState('');
   const allSeries = useMemo(
     () => buildTrendSeries(questions, subjectId, analysisYears, dimension),
     [analysisYears, dimension, questions, subjectId],
   );
   const storedSelection = selectedByKey[selectionKey];
+  const searchTerm = categorySearch.trim().normalize('NFKC').toLocaleLowerCase();
+  const visibleSeries = allSeries.filter((item) =>
+    item.category.normalize('NFKC').toLocaleLowerCase().includes(searchTerm),
+  );
   const selectedCategories = (storedSelection ?? allSeries.slice(0, 3).map((item) => item.category))
     .filter((category) => allSeries.some((item) => item.category === category));
   const selectedSeries = selectedCategories
@@ -438,8 +443,16 @@ export function DetailedTrendAnalysis({
                   <strong>選擇比較分類</strong>
                   <span>已選 {selectedCategories.length}／{maxSelectedSeries}</span>
                 </header>
+                <input
+                  className={styles.trendSearch}
+                  type="search"
+                  aria-label="搜尋比較分類"
+                  placeholder="搜尋比較分類"
+                  value={categorySearch}
+                  onChange={(event) => setCategorySearch(event.target.value)}
+                />
                 <div className={styles.trendPicker} role="group" aria-label="比較分類清單" tabIndex={0}>
-                  {allSeries.map((item) => {
+                  {visibleSeries.map((item) => {
                     const selected = selectedCategories.includes(item.category);
                     const disabled = !selected && selectedCategories.length >= maxSelectedSeries;
                     return (
@@ -455,6 +468,9 @@ export function DetailedTrendAnalysis({
                       </label>
                     );
                   })}
+                  {!visibleSeries.length ? (
+                    <p className={styles.noSearchResults} role="status">找不到符合的分類，請試試其他關鍵字。</p>
+                  ) : null}
                 </div>
               </section>
 

@@ -3,6 +3,7 @@ import { AnalysisPage } from '@/features/analysis/analysis-page';
 import { ResourceLayout } from '@/features/resources/resource-layout';
 import type { QuestionSummary } from '@/lib/types';
 import { resourceQuestionSummaries } from '../../fixtures/resources';
+import { fixtureSubjectQuestions } from '../../fixtures/questions';
 import { withStatefulRouter } from '../../support/stateful-router';
 import { pageParameters, withPageFrame } from '../../support/story-environment';
 
@@ -10,7 +11,7 @@ import { pageParameters, withPageFrame } from '../../support/story-environment';
 function AnalysisRoute({ questions }: { questions: QuestionSummary[] }) {
   return (
     <ResourceLayout current="analysis">
-      <AnalysisPage questions={questions} />
+      <AnalysisPage questions={questions} practiceQuestions={fixtureSubjectQuestions()} />
     </ResourceLayout>
   );
 }
@@ -25,14 +26,15 @@ function AnalysisRoute({ questions }: { questions: QuestionSummary[] }) {
  *
  * 畫面上可以操作看到：
  * - 切換科目：法規依相關法規統計，其他科目依命題分類統計，沒出題的分類也列出（0 題），
- *   例如環控的「規範」，點下去右側沒有考古題、「到每日抽題練習抽題」停用。
+ *   例如環控的「規範」，點下去右側沒有考古題、「作答此分類所有題目」停用。
  * - 年度選「跨年度」：多出起訖年度選單，預設是題庫最舊到最新的 101～114 年。
  * - 點命題分布裡的其他分類：右側改列這個分類的考古題。
  * - 在分布標題右側搜尋分類：即時過濾清單與對應考古題，不改變統計分母。
+ * - 展開詳細趨勢分析後搜尋比較分類：既有勾選與圖表保留，清單高度不變。
  * - 展開頁面最下方的「詳細趨勢分析」：折線圖、各年度題數與 115 年複習優先度，
  *   可以勾選比較的分類、法規可以把分析層級切到「人工細分考點」。
  *
- * 「到每日抽題練習抽題」會換到每日抽題練習頁，在故事裡只記錄在 Actions 面板。
+ * 「作答此分類所有題目」會建立題組並換到每日抽題練習頁，在故事裡只記錄在 Actions 面板。
  */
 const meta = {
   title: 'Layouts/考題分析/分析畫面',

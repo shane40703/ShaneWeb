@@ -687,12 +687,14 @@ test('the home subject cards, 考題分析 and question cards lead to the new pa
   // Each listed question opens in 歷屆試題討論版; nothing leads to the old 作答頁.
   await expect(page.locator('a[href^="/exams/law/114/"]').first()).toBeVisible();
   expect(await page.locator('a[href*="/questions/"], a[href*="mode="]').count()).toBe(0);
-  await page.getByRole('button', { name: '到每日抽題練習抽題' }).click();
-  await expect(page).toHaveURL(/\/practice\/quiz$/);
-  await expect(page.getByRole('radio', { name: /營建法規與實務/ })).toBeChecked();
-  await expect(page.getByRole('button', { name: /進階選項/ })).toContainText(
-    '114–114 年',
-  );
+  await page.getByRole('button', { name: '作答此分類所有題目' }).click();
+  await expect(page).toHaveURL(/\/practice\/quiz\?q=1$/);
+  await expect(page.getByRole('region', { name: '題目與選項' })).toBeVisible();
+  const started = await page.evaluate(() => JSON.parse(localStorage.getItem('shaneweb:practice-session')!));
+  expect(started.subject).toBe('law');
+  expect(started.rangeStart).toBe(114);
+  expect(started.rangeEnd).toBe(114);
+  expect(started.questionIds.length).toBeGreaterThan(0);
 
   await page.addInitScript(() => {
     const state = JSON.parse(localStorage.getItem('shaneweb:state') ?? '{}');
