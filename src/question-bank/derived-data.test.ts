@@ -95,7 +95,7 @@ function poolView(pool: ReturnType<typeof resolvePracticePool>) {
 
 describe('the real bank survives the split', () => {
   it('keeps outdated questions in papers but excludes them from daily practice', () => {
-    const ids = ['law-103-56', 'law-103-73', 'law-104-47', 'law-107-47', 'law-105-38'];
+    const ids = ['law-103-56', 'law-103-73', 'law-104-24', 'law-104-47', 'law-107-47', 'law-105-38'];
     const allIds = new Set(bySubject.law.map((question) => question.id));
     const poolIds = new Set(resolvePracticePool(bySubject.law, 'law', DEFAULT_PRACTICE_SETTINGS).candidates.map((question) => question.id));
     for (const id of ids) {

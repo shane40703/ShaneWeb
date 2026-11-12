@@ -187,15 +187,18 @@ describe('AnalysisPage category quiz', () => {
   it('starts more than 50 eligible questions, including all-credit, and excludes obsolete questions', async () => {
     router.query = { subject: 'law', year: 'all', fromYear: '103', toYear: '114' };
     const questions = Array.from({ length: 60 }, (_, index) => question(`law-114-${String(index + 1).padStart(2, '0')}`, index + 1));
-    const obsolete = { ...question('law-103-56', 56), year: 103 };
-    const bank = [...questions.map(playable), playable(obsolete)];
+    const obsolete = [
+      { ...question('law-103-56', 56), year: 103 },
+      { ...question('law-104-24', 24), year: 104 },
+    ];
+    const bank = [...questions.map(playable), ...obsolete.map(playable)];
     bank[0].answerKey = { kind: 'all-credit' };
-    render(<AnalysisPage questions={[...questions, obsolete]} practiceQuestions={bank} />);
+    render(<AnalysisPage questions={[...questions, ...obsolete]} practiceQuestions={bank} />);
     fireEvent.click(screen.getByRole('button', { name: '作答此分類所有題目' }));
     const saved = JSON.parse(window.localStorage.getItem('shaneweb:practice-session')!);
     expect(saved.questionIds).toHaveLength(60);
     expect(saved.questionIds).toContain(bank[0].id);
-    expect(saved.questionIds).not.toContain(obsolete.id);
+    obsolete.forEach((item) => expect(saved.questionIds).not.toContain(item.id));
     await waitFor(() => expect(screen.getByRole('button', { name: '作答此分類所有題目' })).toBeEnabled());
   });
 

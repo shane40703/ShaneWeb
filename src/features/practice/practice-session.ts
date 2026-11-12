@@ -15,8 +15,8 @@ export const PRACTICE_PATH = practiceQuizPage.href;
 export const PRACTICE_SESSION_STORAGE_KEY = 'shaneweb:practice-session';
 export const PRACTICE_COUNT_OPTIONS = [5, 10, 15, 20, 30, 50] as const;
 const MAX_PRACTICE_COUNT = PRACTICE_COUNT_OPTIONS[PRACTICE_COUNT_OPTIONS.length - 1];
-// These historical law questions no longer reflect the current rules; retain them in the bank.
-const EXCLUDED_DAILY_QUESTIONS = new Set(['law-103-56', 'law-103-73', 'law-104-47', 'law-107-47', 'law-105-38']);
+// These historical questions remain in the bank but are excluded from daily draws.
+const EXCLUDED_DAILY_QUESTIONS = new Set(['law-103-56', 'law-103-73', 'law-104-24', 'law-104-47', 'law-107-47', 'law-105-38']);
 
 export function practiceQuestionHref(index: number) {
   return `${PRACTICE_PATH}?q=${index + 1}`;
