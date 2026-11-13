@@ -21,9 +21,10 @@ export function firestorePushTransport(db: Firestore): PushTransport {
       const parent = doc(db, 'pushMessages', receipt.id);
       const receiptId = `${receipt.status}_${browserId}`;
       const target = doc(parent, 'receipts', receiptId);
+      const stats = doc(parent, 'stats', receipt.status);
       const commit = () => runTransaction(db, async (transaction) => {
-        const [messageSnapshot, receiptSnapshot] = await Promise.all([
-          transaction.get(parent), transaction.get(target),
+        const [messageSnapshot, receiptSnapshot, statsSnapshot] = await Promise.all([
+          transaction.get(parent), transaction.get(target), transaction.get(stats),
         ]);
         const message = messageSnapshot.exists() ? parsePushMessage(parent.id, messageSnapshot.data()) : null;
         if (!message || message.status !== receipt.status) return { delivered: false, read: false, alreadyRead: false };
@@ -31,12 +32,12 @@ export function firestorePushTransport(db: Firestore): PushTransport {
         const delivered = !receiptSnapshot.exists();
         const read = receipt.read && previous?.read !== true;
         if (!delivered && !read) return { delivered: false, read: false, alreadyRead: previous?.read === true };
-        const deliveryField = receipt.status === 'test' ? 'testDelivered' : 'delivered';
-        const readField = receipt.status === 'test' ? 'testRead' : 'read';
-        const data = messageSnapshot.data()!;
-        transaction.update(parent, {
-          [deliveryField]: (data[deliveryField] ?? 0) + Number(delivered),
-          [readField]: (data[readField] ?? 0) + Number(read),
+        const data = statsSnapshot.data();
+        // Do not update the announcement: every visitor listens to that document.
+        // Legacy counters remain on the parent and must be added to these totals.
+        transaction.set(stats, {
+          delivered: (data?.delivered ?? 0) + Number(delivered),
+          read: (data?.read ?? 0) + Number(read),
           lastReceiptId: receiptId,
         });
         transaction.set(target, { status: receipt.status, delivered: true, read: receipt.read || previous?.read === true });

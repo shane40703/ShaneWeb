@@ -32,6 +32,7 @@ async function author(data: Record<string, unknown>) {
 }
 const parent = () => doc(db, 'pushMessages', receipt.id);
 const child = (status = receipt.status) => doc(parent(), 'receipts', `${status}_${browserId}`);
+const stats = (status = receipt.status) => doc(parent(), 'stats', status);
 
 test('normal query sees only live; preview query accepts test and live; invalid status is unreadable', async () => {
   const messages = collection(db, 'pushMessages');
@@ -46,6 +47,8 @@ test('public visitors cannot create, edit, remove announcements or arbitrarily c
   await assertFails(updateDoc(parent(), { message: 'injected' }));
   await assertFails(updateDoc(parent(), { status: 'live' }));
   await assertFails(updateDoc(parent(), { testDelivered: 100, lastReceiptId: `test_${browserId}` }));
+  await assertFails(setDoc(stats(), { delivered: 100, read: 0, lastReceiptId: `test_${browserId}` }));
+  await assertFails(getDocs(collection(parent(), 'stats')));
   await assertFails(deleteDoc(parent()));
 });
 test('delivery and read are idempotent under parallel transactions, without logging in', async () => {
@@ -55,11 +58,10 @@ test('delivery and read are idempotent under parallel transactions, without logg
   const results = await Promise.all([transport.record(receipt, browserId), transport.record(receipt, browserId)]);
   assert.equal(results.filter((value) => value.delivered).length, 1);
   await Promise.all([transport.record({ ...receipt, read: true }, browserId), transport.record({ ...receipt, read: true }, browserId)]);
-  const data = (await getDoc(parent())).data()!;
-  assert.equal(data.testDelivered, 2);
-  assert.equal(data.testRead, 1);
-  assert.equal(data.delivered, undefined);
-  assert.equal(data.read, undefined);
+  const data = (await getDoc(stats())).data()!;
+  assert.equal(data.delivered, 2);
+  assert.equal(data.read, 1);
+  assert.equal((await getDoc(parent())).data()!.testDelivered, undefined);
   await assertFails(getDocs(collection(parent(), 'receipts')));
   await assertFails(deleteDoc(child()));
   await assertFails(updateDoc(child(), { read: false }));
@@ -69,8 +71,20 @@ test('promotion to live has independent receipts and counters', async () => {
   await transport.record({ ...receipt, read: true }, browserId);
   await author({ status: 'live' });
   await transport.record({ ...receipt, status: 'live', read: true }, browserId);
-  const data = (await getDoc(parent())).data()!;
-  assert.deepEqual([data.testDelivered, data.testRead, data.delivered, data.read], [1, 1, 1, 1]);
+  const testStats = (await getDoc(stats('test'))).data()!;
+  const liveStats = (await getDoc(stats('live'))).data()!;
+  assert.deepEqual([testStats.delivered, testStats.read, liveStats.delivered, liveStats.read], [1, 1, 1, 1]);
+});
+test('legacy clients and existing parent counts remain compatible and separate', async () => {
+  await author({ testDelivered: 7, testRead: 5 });
+  const oldId = `test_${'00000000-0000-0000-0000-000000000000'}`;
+  const batch = writeBatch(db);
+  batch.set(doc(parent(), 'receipts', oldId), { status: 'test', delivered: true, read: false });
+  batch.update(parent(), { testDelivered: 8, testRead: 5, lastReceiptId: oldId });
+  await assertSucceeds(batch.commit());
+  await firestorePushTransport(db).record({ ...receipt, read: true }, browserId);
+  assert.deepEqual([(await getDoc(parent())).data()!.testDelivered, (await getDoc(parent())).data()!.testRead], [8, 5]);
+  assert.deepEqual([(await getDoc(stats())).data()!.delivered, (await getDoc(stats())).data()!.read], [1, 1]);
 });
 test('receipt writes must atomically accompany exactly one matching counter increment', async () => {
   await assertFails(setDoc(child(), { status: 'test', delivered: true, read: false }));
@@ -80,8 +94,13 @@ test('receipt writes must atomically accompany exactly one matching counter incr
   await assertFails(batch.commit());
   const mixed = writeBatch(db);
   mixed.set(child(), { status: 'test', delivered: true, read: true });
-  mixed.update(parent(), { testDelivered: 1, testRead: 1, delivered: 1, lastReceiptId: `test_${browserId}` });
+  mixed.update(parent(), { testDelivered: 1, testRead: 1, lastReceiptId: `test_${browserId}` });
+  mixed.set(stats(), { delivered: 1, read: 1, lastReceiptId: `test_${browserId}` });
   await assertFails(mixed.commit());
+  const forged = writeBatch(db);
+  forged.set(child(), { status: 'test', delivered: true, read: false });
+  forged.set(stats(), { delivered: 999, read: 0, lastReceiptId: `test_${browserId}` });
+  await assertFails(forged.commit());
 });
 test('cannot count expired announcements, replay read, or use a receipt from another document', async () => {
   const transport = firestorePushTransport(db);

@@ -19,7 +19,11 @@ service cloud.firestore {
         let existed = exists(path);
         let beforeRead = existed ? get(path).data.read == true : false;
         let after = getAfter(path).data;
+        let statsPath = /databases/$(database)/documents/pushMessages/$(messageId)/stats/$(stage);
         return stage in ['test', 'live']
+          // Old clients may keep using parent counters during rollout, but cannot
+          // increment both the legacy and new counters with the same receipt.
+          && (!existsAfter(statsPath) || (exists(statsPath) && getAfter(statsPath).data == get(statsPath).data))
           && resource.data.expiresAt is timestamp && resource.data.expiresAt > request.time
           && receiptId is string && receiptId.matches(stage + '_[a-f0-9-]{36}')
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly([delivery, reading, 'lastReceiptId'])
@@ -33,6 +37,36 @@ service cloud.firestore {
       }
       allow update: if validCounterUpdate();
 
+      match /stats/{stage} {
+        allow get: if stage in ['test', 'live'];
+        allow list, delete: if false;
+
+        function validStats() {
+          let parentPath = /databases/$(database)/documents/pushMessages/$(messageId);
+          let statsPath = /databases/$(database)/documents/pushMessages/$(messageId)/stats/$(stage);
+          let parent = get(parentPath).data;
+          let old = exists(statsPath) ? get(statsPath).data : {};
+          let data = request.resource.data;
+          let receiptId = data.lastReceiptId;
+          let receiptPath = /databases/$(database)/documents/pushMessages/$(messageId)/receipts/$(receiptId);
+          let existed = exists(receiptPath);
+          let beforeRead = existed ? get(receiptPath).data.read == true : false;
+          let after = getAfter(receiptPath).data;
+          return stage in ['test', 'live'] && parent.status == stage
+            && parent.expiresAt is timestamp && parent.expiresAt > request.time
+            && getAfter(parentPath).data == parent
+            && data.keys().hasOnly(['delivered', 'read', 'lastReceiptId'])
+            && receiptId is string && receiptId.matches(stage + '_[a-f0-9-]{36}')
+            && after.status == stage && after.delivered == true && after.read is bool
+            && (!beforeRead || after.read)
+            && (!existed || (!beforeRead && after.read))
+            && data.delivered is int && data.read is int
+            && data.delivered == count(old, 'delivered') + (existed ? 0 : 1)
+            && data.read == count(old, 'read') + (!beforeRead && after.read ? 1 : 0);
+        }
+        allow create, update: if validStats();
+      }
+
       match /receipts/{receiptId} {
         // A random browser token, never an account identifier. No enumeration.
         allow get: if receiptId.matches('(test|live)_[a-f0-9-]{36}');
@@ -42,13 +76,15 @@ service cloud.firestore {
           let parent = get(path).data;
           let after = getAfter(path).data;
           let data = request.resource.data;
+          let statsPath = /databases/$(database)/documents/pushMessages/$(messageId)/stats/$(data.status);
           return data.keys().hasOnly(['status', 'delivered', 'read'])
             && data.status in ['test', 'live'] && data.status == parent.status
             && receiptId.matches(data.status + '_[a-f0-9-]{36}')
             && data.delivered == true && data.read is bool
             && parent.expiresAt > request.time
-            && after.lastReceiptId == receiptId
-            && after != parent;
+            && ((after != parent && after.lastReceiptId == receiptId)
+              || (existsAfter(statsPath) && getAfter(statsPath).data.lastReceiptId == receiptId
+                && (!exists(statsPath) || getAfter(statsPath).data != get(statsPath).data)));
         }
         allow create: if validReceipt();
         allow update: if validReceipt() && resource.data.read == false && request.resource.data.read == true;
