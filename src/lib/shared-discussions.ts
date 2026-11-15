@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import {
   addDoc,
   collection,
@@ -18,6 +18,7 @@ import { getDownloadURL, ref, uploadString } from 'firebase/storage';
 import { useOptionalCloudSync } from '@/components/cloud-sync-provider';
 import {
   firebaseConfigurationAvailable,
+  firebaseRunsHere,
   getFirebaseServices,
 } from '@/lib/firebase-client';
 import type {
@@ -348,15 +349,69 @@ export function useDiscussionPublisher(questionId: QuestionId) {
   return { publish, enabled };
 }
 
+const READ_FAILURE = '無法讀取共享投稿，請確認 Firestore 規則與網路連線。';
+
+const subscribeToNothing = () => () => undefined;
+const assumeRunning = () => false;
+// Asked during render, so it must start nothing: getFirebaseServices() would start Firebase.
+const servicesMissing = () => !firebaseRunsHere();
+
 /**
- * Which questions of one paper have shared content, for its tiles. `prefix` is the paper's id
- * prefix: the collection is read only as far as the tiles on screen, by the automatic
- * single-field index on questionId, so opening a paper costs its posts and not everyone's.
+ * Firebase can be configured and still not run on this device (it is held back for crawlers):
+ * no listener answers then, so nothing may wait for one. A store, as in useClientReady, so no
+ * effect sets state; the server cannot tell, so hydration renders the wait as it always did.
  */
-export function useDiscussionQuestionIds(prefix: string | null) {
+function useFirebaseUnavailable(enabled: boolean) {
+  return useSyncExternalStore(
+    subscribeToNothing,
+    enabled ? servicesMissing : assumeRunning,
+    assumeRunning,
+  );
+}
+
+const NO_POSTS: SharedDiscussionPost[] = [];
+
+/** What a paper's listener last read. */
+interface PaperRead {
+  /** The questions with shared content, for the tiles. */
+  questionIds: string[];
+  /** Each question's posts, newest first. */
+  posts: ReadonlyMap<string, SharedDiscussionPost[]>;
+  /** The read as text, so an answer that changes nothing keeps the read as it is. */
+  key: string;
+}
+
+const NOTHING_READ: PaperRead = { questionIds: [], posts: new Map(), key: '' };
+
+/**
+ * One paper's shared posts. `prefix` is the paper's id prefix: the collection is read only as
+ * far as the tiles on screen, by the automatic single-field index on questionId, so opening a
+ * paper costs its posts and not everyone's. `questionIds` says which questions have shared
+ * content, for its tiles; `posts` holds each question's posts, so the question on screen needs
+ * no read of its own (useSharedDiscussions' `paper`).
+ * `ready` once this listener has answered, from the server or the device's cache, or failed.
+ * `settled` once the server has answered, the read failed or the device is offline: before
+ * that, the cache may hold only the posts that other views of this tab read. `error` if it
+ * failed.
+ */
+export function usePaperDiscussions(prefix: string | null) {
   const { state } = useAppState();
   const enabled = firebaseConfigurationAvailable();
-  const [cloudQuestionIds, setCloudQuestionIds] = useState<string[]>([]);
+  const unavailable = useFirebaseUnavailable(enabled);
+  const [read, setRead] = useState<PaperRead>(NOTHING_READ);
+  // The paper whose listener has answered, the one it has settled for, and the one it failed.
+  const [answeredPrefix, setAnsweredPrefix] = useState<string | null>(null);
+  const [settledPrefix, setSettledPrefix] = useState<string | null>(null);
+  const [failedPrefix, setFailedPrefix] = useState<string | null>(null);
+  // Each paper on screen gets a new listener, back from its overview or another paper too:
+  // until that one answers, an earlier listener's answer or failure is not this one's.
+  const [listeningTo, setListeningTo] = useState(prefix);
+  if (listeningTo !== prefix) {
+    setListeningTo(prefix);
+    setAnsweredPrefix(null);
+    setSettledPrefix(null);
+    setFailedPrefix(null);
+  }
 
   useEffect(() => {
     if (!enabled || !prefix) return;
@@ -367,30 +422,92 @@ export function useDiscussionQuestionIds(prefix: string | null) {
       where('questionId', '>=', prefix),
       where('questionId', '<', `${prefix}\uf8ff`),
     );
-    return onSnapshot(paperPosts, (snapshot) => {
-      setCloudQuestionIds([
-        ...new Set(
-          snapshot.docs.flatMap((item) => {
-            const data = item.data();
-            return data.deleted !== true && typeof data.questionId === 'string'
-              ? [data.questionId]
-              : [];
-          }),
-        ),
-      ]);
-    });
+    return onSnapshot(
+      paperPosts,
+      // The server's answer can match the cache's, and then only its metadata changes.
+      { includeMetadataChanges: true },
+      (snapshot) => {
+        const questionIds = [
+          ...new Set(
+            snapshot.docs.flatMap((item) => {
+              const data = item.data();
+              return data.deleted !== true && typeof data.questionId === 'string'
+                ? [data.questionId]
+                : [];
+            }),
+          ),
+        ];
+        // As a question's own listener reads them: newest first, one explanation per author.
+        const posts = deduplicateAuthorExplanations(snapshot.docs
+          .flatMap((item) => {
+            const post = parseCloudDiscussionPost(item.id, item.data());
+            return post ? [post] : [];
+          })
+          .sort((left, right) => right.createdAt.localeCompare(left.createdAt)));
+        const key = JSON.stringify([questionIds, posts]);
+        // An answer that changes no post, as the server confirming the cache, keeps the read,
+        // so nothing renders again for it.
+        setRead((current) => {
+          if (current.key === key) return current;
+          const byQuestion = new Map<string, SharedDiscussionPost[]>();
+          posts.forEach((post) => {
+            const questionPosts = byQuestion.get(post.questionId);
+            if (questionPosts) questionPosts.push(post);
+            else byQuestion.set(post.questionId, [post]);
+          });
+          return { questionIds, posts: byQuestion, key };
+        });
+        setAnsweredPrefix(prefix);
+        if (!snapshot.metadata.fromCache) setSettledPrefix(prefix);
+        setFailedPrefix(null);
+      },
+      () => {
+        // A failed read ends the wait too, or the paper's questions would wait for good.
+        setAnsweredPrefix(prefix);
+        setSettledPrefix(prefix);
+        setFailedPrefix(prefix);
+      },
+    );
   }, [enabled, prefix]);
 
-  return useMemo(
+  const questionIds = useMemo(
     () =>
       new Set(
         enabled
-          ? cloudQuestionIds
+          ? read.questionIds
           : state.discussionPosts.map((post) => post.questionId),
       ),
-    [cloudQuestionIds, enabled, state.discussionPosts],
+    [enabled, read.questionIds, state.discussionPosts],
   );
+  // Without Firebase, or without a paper, nothing is read, so nothing waits.
+  const reading = enabled && !unavailable && prefix !== null;
+  // Offline the server cannot answer, and the cache's answer is all there will be: as the SDK
+  // does, take it once the browser says so, or after the SDK's own 10 s.
+  const waiting = reading && answeredPrefix === prefix && settledPrefix !== prefix;
+  useEffect(() => {
+    if (!waiting) return;
+    const settle = () => setSettledPrefix(prefix);
+    const timer = window.setTimeout(settle, navigator.onLine ? 10_000 : 0);
+    window.addEventListener('offline', settle);
+    return () => {
+      window.clearTimeout(timer);
+      window.removeEventListener('offline', settle);
+    };
+  }, [prefix, waiting]);
+  return {
+    questionIds,
+    posts: read.posts,
+    ready: !reading || answeredPrefix === prefix,
+    settled: !reading || settledPrefix === prefix,
+    error: reading && failedPrefix === prefix ? READ_FAILURE : '',
+  };
 }
+
+/** A paper's read, as usePaperDiscussions gives it to the questions of that paper. */
+export type PaperDiscussions = Pick<
+  ReturnType<typeof usePaperDiscussions>,
+  'posts' | 'ready' | 'settled' | 'error'
+>;
 
 /**
  * A question's posts; null (an overview page, no question on screen) listens to nothing.
@@ -399,19 +516,30 @@ export function useDiscussionQuestionIds(prefix: string | null) {
  * `waitForServer` keeps `loading` until the server has answered, for a view that reads on
  * demand: the cache may answer first (an earlier read in this tab, or offline), and its
  * empty answer must not read as "no posts".
+ * `paper` takes the posts from the listener of the question's paper, which reads them all
+ * anyway: the question then opens no listener for its posts. `loading` lasts until that
+ * listener is ready, and until it has settled only posts end the wait: an empty list may just
+ * mean the cache answered for the paper with other questions' posts alone. Its failure is the
+ * question's error.
  */
 export function useSharedDiscussions(
   questionId: QuestionId | null,
   {
     reactions = true,
     waitForServer = false,
-  }: { reactions?: boolean; waitForServer?: boolean } = {},
+    paper,
+  }: {
+    reactions?: boolean;
+    waitForServer?: boolean;
+    paper?: PaperDiscussions;
+  } = {},
 ) {
   const { state, dispatch } = useAppState();
   const cloud = useOptionalCloudSync();
   const user = cloud?.user ?? null;
   const signIn = cloud?.signIn ?? (async () => {});
   const enabled = firebaseConfigurationAvailable();
+  const unavailable = useFirebaseUnavailable(enabled);
   const [cloudPosts, setCloudPosts] = useState<SharedDiscussionPost[]>([]);
   const [repliesByPost, setRepliesByPost] = useState<
     Record<string, Array<DiscussionReply & { authorId: string }>>
@@ -423,8 +551,9 @@ export function useSharedDiscussions(
   const [loadedQuestionId, setLoadedQuestionId] = useState<string | null>(null);
   const [error, setError] = useState('');
 
+  const fromPaper = paper !== undefined;
   useEffect(() => {
-    if (!enabled || !questionId) return;
+    if (!enabled || !questionId || fromPaper) return;
     const firebase = getFirebaseServices();
     if (!firebase) return;
     const postsQuery = query(
@@ -449,22 +578,29 @@ export function useSharedDiscussions(
         setError('');
       },
       () => {
-        setError('無法讀取共享投稿，請確認 Firestore 規則與網路連線。');
+        setError(READ_FAILURE);
         setLoadedQuestionId(questionId);
       },
     );
-  }, [enabled, questionId, waitForServer]);
+  }, [enabled, fromPaper, questionId, waitForServer]);
 
-  const postIdsKey = cloudPosts.map((post) => post.id).join('|');
+  // The paper's read keeps each question's list as it is until one of its posts changes.
+  const questionPosts = paper
+    ? (questionId === null ? undefined : paper.posts.get(questionId)) ?? NO_POSTS
+    : cloudPosts;
+  // Sorted, so posts that only change order are the same set; '/' never appears in a
+  // document id, so the key splits back into the ids.
+  const postIdsKey = questionPosts.map((post) => post.id).sort().join('/');
   useEffect(() => {
     if (!enabled || !reactions || !postIdsKey) return;
     const firebase = getFirebaseServices();
     if (!firebase) return;
     const stops: Unsubscribe[] = [];
-    cloudPosts.forEach((post) => {
+    // From the ids alone, so editing a post's text or images keeps every listener.
+    postIdsKey.split('/').forEach((postId) => {
       stops.push(
         onSnapshot(
-          collection(firebase.db, 'discussionPosts', post.id, 'replies'),
+          collection(firebase.db, 'discussionPosts', postId, 'replies'),
           (snapshot) => {
             const replies = snapshot.docs
               .flatMap((item) => {
@@ -472,17 +608,17 @@ export function useSharedDiscussions(
                 return reply ? [reply] : [];
               })
               .sort((left, right) => left.createdAt.localeCompare(right.createdAt));
-            setRepliesByPost((current) => ({ ...current, [post.id]: replies }));
+            setRepliesByPost((current) => ({ ...current, [postId]: replies }));
           },
         ),
       );
       stops.push(
         onSnapshot(
-          collection(firebase.db, 'discussionPosts', post.id, 'likes'),
+          collection(firebase.db, 'discussionPosts', postId, 'likes'),
           (snapshot) => {
             setLikesByPost((current) => ({
               ...current,
-              [post.id]: {
+              [postId]: {
                 count: snapshot.size,
                 liked: user ? snapshot.docs.some((item) => item.id === user.uid) : false,
               },
@@ -493,12 +629,12 @@ export function useSharedDiscussions(
       if (user) {
         stops.push(
           onSnapshot(
-            doc(firebase.db, 'discussionPosts', post.id, 'reports', user.uid),
+            doc(firebase.db, 'discussionPosts', postId, 'reports', user.uid),
             (snapshot) => {
               setReportedPostIds((current) =>
                 snapshot.exists()
-                  ? [...new Set([...current, post.id])]
-                  : current.filter((id) => id !== post.id),
+                  ? [...new Set([...current, postId])]
+                  : current.filter((id) => id !== postId),
               );
             },
           ),
@@ -506,7 +642,7 @@ export function useSharedDiscussions(
       }
     });
     return () => stops.forEach((stop) => stop());
-  }, [cloudPosts, enabled, postIdsKey, reactions, user]);
+  }, [enabled, postIdsKey, reactions, user]);
 
   const posts = useMemo<SharedDiscussionPost[]>(() => {
     if (!enabled) {
@@ -514,7 +650,7 @@ export function useSharedDiscussions(
         .filter((post) => post.questionId === questionId)
         .map((post) => ({ ...post, ownedByCurrentUser: true }));
     }
-    return cloudPosts
+    return questionPosts
       .filter((post) => post.questionId === questionId)
       .map((post) => ({
         ...post,
@@ -530,10 +666,10 @@ export function useSharedDiscussions(
         ownedByCurrentUser: Boolean(user && post.authorId === user.uid),
       }));
   }, [
-    cloudPosts,
     enabled,
     likesByPost,
     questionId,
+    questionPosts,
     reactions,
     repliesByPost,
     reportedPostIds,
@@ -706,11 +842,15 @@ export function useSharedDiscussions(
     [dispatch, enabled, requireUser],
   );
 
+  const loaded = paper
+    ? paper.ready && (paper.settled || questionPosts.length > 0)
+    : loadedQuestionId === questionId;
+
   return {
     posts,
     enabled,
-    loading: enabled && questionId !== null && loadedQuestionId !== questionId,
-    error,
+    loading: enabled && !unavailable && questionId !== null && !loaded,
+    error: paper ? paper.error : error,
     user,
     signIn,
     addPost,
