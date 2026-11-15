@@ -58,33 +58,39 @@ vi.mock('firebase/firestore', () => {
     pending: boolean,
   ) =>
     // The SDK raises listener events from a later task.
-    setTimeout(() =>
+    setTimeout(() => {
+      const item = {
+        id: path.split('/').pop(),
+        data: () => reorder(data),
+        metadata: { hasPendingWrites: pending },
+      };
       firestore.listeners.get(parent(path))?.({
-        docChanges: () => [
-          {
-            type,
-            doc: {
-              id: path.split('/').pop(),
-              data: () => reorder(data),
-              metadata: { hasPendingWrites: pending },
-            },
-          },
-        ],
+        docChanges: () => [{ type, doc: item }],
+        docs: type === 'removed' ? [] : [item],
         metadata: { fromCache: false, hasPendingWrites: pending },
-      }),
-    );
+      });
+    });
+  const onServer = (target: { path: string }) =>
+    [...firestore.server].filter(([path]) => parent(path) === target.path);
   return {
     collection: (_db: unknown, ...path: string[]) => ref(path.join('/')),
     doc: (base: { path?: string }, ...path: string[]) =>
       ref([base.path, ...path].filter(Boolean).join('/')),
+    // These tests are about writes: a query reads like its whole collection.
+    query: (target: { path: string }) => target,
+    where: () => ({}),
+    Timestamp: { fromMillis: (millis: number) => ({ millis }) },
     serverTimestamp: () => 'SERVER_TIME',
     getDocs: async (target: { path: string }) => ({
-      docs: [...firestore.server]
-        .filter(([path]) => parent(path) === target.path)
-        .map(([path, data]) => ({
-          id: path.split('/').pop(),
-          data: () => reorder(data),
-        })),
+      docs: onServer(target).map(([path, data]) => ({
+        id: path.split('/').pop(),
+        data: () => reorder(data),
+        metadata: { hasPendingWrites: false },
+      })),
+      metadata: { fromCache: false },
+    }),
+    getCountFromServer: async (target: { path: string }) => ({
+      data: () => ({ count: onServer(target).length }),
     }),
     getDoc: async () => ({ exists: () => false, metadata: { fromCache: false } }),
     deleteDoc: (target: { path: string }) => {
@@ -102,12 +108,51 @@ vi.mock('firebase/firestore', () => {
         ),
       );
     },
-    runTransaction: async () => undefined,
-    onSnapshot: (target: { path: string }, next: (snapshot: unknown) => void) => {
+    // Deleting attempts: the server answers as it would the first one deleted.
+    runTransaction: async (
+      _db: unknown,
+      update: (transaction: unknown) => Promise<unknown>,
+    ) => {
+      const deleted: string[] = [];
+      const transaction = {
+        get: async (target: { path: string }) => ({
+          exists: () => firestore.server.has(target.path),
+          data: () => firestore.server.get(target.path),
+        }),
+        delete: (target: { path: string }) => {
+          deleted.push(target.path);
+          firestore.deletes.set(
+            target.path,
+            (firestore.deletes.get(target.path) ?? 0) + 1,
+          );
+          return transaction;
+        },
+        set: () => transaction,
+      };
+      await update(transaction);
+      const outcome = firestore.outcome(deleted[0] ?? '');
+      if (outcome.kind === 'never') return new Promise(() => {});
+      return new Promise((resolve, reject) =>
+        setTimeout(() => {
+          if (outcome.kind === 'ack') {
+            deleted.forEach((path) => firestore.server.delete(path));
+            resolve(undefined);
+            return;
+          }
+          reject(Object.assign(new Error('Refused.'), { code: outcome.code }));
+        }, outcome.delay),
+      );
+    },
+    onSnapshot: (target: { path: string }, ...rest: unknown[]) => {
+      // The deletion log's listener passes options first.
+      const next = rest.find((item) => typeof item === 'function') as (
+        snapshot: unknown,
+      ) => void;
       firestore.listeners.set(target.path, next);
       setTimeout(() =>
         next({
           docChanges: () => [],
+          docs: [],
           exists: () => false,
           metadata: { fromCache: false, hasPendingWrites: false },
         }),
@@ -209,18 +254,15 @@ const deletesOf = (path: string) => firestore.deletes.get(path) ?? 0;
 /** A change another device made, as the server reports it. */
 async function serverChange(path: string, data: Record<string, unknown>) {
   firestore.server.set(path, data);
+  const item = {
+    id: path.split('/').pop(),
+    data: () => data,
+    metadata: { hasPendingWrites: false },
+  };
   await act(async () =>
     firestore.listeners.get(path.split('/').slice(0, -1).join('/'))?.({
-      docChanges: () => [
-        {
-          type: 'modified',
-          doc: {
-            id: path.split('/').pop(),
-            data: () => data,
-            metadata: { hasPendingWrites: false },
-          },
-        },
-      ],
+      docChanges: () => [{ type: 'modified', doc: item }],
+      docs: [item],
       metadata: { fromCache: false, hasPendingWrites: false },
     }),
   );
@@ -406,6 +448,33 @@ describe('CloudSyncProvider write echoes', () => {
     await remove('attempt-c');
     await pass(2_000);
     expect(deletesOf(path('attempt-a'))).toBe(1);
+    expect(deletesOf(path('attempt-b'))).toBe(1);
+    expect(deletesOf(path('attempt-c'))).toBe(1);
+  });
+
+  it('sends a deletion that failed offline again with the next one, but not one refused for good', async () => {
+    const path = (id: string) => `users/u1/attempts/${id}`;
+    await signIn();
+    for (const id of ['attempt-a', 'attempt-b', 'attempt-c']) {
+      await save(savedAttempt(id));
+    }
+    await pass(1_000);
+    const remove = (attemptId: string) =>
+      act(async () => controls.dispatch({ type: 'delete-attempt', attemptId }));
+    firestore.outcome = () => ({ kind: 'deny', delay: 150, code: 'unavailable' });
+    await remove('attempt-a');
+    await pass(500);
+    expect(deletesOf(path('attempt-a'))).toBe(1);
+    // attempt-a goes again with attempt-b, and both are refused for good.
+    firestore.outcome = () => ({ kind: 'deny', delay: 150, code: 'invalid-argument' });
+    await remove('attempt-b');
+    await pass(500);
+    expect(deletesOf(path('attempt-a'))).toBe(2);
+    expect(deletesOf(path('attempt-b'))).toBe(1);
+    firestore.outcome = () => ({ kind: 'ack', delay: 150 });
+    await remove('attempt-c');
+    await pass(1_000);
+    expect(deletesOf(path('attempt-a'))).toBe(2);
     expect(deletesOf(path('attempt-b'))).toBe(1);
     expect(deletesOf(path('attempt-c'))).toBe(1);
   });

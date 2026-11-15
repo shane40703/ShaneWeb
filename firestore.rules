@@ -135,6 +135,18 @@ service cloud.firestore {
       allow create, update: if ownsDocument() && validAttempt();
     }
 
+    // Per-user log of the latest 1000 deleted attempt ids, oldest first, so other devices drop
+    // them instead of sending them back. Every write stamps server time; it is never removed.
+    match /users/{userId}/deletions/attempts {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow create, update: if request.auth != null && request.auth.uid == userId
+        && request.resource.data.keys().hasOnly(['attemptIds', 'syncedAt'])
+        && request.resource.data.attemptIds is list
+        && request.resource.data.attemptIds.size() <= 1000
+        && request.resource.data.syncedAt == request.time;
+      allow delete: if false;
+    }
+
     match /users/{userId}/notes/{questionId} {
       function ownsNote() {
         return request.auth != null && request.auth.uid == userId;

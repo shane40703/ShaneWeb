@@ -21,6 +21,7 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "test:push-rules": "firebase emulators:exec --only firestore --project demo-shane-push --config firebase.emulator.json 'tsx --test scripts/test-push-rules.ts'",
+    "test:sync-emulator": "firebase emulators:exec --only firestore --project demo-shane-sync --config firebase.emulator.json 'tsx --test scripts/test-cloud-sync-incremental.ts'",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build"
   },

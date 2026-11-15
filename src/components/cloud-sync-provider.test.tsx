@@ -128,7 +128,7 @@ describe('CloudSyncProvider', () => {
     const changes = readAttemptChanges([{
       type: 'added', id: summary.id, data: { ...summary, syncedAt: {} }, pending: false,
     }], confirmed);
-    expect(changes).toEqual({ incoming: [summary], removed: [] });
+    expect(changes).toEqual({ incoming: [summary], removed: [], sentBack: [] });
     expect(confirmed.has(summary.id)).toBe(true);
     expect(changes.incoming[0].questionIds).toEqual([]);
     expect(changes.incoming[0].answers).toEqual({});
@@ -156,16 +156,16 @@ describe('CloudSyncProvider', () => {
     // it back; neither confirms it.
     expect(
       readAttemptChanges([{ type: 'added', id: record.id, data: record, pending: true }], confirmed),
-    ).toEqual({ incoming: [], removed: [] });
+    ).toEqual({ incoming: [], removed: [], sentBack: [] });
     expect(confirmed.has(record.id)).toBe(false);
     expect(
       readAttemptChanges([{ type: 'removed', id: record.id, data: record, pending: false }], confirmed),
-    ).toEqual({ incoming: [], removed: [] });
+    ).toEqual({ incoming: [], removed: [], sentBack: [] });
 
     // A record the server accepted and another device deleted goes here too.
     expect(
       readAttemptChanges([{ type: 'removed', id: 'attempt-old', data: {}, pending: false }], confirmed),
-    ).toEqual({ incoming: [], removed: ['attempt-old'] });
+    ).toEqual({ incoming: [], removed: ['attempt-old'], sentBack: [] });
     readAttemptChanges([{ type: 'added', id: record.id, data: record, pending: false }], confirmed);
     expect(confirmed.has(record.id)).toBe(true);
     // Retired 隨機出題 records are not read back.
@@ -175,5 +175,33 @@ describe('CloudSyncProvider', () => {
         confirmed,
       ).incoming,
     ).toEqual([]);
+  });
+
+  it('neither merges nor confirms a deleted record the server holds again', () => {
+    const record = {
+      id: 'attempt-gone',
+      mode: 'practice',
+      subject: 'law',
+      year: null,
+      questionIds: ['law-114-01'],
+      answers: { 'law-114-01': 0 },
+      startedAt: '2026-10-20T00:00:00.000Z',
+      submittedAt: '2026-10-20T00:01:00.000Z',
+      elapsedSeconds: 60,
+      correctCount: 1,
+      wrongCount: 0,
+      unansweredCount: 0,
+    };
+    const confirmed = new Set<string>();
+    const deleted = new Set(['attempt-gone']);
+    // A device that missed the deletion sent it back: it is only listed to delete again.
+    expect(
+      readAttemptChanges([{ type: 'added', id: record.id, data: record, pending: false }], confirmed, deleted),
+    ).toEqual({ incoming: [], removed: [], sentBack: ['attempt-gone'] });
+    expect(confirmed.has(record.id)).toBe(false);
+    // Deleted again, it leaves without counting as a deletion from elsewhere.
+    expect(
+      readAttemptChanges([{ type: 'removed', id: record.id, data: record, pending: false }], confirmed, deleted),
+    ).toEqual({ incoming: [], removed: [], sentBack: [] });
   });
 });

@@ -28,8 +28,15 @@ vi.mock('firebase/auth', () => ({
 vi.mock('firebase/firestore', () => ({
   collection: (_db: unknown, ...path: string[]) => ({ path: path.join('/') }),
   doc: (_db: unknown, ...path: string[]) => ({ path: path.join('/') }),
+  query: (ref: { path: string }) => ref,
+  where: () => ({}),
+  Timestamp: { fromMillis: (millis: number) => ({ millis }) },
   getDocs: vi.fn(async () => ({ docs: [] })),
-  getDoc: mocks.getDoc,
+  getCountFromServer: vi.fn(async () => ({ data: () => ({ count: 0 }) })),
+  // The deletion log is read first at each load; these tests are about 難題標記.
+  getDoc: (ref: { path: string }) => ref.path.endsWith('/deletions/attempts')
+    ? Promise.resolve({ exists: () => false, metadata: { fromCache: false } })
+    : mocks.getDoc(ref),
   setDoc: vi.fn(async () => {}),
   deleteDoc: vi.fn(async () => {}),
   serverTimestamp: () => ({}),
