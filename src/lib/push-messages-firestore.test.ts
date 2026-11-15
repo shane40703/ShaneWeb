@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Firestore } from 'firebase/firestore';
+import { onSnapshot, type Firestore } from 'firebase/firestore';
 import type { PushReceipt } from './push-messages';
 
 const store = vi.hoisted(() => new Map<string, Record<string, unknown>>());
@@ -51,5 +51,26 @@ describe('announcement counters', () => {
     store.set(parentPath, { status: 'test', message: '公告', expiresAt: { toMillis: () => Date.now() - 1 } });
     await firestorePushTransport({} as Firestore).record(receipt, browserId);
     expect(store.has(statsPath)).toBe(false);
+  });
+});
+
+describe('announcement subscription', () => {
+  it('tells cached answers from the server, including when only that changes', () => {
+    const next = vi.fn();
+    firestorePushTransport({} as Firestore).subscribe(false, next, vi.fn());
+    const [, options, onNext] = vi.mocked(onSnapshot).mock.lastCall as unknown as [unknown, unknown, (snapshot: unknown) => void];
+    expect(options).toEqual({ includeMetadataChanges: true });
+    const docs = [{ id: 'notice', data: () => ({ status: 'live', message: '公告', expiresAt: { toMillis: () => Date.now() + 60_000 } }) }];
+    onNext({ docs, metadata: { fromCache: true } });
+    onNext({ docs, metadata: { fromCache: false } });
+    expect(next.mock.calls.map(([messages, fromCache]) => [messages.map((item: { id: string }) => item.id), fromCache])).toEqual([[['notice'], true], [['notice'], false]]);
+  });
+  it('hands the listener error on with its code, so a missing index is not retried like a lost connection', () => {
+    const error = vi.fn();
+    firestorePushTransport({} as Firestore).subscribe(false, vi.fn(), error);
+    const [, , , onError] = vi.mocked(onSnapshot).mock.lastCall as unknown as [unknown, unknown, unknown, (reason: unknown) => void];
+    const missingIndex = Object.assign(new Error('The query requires an index.'), { code: 'failed-precondition' });
+    onError(missingIndex);
+    expect(error).toHaveBeenCalledWith(missingIndex);
   });
 });
