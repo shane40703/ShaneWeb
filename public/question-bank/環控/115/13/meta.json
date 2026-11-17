@@ -13,5 +13,10 @@
   "provenance": {
     "kind": "official",
     "page": 2
+  },
+  "images": {
+    "question-02.png": {
+      "alt": "第 13 題題目文字引用圖示、PDF 第 2 頁包含圖片附圖"
+    }
   }
 }

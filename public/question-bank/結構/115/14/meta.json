@@ -13,5 +13,10 @@
   "provenance": {
     "kind": "official",
     "page": 4
+  },
+  "images": {
+    "question-02.png": {
+      "alt": "第 14 題題目文字引用圖示、PDF 第 4 頁包含圖片附圖"
+    }
   }
 }

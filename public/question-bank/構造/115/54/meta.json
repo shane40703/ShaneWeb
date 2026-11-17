@@ -13,5 +13,10 @@
   "provenance": {
     "kind": "official",
     "page": 9
+  },
+  "images": {
+    "question-02.png": {
+      "alt": "第 54 題PDF 第 9 頁包含圖片、PDF 第 9 頁可能包含向量圖表附圖"
+    }
   }
 }

@@ -1,6 +1,6 @@
 20. 如圖所示構架，E 點水平反力Ex 及垂直反力Ey 各為何？（A、C、E 為鉸接）
 
-[圖片：待人工截圖]
+[圖片：images/image.png]
 
 A. Ex=15 kN（→）、Ey=20 kN（↑）
 B. Ex=15 kN（→）、Ey=20 kN（↓）
