@@ -7,6 +7,7 @@ import {
   pickRandomItems,
 } from '@/lib/study';
 import type { Question, QuizAttempt, SubjectId } from '@/lib/types';
+import { MISSING_QUESTION_IMAGE_NOTICE } from '@/lib/question-completeness';
 import { getSubject, years } from '@/question-bank/catalog';
 import { analysisCategoryCatalog } from '@/question-bank/schema';
 import { practiceQuizPage } from './practice-pages';
@@ -65,6 +66,9 @@ function isAllCreditQuestion(question: Pick<Question, 'options' | 'answerKey'>) 
 function isPracticeQuestion(question: Question) {
   if (question.format === 'written' || question.answerKey.kind === 'written')
     return false;
+  // Incomplete 115 diagrams remain visible in the paper, but are not answerable yet.
+  // The import removes this marker after a manually supplied image is added.
+  if (question.text.includes(MISSING_QUESTION_IMAGE_NOTICE)) return false;
   if (!question.options.length) return false;
   return !(question.answerKey.kind === 'accepted' && !question.answerKey.options.length);
 }

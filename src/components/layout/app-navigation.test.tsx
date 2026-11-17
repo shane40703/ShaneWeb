@@ -110,11 +110,11 @@ describe('grouped app navigation', () => {
     it('opens the newest 法規 paper’s first question when nothing usable is kept', () => {
       render(<SidebarContent pathname="/practice" />);
       fireEvent.click(exams());
-      expect(router.push).toHaveBeenLastCalledWith('/exams/law/114/1');
+      expect(router.push).toHaveBeenLastCalledWith('/exams/law/115/1');
 
       window.localStorage.setItem(EXAMS_PLACE_KEY, '/exams/law/114/03');
       fireEvent.click(exams());
-      expect(router.push).toHaveBeenLastCalledWith('/exams/law/114/1');
+      expect(router.push).toHaveBeenLastCalledWith('/exams/law/115/1');
     });
 
     it('fetches the place ahead as a link would', () => {

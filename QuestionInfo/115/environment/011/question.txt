@@ -1,0 +1,6 @@
+11. 有關照明均齊度（均勻度）的定義，下列表示法何者較為適當？（以Em：平均照度、Emax：室內 最大照度、Emin：室內最小照度）
+
+A. Em / (Em−Emin)
+B. (Emin−Em) / Em
+C. Emax / Emin
+D. Emin / Em

@@ -1,0 +1,17 @@
+{
+  "year": 115,
+  "subject": "structure",
+  "subjectName": "建築結構",
+  "questionNumber": 17,
+  "hasImage": true,
+  "imageFile": "images/figure1.png",
+  "imageReasons": [
+    "題目文字引用圖示",
+    "PDF 第 4 頁包含圖片",
+    "PDF 第 4 頁可能包含向量圖表"
+  ],
+  "sourcePages": [
+    4
+  ],
+  "warnings": []
+}

@@ -127,12 +127,14 @@ async function importQuestion(year, subjectId, questionDirectory) {
       await rm(path.join(targetDirectory, entry));
     }
   }
-  await writeFile(path.join(targetDirectory, 'question-01.txt'), `${text}\n`, 'utf8');
-
   const imageDirectory = path.join(sourceDirectory, 'images');
   const imageFiles = (await readdir(imageDirectory))
     .filter((file) => !file.startsWith('.') && /\.(?:png|jpe?g|webp)$/i.test(file))
     .sort((left, right) => left.localeCompare(right, 'zh-Hant'));
+  const visibleText = year === 115 && metadata.hasImage && !imageFiles.length
+    ? `${text}\n\n（此題附圖尚待補上，請參考原試卷。）`
+    : text;
+  await writeFile(path.join(targetDirectory, 'question-01.txt'), `${visibleText}\n`, 'utf8');
   const images = {};
   for (const [index, image] of imageFiles.entries()) {
     const extension = path.extname(image).toLowerCase();

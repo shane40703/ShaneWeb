@@ -379,7 +379,7 @@ describe('ExamsPage question loading', () => {
           subjectTiles.getAllByRole('link').filter((tile) => tile.hasAttribute('aria-current')),
         ).toEqual([]);
         expect(yearTiles.queryAllByRole('link')).toEqual([]);
-        expect(yearTiles.getAllByRole('button')).toHaveLength(15);
+        expect(yearTiles.getAllByRole('button')).toHaveLength(16);
         for (const year of yearTiles.getAllByRole('button')) expect(year).toBeDisabled();
       } else {
         expect(subjectTiles.getByRole('link', { name: /營建法規與實務/ })).toHaveAttribute(

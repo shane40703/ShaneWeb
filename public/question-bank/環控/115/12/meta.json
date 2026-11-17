@@ -1,0 +1,17 @@
+{
+  "primaryCategory": "光",
+  "topic": "照明",
+  "tags": [
+    "照明"
+  ],
+  "answerKey": {
+    "kind": "accepted",
+    "options": [
+      "B"
+    ]
+  },
+  "provenance": {
+    "kind": "official",
+    "page": 2
+  }
+}

@@ -1,0 +1,1 @@
+某均質且等向（Homogeneous and isotropic）材料，若其材料波松比 ν = 0.3，則其剪力模數 G 約是彈性模數 E 的多少倍？

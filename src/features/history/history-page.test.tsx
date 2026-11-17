@@ -236,13 +236,13 @@ describe('HistoryPage', () => {
       within(openedAttempt!).queryByRole('region', { name: '完整作答紀錄' }),
     ).not.toBeInTheDocument();
     expect(
-      screen.getByRole('button', { name: /繼續作答 113 年/ }),
-    ).toHaveAttribute('href', '/practice/mock-exam?subject=law&year=113&q=1');
+      screen.getByRole('button', { name: /繼續作答 115 年/ }),
+    ).toHaveAttribute('href', '/practice/mock-exam?subject=law&year=115&q=1');
   });
 
   it('continues with unattempted catalog years even when only attempted banks are loaded', async () => {
     const state = createDefaultState();
-    state.attempts = Array.from({ length: 10 }, (_, index) => 114 - index).map(
+    state.attempts = Array.from({ length: 11 }, (_, index) => 115 - index).map(
       (year) => {
         const question = questions.find(
           (candidate) => candidate.subject === 'law' && candidate.year === year,
@@ -278,16 +278,16 @@ describe('HistoryPage', () => {
   it('opens the next paper directly without replacing an existing draft', async () => {
     const attempt = createAttempt({ mode: 'paper', source: paperQuestions, answers: {},
       startedAt: '2026-10-24T00:00:00.000Z', elapsedSeconds: 60 });
-    const draft = { 'law-113-02': { selected: 2, elapsedSeconds: 42, startedAt: '2026-10-24T00:00:00.000Z' } };
-    writeQuizProgress('paper:law:113', draft);
+    const draft = { 'law-115-02': { selected: 2, elapsedSeconds: 42, startedAt: '2026-10-24T00:00:00.000Z' } };
+    writeQuizProgress('paper:law:115', draft);
     const state = createDefaultState();
     state.attempts = [attempt];
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     render(<ToastProvider><AppStateProvider><HistoryPage questions={paperQuestions} /></AppStateProvider></ToastProvider>);
-    const link = await screen.findByRole('button', { name: /繼續作答 113 年/ });
-    expect(link).toHaveAttribute('href', '/practice/mock-exam?subject=law&year=113&q=1');
+    const link = await screen.findByRole('button', { name: /繼續作答 115 年/ });
+    expect(link).toHaveAttribute('href', '/practice/mock-exam?subject=law&year=115&q=1');
     fireEvent.click(link);
-    expect(readMockExamDraft('paper:law:113')).toEqual(draft);
+    expect(readMockExamDraft('paper:law:115')).toEqual(draft);
   });
 
   it('creates the next paper draft before opening its first question', async () => {
@@ -297,8 +297,8 @@ describe('HistoryPage', () => {
     state.attempts = [attempt];
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     render(<ToastProvider><AppStateProvider><HistoryPage questions={paperQuestions} /></AppStateProvider></ToastProvider>);
-    fireEvent.click(await screen.findByRole('button', { name: /繼續作答 113 年/ }));
-    expect(readMockExamDraft('paper:law:113')).toHaveProperty('law-113-01');
+    fireEvent.click(await screen.findByRole('button', { name: /繼續作答 115 年/ }));
+    expect(readMockExamDraft('paper:law:115')).toHaveProperty('law-115-01');
   });
 
   it('keeps local history usable when one subject bank fails to load', async () => {

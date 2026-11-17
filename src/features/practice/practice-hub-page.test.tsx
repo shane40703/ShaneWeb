@@ -49,7 +49,7 @@ describe('PracticeHubPage', () => {
     expect(within(cloze).getByText('10 部法規・358 題')).toBeInTheDocument();
     const exam = screen.getByRole('article', { name: '歷屆試題模擬考' });
     expect(
-      within(exam).getByText('自選 100～114 年任一份考古題，模擬考試時的實際作答'),
+      within(exam).getByText('自選 100～115 年任一份考古題，模擬考試時的實際作答'),
     ).toBeInTheDocument();
     expect(within(exam).getByText('3 科・5 份試卷')).toBeInTheDocument();
   });

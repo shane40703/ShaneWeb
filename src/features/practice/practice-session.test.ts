@@ -163,6 +163,13 @@ describe('resolvePracticePool', () => {
     expect(subjectReviewQuestions(outdated, 'law')).toHaveLength(6);
   });
 
+  it('keeps questions with missing diagrams out of daily practice until the image is added', () => {
+    const incomplete = { ...makeQuestion('law-115-01', { year: 115 }), text: '題幹\n\n（此題附圖尚待補上，請參考原試卷。）' };
+    const complete = { ...incomplete, text: '題幹' };
+    expect(resolvePracticePool([incomplete], 'law', DEFAULT_PRACTICE_SETTINGS).candidates).toHaveLength(0);
+    expect(resolvePracticePool([complete], 'law', DEFAULT_PRACTICE_SETTINGS).candidates).toHaveLength(1);
+  });
+
   it('defaults to the daily practice pool: no 一律給分, no written questions, other subjects ignored', () => {
     const pool = resolvePracticePool(bank, 'law', DEFAULT_PRACTICE_SETTINGS);
     expect(pool.candidates.map((question) => question.id)).toEqual([

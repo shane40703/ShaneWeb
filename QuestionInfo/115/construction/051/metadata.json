@@ -1,0 +1,17 @@
+{
+  "year": 115,
+  "subject": "construction",
+  "subjectName": "建築構造與施工",
+  "questionNumber": 51,
+  "hasImage": true,
+  "imageFile": "images/figure1.png",
+  "imageReasons": [
+    "題目文字引用圖示",
+    "PDF 第 7 頁包含圖片",
+    "PDF 第 7 頁可能包含向量圖表"
+  ],
+  "sourcePages": [
+    7
+  ],
+  "warnings": []
+}

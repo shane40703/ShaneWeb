@@ -1,4 +1,5 @@
 import { getLawQuestionFineTopic } from '@/lib/law-question-topics';
+import { MISSING_QUESTION_IMAGE_NOTICE } from '@/lib/question-completeness';
 import { comparePaperQuestionOrder, getQuestionDisplayCategories } from '@/lib/study';
 import type { Question, QuestionSummary, SubjectId } from '@/lib/types';
 import { subjects } from '@/question-bank/catalog';
@@ -202,6 +203,8 @@ export interface FacetPaper {
   l?: readonly number[];
   /** 1 + index into `fineTopics`, 0 for none. */
   f?: readonly number[];
+  /** Question numbers awaiting a manually supplied illustration. */
+  missingImages?: readonly number[];
 }
 
 export interface SubjectFacets {
@@ -246,7 +249,7 @@ export function buildFacets(questions: readonly Question[]): SubjectFacets {
   const internFine = interner(fineTopics);
   const rows = new Map<
     number,
-    { kind: number; answer: number; laws: number; fine: number }[]
+    { kind: number; answer: number; laws: number; fine: number; missingImage: boolean }[]
   >();
   for (const question of questions) {
     if (question.format === 'written') continue;
@@ -266,6 +269,7 @@ export function buildFacets(questions: readonly Question[]): SubjectFacets {
       fine: question.fineTopic
         ? internFine(question.fineTopic, question.fineTopic) + 1
         : 0,
+      missingImage: question.text.includes(MISSING_QUESTION_IMAGE_NOTICE),
     };
     rows.set(question.year, paper);
   }
@@ -284,6 +288,9 @@ export function buildFacets(questions: readonly Question[]): SubjectFacets {
         a: paper.map((row) => row.answer),
         ...(lawSets.length ? { l: paper.map((row) => row.laws) } : {}),
         ...(fineTopics.length ? { f: paper.map((row) => row.fine) } : {}),
+        ...(paper.some((row) => row.missingImage)
+          ? { missingImages: paper.flatMap((row, index) => row.missingImage ? [index + 1] : []) }
+          : {}),
       };
     });
   return {
@@ -304,6 +311,7 @@ function facetFields(subject: SubjectId, facets: SubjectFacets) {
         : undefined;
       return {
         answer: paper.a[index],
+        missingImage: paper.missingImages?.includes(index + 1) ?? false,
         fields: {
           id: refId(subject, paper.y, false, index + 1),
           format: 'multiple-choice' as const,
@@ -325,13 +333,13 @@ const noOptions = Array.from({ length: FACET_OPTION_COUNT }, () => '');
 
 /**
  * Questions without a body, for the code that counts, filters, draws and grades: the option
- * count and answer key are real, the text is empty. These never reach a screen that reads a
+ * count and answer key are real; only the missing-image marker may appear as text. These never reach a screen that reads a
  * question; those get a body from `useQuestionBodies`.
  */
 export function facetQuestions(subject: SubjectId, facets: SubjectFacets): Question[] {
-  return facetFields(subject, facets).map(({ answer, fields }) => ({
+  return facetFields(subject, facets).map(({ answer, fields, missingImage }) => ({
     ...fields,
-    text: '',
+    text: missingImage ? MISSING_QUESTION_IMAGE_NOTICE : '',
     content: [],
     options: noOptions,
     answerKey: answer

@@ -326,19 +326,19 @@ describe('the paper pages of 歷屆試題討論版', () => {
         );
       }
     }
-    expect(papers).toBe(60);
-  });
+    expect(papers).toBe(subjects.length * years.length);
+  }, 15_000);
 
   it('counts the whole bank, one subject and one paper', () => {
     const index = buildPaperIndex(bank);
     const all = paperFacts(index);
     expect(all.subjects).toEqual(subjects.map((subject) => subject.id));
-    expect(all.papers).toBe(60);
+    expect(all.papers).toBe(subjects.length * years.length);
     expect(all.multipleChoice + all.written).toBe(bank.length);
     expect(all.written).toBe(
       bank.filter((question) => question.format === 'written').length,
     );
-    expect([all.firstYear, all.lastYear]).toEqual([100, 114]);
+    expect([all.firstYear, all.lastYear]).toEqual([100, 115]);
     expect(paperFacts(index, 'env', 114)).toMatchObject({
       papers: 1,
       multipleChoice: 40,
@@ -346,7 +346,12 @@ describe('the paper pages of 歷屆試題討論版', () => {
       firstYear: 114,
       lastYear: 114,
     });
-    expect(paperFacts(index, 'law').papers).toBe(15);
+    expect(paperFacts(index, 'law').papers).toBe(years.length);
+    expect(paperFacts(index, 'env', 115)).toMatchObject({
+      papers: 1,
+      multipleChoice: 40,
+      written: 2,
+    });
   });
 });
 

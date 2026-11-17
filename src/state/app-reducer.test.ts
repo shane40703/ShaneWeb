@@ -50,7 +50,7 @@ describe('appReducer', () => {
     const first = appReducer(createDefaultState(), { type: 'save-attempt', attempt: entry, results });
     const duplicate = appReducer(first, { type: 'save-attempt', attempt: entry, results });
     expect(duplicate.attempts).toHaveLength(1);
-    expect(duplicate.answers['law-114-01']?.correct).toBe(true);
+    expect(duplicate.answers[entry.questionIds[0]]?.correct).toBe(true);
   });
 
   it('records 每日抽題練習 attempts and their answers like mock exams', () => {

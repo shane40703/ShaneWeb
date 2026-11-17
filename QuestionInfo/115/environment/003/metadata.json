@@ -1,0 +1,16 @@
+{
+  "year": 115,
+  "subject": "environment",
+  "subjectName": "建築環境控制",
+  "questionNumber": 3,
+  "hasImage": true,
+  "imageFile": "images/figure1.png",
+  "imageReasons": [
+    "題目文字引用圖示",
+    "PDF 第 1 頁包含圖片"
+  ],
+  "sourcePages": [
+    1
+  ],
+  "warnings": []
+}

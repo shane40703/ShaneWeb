@@ -34,7 +34,7 @@ describe('question data', () => {
         `${question.subject}-${question.year}-${String(question.questionNumber).padStart(2, '0')}`,
       );
       expect(question.year).toBeGreaterThanOrEqual(100);
-      expect(question.year).toBeLessThanOrEqual(114);
+      expect(question.year).toBeLessThanOrEqual(115);
       if (question.answerKey.kind === 'accepted') {
         expect(question.answerKey.options.length).toBeGreaterThan(0);
         question.answerKey.options.forEach((answer) => {
@@ -44,7 +44,7 @@ describe('question data', () => {
       }
       expect(question.primaryCategory.length).toBeGreaterThan(0);
     });
-    expect(questions).toHaveLength(3600);
+    expect(questions).toHaveLength(3840);
   });
 
   it('contains every official 113 question in all four subjects', () => {
@@ -102,7 +102,7 @@ describe('question data', () => {
     ).toBe(false);
   });
 
-  it('loads all 100–114 environmental-control and structure essay questions separately', async () => {
+  it('loads all 100–115 environmental-control and structure essay questions separately', async () => {
     const essays = async (subject: 'env' | 'structure') =>
       (await loadSubjectQuestions(subject)).filter(
         (question) => question.format === 'written',
@@ -111,9 +111,9 @@ describe('question data', () => {
     const structure = await essays('structure');
     const writtenQuestions = [...environment, ...structure];
 
-    expect(environment).toHaveLength(37);
-    expect(structure).toHaveLength(35);
-    expect(new Set(writtenQuestions.map((question) => question.id)).size).toBe(72);
+    expect(environment).toHaveLength(39);
+    expect(structure).toHaveLength(37);
+    expect(new Set(writtenQuestions.map((question) => question.id)).size).toBe(76);
     writtenQuestions.forEach((question) => {
       expect(question.format).toBe('written');
       expect(question.answerKey).toEqual({ kind: 'written' });

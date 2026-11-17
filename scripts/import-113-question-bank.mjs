@@ -439,6 +439,9 @@ async function importSubject(year, subject) {
       throw new Error(`${subject.source} 第 ${questionNumber} 題含多張來源圖片`);
     }
     const imageFileName = imageFiles[0];
+    const visiblePrompt = year === 115 && sourceMetadata.hasImage && !imageFileName
+      ? `${prompt}\n\n（此題附圖尚待補上，請參考原試卷。）`
+      : prompt;
     const targetImageName = imageFileName
       ? `question-02${path.extname(imageFileName).toLowerCase()}`
       : null;
@@ -473,7 +476,7 @@ async function importSubject(year, subject) {
 
     await mkdir(questionTargetRoot, { recursive: true });
     await removePreviousQuestionImages(questionTargetRoot);
-    await writeFile(path.join(questionTargetRoot, 'question-01.txt'), `${prompt}\n`);
+    await writeFile(path.join(questionTargetRoot, 'question-01.txt'), `${visiblePrompt}\n`);
     await Promise.all(
       options.map((option, index) =>
         writeFile(
@@ -508,11 +511,11 @@ function requestedYears() {
 
   const years = [...new Set(values.map(Number))].sort((left, right) => left - right);
   const invalidYears = years.filter(
-    (year) => !Number.isInteger(year) || year < 100 || year > 114,
+    (year) => !Number.isInteger(year) || year < 100 || year > 115,
   );
   if (invalidYears.length) {
     throw new Error(
-      `年度參數必須是 100～114 的整數，目前收到：${values.join(', ')}`,
+      `年度參數必須是 100～115 的整數，目前收到：${values.join(', ')}`,
     );
   }
 

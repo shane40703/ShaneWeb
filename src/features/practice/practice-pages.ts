@@ -4,6 +4,7 @@ import {
   IconForms,
   IconListCheck,
 } from '@tabler/icons-react';
+import { years } from '@/question-bank/catalog';
 
 /**
  * Single source for the new daily practice hub and its pages, shared by the sidebar,
@@ -36,7 +37,7 @@ export const practiceMockExamPage = {
   href: '/practice/mock-exam',
   label: '歷屆試題模擬考',
   icon: IconClipboardText,
-  summary: '自選 100～114 年任一份考古題，模擬考試時的實際作答',
+  summary: `自選 ${Math.min(...years)}～${Math.max(...years)} 年任一份考古題，模擬考試時的實際作答`,
 } as const;
 
 export const practicePages = [

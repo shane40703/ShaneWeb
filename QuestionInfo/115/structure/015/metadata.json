@@ -1,0 +1,15 @@
+{
+  "year": 115,
+  "subject": "structure",
+  "subjectName": "建築結構",
+  "questionNumber": 15,
+  "hasImage": true,
+  "imageFile": "images/figure1.png",
+  "imageReasons": [
+    "承接上題，需核對上題附圖"
+  ],
+  "sourcePages": [
+    4
+  ],
+  "warnings": []
+}

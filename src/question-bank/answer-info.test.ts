@@ -3,9 +3,10 @@ import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { loadAllQuestions } from '@/server/question-bank.server';
 import type { Question, SubjectId } from '@/lib/types';
+import { years } from '@/question-bank/catalog';
 
 const ANSWER_LABELS = ['A', 'B', 'C', 'D'] as const;
-const YEARS = Array.from({ length: 15 }, (_, index) => 100 + index);
+const YEARS = [...years].sort((a, b) => a - b);
 const answerInfoRoot = path.join(process.cwd(), 'AnswersInfo');
 const sourceBySubject: Record<SubjectId, string> = {
   construction: 'construction',
@@ -110,8 +111,9 @@ describe('AnswersInfo contract', () => {
       comparedOfficial += 1;
     }
 
-    expect(questions).toHaveLength(3600);
-    expect(comparedOfficial).toBe(3600);
+    const totalQuestions = YEARS.length * Object.values(questionCountBySource).reduce((sum, count) => sum + count, 0);
+    expect(questions).toHaveLength(totalQuestions);
+    expect(comparedOfficial).toBe(totalQuestions);
     expect(skippedSamples).toBe(0);
   }, 15_000);
 });
