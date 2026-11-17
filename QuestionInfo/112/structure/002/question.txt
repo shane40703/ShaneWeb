@@ -2,7 +2,7 @@
 
 [圖片：images/figure1.png]
 
-A. 2 倍
-B. 4 倍
-C. 6 倍
-D. 8 倍
+A. 2倍
+B. 4倍
+C. 6倍
+D. 8倍

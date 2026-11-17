@@ -1,4 +1,4 @@
-1. 關於美國冷凍空調工程師協會（ASHRAE）的熱適應模型（adaptive comfort model）的敘述，下列 何者正確？
+1. 關於美國冷凍空調工程師協會（ASHRAE）的熱適應模型（adaptive comfort model）的敘述，下列何者正確？
 
 A. 不適用於自然通風與混合式空調的室內空間
 B. 熱舒適區間受室內空氣溫度、平均輻射溫度（Mean Radiant Temperature）與風速的影響

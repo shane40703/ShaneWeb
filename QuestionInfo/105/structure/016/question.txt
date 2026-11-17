@@ -2,7 +2,7 @@
 
 [圖片：images/figure1.png]
 
-A. 2 個
-B. 3 個
-C. 4 個
-D. 5 個
+A. 2個
+B. 3個
+C. 4個
+D. 5個
