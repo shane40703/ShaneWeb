@@ -2,7 +2,7 @@
   "primaryCategory": "其他營建法規",
   "topic": "文化資產保存法",
   "relatedLaws": [
-    "其他營建法規"
+    "文化資產保存法"
   ],
   "tags": [
     "文化資產保存法"
@@ -16,5 +16,6 @@
   "provenance": {
     "kind": "official",
     "page": 8
-  }
+  },
+  "fineTopic": "文化資產保存罰則"
 }
