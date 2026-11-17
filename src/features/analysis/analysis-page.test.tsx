@@ -422,6 +422,34 @@ describe('AnalysisPage routing', () => {
     router.pathname = '/analysis';
   });
 
+  it('defaults to the latest available year and honors an explicitly selected year', () => {
+    router.query = { subject: 'law' };
+    const questions = [
+      question('law-114-01', 1),
+      { ...question('law-115-01', 1), year: 115 },
+    ];
+    const { rerender } = render(<AnalysisPage questions={questions} />);
+
+    expect(screen.getByRole('button', { name: /^115/ })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByText(/^115.*\u547d\u984c\u5206\u5e03$/)).toBeInTheDocument();
+
+    router.query = { subject: 'law', year: '114' };
+    rerender(<AnalysisPage questions={questions} />);
+    expect(screen.getByRole('button', { name: /^114/ })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByText(/^114.*\u547d\u984c\u5206\u5e03$/)).toBeInTheDocument();
+  });
+
+  it('defaults to the latest year available for the selected subject', () => {
+    router.query = { subject: 'env' };
+    render(<AnalysisPage questions={[
+      { ...question('law-115-01', 1), year: 115 },
+      { ...question('env-114-01', 1), subject: 'env' },
+    ]} />);
+
+    expect(screen.getByRole('button', { name: /^114/ })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: /^115/ })).toBeDisabled();
+  });
+
   it('keeps subject changes on the route it was opened from, such as the resources hub', () => {
     router.pathname = '/resources/analysis';
     render(

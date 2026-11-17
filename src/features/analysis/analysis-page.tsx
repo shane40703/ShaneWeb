@@ -65,7 +65,6 @@ export function AnalysisPage({
   const subjectId: SubjectId = isSubjectId(querySubject) ? querySubject : 'law';
   const queryYear = valueOf(router.query.year);
   const parsedYear = parseYear(queryYear);
-  const year: number | 'all' = queryYear === 'all' ? 'all' : parsedYear ?? 114;
   const availableYears = years.filter((candidateYear) =>
     questions.some(
       (question) => question.subject === subjectId && question.year === candidateYear,
@@ -73,6 +72,7 @@ export function AnalysisPage({
   );
   const oldestAvailableYear = availableYears.at(-1) ?? years.at(-1)!;
   const newestAvailableYear = availableYears[0] ?? years[0];
+  const year: number | 'all' = queryYear === 'all' ? 'all' : parsedYear ?? newestAvailableYear;
   const parsedFromYear = parseYear(valueOf(router.query.fromYear));
   const parsedToYear = parseYear(valueOf(router.query.toYear));
   const fromYear =
