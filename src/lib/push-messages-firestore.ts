@@ -2,7 +2,11 @@ import { collection, doc, onSnapshot, orderBy, query, runTransaction, Timestamp,
 import { parsePushMessage, type PushMessage, type PushReceipt } from '@/lib/push-messages';
 
 export interface PushTransport {
-  subscribe: (test: boolean, next: (messages: PushMessage[]) => void, error: () => void) => () => void;
+  /**
+   * `fromCache`: an answer from the local cache, which the server has not confirmed yet.
+   * `error` gets the FirestoreError, whose code tells a passing failure from a missing index or rules.
+   */
+  subscribe: (test: boolean, next: (messages: PushMessage[], fromCache?: boolean) => void, error: (reason?: unknown) => void) => () => void;
   record: (receipt: PushReceipt, browserId: string) => Promise<{ delivered: boolean; read: boolean; alreadyRead: boolean }>;
 }
 
@@ -12,10 +16,11 @@ export function firestorePushTransport(db: Firestore): PushTransport {
       const active = query(collection(db, 'pushMessages'),
         where('status', test ? 'in' : '==', test ? ['live', 'test'] : 'live'),
         where('expiresAt', '>', Timestamp.now()), orderBy('expiresAt', 'asc'));
-      return onSnapshot(active, (snapshot) => next(snapshot.docs.flatMap((item) => {
+      // Metadata changes too: a server answer that matches the cached one arrives only as one.
+      return onSnapshot(active, { includeMetadataChanges: true }, (snapshot) => next(snapshot.docs.flatMap((item) => {
         const message = parsePushMessage(item.id, item.data());
         return message ? [message] : [];
-      })), error);
+      }), snapshot.metadata.fromCache), error);
     },
     async record(receipt, browserId) {
       const parent = doc(db, 'pushMessages', receipt.id);
@@ -45,8 +50,9 @@ export function firestorePushTransport(db: Firestore): PushTransport {
       });
       try { return await commit(); }
       catch (reason) {
-        // A competing tab may commit between the read and rule evaluation. Some
-        // backends report a rule denial before the transaction's conflict check.
+        // A competing tab or visitor may commit between the read and rule evaluation:
+        // the flush lock covers only this browser's tabs, and stats are shared by all.
+        // Some backends report a rule denial before the transaction's conflict check.
         // Re-read once; genuine permission failures still reject and stay queued.
         if ((reason as { code?: string }).code === 'permission-denied') return commit();
         throw reason;

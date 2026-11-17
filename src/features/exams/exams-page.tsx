@@ -80,7 +80,7 @@ import {
   getQuestionDisplayCategories,
   isQuestionCorrect,
 } from '@/lib/study';
-import { useDiscussionQuestionIds, useSharedDiscussions } from '@/lib/shared-discussions';
+import { usePaperDiscussions, useSharedDiscussions } from '@/lib/shared-discussions';
 import { useClientReady } from '@/lib/use-client-ready';
 import { useAppState } from '@/state/app-state';
 import { ExamsHub } from './exams-hub';
@@ -219,11 +219,23 @@ export function ExamsPage({
   const [loadedAt] = useState(placeKey);
   const [moved, setMoved] = useState(false);
   if (!moved && placeKey !== loadedAt) setMoved(true);
-  // An overview has no question, so it listens to no discussion.
-  const shared = useSharedDiscussions(currentQuestionId ?? null);
-  const discussionQuestionIds = useDiscussionQuestionIds(
+  // The paper's listener reads every post of the paper, for its tiles, so the question on
+  // screen takes its posts from that read, with no read of its own.
+  const paperDiscussions = usePaperDiscussions(
     currentEntry ? `${currentEntry.subject}-${currentEntry.year}-` : null,
   );
+  // Replies, likes and reports show on the 討論區 tab alone, so they are read once it opens,
+  // until another question is shown: each listener opened again costs a read.
+  const [reactionsFor, setReactionsFor] = useState<string | null>(null);
+  const reactionsQuestionId = tab === 'discussion'
+    ? currentQuestionId ?? null
+    : reactionsFor === currentQuestionId ? reactionsFor : null;
+  if (reactionsQuestionId !== reactionsFor) setReactionsFor(reactionsQuestionId);
+  // An overview has no question, so it listens to no discussion.
+  const shared = useSharedDiscussions(currentQuestionId ?? null, {
+    paper: paperDiscussions,
+    reactions: reactionsQuestionId !== null,
+  });
   const currentPractice = currentQuestionId ? practice[currentQuestionId] : undefined;
   const revealed = currentPractice?.revealed ?? false;
 
@@ -439,7 +451,7 @@ export function ExamsPage({
     difficult: question.format !== 'written' && difficultQuestionIds.has(question.id),
     hasContent:
       (hasBody(question) && Boolean(question.explanation?.trim())) ||
-      discussionQuestionIds.has(question.id),
+      paperDiscussions.questionIds.has(question.id),
   }));
 
   function navigateTo(questionId: string) {

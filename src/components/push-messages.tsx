@@ -1,9 +1,16 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { PushMessageToast, PushTestBadge } from '@/components/push-message-toast';
 import { getFirebaseServices } from '@/lib/firebase-client';
+import { firestoreErrorCode } from '@/lib/firestore-error-code';
+import { listenRetryDelay } from '@/lib/listen-retry';
 import { firestorePushTransport, type PushTransport } from '@/lib/push-messages-firestore';
-import { getPushReceipt, pendingPushReceipts, pushBrowserId, pushKey, pushTestMode, savePushReceipt, type PushMessage } from '@/lib/push-messages';
+import { deferPushReceipt, duePushReceipts, getPushReceipt, hurryTransientPushReceipts, PUSH_KEY_PREFIX, pushBrowserId, pushKey, pushTestMode, savePushReceipt, type PushMessage } from '@/lib/push-messages';
 import { trackPush } from '@/lib/analytics';
+
+/** Held by the one tab of this browser that is reporting receipts. */
+const FLUSH_LOCK = 'shaneweb:push-flush';
+// Each new subscription is a new target, read in full: wait 30 s, doubling up to 30 min.
+const RESUBSCRIBE = { base: 30_000, max: 30 * 60_000 };
 
 export function PushMessages({ search = '', transport }: { search?: string; transport?: PushTransport }) {
   const [test, setTest] = useState<boolean | null>(null);
@@ -15,6 +22,9 @@ export function PushMessages({ search = '', transport }: { search?: string; tran
   const [, redraw] = useState(0);
   const inFlight = useRef(false);
   const mounted = useRef(false);
+  // Failed subscriptions in a row, kept across re-subscribes; and whether the current one failed.
+  const listenFailures = useRef(0);
+  const listenFailed = useRef(false);
   const service = useMemo(() => {
     if (transport) return transport;
     if (typeof window === 'undefined') return null;
@@ -26,22 +36,40 @@ export function PushMessages({ search = '', transport }: { search?: string; tran
   // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { setTest(pushTestMode(search)); }, [search]);
   const flush = useCallback(async () => {
-    if (!service || inFlight.current) return;
+    // A receipt reaches Firestore only while it is pending and its retryAt has passed. Offline, a
+    // try could only fail and lengthen the wait; going online reports at once instead.
+    if (!service || inFlight.current || navigator.onLine === false || !duePushReceipts().length) return;
     inFlight.current = true;
-    try {
-      for (const receipt of pendingPushReceipts()) {
+    const report = async () => {
+      // Read again under the lock: the tab that held it last may have reported these.
+      for (const receipt of duePushReceipts()) {
+        if (navigator.onLine === false) break;
         try {
           const result = await service.record(receipt, pushBrowserId());
           // Another tab/click may have marked read while delivery was in flight.
           const latest = getPushReceipt(receipt);
           savePushReceipt(receipt, result.alreadyRead || latest?.read === true,
-            latest?.read === true && !receipt.read && !result.alreadyRead);
+            latest?.read === true && !receipt.read && !result.alreadyRead, false);
           if (result.delivered) trackPush('push_delivered', receipt.status);
           if (result.read) trackPush('push_read', receipt.status);
-        } catch {
-          // One withdrawn/denied message must not block all other pending receipts.
+        } catch (reason) {
+          // One withdrawn/denied message must not block the others; it waits out its own backoff.
+          deferPushReceipt(receipt, firestoreErrorCode(reason));
         }
       }
+    };
+    try {
+      const locks: LockManager | undefined = navigator.locks;
+      let entered = false;
+      try {
+        // The tabs of one browser share these receipts: while one reports, the others skip.
+        if (locks) await locks.request(FLUSH_LOCK, { ifAvailable: true }, (lock) => { entered = true; return lock ? report() : undefined; });
+      } catch (reason) {
+        // Opaque-origin or sandboxed frames and blocked site data can refuse every lock request.
+        // Once the callback has run, though, another tab is reporting or this one already has.
+        if (entered) throw reason;
+      }
+      if (!entered) await report();
     } catch {
       // Keep the journal. Offline/permission/index failures never interrupt writing answers.
     } finally {
@@ -57,20 +85,30 @@ export function PushMessages({ search = '', transport }: { search?: string; tran
       setNow(Date.now());
       setTest(pushTestMode(''));
       redraw((value) => value + 1);
-      void flush();
     };
-    const reconnect = () => { refresh(); setRetry((value) => value + 1); };
-    refresh();
-    const timer = window.setInterval(refresh, 30_000);
-    window.addEventListener('storage', refresh);
-    window.addEventListener('online', reconnect);
-    document.addEventListener('visibilitychange', refresh);
+    // The tick is also what retries a receipt once its backoff is over.
+    const refreshAndFlush = () => { refresh(); void flush(); };
+    // Other tabs save every answer here. Only announcement keys and clear() (no key) matter, and
+    // only for display: reporting from here made each write in one tab report in all the others.
+    const storage = ({ key }: StorageEvent) => { if (key === null || key?.startsWith(PUSH_KEY_PREFIX)) refresh(); };
+    const visibility = () => { if (document.visibilityState === 'hidden') refresh(); else refreshAndFlush(); };
+    // A healthy listener reconnects by itself; a new subscription would be read in full again.
+    const online = () => {
+      hurryTransientPushReceipts();
+      refreshAndFlush();
+      if (listenFailed.current) setRetry((value) => value + 1);
+    };
+    refreshAndFlush();
+    const timer = window.setInterval(refreshAndFlush, 30_000);
+    window.addEventListener('storage', storage);
+    window.addEventListener('online', online);
+    document.addEventListener('visibilitychange', visibility);
     return () => {
       mounted.current = false;
       window.clearInterval(timer);
-      window.removeEventListener('storage', refresh);
-      window.removeEventListener('online', reconnect);
-      document.removeEventListener('visibilitychange', refresh);
+      window.removeEventListener('storage', storage);
+      window.removeEventListener('online', online);
+      document.removeEventListener('visibilitychange', visibility);
     };
   }, [flush]);
   useEffect(() => {
@@ -79,8 +117,11 @@ export function PushMessages({ search = '', transport }: { search?: string; tran
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setMessages([]);
     setError(false);
+    listenFailed.current = false;
     let retryTimer: ReturnType<typeof setTimeout> | undefined;
-    const unsubscribe = service.subscribe(test, (next) => {
+    const unsubscribe = service.subscribe(test, (next, fromCache) => {
+      // Only the server's answer shows the query works: a cached one can come before the same error.
+      if (!fromCache) listenFailures.current = 0;
       // Counter-only snapshots must not re-announce the same text to screen readers.
       setMessages((current) => {
         const stable = next.map((item) => current.find((old) => pushKey(old) === pushKey(item)
@@ -89,10 +130,17 @@ export function PushMessages({ search = '', transport }: { search?: string; tran
       });
       setNow(Date.now());
       setError(false);
-    }, () => {
+    }, (reason) => {
       setMessages([]);
       setError(true);
-      retryTimer = setTimeout(() => setRetry((value) => value + 1), 30_000);
+      listenFailed.current = true;
+      // The query is public: a denial means rules not deployed, failed-precondition a missing
+      // index. Every visitor's tab would retry those for nothing until a deploy; this one waits
+      // for going online or a reload, as progress sync does.
+      const wait = listenRetryDelay(reason, listenFailures.current, RESUBSCRIBE);
+      if (wait === null) return;
+      listenFailures.current++;
+      retryTimer = setTimeout(() => setRetry((value) => value + 1), wait);
     });
     return () => { unsubscribe(); clearTimeout(retryTimer); };
   }, [service, test, retry]);

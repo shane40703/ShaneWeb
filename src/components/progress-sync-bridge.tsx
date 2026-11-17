@@ -1,16 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { collection, doc, onSnapshot, runTransaction, serverTimestamp } from 'firebase/firestore';
 import { getFirebaseServices } from '@/lib/firebase-client';
-import { firestoreErrorCode } from '@/lib/firestore-error-code';
+import { listenRetryDelay } from '@/lib/listen-retry';
 import { compareProgress, parseProgressRecord } from '@/lib/progress-sync';
 import { connectProgressSync, trackLocalProgress, type ProgressSyncState } from '@/lib/progress-sync-client';
 import { PROGRESS_SYNC_NOW_EVENT } from '@/lib/progress-events';
 
-/** Rules, account or setup problems: reconnecting on a timer cannot fix them. */
-const PERMANENT_LISTEN_ERRORS = new Set(['permission-denied', 'unauthenticated', 'invalid-argument', 'failed-precondition', 'not-found']);
-const RECONNECT_MS = 60_000;
-const QUOTA_RECONNECT_MS = 5 * 60_000;
-const MAX_RECONNECT_MS = 30 * 60_000;
+// Each reconnect re-reads every progress record: wait 1 min (5 min over quota), doubling up to 30 min.
+const RECONNECT = { base: 60_000, quota: 5 * 60_000, max: 30 * 60_000 };
 
 export function ProgressSyncBridge({ userId, onStatus }: {
   userId: string | null;
@@ -58,11 +55,11 @@ export function ProgressSyncBridge({ userId, onStatus }: {
           }, (cause) => {
             listenerFailed.current = true;
             failed(cause);
-            // These wait for 立即同步, going online or another account.
-            const code = firestoreErrorCode(cause);
-            if (PERMANENT_LISTEN_ERRORS.has(code)) return;
-            const pause = (code === 'resource-exhausted' ? QUOTA_RECONNECT_MS : RECONNECT_MS) * 2 ** listenFailures.current++;
-            reconnectTimer = setTimeout(() => setRetry(value => value + 1), Math.min(MAX_RECONNECT_MS, pause));
+            const pause = listenRetryDelay(cause, listenFailures.current, RECONNECT);
+            // Rules, account or setup problems wait for 立即同步, going online or another account.
+            if (pause === null) return;
+            listenFailures.current++;
+            reconnectTimer = setTimeout(() => setRetry(value => value + 1), pause);
           });
         },
         write(id, record) {

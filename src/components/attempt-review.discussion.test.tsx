@@ -24,6 +24,7 @@ const cloud = vi.hoisted(() => ({
 
 vi.mock('@/lib/firebase-client', () => ({
   firebaseConfigurationAvailable: () => true,
+  firebaseRunsHere: () => true,
   getFirebaseServices: () => ({ db: {}, auth: {} }),
 }));
 vi.mock('@/components/cloud-sync-provider', () => ({
