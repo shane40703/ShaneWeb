@@ -1,7 +1,9 @@
-import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { renderToString } from 'react-dom/server';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AnalysisPage } from '@/features/analysis/analysis-page';
 import { buildForecastRanking, DetailedTrendAnalysis } from '@/features/analysis/detailed-trend-analysis';
+import { getExamCountdown, getTaipeiDate } from '@/features/home/exam-countdown';
 import { chartColors } from '@/lib/chart-colors';
 import type { Question, QuestionSummary } from '@/lib/types';
 
@@ -20,6 +22,7 @@ afterEach(() => {
   cleanup();
   window.localStorage.clear();
   vi.restoreAllMocks();
+  vi.useRealTimers();
 });
 
 function question(id: string, questionNumber: number): QuestionSummary {
@@ -265,8 +268,9 @@ describe('AnalysisPage category quiz', () => {
     expect(screen.getByText('各年度精確出題數')).toBeInTheDocument();
     expect(screen.getAllByText('114 年・2 題')).not.toHaveLength(0);
     expect(screen.getByText('選取項目總標註')).toBeInTheDocument();
-    expect(screen.getByRole('table', { name: '115 年複習優先度' })).toBeInTheDocument();
-    expect(screen.getByText('115 年複習優先度')).toBeInTheDocument();
+    const year = Number(getExamCountdown(getTaipeiDate()).exam.startsOn.slice(0, 4)) - 1911;
+    expect(screen.getByRole('table', { name: `${year} 年複習優先度` })).toBeInTheDocument();
+    expect(screen.getByText(`${year} 年複習優先度`)).toBeInTheDocument();
     expect(screen.getByText(/不是命題機率/)).toBeInTheDocument();
   });
 
@@ -468,5 +472,44 @@ describe('AnalysisPage routing', () => {
       undefined,
       { shallow: true, scroll: false },
     );
+  });
+});
+
+describe('Review priority year', () => {
+  it('uses the next exam year after the exam ends and keeps it when filtering years', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-11-16T15:59:00Z'));
+    const questions = [question('law-114-01', 1), { ...question('law-115-01', 1), year: 115 }];
+    render(<DetailedTrendAnalysis questions={questions} subjectId="law" years={[114, 115]} colors={chartColors} />);
+    fireEvent.click(screen.getByText('詳細趨勢分析'));
+
+    expect(screen.getByRole('table', { name: '115 年複習優先度' })).toBeInTheDocument();
+    act(() => {
+      vi.setSystemTime(new Date('2026-11-16T16:00:00Z'));
+      window.dispatchEvent(new Event('focus'));
+    });
+    expect(screen.getByRole('table', { name: '116 年複習優先度' })).toBeInTheDocument();
+    expect(screen.getByText('116 FOCUS INDEX')).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText('趨勢結束年度'), { target: { value: '114' } });
+    expect(screen.getByRole('table', { name: '116 年複習優先度' })).toBeInTheDocument();
+  });
+
+  it('counts only selected observed years as absent, not future or omitted years', () => {
+    const [row] = buildForecastRanking([
+      { category: '範例', counts: [1, 0, 0], total: 1 },
+    ], [110, 112, 114]);
+    expect(row.lastSeenYear).toBe(110);
+    expect(row.yearsWithoutAppearance).toBe(2);
+  });
+
+  it('renders a neutral title on the server without freezing the build date', () => {
+    const html = renderToString(<DetailedTrendAnalysis
+      questions={[question('law-114-01', 1)]}
+      subjectId="law"
+      years={[114]}
+      colors={chartColors}
+    />);
+    expect(html).toContain('複習優先度');
+    expect(html).not.toContain('115 FOCUS INDEX');
   });
 });

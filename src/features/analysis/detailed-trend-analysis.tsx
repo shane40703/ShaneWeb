@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { IconChartLine } from '@tabler/icons-react';
+import { getExamCountdown, useTaipeiDate } from '@/features/home/exam-countdown';
 import { getAnalysisCategory, getQuestionDisplayCategories } from '@/lib/study';
 import type { QuestionSummary, SubjectId } from '@/lib/types';
 import { useChartEntrance } from './use-chart-entrance';
@@ -89,7 +90,6 @@ function clamp(value: number) {
 export function buildForecastRanking(
   series: readonly TrendSeries[],
   years: readonly number[],
-  targetYear = 115,
 ): ForecastRow[] {
   if (!series.length || !years.length) return [];
 
@@ -126,7 +126,7 @@ export function buildForecastRanking(
       lastSeenYear,
       yearsWithoutAppearance: lastSeenYear === undefined
         ? null
-        : Math.max(0, targetYear - lastSeenYear - 1),
+        : years.length - lastSeenIndex - 1,
     };
   });
   const maximumRecent = Math.max(1, ...rawRows.map((item) => item.recentWeightedAverage));
@@ -295,6 +295,11 @@ export function DetailedTrendAnalysis({
   years: readonly number[];
   colors: readonly string[];
 }) {
+  const today = useTaipeiDate();
+  const forecastYear = today
+    ? Number(getExamCountdown(today).exam.startsOn.slice(0, 4)) - 1911
+    : null;
+  const forecastTitle = forecastYear ? `${forecastYear} 年複習優先度` : '複習優先度';
   const [dimension, setDimension] = useState<TrendDimension>('category');
   const [trendFromYear, setTrendFromYear] = useState(years[0] ?? 0);
   const [trendToYear, setTrendToYear] = useState(years.at(-1) ?? 0);
@@ -340,8 +345,7 @@ export function DetailedTrendAnalysis({
       change: (item.counts.at(-1) ?? 0) - (item.counts[0] ?? 0),
     }))
     .sort((left, right) => Math.abs(right.change) - Math.abs(left.change))[0];
-  const forecastYear = 115;
-  const forecastRows = buildForecastRanking(allSeries, analysisYears, forecastYear).slice(0, 10);
+  const forecastRows = buildForecastRanking(allSeries, analysisYears).slice(0, 10);
   const scopedQuestions = questions.filter(
     (question) => question.subject === subjectId && analysisYears.includes(question.year),
   );
@@ -379,7 +383,7 @@ export function DetailedTrendAnalysis({
           <IconChartLine size={20} stroke={2} aria-hidden="true" />
           <span>
             <strong>詳細趨勢分析</strong>
-            <small>跨年度比較與 115 年複習優先度</small>
+            <small>跨年度比較與 {forecastTitle}</small>
           </span>
         </span>
         <b>
@@ -539,13 +543,13 @@ export function DetailedTrendAnalysis({
                 <section className={styles.forecastSection} aria-labelledby="forecast-heading">
                   <header className={styles.forecastHeader}>
                     <div>
-                      <span>115 FOCUS INDEX</span>
-                      <h3 id="forecast-heading">115 年複習優先度</h3>
+                      <span>{forecastYear ? `${forecastYear} FOCUS INDEX` : 'FOCUS INDEX'}</span>
+                      <h3 id="forecast-heading">{forecastTitle}</h3>
                     </div>
                     <strong>{classificationCoverage}% 資料覆蓋率</strong>
                   </header>
                   <p className={styles.forecastNotice}>
-                    依歷年題數產生的複習排序，不是命題機率；修法、時事與命題政策仍須另外判斷。
+                    依所選年度題數產生的複習排序，不是命題機率；缺席年數僅計入所選年度，修法、時事與命題政策仍須另外判斷。
                   </p>
                   <div className={styles.forecastMethod} aria-label="複習優先指數組成">
                     <div><strong>45%</strong><span>近三年加權頻率</span></div>
@@ -554,7 +558,7 @@ export function DetailedTrendAnalysis({
                     <div><strong>10%</strong><span>全期平均題數</span></div>
                   </div>
                   <div className={styles.forecastTable}>
-                    <table aria-label="115 年複習優先度">
+                    <table aria-label={forecastTitle}>
                       <thead>
                         <tr>
                           <th scope="col">排名／考點</th>
