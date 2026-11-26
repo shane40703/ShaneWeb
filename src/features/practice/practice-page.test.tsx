@@ -367,6 +367,21 @@ function writeFromOtherTab(value: PracticeSession | null) {
 }
 
 describe('PracticePage setup', () => {
+  it('calculates without confirming or changing the answer with keyboard shortcuts', async () => {
+    seed({ drafts: { [lawQuestions[0].id]: 0 } }, 2);
+    renderAt('/practice/quiz?q=1');
+    await screen.findByRole('region', { name: '題目與選項' });
+    fireEvent.click(screen.getByRole('button', { name: '開啟計算機' }));
+    const input = screen.getByRole('textbox', { name: '計算算式' });
+    fireEvent.change(input, { target: { value: '2+3' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    expect(screen.getByText('= 5')).toBeInTheDocument();
+    fireEvent.keyDown(screen.getByRole('button', { name: '1' }), { key: 'ArrowRight' });
+    expect(stored()!.currentIndex).toBe(0);
+    expect(stored()!.answers[lawQuestions[0].id]).toBeUndefined();
+    expect(stored()!.drafts[lawQuestions[0].id]).toBe(0);
+  });
+
   it('supports arrows and Space in daily practice without changing confirmed answers', async () => {
     seed({ drafts: { [lawQuestions[0].id]: 0 } });
     renderAt('/practice/quiz?q=1');

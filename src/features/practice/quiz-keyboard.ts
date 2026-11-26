@@ -15,7 +15,7 @@ export function focusRestoreOption(radio: HTMLElement | undefined) {
 }
 
 export function ownsEditingKeys(target: HTMLElement) {
-  return Boolean(target.closest('[role="dialog"], [role="alertdialog"], input, textarea, select, [contenteditable="true"], [role="textbox"]')) || target.isContentEditable;
+  return Boolean(target.closest('[data-calculator], [role="dialog"], [role="alertdialog"], input, textarea, select, [contenteditable="true"], [role="textbox"]')) || target.isContentEditable;
 }
 
 /** Buttons/links keep native Space activation; radio Space is our elimination shortcut. */

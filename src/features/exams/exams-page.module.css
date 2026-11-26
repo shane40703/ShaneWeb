@@ -23,6 +23,8 @@
   background: var(--surface);
 }
 
+.questionTools { display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
+
 .examsLayout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 340px;

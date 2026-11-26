@@ -621,6 +621,21 @@ describe('MockExamPage answering', () => {
     expect(dialog).toBeInTheDocument();
   });
 
+  it('does not submit or change answers while the calculator receives shortcuts', async () => {
+    seedDraft({ 'law-114-01': answered(1) });
+    renderAt('/practice/mock-exam?subject=law&year=114&q=1');
+    await screen.findByRole('region', { name: '題目與選項' });
+    fireEvent.click(screen.getByRole('button', { name: '開啟計算機' }));
+    const input = screen.getByRole('textbox', { name: '計算算式' });
+    fireEvent.change(input, { target: { value: '5+6' } });
+    fireEvent.keyDown(input, { key: 'Enter', ctrlKey: true });
+    fireEvent.keyDown(screen.getByRole('button', { name: '1' }), { key: 'ArrowRight' });
+    expect(screen.getByText('= 11')).toBeInTheDocument();
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+    expect(router.snapshot.asPath).toBe('/practice/mock-exam?subject=law&year=114&q=1');
+    expect(storedDraft()['law-114-01']?.selected).toBe(1);
+  });
+
   it('carries the side column in the 題號 sheet for one-column widths', async () => {
     seedDraft({ 'law-114-01': answered(1), 'law-114-02': answered(0) });
     appState.state.difficultQuestionIds = ['law-114-03'];

@@ -14,6 +14,7 @@ import { ReviewNoteEditor } from '@/components/attempt-review';
 import { QuestionPrompt, Tag } from '@/components/content/content';
 import { DifficultButton } from '@/components/difficult-button';
 import { CopyQuestionButton } from '@/components/copy-question-button';
+import { Calculator } from '@/components/calculator';
 import {
   QuestionNumberButton,
   QuestionNumberGrid,
@@ -236,6 +237,7 @@ export function PracticeQuiz({
                 ))}
               </div>
               <div className={styles.challengeActions}>
+                <Calculator />
                 <DifficultButton
                   active={state.difficultQuestionIds.includes(question.id)}
                   onClick={() =>

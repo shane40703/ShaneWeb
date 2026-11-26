@@ -21,6 +21,7 @@ import {
 } from '@/components/content/content';
 import { DifficultButton } from '@/components/difficult-button';
 import { CopyQuestionButton } from '@/components/copy-question-button';
+import { Calculator } from '@/components/calculator';
 import { QuestionAnswerPanel } from '@/components/question-answer-panel';
 import { QuestionMapDrawer } from '@/components/question-map-drawer';
 import {
@@ -689,17 +690,20 @@ export function ExamsPage({
                         <Tag tone="purple">示範題</Tag>
                       ) : null}
                     </div>
-                    {!written ? (
-                      <DifficultButton
-                        active={difficult}
-                        onClick={() =>
-                          dispatch({
-                            type: 'toggle-difficult',
-                            questionId: currentQuestion.id,
-                          })
-                        }
-                      />
-                    ) : null}
+                    <div className={styles.questionTools}>
+                      <Calculator />
+                      {!written ? (
+                        <DifficultButton
+                          active={difficult}
+                          onClick={() =>
+                            dispatch({
+                              type: 'toggle-difficult',
+                              questionId: currentQuestion.id,
+                            })
+                          }
+                        />
+                      ) : null}
+                    </div>
                   </header>
                   <QuestionSourceLine question={currentQuestion} />
                   <h2 className={styles.questionNumber}>

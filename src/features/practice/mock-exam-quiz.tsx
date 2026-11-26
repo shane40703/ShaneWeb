@@ -10,6 +10,7 @@ import {
 import { QuestionPrompt, Tag } from '@/components/content/content';
 import { DifficultButton } from '@/components/difficult-button';
 import { QuestionMapDrawer } from '@/components/question-map-drawer';
+import { Calculator } from '@/components/calculator';
 import {
   QuestionNumberButton,
   QuestionNumberGrid,
@@ -266,6 +267,7 @@ export function MockExamQuiz({
                 ))}
               </div>
               <div className={styles.challengeActions}>
+                <Calculator />
                 <DifficultButton
                   active={state.difficultQuestionIds.includes(question.id)}
                   onClick={() =>
