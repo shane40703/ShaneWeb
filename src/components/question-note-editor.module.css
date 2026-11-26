@@ -37,6 +37,11 @@
   color: var(--primary-strong);
 }
 
+.copyAction {
+  justify-self: end;
+  max-width: 100%;
+}
+
 /* Only the 「我的筆記」 field label; the ImageAttachments upload <label> is a button and keeps its own look. */
 .noteToolbar > label {
   color: var(--muted);

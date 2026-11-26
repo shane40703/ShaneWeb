@@ -139,6 +139,26 @@ describe('ExamsPage question loading', () => {
     expect(screen.getByRole('button', { name: '重新作答' }).parentElement).toContainElement(copy);
   });
 
+  it('copies the current question and options from the notes tab', async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    const clipboard = Object.getOwnPropertyDescriptor(navigator, 'clipboard');
+    Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText } });
+    try {
+      renderPage();
+      openTab(/筆記/);
+      const copy = await screen.findByRole('button', { name: '複製題目' });
+      const choices = screen.getByRole('region', { name: '題目選項' });
+      expect(choices.compareDocumentPosition(copy) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+      fireEvent.click(copy);
+      await waitFor(() => expect(writeText).toHaveBeenCalledWith(
+        'law-114-01 題幹\nA. law-114-01 A\nB. law-114-01 B\nC. law-114-01 C\nD. law-114-01 D',
+      ));
+    } finally {
+      if (clipboard) Object.defineProperty(navigator, 'clipboard', clipboard);
+      else Reflect.deleteProperty(navigator, 'clipboard');
+    }
+  });
+
   it('preserves note-style whitespace when adding and editing explanations', async () => {
     const content = '  第一行\n\n\t第二行 格式重點  對齊\n';
     renderPage();

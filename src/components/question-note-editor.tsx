@@ -6,6 +6,7 @@ import {
   ImageAttachments,
 } from '@/components/image-attachments';
 import { DifficultButton } from '@/components/difficult-button';
+import { CopyQuestionButton } from '@/components/copy-question-button';
 import { QuestionPrompt, QuestionSourceLine, Tag } from '@/components/content/content';
 import { QuestionAnswerPanel } from '@/components/question-answer-panel';
 import { RichText } from '@/components/rich-text';
@@ -135,6 +136,9 @@ export function QuestionNoteEditor({
       {question.format !== 'written' ? (
         <QuestionAnswerPanel question={question} heading={null} ariaLabel="題目選項" />
       ) : null}
+      <div className={styles.copyAction}>
+        <CopyQuestionButton key={question.id} question={question} />
+      </div>
       {editing ? (
         <>
           <div className={styles.noteToolbar}>

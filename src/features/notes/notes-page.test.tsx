@@ -151,6 +151,37 @@ describe('NotesPage question loading', () => {
     expect(screen.getByLabelText('我的筆記')).toBeInTheDocument();
   });
 
+  it('copies the question from the personal notes page', async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    const clipboard = Object.getOwnPropertyDescriptor(navigator, 'clipboard');
+    Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText } });
+    try {
+      render(page());
+      fireEvent.click(await screen.findByRole('button', { name: '複製題目' }));
+      await waitFor(() => expect(writeText).toHaveBeenCalledWith(
+        'law-114-01 題幹\nA. law-114-01 A\nB. law-114-01 B\nC. law-114-01 C\nD. law-114-01 D',
+      ));
+    } finally {
+      if (clipboard) Object.defineProperty(navigator, 'clipboard', clipboard);
+      else Reflect.deleteProperty(navigator, 'clipboard');
+    }
+  });
+
+  it('can also copy a written question without choices', async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    const clipboard = Object.getOwnPropertyDescriptor(navigator, 'clipboard');
+    Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText } });
+    try {
+      router.query = { question: writtenQuestion.id };
+      render(page({ questions: [writtenQuestion] }));
+      fireEvent.click(await screen.findByRole('button', { name: '複製題目' }));
+      await waitFor(() => expect(writeText).toHaveBeenCalledWith('structure-114-written-01 題幹'));
+    } finally {
+      if (clipboard) Object.defineProperty(navigator, 'clipboard', clipboard);
+      else Reflect.deleteProperty(navigator, 'clipboard');
+    }
+  });
+
   it('keeps an unsaved default-question draft when the full bank becomes ready', async () => {
     const view = render(page({ questionBankStatus: 'loading' }));
     const editor = await screen.findByLabelText('我的筆記');
