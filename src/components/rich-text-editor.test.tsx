@@ -104,6 +104,78 @@ describe('RichTextEditor', () => {
     expect(screen.getByLabelText('存檔值')).not.toHaveTextContent('9999px');
   });
 
+  it('pastes plain text without clipboard formatting while preserving line breaks and whitespace', () => {
+    render(<Controlled />);
+    const editor = screen.getByRole('textbox', { name: '即時筆記' });
+    fireEvent.paste(editor, { clipboardData: {
+      files: [],
+      getData: (type: string) => type === 'text/plain' ? '第一行\n\n  第二行' : '<p><strong>第一行</strong></p><p style="color:red">第二行</p>',
+    } });
+    expect(editor.querySelector('strong, em, a, [style]')).toBeNull();
+    expect(richDocumentText(parseRichDocument(screen.getByLabelText('存檔值').textContent!)!)).toBe('第一行\n\n  第二行');
+  });
+
+  it('extracts unformatted text from an HTML-only clipboard', () => {
+    render(<Controlled />);
+    const editor = screen.getByRole('textbox', { name: '即時筆記' });
+    fireEvent.paste(editor, { clipboardData: {
+      files: [],
+      getData: (type: string) => type === 'text/html'
+        ? '<p><strong>第一行</strong></p><p style="color:red">第二行<br>第三行</p><script>不應加入</script>'
+        : '',
+    } });
+    expect(editor.querySelector('strong, [style], script')).toBeNull();
+    expect(richDocumentText(parseRichDocument(screen.getByLabelText('存檔值').textContent!)!)).toBe('第一行\n第二行\n第三行');
+  });
+
+  it('does not inherit formatting at the insertion point and leaves surrounding text unchanged', () => {
+    render(<Controlled initial="**前後**" />);
+    const editor = screen.getByRole('textbox', { name: '即時筆記' });
+    selectRichEditor(editor, 1, 1);
+    fireEvent.paste(editor, { clipboardData: { files: [], getData: () => '貼入' } });
+    expect(editor).toHaveTextContent('前貼入後');
+    expect(Array.from(editor.querySelectorAll('strong'), node => node.textContent)).toEqual(['前', '後']);
+    expect(richDocumentText(parseRichDocument(screen.getByLabelText('存檔值').textContent!)!)).toBe('前貼入後');
+  });
+
+  it('pastes a URL as text without automatically adding link formatting', () => {
+    render(<Controlled />);
+    const editor = screen.getByRole('textbox', { name: '即時筆記' });
+    fireEvent.paste(editor, { clipboardData: { files: [], getData: () => 'https://example.com' } });
+    expect(editor).toHaveTextContent('https://example.com');
+    expect(editor.querySelector('a')).toBeNull();
+  });
+
+  it('keeps image attachments and text when both are pasted together', () => {
+    const onPasteImages = vi.fn();
+    const onChange = vi.fn();
+    render(<RichTextEditor value="" onChange={onChange} ariaLabel="即時筆記" onPasteImages={onPasteImages} />);
+    const file = new File(['image'], 'test.png', { type: 'image/png' });
+    const editor = screen.getByRole('textbox', { name: '即時筆記' });
+    fireEvent.paste(editor, { clipboardData: { files: [file], getData: () => '附圖說明' } });
+    expect(onPasteImages).toHaveBeenCalledWith([file]);
+    expect(editor).toHaveTextContent('附圖說明');
+    expect(onChange).toHaveBeenCalled();
+  });
+
+  it('preserves image-only pasting without altering existing text', () => {
+    const onPasteImages = vi.fn();
+    render(<RichTextEditor value="原有內容" onChange={vi.fn()} ariaLabel="即時筆記" onPasteImages={onPasteImages} />);
+    const file = new File(['image'], 'test.png', { type: 'image/png' });
+    const editor = screen.getByRole('textbox', { name: '即時筆記' });
+    fireEvent.paste(editor, { clipboardData: { files: [file], getData: () => '' } });
+    expect(onPasteImages).toHaveBeenCalledWith([file]);
+    expect(editor).toHaveTextContent('原有內容');
+  });
+
+  it('still enforces the storage limit on pasted text', () => {
+    render(<Controlled initial="保留原文" limit={200} />);
+    const editor = screen.getByRole('textbox', { name: '即時筆記' });
+    fireEvent.paste(editor, { clipboardData: { files: [], getData: () => 'x'.repeat(300) } });
+    expect(editor).toHaveTextContent('保留原文');
+    expect(screen.getByRole('alert')).toHaveTextContent('已達儲存長度上限');
+  });
+
   it('accepts external resets without reporting them as edits and supports disabled content', () => {
     const change = vi.fn();
     const view = render(<RichTextEditor value="舊內容" onChange={change} ariaLabel="即時筆記" />);

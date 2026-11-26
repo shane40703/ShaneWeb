@@ -2,6 +2,7 @@ import { useEffect, useId, useMemo, useRef, useState, type CSSProperties } from 
 import { EditorContent, useEditor, useEditorState } from '@tiptap/react';
 import { Extension, isNodeEmpty, type JSONContent } from '@tiptap/core';
 import { Plugin } from '@tiptap/pm/state';
+import { Fragment, Slice } from '@tiptap/pm/model';
 import StarterKit from '@tiptap/starter-kit';
 import { Color, FontSize, TextStyleKit } from '@tiptap/extension-text-style';
 import Superscript from '@tiptap/extension-superscript';
@@ -12,7 +13,7 @@ import {
 } from '@/lib/rich-document';
 import styles from './rich-text-editor.module.css';
 
-// Pasted HTML may offer arbitrary CSS; keep only the same safe attributes as saved documents.
+// HTML loaded into the editor may offer arbitrary CSS; keep only safe attributes.
 const SafeColor = Color.extend({
   addGlobalAttributes() {
     return [{ types: this.options.types, attributes: { color: {
@@ -37,6 +38,22 @@ const SafeFontSize = FontSize.extend({
     } } }];
   },
 });
+
+/** Some clipboard sources provide only HTML; recover its visible text without its formatting. */
+function plainTextFromHtml(html: string) {
+  const document = new DOMParser().parseFromString(html, 'text/html');
+  document.querySelectorAll('script, style, template').forEach(node => node.remove());
+  const blocks = new Set(['P', 'DIV', 'LI', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'TR']);
+  function text(node: Node): string {
+    if (node.nodeType === Node.TEXT_NODE) return node.textContent ?? '';
+    if (node.nodeType !== Node.ELEMENT_NODE) return '';
+    const element = node as Element;
+    if (element.tagName === 'BR') return '\n';
+    const content = Array.from(element.childNodes, text).join('');
+    return blocks.has(element.tagName) ? `${content}\n` : content;
+  }
+  return Array.from(document.body.childNodes, text).join('').replace(/\n$/, '');
+}
 
 /** One editor for notes and shared explanations: IME, history and selection belong to ProseMirror. */
 export function RichTextEditor({
@@ -97,11 +114,26 @@ export function RichTextEditor({
         'aria-invalid': String(atLimit), ...(atLimit ? { 'aria-describedby': warningId } : {}),
         'data-placeholder': placeholder, 'data-empty': String(isNodeEmpty(state.doc)), ...(id ? { id } : {}),
       }),
-      handlePaste: (_view, event) => {
+      handlePaste: (view, event) => {
         const files = [...(event.clipboardData?.files ?? [])].filter(file => file.type.startsWith('image/'));
-        if (!files.length || !callbacks.current.onPasteImages) return false;
-        callbacks.current.onPasteImages(files);
-        return true;
+        const hasImages = files.length > 0 && Boolean(callbacks.current.onPasteImages);
+        if (hasImages) callbacks.current.onPasteImages?.(files);
+        const data = event.clipboardData;
+        const plain = data?.getData('text/plain');
+        const html = plain ? '' : data?.getData('text/html');
+        const text = plain || (html ? plainTextFromHtml(html) : '');
+        if (text) {
+          // Construct unmarked text directly: neither clipboard HTML nor the cursor's
+          // active formatting may leak into the pasted content. Paragraphs retain line breaks.
+          const { schema } = view.state;
+          const paragraphs = text.replace(/\r\n?/g, '\n').split('\n').map(line =>
+            schema.nodes.paragraph.create(null, line ? schema.text(line) : null),
+          );
+          const slice = Slice.maxOpen(Fragment.fromArray(paragraphs));
+          view.dispatch(view.state.tr.replaceSelection(slice).setMeta('preventAutolink', true).scrollIntoView());
+          return true;
+        }
+        return hasImages;
       },
     },
     onUpdate: ({ editor: current, transaction }) => {
